@@ -29,6 +29,7 @@ export interface Project {
   overviewBody?: string
   leadArtistName?: string
   leadArtistBio?: string
+  leadArtistPhoto?: string
   collaborators: Collaborator[]
   scale?: string
   contactEmail?: string

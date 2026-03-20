@@ -10,8 +10,8 @@ export default function HomePage() {
       {/* Hero */}
       <section className="site-hero">
         <img
-          src="https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=1600&q=85&fit=crop"
-          alt="Immersive light installation"
+          src="/assets/images/projects/money-shot.png"
+          alt="Resonance — climbable bamboo conch shell installation"
           className="site-hero__img"
         />
         <div className="site-hero__overlay"></div>

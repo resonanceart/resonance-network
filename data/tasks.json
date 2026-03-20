@@ -15,7 +15,7 @@
     ],
     "estimatedScope": "One-off, 15–25 hours",
     "rewardDescription": "Paid engagement — budget allocated. Credit as collaborator.",
-    "contactEmail": "maya@resonance.art",
+    "contactEmail": "hello@resonanceartcollective.com",
     "contactEmailSubject": "Collaboration Interest: Structural Engineer for Resonance"
   },
   {
@@ -34,7 +34,7 @@
     ],
     "estimatedScope": "Ongoing, 40–60 hours total",
     "rewardDescription": "Paid engagement with phased milestones. Full credit as collaborator.",
-    "contactEmail": "maya@resonance.art",
+    "contactEmail": "hello@resonanceartcollective.com",
     "contactEmailSubject": "Collaboration Interest: Lighting Designer for Resonance"
   },
   {
@@ -53,7 +53,7 @@
     ],
     "estimatedScope": "Project-based, 20–30 hours over 2 months",
     "rewardDescription": "Percentage-based compensation on successful grants. Negotiable flat fee available.",
-    "contactEmail": "maya@resonance.art",
+    "contactEmail": "hello@resonanceartcollective.com",
     "contactEmailSubject": "Collaboration Interest: Grant Writer for Resonance"
   },
   {
@@ -149,6 +149,25 @@
     "contactEmailSubject": "Collaboration Interest: Landscape Architect for Terra Nexus"
   },
   {
+    "id": "terra-nexus-community-engagement",
+    "projectId": "terra-nexus",
+    "projectTitle": "Terra Nexus",
+    "title": "Community engagement lead for participatory design process",
+    "description": "Looking for a community engagement specialist to lead the participatory design workshops with local residents. Experience with underserved urban communities and co-design processes is essential.",
+    "category": "Admin",
+    "status": "Open",
+    "skillsNeeded": [
+      "Community engagement",
+      "Co-design facilitation",
+      "Urban communities",
+      "Workshop facilitation"
+    ],
+    "estimatedScope": "Ongoing, 3–6 months",
+    "rewardDescription": "Paid engagement. Named collaborator and co-author on process documentation.",
+    "contactEmail": "jordan@terranexus.org",
+    "contactEmailSubject": "Collaboration Interest: Community Engagement for Terra Nexus"
+  },
+  {
     "id": "luminous-currents-fabrication",
     "projectId": "luminous-currents",
     "projectTitle": "Luminous Currents",
@@ -185,5 +204,366 @@
     "rewardDescription": "Paid consulting engagement. Success bonus on secured commissions.",
     "contactEmail": "studio@ingridvoss.nl",
     "contactEmailSubject": "Collaboration Interest: Public Art Consultant for Luminous Currents"
+  },
+  {
+    "id": "luminous-currents-electrical-engineer",
+    "projectId": "luminous-currents",
+    "projectTitle": "Luminous Currents",
+    "title": "Electrical engineer for solar-powered sensor network",
+    "description": "Need an electrical engineer experienced with low-power embedded systems to design the solar harvesting and wireless sensor network architecture for 300–500 individual elements. Must be weather and waterproof for outdoor waterfront deployment.",
+    "category": "Engineering",
+    "status": "Open",
+    "skillsNeeded": [
+      "Embedded systems",
+      "Solar harvesting",
+      "Wireless sensor networks",
+      "Weatherproofing"
+    ],
+    "estimatedScope": "Ongoing, 80–120 hours total",
+    "rewardDescription": "Paid engagement with milestones. Named engineering collaborator.",
+    "contactEmail": "studio@ingridvoss.nl",
+    "contactEmailSubject": "Collaboration Interest: Electrical Engineer for Luminous Currents"
+  },
+  {
+    "id": "mycelium-sound-chamber-acoustic-engineer",
+    "projectId": "mycelium-sound-chamber",
+    "projectTitle": "Mycelium Sound Chamber",
+    "title": "Acoustic engineer for fungal material testing",
+    "description": "Seeking an acoustic engineer to collaborate on the measurement and characterization of mycelium composite panels as acoustic absorbers and diffusers. Help define the material specification for the final installation.",
+    "category": "Engineering",
+    "status": "Open",
+    "skillsNeeded": [
+      "Acoustic engineering",
+      "Material testing",
+      "Absorption coefficients",
+      "Room acoustics"
+    ],
+    "estimatedScope": "One-off, 20–30 hours over 6 weeks",
+    "rewardDescription": "Paid engagement. Co-author on any resulting material research publication.",
+    "contactEmail": "studio@seraokafor.com",
+    "contactEmailSubject": "Collaboration Interest: Acoustic Engineer for Mycelium Sound Chamber"
+  },
+  {
+    "id": "mycelium-sound-chamber-material-scientist",
+    "projectId": "mycelium-sound-chamber",
+    "projectTitle": "Mycelium Sound Chamber",
+    "title": "Material scientist or mycologist with architectural material experience",
+    "description": "Looking for a material scientist or mycologist to advise on the growth parameters, substrate composition, and structural performance of mycelium composites at architectural scale. Prior experience with Ecovative or similar mycelium material systems preferred.",
+    "category": "Engineering",
+    "status": "Open",
+    "skillsNeeded": [
+      "Mycology",
+      "Biomaterials",
+      "Material science",
+      "Architectural composites"
+    ],
+    "estimatedScope": "Ongoing advisory, 10–15 hours over 3 months",
+    "rewardDescription": "Named collaborator. Paid advisory fee.",
+    "contactEmail": "studio@seraokafor.com",
+    "contactEmailSubject": "Collaboration Interest: Material Scientist for Mycelium Sound Chamber"
+  },
+  {
+    "id": "mycelium-sound-chamber-grant-writer",
+    "projectId": "mycelium-sound-chamber",
+    "projectTitle": "Mycelium Sound Chamber",
+    "title": "Grant writer for arts and science / material research funding",
+    "description": "Need a grant writer familiar with grants that sit at the intersection of arts and material science — NSF, NEA, and private foundations. The project has strong conceptual and research merit and needs help developing 2–3 targeted applications.",
+    "category": "Funding",
+    "status": "Open",
+    "skillsNeeded": [
+      "Grant writing",
+      "Arts/science funding",
+      "Research grants",
+      "Budget narratives"
+    ],
+    "estimatedScope": "Project-based, 20–25 hours",
+    "rewardDescription": "Percentage-based compensation on successful grants.",
+    "contactEmail": "studio@seraokafor.com",
+    "contactEmailSubject": "Collaboration Interest: Grant Writer for Mycelium Sound Chamber"
+  },
+  {
+    "id": "canopy-commons-structural-engineer",
+    "projectId": "canopy-commons",
+    "projectTitle": "Canopy Commons",
+    "title": "Structural engineer for tensile shade system",
+    "description": "Seeking a structural engineer experienced with tensile membrane or tensegrity structures to validate and develop the modular shade system. Must be deployable without permanent foundations for use in public parks and plazas.",
+    "category": "Engineering",
+    "status": "Open",
+    "skillsNeeded": [
+      "Tensile structures",
+      "Tensegrity",
+      "Modular systems",
+      "Non-permanent foundations"
+    ],
+    "estimatedScope": "Project-based, 30–40 hours",
+    "rewardDescription": "Paid engagement. Named structural collaborator.",
+    "contactEmail": "studio@marcosei.com",
+    "contactEmailSubject": "Collaboration Interest: Structural Engineer for Canopy Commons"
+  },
+  {
+    "id": "canopy-commons-community-organizer",
+    "projectId": "canopy-commons",
+    "projectTitle": "Canopy Commons",
+    "title": "Community organizer for pilot site selection and activation",
+    "description": "Looking for a community organizer or urban planning professional to identify and engage 2–3 underserved neighborhoods as pilot sites. Help with community outreach, co-design workshops, and ongoing activation programming.",
+    "category": "Admin",
+    "status": "Open",
+    "skillsNeeded": [
+      "Community organizing",
+      "Urban planning",
+      "Outreach",
+      "Event programming"
+    ],
+    "estimatedScope": "Ongoing, 6–12 months",
+    "rewardDescription": "Paid engagement. Named collaborator and project co-lead for community process.",
+    "contactEmail": "studio@marcosei.com",
+    "contactEmailSubject": "Collaboration Interest: Community Organizer for Canopy Commons"
+  },
+  {
+    "id": "canopy-commons-fabricator",
+    "projectId": "canopy-commons",
+    "projectTitle": "Canopy Commons",
+    "title": "Fabrication partner for modular structural system",
+    "description": "Seeking a fabrication partner to develop and produce the modular steel or aluminum structural nodes and mast system. Prototype exists — looking for a partner to refine and scale the system for production.",
+    "category": "Fabrication",
+    "status": "Open",
+    "skillsNeeded": [
+      "Metal fabrication",
+      "Modular systems",
+      "Prototype development",
+      "Production scaling"
+    ],
+    "estimatedScope": "Production partnership, 2–4 months",
+    "rewardDescription": "Paid fabrication contract. Named fabrication partner.",
+    "contactEmail": "studio@marcosei.com",
+    "contactEmailSubject": "Collaboration Interest: Fabrication Partner for Canopy Commons"
+  },
+  {
+    "id": "solaris-pavilion-mechanical-engineer",
+    "projectId": "solaris-pavilion",
+    "projectTitle": "Solaris Pavilion",
+    "title": "Mechanical engineer for solar-tracking drive system",
+    "description": "Need a mechanical engineer experienced with actuated tracking systems to design the solar-tracking drive mechanism for the canopy panels. Must handle outdoor loads, wind resistance, and low-maintenance operation over a 20+ year lifespan.",
+    "category": "Engineering",
+    "status": "Open",
+    "skillsNeeded": [
+      "Mechanical engineering",
+      "Actuator systems",
+      "Solar tracking",
+      "Outdoor/weather tolerance"
+    ],
+    "estimatedScope": "Ongoing, 60–80 hours",
+    "rewardDescription": "Paid engagement with phased milestones. Named mechanical engineer.",
+    "contactEmail": "studio@yukitanaka.jp",
+    "contactEmailSubject": "Collaboration Interest: Mechanical Engineer for Solaris Pavilion"
+  },
+  {
+    "id": "solaris-pavilion-electrical-engineer",
+    "projectId": "solaris-pavilion",
+    "projectTitle": "Solaris Pavilion",
+    "title": "Electrical / PV systems engineer",
+    "description": "Seeking an electrical engineer with photovoltaic system design experience to design the energy generation, storage, and distribution system. The pavilion should generate more energy than it consumes, with surplus available for public use.",
+    "category": "Engineering",
+    "status": "Open",
+    "skillsNeeded": [
+      "PV system design",
+      "Battery storage",
+      "Grid integration",
+      "Net-positive energy"
+    ],
+    "estimatedScope": "Ongoing, 40–60 hours",
+    "rewardDescription": "Paid engagement. Named engineering collaborator.",
+    "contactEmail": "studio@yukitanaka.jp",
+    "contactEmailSubject": "Collaboration Interest: PV Engineer for Solaris Pavilion"
+  },
+  {
+    "id": "solaris-pavilion-grant-writer",
+    "projectId": "solaris-pavilion",
+    "projectTitle": "Solaris Pavilion",
+    "title": "Grant writer for clean energy and public infrastructure funding",
+    "description": "Looking for a grant writer experienced with clean energy, climate infrastructure, and public art funding — DOE programs, state energy grants, and municipal public art commissions. The project qualifies across multiple funding categories.",
+    "category": "Funding",
+    "status": "Open",
+    "skillsNeeded": [
+      "Grant writing",
+      "Clean energy funding",
+      "Public art grants",
+      "Climate infrastructure"
+    ],
+    "estimatedScope": "Project-based, 20–30 hours",
+    "rewardDescription": "Percentage-based on successful grants. Flat fee option available.",
+    "contactEmail": "studio@yukitanaka.jp",
+    "contactEmailSubject": "Collaboration Interest: Grant Writer for Solaris Pavilion"
+  },
+  {
+    "id": "deep-current-sound-designer",
+    "projectId": "deep-current",
+    "projectTitle": "Deep Current",
+    "title": "Spatial audio designer for tidal soundscape",
+    "description": "Seeking a spatial audio designer or composer experienced with immersive multi-channel audio environments to create the underwater tidal soundscape. Must have experience with ambisonics or VBAP spatial audio systems and real-time audio tools.",
+    "category": "Production",
+    "status": "Open",
+    "skillsNeeded": [
+      "Spatial audio",
+      "Ambisonics",
+      "Immersive sound design",
+      "Real-time audio"
+    ],
+    "estimatedScope": "Ongoing, 60–80 hours over 4 months",
+    "rewardDescription": "Paid engagement. Named sound designer and composer.",
+    "contactEmail": "studio@amaradiallo.com",
+    "contactEmailSubject": "Collaboration Interest: Sound Designer for Deep Current"
+  },
+  {
+    "id": "deep-current-kinetic-fabricator",
+    "projectId": "deep-current",
+    "projectTitle": "Deep Current",
+    "title": "Kinetic fabricator for moving fabric structures",
+    "description": "Looking for a fabricator or maker experienced with kinetic textile or soft robotics to develop the moving fabric structures at the heart of Deep Current. Must have experience with motor-driven or pneumatic fabric actuation in large-format installations.",
+    "category": "Fabrication",
+    "status": "Open",
+    "skillsNeeded": [
+      "Kinetic fabrication",
+      "Textile mechanics",
+      "Soft robotics",
+      "Large-format installation"
+    ],
+    "estimatedScope": "Production partnership, 3–5 months",
+    "rewardDescription": "Paid fabrication contract. Named fabrication collaborator.",
+    "contactEmail": "studio@amaradiallo.com",
+    "contactEmailSubject": "Collaboration Interest: Kinetic Fabricator for Deep Current"
+  },
+  {
+    "id": "deep-current-venue",
+    "projectId": "deep-current",
+    "projectTitle": "Deep Current",
+    "title": "Venue or exhibition partner",
+    "description": "Seeking a museum, cultural center, or festival with a large-format flexible dark space (minimum 5,000 sq ft, blackout capable) to host Deep Current as a ticketed immersive experience. Ideal for a 4–8 week run.",
+    "category": "Admin",
+    "status": "Open",
+    "skillsNeeded": [
+      "Exhibition programming",
+      "Large-format venue",
+      "Ticketing operations",
+      "Technical production"
+    ],
+    "estimatedScope": "Exhibition partnership, one or more seasons",
+    "rewardDescription": null,
+    "contactEmail": "studio@amaradiallo.com",
+    "contactEmailSubject": "Venue Inquiry: Deep Current via Resonance Network"
+  },
+  {
+    "id": "tidal-pavilion-architect",
+    "projectId": "tidal-pavilion",
+    "projectTitle": "Tidal Pavilion",
+    "title": "Architect or coastal engineer for structural development",
+    "description": "Looking for an architect or structural/coastal engineer to develop the Tidal Pavilion from concept to construction drawings. Must have experience with coastal environments, tidal exposure, and non-permanent or semi-permanent structures.",
+    "category": "Architecture",
+    "status": "Open",
+    "skillsNeeded": [
+      "Coastal engineering",
+      "Structural design",
+      "Tidal environments",
+      "Construction drawings"
+    ],
+    "estimatedScope": "Ongoing, 80–120 hours over 6 months",
+    "rewardDescription": "Paid engagement with milestones. Named architect on project.",
+    "contactEmail": "studio@raiafatu.com",
+    "contactEmailSubject": "Collaboration Interest: Architect for Tidal Pavilion"
+  },
+  {
+    "id": "tidal-pavilion-community-partner",
+    "projectId": "tidal-pavilion",
+    "projectTitle": "Tidal Pavilion",
+    "title": "Coastal community partner or site host",
+    "description": "Seeking a coastal community, local government, or cultural institution in a Pacific coastal region to serve as the site host and community partner for the Tidal Pavilion. The right partner will help shape the design through community engagement and provide access to the coastal site.",
+    "category": "Admin",
+    "status": "Open",
+    "skillsNeeded": [
+      "Community partnership",
+      "Coastal access",
+      "Cultural stewardship",
+      "Site hosting"
+    ],
+    "estimatedScope": "Long-term partnership through construction and operation",
+    "rewardDescription": null,
+    "contactEmail": "studio@raiafatu.com",
+    "contactEmailSubject": "Partnership Inquiry: Tidal Pavilion via Resonance Network"
+  },
+  {
+    "id": "tidal-pavilion-grant-writer",
+    "projectId": "tidal-pavilion",
+    "projectTitle": "Tidal Pavilion",
+    "title": "Grant writer for Indigenous-led and coastal cultural funding",
+    "description": "Looking for a grant writer with experience in Indigenous-led projects, Pacific cultural heritage funding, and coastal ecology grants. The project connects cultural practice with ecological design in a Pacific coastal context.",
+    "category": "Funding",
+    "status": "Open",
+    "skillsNeeded": [
+      "Grant writing",
+      "Indigenous cultural funding",
+      "Pacific arts grants",
+      "Coastal ecology"
+    ],
+    "estimatedScope": "Project-based, 20–25 hours",
+    "rewardDescription": "Percentage-based on successful grants.",
+    "contactEmail": "studio@raiafatu.com",
+    "contactEmailSubject": "Collaboration Interest: Grant Writer for Tidal Pavilion"
+  },
+  {
+    "id": "root-network-landscape-architect",
+    "projectId": "root-network",
+    "projectTitle": "Root Network",
+    "title": "Landscape architect for ecological corridor design",
+    "description": "Seeking a landscape architect experienced with urban ecological corridors, native planting systems, and permeable surfaces to develop the design specifications for the Root Network corridors. Experience with participatory design processes required.",
+    "category": "Architecture",
+    "status": "Open",
+    "skillsNeeded": [
+      "Landscape architecture",
+      "Ecological corridors",
+      "Native planting",
+      "Permeable design"
+    ],
+    "estimatedScope": "Ongoing, 80–100 hours over 6 months",
+    "rewardDescription": "Paid engagement with milestones. Named landscape architect.",
+    "contactEmail": "studio@rootnetwork.org",
+    "contactEmailSubject": "Collaboration Interest: Landscape Architect for Root Network"
+  },
+  {
+    "id": "root-network-community-organizer",
+    "projectId": "root-network",
+    "projectTitle": "Root Network",
+    "title": "Community organizer for neighborhood engagement",
+    "description": "Looking for a community organizer experienced with urban environmental justice to lead resident engagement for the Root Network installation. Must be able to facilitate co-design workshops, build trust with diverse urban communities, and translate resident input into design decisions.",
+    "category": "Admin",
+    "status": "Open",
+    "skillsNeeded": [
+      "Community organizing",
+      "Environmental justice",
+      "Co-design facilitation",
+      "Multilingual outreach"
+    ],
+    "estimatedScope": "Ongoing, 6–12 months",
+    "rewardDescription": "Paid engagement. Named community co-lead.",
+    "contactEmail": "studio@rootnetwork.org",
+    "contactEmailSubject": "Collaboration Interest: Community Organizer for Root Network"
+  },
+  {
+    "id": "root-network-grant-writer",
+    "projectId": "root-network",
+    "projectTitle": "Root Network",
+    "title": "Grant writer for urban ecology and environmental justice funding",
+    "description": "Need a grant writer experienced with urban ecology, environmental justice, and community infrastructure grants. The project is well-positioned for EPA environmental justice grants, urban forestry programs, and arts + environment foundations.",
+    "category": "Funding",
+    "status": "Open",
+    "skillsNeeded": [
+      "Grant writing",
+      "Environmental justice",
+      "Urban ecology funding",
+      "Community infrastructure grants"
+    ],
+    "estimatedScope": "Project-based, 25–30 hours",
+    "rewardDescription": "Percentage-based on successful grants. Flat fee option available.",
+    "contactEmail": "studio@rootnetwork.org",
+    "contactEmailSubject": "Collaboration Interest: Grant Writer for Root Network"
   }
 ]

@@ -53,6 +53,7 @@
     "overviewBody": "Rooted in the geometry of the queen's conch shell and built entirely from bamboo, Resonance is designed to be entered, climbed, listened to, and shared. The experience is created collectively rather than observed from a distance — participants spiral through stairs, nets, ladders, and platforms, emerging at the top with a shared sense of place and presence.",
     "leadArtistName": "Elliot Fabri",
     "leadArtistBio": "Founder and project lead. Creative direction, vision, and overall project development.",
+    "leadArtistPhoto": "/assets/images/team/elliot-fabri.png",
     "collaborators": [
       {
         "name": "Ed Wilkes",
@@ -75,7 +76,7 @@
     "eyebrow": "Ecological Design | Architecture",
     "shortDescription": "A regenerative community pavilion designed to restore degraded urban land through living architecture — integrating constructed wetlands and community gathering space.",
     "stage": "Design Development",
-    "status": "draft",
+    "status": "published",
     "domains": [
       "Ecological Design",
       "Architecture"
@@ -104,7 +105,7 @@
     "eyebrow": "Engineering | Experimental Technology",
     "shortDescription": "A kinetic light sculpture for public waterfront spaces — hundreds of solar-powered responsive light elements that move with wind and water currents.",
     "stage": "Engineering",
-    "status": "draft",
+    "status": "published",
     "domains": [
       "Engineering",
       "Immersive Art",
@@ -134,7 +135,7 @@
     "eyebrow": "Material Innovation | Ecological Design",
     "shortDescription": "An acoustic installation where material research and sensory architecture converge into a single living atmosphere.",
     "stage": "Design Development",
-    "status": "draft",
+    "status": "published",
     "domains": [
       "Material Innovation",
       "Ecological Design",
@@ -164,7 +165,7 @@
     "eyebrow": "Public Space | Community Infrastructure",
     "shortDescription": "A public shade and gathering system designed for workshops, community rituals, and civic activation.",
     "stage": "Concept",
-    "status": "draft",
+    "status": "published",
     "domains": [
       "Architecture",
       "Public Space"
@@ -193,7 +194,7 @@
     "eyebrow": "Architecture | Ecological Design",
     "shortDescription": "A solar-responsive gathering structure that tracks light cycles, generating energy while shading public space below.",
     "stage": "Engineering",
-    "status": "draft",
+    "status": "published",
     "domains": [
       "Architecture",
       "Ecological Design",
@@ -223,7 +224,7 @@
     "eyebrow": "Immersive Art | Environmental Systems",
     "shortDescription": "An underwater-inspired immersive environment using projection, sound, and kinetic fabric to evoke tidal movement.",
     "stage": "Fundraising",
-    "status": "draft",
+    "status": "published",
     "domains": [
       "Immersive Art",
       "Architecture"
@@ -252,7 +253,7 @@
     "eyebrow": "Concept | Public Space",
     "shortDescription": "A coastal gathering structure shaped by ecology, ritual use, and public encounter at the edge of land and sea.",
     "stage": "Concept",
-    "status": "draft",
+    "status": "published",
     "domains": [
       "Architecture",
       "Ecological Design",
@@ -282,7 +283,7 @@
     "eyebrow": "Ecological Design | Social Impact",
     "shortDescription": "A living infrastructure project embedding ecological corridors into urban neighborhoods through art and participatory design.",
     "stage": "Design Development",
-    "status": "draft",
+    "status": "published",
     "domains": [
       "Ecological Design",
       "Public Space",

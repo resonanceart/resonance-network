@@ -4,8 +4,8 @@ import { Badge } from '@/components/ui/Badge'
 import { ProjectGalleryGrid } from '@/components/ProjectGalleryGrid'
 import { CollaborationTaskCard } from '@/components/CollaborationTaskCard'
 import { TeamCard } from '@/components/TeamCard'
-import projectsData from '../../../../../data/projects.json'
-import tasksData from '../../../../../data/tasks.json'
+import projectsData from '../../../../data/projects.json'
+import tasksData from '../../../../data/tasks.json'
 import type { Project, CollaborationTask } from '@/types'
 import type { Metadata } from 'next'
 
@@ -151,11 +151,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
                 <TeamCard
                   name={project.leadArtistName}
                   bio={project.leadArtistBio || ''}
-                  photo={
-                    project.slug === 'resonance'
-                      ? '/assets/images/team/elliot-fabri.png'
-                      : undefined
-                  }
+                  photo={project.leadArtistPhoto}
                 />
               )}
               {project.collaborators.map(c => (

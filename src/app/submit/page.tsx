@@ -72,7 +72,7 @@ export default function SubmitPage() {
           <h2>Ready to Begin?</h2>
           <p>Share your project with us — we&apos;d love to learn about your vision.</p>
           <a
-            href="https://resonance-network.typeform.com/submit"
+            href="https://form.typeform.com/to/Szk6kJmX"
             className="btn btn--primary btn--large"
             target="_blank"
             rel="noopener noreferrer"

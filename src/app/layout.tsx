@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://resonancenetwork.com'),
   title: 'Resonance Network — Curated Projects at the Intersection of Art, Architecture & Ecology',
   description: 'A curated, artist-led platform for large-scale immersive and regenerative projects. From vision to reality, together.',
   openGraph: {

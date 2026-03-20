@@ -6,7 +6,6 @@ import { useTheme } from '@/components/ThemeProvider'
 import { MobileNav } from './MobileNav'
 
 const navLinks = [
-  { href: '/', label: 'Projects' },
   { href: '/collaborate', label: 'Collaborate' },
   { href: '/about', label: 'About' },
 ]
