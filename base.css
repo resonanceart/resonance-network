@@ -1,0 +1,244 @@
+/* ============================================================
+   Resonance Network — base.css
+   Reset, design tokens, base typography, utility classes
+   ============================================================ */
+
+/* --- Reset --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+input, button, textarea, select {
+  font: inherit;
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* --- Design Tokens --- */
+:root {
+  /* Typography */
+  --font-display: 'Zodiak', Georgia, serif;
+  --font-body: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Type scale */
+  --text-xs: clamp(0.75rem, 0.7rem + 0.2vw, 0.8125rem);
+  --text-sm: clamp(0.8125rem, 0.77rem + 0.2vw, 0.875rem);
+  --text-base: clamp(0.9375rem, 0.9rem + 0.2vw, 1rem);
+  --text-lg: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+  --text-xl: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  --text-2xl: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+  --text-3xl: clamp(1.875rem, 1.4rem + 1.8vw, 2.5rem);
+  --text-hero: clamp(2.25rem, 1.6rem + 2.8vw, 3.5rem);
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+
+  /* Transitions */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+
+  /* Layout */
+  --container-max: 1200px;
+  --container-wide: 1400px;
+  --content-width: 65ch;
+  --gutter: clamp(1rem, 3vw, 2rem);
+
+  /* Light mode (default) */
+  --color-bg: #F5F3EE;
+  --color-surface: #EEECE6;
+  --color-surface-alt: #E7E4DD;
+  --color-border: #D4D1CA;
+  --color-text: #1A1A1A;
+  --color-text-secondary: #4A4A47;
+  --color-text-muted: #7A7974;
+  --color-text-faint: #BAB9B4;
+  --color-primary: #1A6B6A;
+  --color-primary-hover: #145755;
+  --color-primary-light: rgba(26, 107, 106, 0.08);
+  --color-accent-warm: #A0522D;
+  --color-card-bg: #FAFAF7;
+  --color-card-border: #E7E4DD;
+  --color-hero-overlay: rgba(20, 19, 18, 0.55);
+
+  /* Badge colors — muted earth tones / desaturated jewels */
+  --badge-engineering: #5B7B6F;
+  --badge-architecture: #6B7B8D;
+  --badge-fabrication: #8B6B5D;
+  --badge-production: #7B6B8B;
+  --badge-funding: #6B8B6B;
+  --badge-admin: #8B7B6B;
+  --badge-domain: #5D7B8B;
+  --badge-pathway: #7B6B5D;
+  --badge-stage: #1A6B6A;
+
+  /* Status */
+  --color-open: #437A22;
+  --color-open-bg: rgba(67, 122, 34, 0.1);
+  --color-in-progress: #964219;
+  --color-filled: #7A7974;
+}
+
+/* Dark mode */
+[data-theme="dark"] {
+  --color-bg: #141312;
+  --color-surface: #1C1B19;
+  --color-surface-alt: #242320;
+  --color-border: #393836;
+  --color-text: #E0DEDA;
+  --color-text-secondary: #B8B6B2;
+  --color-text-muted: #8A8884;
+  --color-text-faint: #5A5957;
+  --color-primary: #3A9B9A;
+  --color-primary-hover: #2A8584;
+  --color-primary-light: rgba(58, 155, 154, 0.1);
+  --color-card-bg: #1E1D1B;
+  --color-card-border: #333230;
+  --color-hero-overlay: rgba(20, 19, 18, 0.7);
+
+  --badge-engineering: #6D9684;
+  --badge-architecture: #7D8D9F;
+  --badge-fabrication: #9D7D6F;
+  --badge-production: #8D7D9D;
+  --badge-funding: #7D9D7D;
+  --badge-admin: #9D8D7D;
+  --badge-domain: #6F8D9D;
+  --badge-pathway: #8D7D6F;
+  --badge-stage: #3A9B9A;
+
+  --color-open: #6DAA45;
+  --color-open-bg: rgba(109, 170, 69, 0.12);
+  --color-in-progress: #BB653B;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.35);
+}
+
+/* --- Base Styles --- */
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  transition: background-color var(--duration-normal) var(--ease-out),
+              color var(--duration-normal) var(--ease-out);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: var(--text-hero); }
+h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-2xl); }
+h4 { font-size: var(--text-xl); }
+
+p {
+  line-height: 1.65;
+  color: var(--color-text-secondary);
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+::selection {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* --- Utility Classes --- */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+
+.container--wide {
+  max-width: var(--container-wide);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
