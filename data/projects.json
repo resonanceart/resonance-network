@@ -1,0 +1,308 @@
+[
+  {
+    "id": "resonance",
+    "slug": "resonance",
+    "title": "Resonance",
+    "eyebrow": "Architecture | Immersive Art",
+    "shortDescription": "A climbable, large-scale bamboo queen's conch shell that transforms sound, light, and movement into a shared ritual journey.",
+    "stage": "Fundraising",
+    "status": "published",
+    "domains": [
+      "Architecture",
+      "Immersive Art",
+      "Material Innovation",
+      "Ecological Design"
+    ],
+    "pathways": [
+      "Public Art",
+      "Exhibition / Cultural",
+      "Festival Installation",
+      "Hospitality"
+    ],
+    "heroImage": {
+      "url": "/assets/images/projects/money-shot.png",
+      "alt": "Resonance — climbable bamboo conch shell installation at dusk"
+    },
+    "galleryImages": [
+      {
+        "url": "/assets/images/projects/resonance-exterior.jpg",
+        "alt": "Resonance exterior — bamboo conch shell structure at scale"
+      },
+      {
+        "url": "/assets/images/projects/interior-immersive.jpeg",
+        "alt": "Interior of Resonance — warm light and climbing structure"
+      },
+      {
+        "url": "/assets/images/projects/top-down.png",
+        "alt": "Top-down view of Resonance spiral structure"
+      },
+      {
+        "url": "/assets/images/projects/coastal-entry.png",
+        "alt": "Coastal entry concept for Resonance"
+      },
+      {
+        "url": "/assets/images/projects/people-dancing.jpg",
+        "alt": "Participants moving through Resonance"
+      },
+      {
+        "url": "/assets/images/projects/resonance-interior.jpg",
+        "alt": "Resonance interior atmosphere"
+      }
+    ],
+    "overviewLead": "Resonance invites people into deeper awareness through immersive architecture, sound, light, and collective movement.",
+    "overviewBody": "Rooted in the geometry of the queen's conch shell and built entirely from bamboo, Resonance is designed to be entered, climbed, listened to, and shared. The experience is created collectively rather than observed from a distance — participants spiral through stairs, nets, ladders, and platforms, emerging at the top with a shared sense of place and presence.",
+    "leadArtistName": "Elliot Fabri",
+    "leadArtistBio": "Founder and project lead. Creative direction, vision, and overall project development.",
+    "collaborators": [
+      {
+        "name": "Ed Wilkes",
+        "role": "Structural design and parametric modeling. Engineering development and physical modeling studies.",
+        "photo": "/assets/images/team/ed-wilkes.png"
+      },
+      {
+        "name": "Luis Echeverria",
+        "role": "Architectural construction and fabrication coordination with bamboo build partners.",
+        "photo": "/assets/images/team/luis-echeverria.png"
+      }
+    ],
+    "scale": "Three-story climbable installation",
+    "contactEmail": "hello@resonanceartcollective.com"
+  },
+  {
+    "id": "terra-nexus",
+    "slug": "terra-nexus",
+    "title": "Terra Nexus",
+    "eyebrow": "Ecological Design | Architecture",
+    "shortDescription": "A regenerative community pavilion designed to restore degraded urban land through living architecture — integrating constructed wetlands and community gathering space.",
+    "stage": "Design Development",
+    "status": "draft",
+    "domains": [
+      "Ecological Design",
+      "Architecture"
+    ],
+    "pathways": [
+      "Public Art",
+      "Community Infrastructure"
+    ],
+    "heroImage": {
+      "url": "https://images.adsttc.com/media/images/638d/8b1e/585a/8e4f/4753/33c0/large_jpg/sustainability-is-sparse-the-need-for-regenerative-architecture_1.jpg?1670220581",
+      "alt": "Regenerative community pavilion with green roof, constructed wetlands, and rammed earth walls in an urban setting"
+    },
+    "galleryImages": [],
+    "overviewLead": "Terra Nexus transforms degraded urban land into living community infrastructure.",
+    "overviewBody": "A regenerative community pavilion integrating constructed wetlands, rammed earth walls, and community gathering spaces. Designed to serve as both ecological remediation and social gathering infrastructure.",
+    "leadArtistName": "Jordan Clarke",
+    "leadArtistBio": "Ecological designer and architect focused on regenerative urban systems.",
+    "collaborators": [],
+    "scale": "Community-scale pavilion, 2,000–4,000 sq ft",
+    "contactEmail": "jordan@terranexus.org"
+  },
+  {
+    "id": "luminous-currents",
+    "slug": "luminous-currents",
+    "title": "Luminous Currents",
+    "eyebrow": "Engineering | Experimental Technology",
+    "shortDescription": "A kinetic light sculpture for public waterfront spaces — hundreds of solar-powered responsive light elements that move with wind and water currents.",
+    "stage": "Engineering",
+    "status": "draft",
+    "domains": [
+      "Engineering",
+      "Immersive Art",
+      "Public Space"
+    ],
+    "pathways": [
+      "Public Art",
+      "Festival Installation"
+    ],
+    "heroImage": {
+      "url": "https://cdn.sanity.io/images/cxgd3urn/production/24807b58fc035744fd876230bc4547fb12ce18f4-1542x896.jpg?w=1200&h=697&q=85&fit=crop&auto=format",
+      "alt": "A kinetic light sculpture for public waterfront spaces with hundreds of solar-powered responsive light elements"
+    },
+    "galleryImages": [],
+    "overviewLead": "Luminous Currents animates the interface between water, wind, and light.",
+    "overviewBody": "300–500 slender stainless steel masts rise from a waterfront plaza, each topped with a solar-powered LED element that responds to wind and water sensor data in real time.",
+    "leadArtistName": "Ingrid Voss",
+    "leadArtistBio": "Artist and engineer working at the intersection of kinetic sculpture and ecological data visualization.",
+    "collaborators": [],
+    "scale": "300–500 element installation, waterfront scale",
+    "contactEmail": "studio@ingridvoss.nl"
+  },
+  {
+    "id": "mycelium-sound-chamber",
+    "slug": "mycelium-sound-chamber",
+    "title": "Mycelium Sound Chamber",
+    "eyebrow": "Material Innovation | Ecological Design",
+    "shortDescription": "An acoustic installation where material research and sensory architecture converge into a single living atmosphere.",
+    "stage": "Design Development",
+    "status": "draft",
+    "domains": [
+      "Material Innovation",
+      "Ecological Design",
+      "Immersive Art"
+    ],
+    "pathways": [
+      "Exhibition / Cultural",
+      "Festival Installation"
+    ],
+    "heroImage": {
+      "url": "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800&q=80&fit=crop",
+      "alt": "Mycelium Sound Chamber — organic acoustic installation"
+    },
+    "galleryImages": [],
+    "overviewLead": "A new kind of acoustic space grown from living materials.",
+    "overviewBody": "The Mycelium Sound Chamber explores how fungal networks can be shaped into acoustic architecture — combining material science, acoustic engineering, and sensory design into a single immersive environment.",
+    "leadArtistName": "Sera Okafor",
+    "leadArtistBio": "Artist and material researcher working with biological materials in architectural contexts.",
+    "collaborators": [],
+    "scale": "Room-scale installation, 800–1200 sq ft",
+    "contactEmail": "studio@seraokafor.com"
+  },
+  {
+    "id": "canopy-commons",
+    "slug": "canopy-commons",
+    "title": "Canopy Commons",
+    "eyebrow": "Public Space | Community Infrastructure",
+    "shortDescription": "A public shade and gathering system designed for workshops, community rituals, and civic activation.",
+    "stage": "Concept",
+    "status": "draft",
+    "domains": [
+      "Architecture",
+      "Public Space"
+    ],
+    "pathways": [
+      "Community Infrastructure",
+      "Public Art"
+    ],
+    "heroImage": {
+      "url": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&fit=crop",
+      "alt": "Canopy Commons — public shade and gathering structure"
+    },
+    "galleryImages": [],
+    "overviewLead": "A modular shade system that activates public space for community gathering and civic life.",
+    "overviewBody": "Canopy Commons is a modular tensile shade system designed for deployment in underserved public spaces — parks, plazas, and street corners — creating covered areas for workshops, markets, ceremonies, and everyday gathering.",
+    "leadArtistName": "Marcus Osei",
+    "leadArtistBio": "Architect and community organizer focused on equitable public space design.",
+    "collaborators": [],
+    "scale": "Modular, variable deployment size",
+    "contactEmail": "studio@marcosei.com"
+  },
+  {
+    "id": "solaris-pavilion",
+    "slug": "solaris-pavilion",
+    "title": "Solaris Pavilion",
+    "eyebrow": "Architecture | Ecological Design",
+    "shortDescription": "A solar-responsive gathering structure that tracks light cycles, generating energy while shading public space below.",
+    "stage": "Engineering",
+    "status": "draft",
+    "domains": [
+      "Architecture",
+      "Ecological Design",
+      "Engineering"
+    ],
+    "pathways": [
+      "Public Art",
+      "Community Infrastructure"
+    ],
+    "heroImage": {
+      "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80&fit=crop",
+      "alt": "Solaris Pavilion — solar-tracking gathering structure"
+    },
+    "galleryImages": [],
+    "overviewLead": "A structure that generates its own energy while serving as a public gathering place.",
+    "overviewBody": "The Solaris Pavilion uses a solar-tracking canopy system to shade public space while generating renewable energy. The structure responds to daily and seasonal light cycles, creating a dynamic relationship between architecture, climate, and community.",
+    "leadArtistName": "Yuki Tanaka",
+    "leadArtistBio": "Architect and sustainable systems designer focused on energy-generating public infrastructure.",
+    "collaborators": [],
+    "scale": "Pavilion-scale, 3,000–5,000 sq ft canopy",
+    "contactEmail": "studio@yukitanaka.jp"
+  },
+  {
+    "id": "deep-current",
+    "slug": "deep-current",
+    "title": "Deep Current",
+    "eyebrow": "Immersive Art | Environmental Systems",
+    "shortDescription": "An underwater-inspired immersive environment using projection, sound, and kinetic fabric to evoke tidal movement.",
+    "stage": "Fundraising",
+    "status": "draft",
+    "domains": [
+      "Immersive Art",
+      "Architecture"
+    ],
+    "pathways": [
+      "Exhibition / Cultural",
+      "Festival Installation"
+    ],
+    "heroImage": {
+      "url": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80&fit=crop",
+      "alt": "Deep Current — underwater-inspired immersive environment"
+    },
+    "galleryImages": [],
+    "overviewLead": "An immersive ocean experience built from light, sound, and moving fabric.",
+    "overviewBody": "Deep Current creates a complete sensory environment inspired by the deep ocean — a space where visitors feel submerged in movement, light, and sound without water. Kinetic fabric structures move in choreographed patterns while spatial audio and projection create the sensation of being within a living tidal system.",
+    "leadArtistName": "Amara Diallo",
+    "leadArtistBio": "Interdisciplinary artist working with immersive environments and aquatic ecosystems as artistic material.",
+    "collaborators": [],
+    "scale": "Large-scale gallery or pavilion installation",
+    "contactEmail": "studio@amaradiallo.com"
+  },
+  {
+    "id": "tidal-pavilion",
+    "slug": "tidal-pavilion",
+    "title": "Tidal Pavilion",
+    "eyebrow": "Concept | Public Space",
+    "shortDescription": "A coastal gathering structure shaped by ecology, ritual use, and public encounter at the edge of land and sea.",
+    "stage": "Concept",
+    "status": "draft",
+    "domains": [
+      "Architecture",
+      "Ecological Design",
+      "Public Space"
+    ],
+    "pathways": [
+      "Public Art",
+      "Community Infrastructure"
+    ],
+    "heroImage": {
+      "url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80&fit=crop",
+      "alt": "Tidal Pavilion — coastal gathering structure"
+    },
+    "galleryImages": [],
+    "overviewLead": "A structure that belongs to the tidal edge — shaped by the rhythms of land and sea.",
+    "overviewBody": "The Tidal Pavilion proposes a coastal gathering space whose form emerges from tidal ecology and human ritual. Designed for communities at the water's edge, it frames encounter, ceremony, and daily use within an architecture that acknowledges the dynamism of coastal environments.",
+    "leadArtistName": "Raia Fatu",
+    "leadArtistBio": "Architect and cultural practitioner focused on Pacific coastal communities and tidal ecology.",
+    "collaborators": [],
+    "scale": "Coastal pavilion, site-specific",
+    "contactEmail": "studio@raiafatu.com"
+  },
+  {
+    "id": "root-network",
+    "slug": "root-network",
+    "title": "Root Network",
+    "eyebrow": "Ecological Design | Social Impact",
+    "shortDescription": "A living infrastructure project embedding ecological corridors into urban neighborhoods through art and participatory design.",
+    "stage": "Design Development",
+    "status": "draft",
+    "domains": [
+      "Ecological Design",
+      "Public Space",
+      "Architecture"
+    ],
+    "pathways": [
+      "Community Infrastructure",
+      "Public Art"
+    ],
+    "heroImage": {
+      "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80&fit=crop",
+      "alt": "Root Network — ecological corridors in urban neighborhoods"
+    },
+    "galleryImages": [],
+    "overviewLead": "Embedding ecological corridors into the fabric of urban neighborhoods.",
+    "overviewBody": "Root Network is a participatory infrastructure project that works with urban communities to design and install ecological corridors — continuous green and permeable pathways that connect fragmented urban nature. The project uses art, participatory design, and community engagement to embed ecological thinking into neighborhood planning.",
+    "leadArtistName": "Fatima Al-Hassan",
+    "leadArtistBio": "Landscape architect and community organizer specializing in urban ecological design and grassroots infrastructure.",
+    "collaborators": [],
+    "scale": "Neighborhood-scale, multi-block",
+    "contactEmail": "studio@rootnetwork.org"
+  }
+]

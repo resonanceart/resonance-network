@@ -1,0 +1,189 @@
+[
+  {
+    "id": "resonance-structural-engineer",
+    "projectId": "resonance",
+    "projectTitle": "Resonance",
+    "title": "Structural engineer to validate acoustic chamber load paths",
+    "description": "We need a structural engineer experienced with curved timber and composite structures to review and validate the load path design for the main acoustic chambers.",
+    "category": "Engineering",
+    "status": "Open",
+    "skillsNeeded": [
+      "Structural analysis",
+      "Timber construction",
+      "Curved structures",
+      "FEA modeling"
+    ],
+    "estimatedScope": "One-off, 15–25 hours",
+    "rewardDescription": "Paid engagement — budget allocated. Credit as collaborator.",
+    "contactEmail": "maya@resonance.art",
+    "contactEmailSubject": "Collaboration Interest: Structural Engineer for Resonance"
+  },
+  {
+    "id": "resonance-lighting-designer",
+    "projectId": "resonance",
+    "projectTitle": "Resonance",
+    "title": "Lighting designer for responsive ambient system",
+    "description": "Seeking a lighting designer to develop the responsive ambient lighting system that integrates with acoustic sensors. Must work with low-voltage LED systems and DMX or similar control protocols.",
+    "category": "Production",
+    "status": "Open",
+    "skillsNeeded": [
+      "Lighting design",
+      "DMX programming",
+      "Interactive systems",
+      "LED systems"
+    ],
+    "estimatedScope": "Ongoing, 40–60 hours total",
+    "rewardDescription": "Paid engagement with phased milestones. Full credit as collaborator.",
+    "contactEmail": "maya@resonance.art",
+    "contactEmailSubject": "Collaboration Interest: Lighting Designer for Resonance"
+  },
+  {
+    "id": "resonance-grant-writer",
+    "projectId": "resonance",
+    "projectTitle": "Resonance",
+    "title": "Grant writer with experience in public art / cultural funding",
+    "description": "Looking for a grant writer or funding strategist experienced with public art commissions, NEA grants, and cultural foundation funding. We have a strong project package and need help with 2–3 targeted applications.",
+    "category": "Funding",
+    "status": "Open",
+    "skillsNeeded": [
+      "Grant writing",
+      "Arts funding",
+      "NEA applications",
+      "Budget narratives"
+    ],
+    "estimatedScope": "Project-based, 20–30 hours over 2 months",
+    "rewardDescription": "Percentage-based compensation on successful grants. Negotiable flat fee available.",
+    "contactEmail": "maya@resonance.art",
+    "contactEmailSubject": "Collaboration Interest: Grant Writer for Resonance"
+  },
+  {
+    "id": "resonance-funding",
+    "projectId": "resonance",
+    "projectTitle": "Resonance",
+    "title": "Fiscal sponsor or aligned funding partner",
+    "description": "Seeking a fiscal sponsor or direct funding partner aligned with public art, ecological design, and immersive cultural experiences. We have a strong project package including renderings, structural documentation, and budget models.",
+    "category": "Funding",
+    "status": "Open",
+    "skillsNeeded": [
+      "Public art funding",
+      "Fiscal sponsorship",
+      "Arts foundations"
+    ],
+    "estimatedScope": "Ongoing relationship through production",
+    "rewardDescription": null,
+    "contactEmail": "hello@resonanceartcollective.com",
+    "contactEmailSubject": "Funding Inquiry: Resonance via Resonance Network"
+  },
+  {
+    "id": "resonance-site-partner",
+    "projectId": "resonance",
+    "projectTitle": "Resonance",
+    "title": "Site partner — festival, museum, or civic context",
+    "description": "Looking for a museum, cultural festival, public art program, or civic partner with a site and audience where Resonance can be installed and experienced. Ideal contexts include outdoor festivals, beachside or park settings, or cultural institutions with outdoor programming capacity.",
+    "category": "Admin",
+    "status": "Open",
+    "skillsNeeded": [
+      "Site logistics",
+      "Cultural programming",
+      "Public engagement"
+    ],
+    "estimatedScope": "Installation partnership — one season or touring",
+    "rewardDescription": null,
+    "contactEmail": "hello@resonanceartcollective.com",
+    "contactEmailSubject": "Site Partner Inquiry: Resonance via Resonance Network"
+  },
+  {
+    "id": "resonance-grant-research",
+    "projectId": "resonance",
+    "projectTitle": "Resonance",
+    "title": "Grant research lead — arts, ecology, public space",
+    "description": "Help map aligned grant opportunities across arts, ecology, and public-space funding. We need someone who can identify the best-fit foundations, government programs, and commissions for a project at the intersection of bamboo architecture, immersive art, and public gathering.",
+    "category": "Admin",
+    "status": "Open",
+    "skillsNeeded": [
+      "Grant research",
+      "Arts funding",
+      "Environmental foundations"
+    ],
+    "estimatedScope": "Project-based, 15–25 hours",
+    "rewardDescription": "Paid engagement",
+    "contactEmail": "hello@resonanceartcollective.com",
+    "contactEmailSubject": "Grant Research Inquiry: Resonance via Resonance Network"
+  },
+  {
+    "id": "terra-nexus-structural-engineer",
+    "projectId": "terra-nexus",
+    "projectTitle": "Terra Nexus",
+    "title": "Structural engineer for rammed earth wall system",
+    "description": "Need a structural engineer with rammed earth or alternative masonry experience to validate the wall system design and provide structural calculations for permitting.",
+    "category": "Engineering",
+    "status": "Open",
+    "skillsNeeded": [
+      "Rammed earth",
+      "Structural engineering",
+      "Permitting",
+      "Alt. construction"
+    ],
+    "estimatedScope": "One-off, 20–30 hours",
+    "rewardDescription": "Paid engagement. Full credit on project documentation.",
+    "contactEmail": "jordan@terranexus.org",
+    "contactEmailSubject": "Collaboration Interest: Structural Engineer for Terra Nexus"
+  },
+  {
+    "id": "terra-nexus-landscape-architect",
+    "projectId": "terra-nexus",
+    "projectTitle": "Terra Nexus",
+    "title": "Landscape architect for constructed wetland design",
+    "description": "Seeking a landscape architect or ecological engineer experienced with constructed wetlands to lead the design of the integrated stormwater/remediation system. Experience with urban brownfield sites preferred.",
+    "category": "Architecture",
+    "status": "Open",
+    "skillsNeeded": [
+      "Constructed wetlands",
+      "Landscape architecture",
+      "Stormwater design",
+      "Brownfield remediation"
+    ],
+    "estimatedScope": "Ongoing, 60–80 hours total",
+    "rewardDescription": "Paid engagement with phased milestones. Named collaborator.",
+    "contactEmail": "jordan@terranexus.org",
+    "contactEmailSubject": "Collaboration Interest: Landscape Architect for Terra Nexus"
+  },
+  {
+    "id": "luminous-currents-fabrication",
+    "projectId": "luminous-currents",
+    "projectTitle": "Luminous Currents",
+    "title": "Fabrication partner for marine-grade stainless steel mast production",
+    "description": "Seeking a fabrication shop or manufacturing partner capable of producing 300–500 slender stainless steel masts (marine grade 316L) with integrated cable channels. Prototypes exist — need a partner for production scale.",
+    "category": "Fabrication",
+    "status": "Open",
+    "skillsNeeded": [
+      "SS fabrication",
+      "Marine-grade metalwork",
+      "Production mfg.",
+      "CNC bending"
+    ],
+    "estimatedScope": "Production partnership, 3–6 months",
+    "rewardDescription": "Paid fabrication contract. Named fabrication partner.",
+    "contactEmail": "studio@ingridvoss.nl",
+    "contactEmailSubject": "Collaboration Interest: Fabrication Partner for Luminous Currents"
+  },
+  {
+    "id": "luminous-currents-public-art-consultant",
+    "projectId": "luminous-currents",
+    "projectTitle": "Luminous Currents",
+    "title": "Public art consultant for commission applications",
+    "description": "Looking for a public art consultant experienced with municipal programs and commission processes. Need help identifying 3–5 suitable commission opportunities and preparing competitive applications.",
+    "category": "Admin",
+    "status": "Open",
+    "skillsNeeded": [
+      "Public art commissions",
+      "Municipal RFP",
+      "Proposal writing",
+      "Site analysis"
+    ],
+    "estimatedScope": "Project-based, 15–20 hours over 2 months",
+    "rewardDescription": "Paid consulting engagement. Success bonus on secured commissions.",
+    "contactEmail": "studio@ingridvoss.nl",
+    "contactEmailSubject": "Collaboration Interest: Public Art Consultant for Luminous Currents"
+  }
+]
