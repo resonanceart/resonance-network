@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <main>
+    <>
       {/* Page Header */}
       <section className="page-header">
         <div className="container">
@@ -174,6 +174,6 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-    </main>
+    </>
   )
 }

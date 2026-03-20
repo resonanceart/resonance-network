@@ -1,18 +1,20 @@
 import type { Metadata } from 'next'
+import './globals.css'
+import { ThemeProvider } from '@/components/ThemeProvider'
+import { Header } from '@/components/layout/Header'
+import { Footer } from '@/components/layout/Footer'
 
 export const metadata: Metadata = {
-  title: {
-    default: 'Resonance Network',
-    template: '%s — Resonance Network',
+  title: 'Resonance Network — Curated Projects at the Intersection of Art, Architecture & Ecology',
+  description: 'A curated, artist-led platform for large-scale immersive and regenerative projects. From vision to reality, together.',
+  openGraph: {
+    title: 'Resonance Network',
+    description: 'A curated, artist-led platform for large-scale immersive and regenerative projects.',
+    type: 'website',
   },
-  description: 'A curated, artist-led platform for large-scale immersive and regenerative projects.',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
@@ -34,7 +36,13 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <ThemeProvider>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+        </ThemeProvider>
+      </body>
     </html>
   )
 }

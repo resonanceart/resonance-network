@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function SubmitPage() {
   return (
-    <main>
+    <>
       {/* Page Header */}
       <section className="page-header">
         <div className="container">
@@ -81,6 +81,6 @@ export default function SubmitPage() {
           </a>
         </div>
       </section>
-    </main>
+    </>
   )
 }
