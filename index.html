@@ -1,255 +1,256 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Resonance Network</title>
-  <meta name="description" content="A curated network for visionary projects connecting art, architecture, technology, ecology, and social impact.">
-  <link rel="stylesheet" href="./styles.css">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resonance Network — Curated Projects at the Intersection of Art, Architecture & Ecology</title>
+<meta name="description" content="A curated, artist-led platform for large-scale immersive and regenerative projects. From vision to reality, together.">
+<meta property="og:title" content="Resonance Network">
+<meta property="og:description" content="A curated, artist-led platform for large-scale immersive and regenerative projects.">
+<meta property="og:type" content="website">
+
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,600,700&f[]=satoshi@300,400,500,700&display=swap">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="site-header">
+
+<!-- Header -->
+<header class="site-header">
+  <div class="container container--wide">
+    <a href="index.html" class="logo" aria-label="Resonance Network home">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="16" cy="16" r="4" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="16" cy="16" r="9" stroke="currentColor" stroke-width="1.2" opacity="0.6"/>
+        <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="0.9" opacity="0.3"/>
+      </svg>
+      <span class="logo-text">Resonance Network</span>
+    </a>
+
+    <nav class="nav-desktop" aria-label="Main navigation">
+      <a href="index.html" class="active">Projects</a>
+      <a href="collaborate.html">Collaborate</a>
+      <a href="about.html">About</a>
+      <a href="submit.html" class="nav-cta">Submit a Project</a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="theme-toggle" aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>
+        <svg class="icon-moon" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+      </button>
+      <button class="hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile Nav -->
+<nav class="nav-mobile" aria-label="Mobile navigation">
+  <a href="index.html">Projects</a>
+  <a href="collaborate.html">Collaborate</a>
+  <a href="about.html">About</a>
+  <a href="submit.html">Submit a Project</a>
+</nav>
+
+<main>
+  <!-- Hero -->
+  <section class="site-hero">
+    <img src="https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=1600&q=85&fit=crop" alt="Immersive light installation" class="site-hero__img">
+    <div class="site-hero__overlay"></div>
+    <div class="site-hero__content">
+      <h1 class="site-hero__title">A curated network for visionary projects shaping the future of art, architecture, technology, ecology, and social impact.</h1>
+      <p class="site-hero__sub">Discover ambitious ideas, connect with collaborators, and help bold projects move from concept to reality.</p>
+      <div class="site-hero__actions">
+        <a href="#projects" class="btn btn--primary btn--large">Explore Projects</a>
+        <a href="submit.html" class="btn btn--outline btn--large">Submit a Project</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar" id="projects">
     <div class="container">
-      <a class="brand" href="./index.html">
-        <img src="./assets/logos/resonance-logo-white.png" alt="Resonance logo">
-        <span class="brand-copy">
-          <strong>Resonance Network</strong>
-          <span>A curated network for visionary projects</span>
-        </span>
+      <span class="filter-label">Domains</span>
+      <div class="filter-group">
+        <button class="filter-btn active" type="button">All</button>
+        <button class="filter-btn" type="button">Architecture</button>
+        <button class="filter-btn" type="button">Immersive Art</button>
+        <button class="filter-btn" type="button">Ecological Design</button>
+        <button class="filter-btn" type="button">Public Space</button>
+      </div>
+      <span class="filter-label" style="margin-left: var(--space-4);">Stage</span>
+      <div class="filter-group">
+        <button class="filter-btn" type="button">Concept</button>
+        <button class="filter-btn" type="button">Design Development</button>
+        <button class="filter-btn" type="button">Engineering</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Gallery -->
+  <section class="container">
+    <div class="project-grid">
+
+      <!-- Project Card: Resonance -->
+      <a href="projects/resonance.html" class="project-card">
+        <img src="https://www.ignant.com/wp-content/uploads/2018/10/ignant-architecture-thomas-wing-evans-80hz-6.jpg"
+             alt="Interior view of acoustically tuned architectural chambers with curved timber surfaces and ambient lighting"
+             loading="lazy">
+        <div class="project-card__overlay"></div>
+        <div class="project-card__body">
+          <p class="project-card__eyebrow">Architecture | Immersive Art</p>
+          <h2 class="project-card__title">Resonance</h2>
+          <p class="project-card__desc">A large-scale immersive architectural environment where visitors move through acoustically tuned chambers that respond to human presence.</p>
+          <div class="badges-group">
+            <span class="badge badge--stage">Design Development</span>
+          </div>
+        </div>
       </a>
-      <nav class="nav-links" aria-label="Primary">
-        <a class="nav-link" href="#projects">Projects</a>
-        <a class="nav-link" href="#pathways">Pathways</a>
-        <a class="nav-link" href="#resources">Resources</a>
-        <a class="nav-link" href="./project.html">Project Page</a>
-        <a class="button outline" href="#join">Submit a Project</a>
-      </nav>
+
+      <!-- Project Card: Terra Nexus -->
+      <a href="projects/resonance.html" class="project-card">
+        <img src="https://images.adsttc.com/media/images/638d/8b1e/585a/8e4f/4753/33c0/large_jpg/sustainability-is-sparse-the-need-for-regenerative-architecture_1.jpg?1670220581"
+             alt="Regenerative community pavilion with green roof, constructed wetlands, and rammed earth walls in an urban setting"
+             loading="lazy">
+        <div class="project-card__overlay"></div>
+        <div class="project-card__body">
+          <p class="project-card__eyebrow">Ecological Design | Architecture</p>
+          <h2 class="project-card__title">Terra Nexus</h2>
+          <p class="project-card__desc">A regenerative community pavilion designed to restore degraded urban land through living architecture — integrating constructed wetlands and community gathering space.</p>
+          <div class="badges-group">
+            <span class="badge badge--stage">Design Development</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Project Card: Luminous Currents -->
+      <a href="projects/resonance.html" class="project-card">
+        <img src="https://cdn.sanity.io/images/cxgd3urn/production/24807b58fc035744fd876230bc4547fb12ce18f4-1542x896.jpg?w=1200&h=697&q=85&fit=crop&auto=format"
+             alt="A kinetic light sculpture for public waterfront spaces with hundreds of solar-powered responsive light elements"
+             loading="lazy">
+        <div class="project-card__overlay"></div>
+        <div class="project-card__body">
+          <p class="project-card__eyebrow">Engineering | Experimental Technology</p>
+          <h2 class="project-card__title">Luminous Currents</h2>
+          <p class="project-card__desc">A kinetic light sculpture for public waterfront spaces — hundreds of solar-powered responsive light elements that move with wind and water currents.</p>
+          <div class="badges-group">
+            <span class="badge badge--stage">Engineering</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Project Card: Mycelium Sound Chamber -->
+      <a href="projects/resonance.html" class="project-card">
+        <img src="https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800&q=80&fit=crop" alt="Mycelium Sound Chamber" loading="lazy">
+        <div class="project-card__overlay"></div>
+        <div class="project-card__body">
+          <p class="project-card__eyebrow">Material Innovation | Ecological Design</p>
+          <h2 class="project-card__title">Mycelium Sound Chamber</h2>
+          <p class="project-card__desc">An acoustic installation where material research and sensory architecture converge into a single living atmosphere.</p>
+          <div class="badges-group">
+            <span class="badge badge--stage">Design Development</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Project Card: Canopy Commons -->
+      <a href="projects/resonance.html" class="project-card">
+        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&fit=crop" alt="Canopy Commons" loading="lazy">
+        <div class="project-card__overlay"></div>
+        <div class="project-card__body">
+          <p class="project-card__eyebrow">Public Space | Community Infrastructure</p>
+          <h2 class="project-card__title">Canopy Commons</h2>
+          <p class="project-card__desc">A public shade and gathering system designed for workshops, community rituals, and civic activation.</p>
+          <div class="badges-group">
+            <span class="badge badge--stage">Concept</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Project Card: Solaris Pavilion -->
+      <a href="projects/resonance.html" class="project-card">
+        <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80&fit=crop" alt="Solaris Pavilion" loading="lazy">
+        <div class="project-card__overlay"></div>
+        <div class="project-card__body">
+          <p class="project-card__eyebrow">Architecture | Ecological Design</p>
+          <h2 class="project-card__title">Solaris Pavilion</h2>
+          <p class="project-card__desc">A solar-responsive gathering structure that tracks light cycles, generating energy while shading public space below.</p>
+          <div class="badges-group">
+            <span class="badge badge--stage">Engineering</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Project Card: Deep Current -->
+      <a href="projects/resonance.html" class="project-card">
+        <img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80&fit=crop" alt="Deep Current" loading="lazy">
+        <div class="project-card__overlay"></div>
+        <div class="project-card__body">
+          <p class="project-card__eyebrow">Immersive Art | Environmental Systems</p>
+          <h2 class="project-card__title">Deep Current</h2>
+          <p class="project-card__desc">An underwater-inspired immersive environment using projection, sound, and kinetic fabric to evoke tidal movement.</p>
+          <div class="badges-group">
+            <span class="badge badge--stage">Fundraising</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Project Card: Tidal Pavilion -->
+      <a href="projects/resonance.html" class="project-card">
+        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80&fit=crop" alt="Tidal Pavilion" loading="lazy">
+        <div class="project-card__overlay"></div>
+        <div class="project-card__body">
+          <p class="project-card__eyebrow">Concept | Public Space</p>
+          <h2 class="project-card__title">Tidal Pavilion</h2>
+          <p class="project-card__desc">A coastal gathering structure shaped by ecology, ritual use, and public encounter at the edge of land and sea.</p>
+          <div class="badges-group">
+            <span class="badge badge--stage">Concept</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Project Card: Root Network -->
+      <a href="projects/resonance.html" class="project-card">
+        <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80&fit=crop" alt="Root Network" loading="lazy">
+        <div class="project-card__overlay"></div>
+        <div class="project-card__body">
+          <p class="project-card__eyebrow">Ecological Design | Social Impact</p>
+          <h2 class="project-card__title">Root Network</h2>
+          <p class="project-card__desc">A living infrastructure project embedding ecological corridors into urban neighborhoods through art and participatory design.</p>
+          <div class="badges-group">
+            <span class="badge badge--stage">Design Development</span>
+          </div>
+        </div>
+      </a>
+
     </div>
-  </header>
+  </section>
+</main>
 
-  <main>
-    <section class="hero">
-      <div class="container hero-grid">
-        <article class="hero-main">
-          <img src="./assets/images/projects/money-shot.png" alt="Resonance bamboo shell render">
-          <div class="hero-copy">
-            <span class="script">Join the spiral</span>
-            <span class="eyebrow">Resonance Network is the platform</span>
-            <h1 class="hero-title">A curated network for projects shaped by art, architecture, nature, and human participation.</h1>
-            <p class="hero-text">Discover ambitious ideas, connect with collaborators, and help bold projects move from concept to reality. Resonance Network exists for projects that need more than a portfolio and more than a pitch deck.</p>
-            <div class="hero-actions">
-              <a class="button primary" href="#projects">Explore Projects</a>
-              <a class="button outline" href="./project.html">View Project Page</a>
-            </div>
-          </div>
-        </article>
-
-        <div class="hero-side-stack">
-          <article class="hero-side">
-            <img src="./assets/images/projects/coastal-entry.png" alt="Coastal architectural concept">
-            <div class="hero-side-copy">
-              <span class="eyebrow">Platform Position</span>
-              <h2 class="feature-title">A network for projects that need visibility, context, and collaborators.</h2>
-              <p class="panel-text">This is the layer where artists, builders, curators, and supporters can discover work with real cultural and developmental potential.</p>
-            </div>
-          </article>
-
-          <article class="hero-side">
-            <img src="./assets/images/projects/interior-immersive.jpeg" alt="Immersive interior environment">
-            <div class="hero-side-copy">
-              <span class="eyebrow">Voice</span>
-              <h2 class="feature-title">Architecture, nature, and human participation.</h2>
-              <p class="panel-text">The experience is not observation from a distance. It is movement, listening, gathering, and collective presence inside space.</p>
-            </div>
-          </article>
-        </div>
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-inner">
+      <p class="footer-mission">Helping serious, visionary spatial projects cross the gap from concept-ready to buildable reality.</p>
+      <div class="footer-links">
+        <a href="index.html">Projects</a>
+        <a href="collaborate.html">Collaborate</a>
+        <a href="about.html">About</a>
+        <a href="submit.html">Submit a Project</a>
+        <a href="mailto:hello@resonance.network">hello@resonance.network</a>
       </div>
-    </section>
-
-    <section id="projects" class="section">
-      <div class="container">
-        <div class="section-header">
-          <div>
-            <span class="script">Featured projects</span>
-            <h2 class="section-title">An image-first landscape of ideas with real pathways to become real.</h2>
-          </div>
-          <p class="lead">This homepage keeps the stronger parts of the earlier concept but simplifies the execution so it deploys more reliably. The gallery leads, the copy supports, and the atmosphere stays grounded in the Resonance voice.</p>
-        </div>
-
-        <div class="chips">
-          <span class="chip">All Projects</span>
-          <span class="chip">Domains</span>
-          <span class="chip">Pathways</span>
-          <span class="chip">Stages</span>
-          <span class="chip">Scale</span>
-        </div>
-
-        <div class="feature-list">
-          <article class="feature-card">
-            <img src="./assets/images/projects/resonance-exterior.jpg" alt="Resonance exterior render">
-            <div class="feature-copy">
-              <span class="eyebrow">Fundraising | Architecture | Immersive Art</span>
-              <h3 class="feature-title">Resonance</h3>
-              <p class="body-text">A climbable bamboo queen’s conch shell that transforms sound, light, and movement into a shared ritual journey. Built for exploration, play, listening, and collective presence.</p>
-              <div class="meta-row">
-                <span class="tag">Lead Creator: Elliot Fabri</span>
-                <span class="tag">Pathways: Public Art, Exhibition, Cultural Installation</span>
-              </div>
-            </div>
-          </article>
-
-          <div class="grid-two">
-            <article class="feature-card small">
-              <img src="./assets/images/projects/tidal-angle.png" alt="Tidal Pavilion concept">
-              <div class="feature-copy">
-                <span class="eyebrow">Concept | Public Space</span>
-                <h3 class="feature-title">Tidal Pavilion</h3>
-                <p class="body-text">A coastal gathering structure shaped by ecology, ritual use, and public encounter.</p>
-              </div>
-            </article>
-
-            <article class="feature-card small">
-              <img src="./assets/images/projects/night-scene.jpg" alt="Segmented Light Robot concept">
-              <div class="feature-copy">
-                <span class="eyebrow">Engineering | Experimental Technology</span>
-                <h3 class="feature-title">Segmented Light Robot</h3>
-                <p class="body-text">A responsive kinetic environment developed for cultural exhibition and experimental movement.</p>
-              </div>
-            </article>
-          </div>
-
-          <div class="grid-two">
-            <article class="feature-card small">
-              <img src="./assets/images/projects/resonance-interior.jpg" alt="Resonance interior atmosphere">
-              <div class="feature-copy">
-                <span class="eyebrow">Design Development | Ecological Design</span>
-                <h3 class="feature-title">Mycelium Sound Chamber</h3>
-                <p class="body-text">An acoustic installation where material research and sensory architecture become a single atmosphere.</p>
-              </div>
-            </article>
-
-            <article class="feature-card small">
-              <img src="./assets/images/projects/canopy-commons.png" alt="Canopy Commons concept">
-              <div class="feature-copy">
-                <span class="eyebrow">Production | Social Impact</span>
-                <h3 class="feature-title">Canopy Commons</h3>
-                <p class="body-text">A public shade and gathering system for workshops, community rituals, and civic use.</p>
-              </div>
-            </article>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="pathways" class="section">
-      <div class="container">
-        <div class="section-header">
-          <div>
-            <span class="script">Discover / connect / develop</span>
-            <h2 class="section-title">The network is built to help big ideas gather the people and support they need.</h2>
-          </div>
-          <p class="lead">The site should feel useful to creators and inspiring to outside viewers. These sections make the value legible without slipping into startup or nonprofit cliches.</p>
-        </div>
-
-        <div class="grid-three">
-          <article class="card">
-            <h3>Discover</h3>
-            <p class="body-text">Curated project visibility for work that often sits between disciplines and gets missed by standard platforms.</p>
-          </article>
-          <article class="card">
-            <h3>Connect</h3>
-            <p class="body-text">Pathways for artists, architects, engineers, fabricators, curators, producers, and supporters to find one another through projects.</p>
-          </article>
-          <article class="card">
-            <h3>Develop</h3>
-            <p class="body-text">Support structures for collaboration, funding context, proposal development, and future AI-assisted planning tools.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="container">
-        <div class="section-header">
-          <div>
-            <span class="script">Collaboration in action</span>
-            <h2 class="section-title">Open roles make the network feel alive.</h2>
-          </div>
-          <p class="lead">The platform should preview real opportunities for participation rather than only talking about community in the abstract.</p>
-        </div>
-
-        <div class="grid-three">
-          <article class="card">
-            <h3>Grant Research Lead</h3>
-            <p class="body-text">Help map aligned arts, ecology, and public-space opportunities for Resonance and related projects.</p>
-          </article>
-          <article class="card">
-            <h3>Structural Advisor</h3>
-            <p class="body-text">Review shell, canopy, and prefabricated systems for feasibility, sequencing, and material optimization.</p>
-          </article>
-          <article class="card">
-            <h3>Site Partner</h3>
-            <p class="body-text">Provide a museum, residency, festival, or civic context where a project can be tested, installed, or evolved.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section id="resources" class="section">
-      <div class="container">
-        <div class="section-header">
-          <div>
-            <span class="script">Resources and pathways</span>
-            <h2 class="section-title">The platform should feel credible to artists and legible to institutions.</h2>
-          </div>
-          <p class="lead">Resources, membership, and future tools are supporting layers. They build trust and momentum without overpowering the project-first experience.</p>
-        </div>
-
-        <div class="grid-three">
-          <article class="card">
-            <h3>For Creators</h3>
-            <p class="body-text">Submit projects, receive visibility, and connect with collaborators who can help move work forward.</p>
-          </article>
-          <article class="card">
-            <h3>For Collaborators</h3>
-            <p class="body-text">Find projects that need engineering, fabrication, design, production, strategy, or fundraising support.</p>
-          </article>
-          <article class="card">
-            <h3>For Curators and Supporters</h3>
-            <p class="body-text">Discover culturally meaningful work with clear developmental pathways and teams capable of delivering it.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section id="join" class="section">
-      <div class="container">
-        <article class="cta-panel">
-          <img src="./assets/images/projects/people-dancing.jpg" alt="Participants moving through Resonance">
-          <div class="cta-copy">
-            <span class="script">Membership is open</span>
-            <h2 class="section-title">Join while the network is still taking shape.</h2>
-            <p class="hero-text">Membership is currently free and centered on submission, visibility, collaboration opportunities, and future platform tools. The first invitation is simple: enter, explore, and participate.</p>
-            <div class="hero-actions">
-              <a class="button bronze" href="#">Submit a Project</a>
-              <a class="button outline" href="./project.html">View Project Page</a>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <div class="container">
-      <div>
-        <span class="script">Resonance</span>
-        <p class="footer-note">Architecture, nature, and human participation meeting inside a curated project network.</p>
-      </div>
-      <div>
-        <p class="footer-note">This v2 folder uses safer file naming and a simpler static structure for GitHub and Vercel deployment.</p>
+      <div class="footer-bottom">
+        <span class="footer-copyright">&copy; 2026 Resonance Network</span>
       </div>
     </div>
-  </footer>
+  </div>
+</footer>
+
+<script src="app.js"></script>
 </body>
 </html>
