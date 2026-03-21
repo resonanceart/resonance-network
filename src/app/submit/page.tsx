@@ -1,83 +1,99 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Submit a Project — Resonance Network',
-  description: "Share your project with Resonance Network. We're looking for concept-ready projects at the intersection of art, architecture, ecology, and social impact.",
-  openGraph: {
-    title: 'Submit a Project — Resonance Network',
-    description: 'Share your concept-ready project with a curated community of collaborators and experts.',
-    type: 'website',
+  title: 'Submit a Project',
+  description: "You've done the hard part — now find the collaborators, expertise, and pathways to make it real. Submit your project to Resonance Network.",
+  alternates: {
+    canonical: 'https://resonance.network/submit',
   },
+  openGraph: {
+    title: 'Submit a Project to Resonance Network',
+    description: 'You\'ve done the hard part — now find the people, pathways, and momentum to make it real.',
+    url: 'https://resonance.network/submit',
+    type: 'website',
+    images: [{ url: '/og-image.jpg' }],
+  },
+}
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Home',
+      item: 'https://resonance.network',
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Submit a Project',
+      item: 'https://resonance.network/submit',
+    },
+  ],
 }
 
 export default function SubmitPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+
       {/* Page Header */}
       <section className="page-header">
         <div className="container">
+          <nav aria-label="Breadcrumb" className="breadcrumb">
+            <a href="/">Home</a> <span aria-hidden="true">/</span> <span>Submit</span>
+          </nav>
           <p className="section-label">Submit</p>
-          <h1>Share Your Project</h1>
-          <p className="lead">We&apos;re looking for concept-ready projects at the intersection of art, architecture, ecology, and social impact — projects with real substance that need the right people and pathways to become reality.</p>
-        </div>
-      </section>
-
-      {/* What Belongs Here */}
-      <section className="submit-section">
-        <div className="container">
-          <h2>What Kinds of Projects Belong</h2>
-          <p>Resonance Network features curated, &quot;concept-ready&quot; projects — work that exists beyond the idea stage. You have images, drawings, a rough budget, artist statements, and a clear philosophy. What you need now is the ecosystem: collaborators, technical expertise, and pathways to move from vision to built reality.</p>
-          <p>Projects on the network span immersive installations, regenerative architecture, large-scale public art, interactive environments, ecological design, material innovation, and social impact infrastructure. The common thread is ambition, interdisciplinary practice, and a commitment to creating work that matters.</p>
+          <h1>You&apos;ve Done the Hard Part. Let Us Help With the Rest.</h1>
+          <p className="lead">If you have a large-scale creative project with real substance — images, plans, a clear vision — and you need collaborators, expertise, or pathways to make it real, this is the place.</p>
         </div>
       </section>
 
       {/* What to Prepare */}
       <section className="submit-section">
         <div className="container">
-          <h2>What to Prepare</h2>
-          <p style={{ marginBottom: 'var(--space-5)' }}>Before you begin, gather the following materials:</p>
+          <h2>Before You Begin</h2>
+          <p className="submit-section__intro">Gather these materials so your project can shine:</p>
           <ul className="prepare-list">
             <li><strong>Lead artist information</strong> — name, bio, portfolio or website link</li>
-            <li><strong>Project details</strong> — title, short description (2–3 sentences), and full project story/narrative</li>
+            <li><strong>Project details</strong> — title, short description (2&ndash;3 sentences), and full project story/narrative</li>
             <li><strong>Classification</strong> — project domains (what it is), pathways (how it may be realized), and current stage</li>
-            <li><strong>Images and renders</strong> — hero image plus 3–5 gallery images showing the project concept, materials, or models</li>
+            <li><strong>Images and renders</strong> — hero image plus 3&ndash;5 gallery images showing the project concept, materials, or models</li>
             <li><strong>Collaboration needs</strong> — specific roles or expertise your project is seeking, with descriptions of scope and skills needed</li>
             <li><strong>Contact information</strong> — how collaborators and the network can reach you</li>
           </ul>
         </div>
       </section>
 
-      {/* How Curation Works */}
-      <section className="submit-section">
-        <div className="container">
-          <h2>How Curation Works</h2>
-          <p>Every submission is reviewed for quality, alignment with network values, and project readiness. AI assists with initial processing, but a human curation team — practicing artists and makers — reviews and approves every project.</p>
-          <p>We review for clarity of materials, alignment with our values of regeneration, originality, and inclusivity, and whether the project has enough substance for collaborators and supporters to engage meaningfully.</p>
-        </div>
-      </section>
-
       {/* What to Expect */}
       <section className="submit-section">
         <div className="container">
-          <h2>What to Expect</h2>
-          <p>After you submit, our team will review your project within two weeks. You&apos;ll hear from us either way.</p>
+          <h2>After You Submit</h2>
+          <p>Our curation team reviews every project personally within two weeks. You&apos;ll hear from us either way.</p>
           <p>If your project is approved, we&apos;ll work with you to create your project page — a curated, visual anchor for your work on the network that you can share with funders, curators, and potential collaborators.</p>
-          <p>If your project isn&apos;t quite ready, you&apos;ll receive clear, specific feedback on what would strengthen your application — with an explicit invitation to resubmit when those elements are in place. Our message is never &quot;no.&quot; It&apos;s <em>&quot;not yet — and here&apos;s how to come back.&quot;</em></p>
+          <p>If your project isn&apos;t quite ready, you&apos;ll receive clear, specific feedback on what would strengthen your application — with an explicit invitation to resubmit.</p>
+          <p className="submit-about-link">Want to know more about our curation philosophy and values? <Link href="/about#process">Read about our process</Link>.</p>
         </div>
       </section>
 
       {/* CTA */}
       <section className="submit-cta">
         <div className="container">
-          <h2>Ready to Begin?</h2>
-          <p>Share your project with us — we&apos;d love to learn about your vision.</p>
+          <h2>Your Project Deserves the Right People Behind It</h2>
+          <p>The submission takes about 15 minutes. Every project is reviewed by practicing artists and makers — people who understand the work.</p>
           <a
             href="https://form.typeform.com/to/Szk6kJmX"
             className="btn btn--primary btn--large"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Submit Your Project
+            Start Your Submission
           </a>
         </div>
       </section>

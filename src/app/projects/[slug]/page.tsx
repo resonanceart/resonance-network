@@ -1,12 +1,13 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
 import { ProjectGalleryGrid } from '@/components/ProjectGalleryGrid'
 import { CollaborationTaskCard } from '@/components/CollaborationTaskCard'
 import { TeamCard } from '@/components/TeamCard'
 import projectsData from '../../../../data/projects.json'
 import tasksData from '../../../../data/tasks.json'
-import type { Project, CollaborationTask } from '@/types'
+import type { Project, CollaborationTask, Milestone, ProjectUpdate } from '@/types'
 import type { Metadata } from 'next'
 
 export async function generateStaticParams() {
@@ -22,15 +23,73 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const project = (projectsData as Project[]).find(p => p.slug === params.slug)
   if (!project) return {}
+  const title = `${project.title} — ${project.domains.slice(0, 2).join(' & ')} Project`
   return {
-    title: `${project.title} — Resonance Network`,
+    title,
     description: project.shortDescription,
+    alternates: {
+      canonical: `https://resonance.network/projects/${project.slug}`,
+    },
     openGraph: {
       title: project.title,
       description: project.shortDescription,
-      images: [{ url: project.heroImage.url, alt: project.heroImage.alt }],
-      type: 'website',
+      url: `https://resonance.network/projects/${project.slug}`,
+      images: [{ url: project.heroImage.url, alt: project.heroImage.alt, width: 1200, height: 630 }],
+      type: 'article',
     },
+    twitter: {
+      card: 'summary_large_image',
+      title: project.title,
+      description: project.shortDescription,
+      images: [project.heroImage.url],
+    },
+  }
+}
+
+function getProjectJsonLd(project: Project) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: project.title,
+    description: project.shortDescription,
+    url: `https://resonance.network/projects/${project.slug}`,
+    image: project.heroImage.url,
+    creator: project.leadArtistName
+      ? {
+          '@type': 'Person',
+          name: project.leadArtistName,
+          description: project.leadArtistBio || undefined,
+        }
+      : undefined,
+    genre: project.domains,
+    keywords: [...project.domains, ...project.pathways].join(', '),
+    about: project.overviewLead || project.shortDescription,
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'Resonance Network',
+      url: 'https://resonance.network',
+    },
+  }
+}
+
+function getBreadcrumbJsonLd(project: Project) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Projects',
+        item: 'https://resonance.network',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: project.title,
+        item: `https://resonance.network/projects/${project.slug}`,
+      },
+    ],
   }
 }
 
@@ -41,7 +100,21 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
   const tasks = (tasksData as CollaborationTask[]).filter(t => t.projectId === project.slug)
 
   return (
-    <>
+    <article>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(getProjectJsonLd(project)) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(getBreadcrumbJsonLd(project)) }}
+      />
+
+      {/* Breadcrumb navigation */}
+      <nav aria-label="Breadcrumb" className="breadcrumb container" style={{ paddingTop: 'var(--space-4)' }}>
+        <Link href="/">Projects</Link> <span aria-hidden="true">/</span> <span>{project.title}</span>
+      </nav>
+
       {/* Hero */}
       <section className="project-hero">
         <Image
@@ -64,7 +137,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
       {(project.overviewLead || project.leadArtistName) && (
         <section className="project-overview">
           <div className="container">
-            <p className="section-label">Overview</p>
+            <p className="section-label">The Vision</p>
             <div className="overview-grid">
               <div>
                 {project.overviewLead && (
@@ -74,7 +147,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
                   <p className="overview-body">{project.overviewBody}</p>
                 )}
               </div>
-              <div className="overview-stats">
+              <aside className="overview-stats">
                 {project.leadArtistName && (
                   <div className="overview-stat">
                     <p className="overview-stat__label">Lead Creator</p>
@@ -97,7 +170,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
                     <p className="overview-stat__value">{project.pathways.join(' · ')}</p>
                   </div>
                 )}
-              </div>
+              </aside>
             </div>
           </div>
         </section>
@@ -108,14 +181,58 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         <ProjectGalleryGrid images={project.galleryImages} />
       )}
 
+      {/* Milestones */}
+      {project.milestones && project.milestones.length > 0 && (
+        <section className="project-milestones">
+          <div className="container">
+            <p className="section-label">Progress</p>
+            <h2>Where It Stands</h2>
+            <div className="milestones-list">
+              {project.milestones.map((m: Milestone, i: number) => (
+                <div key={i} className={`milestone-item${m.completed ? ' milestone-item--done' : ''}`}>
+                  <span className="milestone-check">{m.completed ? '\u2713' : ''}</span>
+                  <span className="milestone-label">{m.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Latest Updates */}
+      {project.updates && project.updates.length > 0 && (
+        <section className="project-updates">
+          <div className="container">
+            <p className="section-label">Field Notes</p>
+            <h2>Latest from the Studio</h2>
+            <div className="updates-list">
+              {project.updates.map((u: ProjectUpdate, i: number) => (
+                <div key={i} className="update-item">
+                  <span className="update-date">
+                    {new Date(u.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                  <span className="update-text">
+                    {u.link ? (
+                      <a href={u.link} target="_blank" rel="noopener noreferrer">{u.text}</a>
+                    ) : (
+                      u.text
+                    )}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Classification */}
       <section className="project-classification">
         <div className="container">
-          <p className="section-label">Classification</p>
+          <p className="section-label">DNA</p>
           <div className="classification-grid">
             {project.domains.length > 0 && (
               <div className="classification-item">
-                <h4>Domains</h4>
+                <h3>Domains</h3>
                 <div className="badges-group">
                   {project.domains.map(d => (
                     <Badge key={d} variant="domain">{d}</Badge>
@@ -125,7 +242,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
             )}
             {project.pathways.length > 0 && (
               <div className="classification-item">
-                <h4>Pathways</h4>
+                <h3>Pathways</h3>
                 <div className="badges-group">
                   {project.pathways.map(p => (
                     <Badge key={p} variant="pathway">{p}</Badge>
@@ -134,7 +251,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
               </div>
             )}
             <div className="classification-item">
-              <h4>Stage</h4>
+              <h3>Stage</h3>
               <Badge variant="stage">{project.stage}</Badge>
             </div>
           </div>
@@ -145,7 +262,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
       {(project.leadArtistName || project.collaborators.length > 0) && (
         <section className="project-artist">
           <div className="container">
-            <p className="section-label">Team</p>
+            <p className="section-label">The People Behind It</p>
             <div className="team-grid">
               {project.leadArtistName && (
                 <TeamCard
@@ -171,8 +288,8 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
       {tasks.length > 0 && (
         <section className="project-collab">
           <div className="container">
-            <p className="section-label">Get Involved</p>
-            <h2>Collaboration Opportunities</h2>
+            <p className="section-label">Join This Project</p>
+            <h2>Roles Seeking People</h2>
             <div className="task-grid">
               {tasks.map(task => (
                 <CollaborationTaskCard key={task.id} task={task} />
@@ -186,9 +303,9 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
       {project.contactEmail && (
         <section className="project-contact">
           <div className="container">
-            <p className="section-label">Contact</p>
-            <h2>Get in Touch</h2>
-            <p>Interested in supporting, hosting, or collaborating? Reach out directly to the team.</p>
+            <p className="section-label">Reach Out</p>
+            <h2>Start a Conversation</h2>
+            <p>Interested in supporting, hosting, or collaborating on this project? The team would love to hear from you.</p>
             <a
               href={`mailto:${project.contactEmail}?subject=Inquiry%20about%20${encodeURIComponent(project.title)}%20via%20Resonance%20Network`}
               className="btn btn--primary btn--large"
@@ -198,6 +315,15 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           </div>
         </section>
       )}
-    </>
+
+      {/* Internal linking: back to gallery and collaborate */}
+      <nav className="project-nav" aria-label="Related pages">
+        <div className="container" style={{ display: 'flex', gap: 'var(--space-4)', paddingBottom: 'var(--space-8)', flexWrap: 'wrap' }}>
+          <Link href="/" className="btn btn--outline">Explore All Projects</Link>
+          <Link href="/collaborate" className="btn btn--outline">See All Open Roles</Link>
+          <Link href="/submit" className="btn btn--outline">Bring Your Own Project</Link>
+        </div>
+      </nav>
+    </article>
   )
 }
