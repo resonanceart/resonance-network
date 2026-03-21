@@ -34,7 +34,6 @@ export function ProjectGalleryGrid({ images }: { images: GalleryImage[] }) {
                 height={600}
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 loading="lazy"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 style={{ width: '100%', height: 'auto' }}
               />
             </button>
