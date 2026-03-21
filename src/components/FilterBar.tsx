@@ -34,9 +34,7 @@ export function FilterBar({ domains, stages, activeDomains, activeStages, onDoma
           <select
             value={selectedStage}
             onChange={e => {
-              // Clear all stages first, then set new one
-              // Spread to array first to avoid mutating Set during iteration
-              [...activeStages].forEach(s => onStageToggle(s))
+              Array.from(activeStages).forEach(s => onStageToggle(s))
               if (e.target.value) onStageToggle(e.target.value)
             }}
             className={`filter-select${selectedStage ? ' filter-select--active' : ''}`}
