@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from '@/components/ThemeProvider'
@@ -12,6 +12,7 @@ const navLinks = [
 
 export function Header() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
+  const hamburgerRef = useRef<HTMLButtonElement>(null)
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
 
@@ -59,6 +60,7 @@ export function Header() {
             </svg>
           </button>
           <button
+            ref={hamburgerRef}
             className="hamburger"
             aria-label="Toggle navigation menu"
             aria-expanded={isMobileNavOpen}
@@ -71,7 +73,7 @@ export function Header() {
         </div>
       </div>
 
-      <MobileNav isOpen={isMobileNavOpen} onClose={() => setIsMobileNavOpen(false)} />
+      <MobileNav isOpen={isMobileNavOpen} onClose={() => { setIsMobileNavOpen(false); hamburgerRef.current?.focus() }} />
     </header>
   )
 }

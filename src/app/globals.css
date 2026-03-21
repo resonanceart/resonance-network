@@ -67,6 +67,7 @@ button {
   --text-2xl: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
   --text-3xl: clamp(1.875rem, 1.4rem + 1.8vw, 2.5rem);
   --text-hero: clamp(2.25rem, 1.6rem + 2.8vw, 3.5rem);
+  --text-display: clamp(2.75rem, 2rem + 3.5vw, 5rem);
 
   /* Spacing */
   --space-1: 0.25rem;
@@ -143,8 +144,8 @@ button {
 
 /* Dark mode */
 [data-theme="dark"] {
-  --color-bg: #141312;
-  --color-surface: #1C1B19;
+  --color-bg: #111110;
+  --color-surface: #1A1918;
   --color-surface-alt: #242320;
   --color-border: #393836;
   --color-text: #E0DEDA;
@@ -241,6 +242,17 @@ button:focus-visible {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* Dark mode body depth */
+[data-theme="dark"] body {
+  background: linear-gradient(
+    168deg,
+    #111110 0%,
+    #131312 40%,
+    #100f0e 100%
+  );
+  background-attachment: fixed;
 }
 
 @import '../styles/components.css';

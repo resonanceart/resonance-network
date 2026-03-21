@@ -11,6 +11,7 @@ export function ProjectGalleryGrid({ images }: { images: GalleryImage[] }) {
     <section className="project-gallery">
       <div className="container">
         <p className="section-label">Gallery</p>
+        <h2 className="sr-only">Project Gallery</h2>
         <div className="gallery-grid">
           {images.map((img, i) => (
             <button
@@ -31,6 +32,7 @@ export function ProjectGalleryGrid({ images }: { images: GalleryImage[] }) {
                 alt={img.alt}
                 width={800}
                 height={600}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 loading="lazy"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 style={{ width: '100%', height: 'auto' }}

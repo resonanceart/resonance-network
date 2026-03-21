@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'About',
-  description: "Built by artists, for artists. Learn how Resonance Network helps visionary spatial projects — immersive, regenerative, ecological — cross the gap from concept to built reality.",
+  description: 'Built by artists, for artists. Learn how Resonance Network helps immersive art, regenerative architecture, and ecological design projects get built.',
   alternates: {
     canonical: 'https://resonance.network/about',
   },
@@ -12,6 +12,12 @@ export const metadata: Metadata = {
     description: 'An artist-led platform for work too ambitious to build alone — immersive installations, regenerative architecture, and ecological design at scale.',
     url: 'https://resonance.network/about',
     type: 'website',
+    images: [{ url: '/og-image.jpg' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'About Resonance Network',
+    description: 'An artist-led platform for immersive art, regenerative architecture, and ecological design at scale.',
     images: [{ url: '/og-image.jpg' }],
   },
 }
@@ -47,7 +53,7 @@ export default function AboutPage() {
       <section className="about-hero">
         <div className="container">
           <nav aria-label="Breadcrumb" className="breadcrumb">
-            <a href="/">Home</a> <span aria-hidden="true">/</span> <span>About</span>
+            <Link href="/">Home</Link> <span aria-hidden="true">/</span> <span>About</span>
           </nav>
           <p className="section-label">About Resonance Network</p>
           <h1 className="about-hero__headline">A Home for Projects Too Ambitious to Build Alone</h1>
@@ -266,6 +272,9 @@ export default function AboutPage() {
           <p>You don&apos;t have to build it alone. Tell us what you&apos;re working on.</p>
           <Link href="/submit" className="btn btn--primary btn--large">
             Submit a Project
+          </Link>
+          <Link href="/collaborate" className="btn btn--outline btn--large">
+            Explore Open Roles
           </Link>
         </div>
       </section>

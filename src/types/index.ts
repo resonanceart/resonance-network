@@ -18,7 +18,7 @@ export interface Milestone {
 export interface ProjectUpdate {
   date: string
   text: string
-  link: string | null
+  link?: string | null
 }
 
 export interface Project {

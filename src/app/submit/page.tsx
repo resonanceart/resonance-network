@@ -14,6 +14,12 @@ export const metadata: Metadata = {
     type: 'website',
     images: [{ url: '/og-image.jpg' }],
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Submit a Project to Resonance Network',
+    description: "You've done the hard part — now find the collaborators and pathways to make it real.",
+    images: [{ url: '/og-image.jpg' }],
+  },
 }
 
 const breadcrumbJsonLd = {
@@ -47,7 +53,7 @@ export default function SubmitPage() {
       <section className="page-header">
         <div className="container">
           <nav aria-label="Breadcrumb" className="breadcrumb">
-            <a href="/">Home</a> <span aria-hidden="true">/</span> <span>Submit</span>
+            <Link href="/">Home</Link> <span aria-hidden="true">/</span> <span>Submit</span>
           </nav>
           <p className="section-label">Submit</p>
           <h1>You&apos;ve Done the Hard Part. Let Us Help With the Rest.</h1>

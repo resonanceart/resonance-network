@@ -16,8 +16,8 @@ export function TeamCard({ name, bio, photo }: Props) {
           alt={`Photo of ${name}`}
           width={400}
           height={533}
-          loading="lazy"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+          loading="lazy"
           style={{ objectFit: 'cover' }}
         />
       )}

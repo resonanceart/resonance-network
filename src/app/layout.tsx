@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     template: '%s — Resonance Network',
   },
   description:
-    'A curated, artist-led platform for immersive installations, regenerative architecture, and ecological design. Explore projects, lend your expertise, or bring your own vision to the network.',
+    'An artist-led platform for immersive art, regenerative architecture, and ecological design. Explore projects, lend expertise, or submit your vision.',
   keywords: [
     'immersive art',
     'regenerative architecture',
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Resonance Network — Art, Architecture & Ecology at Ambitious Scale',
     description:
-      'A curated, artist-led platform for immersive installations, regenerative architecture, and ecological design. Explore projects, lend your expertise, or bring your own vision to the network.',
+      'An artist-led platform for immersive art, regenerative architecture, and ecological design. Explore projects, lend expertise, or submit your vision.',
     url: 'https://resonance.network',
     siteName: 'Resonance Network',
     locale: 'en_US',
@@ -85,7 +85,6 @@ const organizationJsonLd = {
   description:
     'An artist-led platform connecting creators of immersive installations, regenerative architecture, and ecological design with the collaborators, expertise, and pathways to get built.',
   email: 'hello@resonanceartcollective.com',
-  sameAs: [],
   foundingDate: '2024',
   knowsAbout: [
     'Immersive Art',

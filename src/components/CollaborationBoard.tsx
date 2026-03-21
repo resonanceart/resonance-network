@@ -1,5 +1,6 @@
 'use client'
 import { useState, useMemo } from 'react'
+import Link from 'next/link'
 import type { CollaborationTask } from '@/types'
 import { CollaborationTaskCard } from './CollaborationTaskCard'
 
@@ -52,7 +53,7 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
       <section className="collab-header">
         <div className="container">
           <nav aria-label="Breadcrumb" className="breadcrumb">
-            <a href="/">Home</a> <span aria-hidden="true">/</span> <span>Collaborate</span>
+            <Link href="/">Home</Link> <span aria-hidden="true">/</span> <span>Collaborate</span>
           </nav>
           <p className="section-label">Open Roles</p>
           <h1>Put Your Skills to Work on Something You Believe In</h1>
