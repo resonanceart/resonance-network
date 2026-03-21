@@ -10,6 +10,17 @@ export interface Collaborator {
   photo?: string
 }
 
+export interface Milestone {
+  label: string
+  completed: boolean
+}
+
+export interface ProjectUpdate {
+  date: string
+  text: string
+  link?: string | null
+}
+
 export interface Project {
   id: string
   slug: string
@@ -33,6 +44,8 @@ export interface Project {
   collaborators: Collaborator[]
   scale?: string
   contactEmail?: string
+  milestones?: Milestone[]
+  updates?: ProjectUpdate[]
 }
 
 export interface CollaborationTask {

@@ -1,11 +1,9 @@
 import type { CollaborationTask } from '@/types'
 import { Badge } from './ui/Badge'
 
-const INTEREST_FORM_URL = 'https://form.typeform.com/to/PLACEHOLDER_INTEREST'
-
 export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
   const categoryVariant = task.category.toLowerCase()
-  const formUrl = `${INTEREST_FORM_URL}#project=${encodeURIComponent(task.projectTitle)}&task=${encodeURIComponent(task.title)}`
+  const mailtoHref = `mailto:${task.contactEmail}?subject=${encodeURIComponent(task.contactEmailSubject || 'Collaboration Interest via Resonance Network')}`
 
   return (
     <div className="task-card">
@@ -37,10 +35,8 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
       </div>
       <div className="task-card__actions">
         <a
-          href={formUrl}
+          href={mailtoHref}
           className="btn btn--primary btn--full"
-          target="_blank"
-          rel="noopener noreferrer"
         >
           Raise Your Hand
         </a>

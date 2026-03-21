@@ -66,14 +66,7 @@ export function ProjectGallery({ projects }: { projects: Project[] }) {
             <ProjectCard key={project.id} project={project} />
           ))}
           {filtered.length === 0 && (
-            <p
-              style={{
-                gridColumn: '1/-1',
-                textAlign: 'center',
-                color: 'var(--color-text-muted)',
-                padding: 'var(--space-12) 0',
-              }}
-            >
+            <p className="no-results">
               No projects match those filters right now. Try widening your selection.
             </p>
           )}

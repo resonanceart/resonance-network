@@ -13,10 +13,12 @@ export function TeamCard({ name, bio, photo }: Props) {
         <Image
           className="team-card__photo"
           src={photo}
-          alt={name}
-          width={120}
-          height={120}
-          style={{ objectFit: 'cover', borderRadius: '50%' }}
+          alt={`Photo of ${name}`}
+          width={400}
+          height={533}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+          loading="lazy"
+          style={{ objectFit: 'cover' }}
         />
       )}
       <div className="team-card__body">

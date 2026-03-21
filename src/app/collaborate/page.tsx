@@ -6,7 +6,7 @@ import { CollaborationBoard } from '@/components/CollaborationBoard'
 export const metadata: Metadata = {
   title: 'Collaboration Opportunities',
   description:
-    'Open roles on curated immersive art and regenerative architecture projects — engineering, fabrication, design, and more. Find meaningful work on projects you believe in.',
+    'Open roles on curated immersive art and regenerative architecture projects — engineering, fabrication, design, and more. Find meaningful work.',
   alternates: {
     canonical: 'https://resonance.network/collaborate',
   },
@@ -16,6 +16,12 @@ export const metadata: Metadata = {
       'Put your skills to work on projects that matter — open roles across immersive art, regenerative architecture, and ecological design.',
     url: 'https://resonance.network/collaborate',
     type: 'website',
+    images: [{ url: '/og-image.jpg' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Collaboration Opportunities — Resonance Network',
+    description: 'Open roles on immersive art and regenerative architecture projects. Find meaningful work on projects you believe in.',
     images: [{ url: '/og-image.jpg' }],
   },
 }

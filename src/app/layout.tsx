@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     template: '%s — Resonance Network',
   },
   description:
-    'A curated, artist-led platform for immersive installations, regenerative architecture, and ecological design. Explore projects, lend your expertise, or bring your own vision to the network.',
+    'An artist-led platform for immersive art, regenerative architecture, and ecological design. Explore projects, lend expertise, or submit your vision.',
   keywords: [
     'immersive art',
     'regenerative architecture',
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Resonance Network — Art, Architecture & Ecology at Ambitious Scale',
     description:
-      'A curated, artist-led platform for immersive installations, regenerative architecture, and ecological design. Explore projects, lend your expertise, or bring your own vision to the network.',
+      'An artist-led platform for immersive art, regenerative architecture, and ecological design. Explore projects, lend expertise, or submit your vision.',
     url: 'https://resonance.network',
     siteName: 'Resonance Network',
     locale: 'en_US',
@@ -85,7 +85,6 @@ const organizationJsonLd = {
   description:
     'An artist-led platform connecting creators of immersive installations, regenerative architecture, and ecological design with the collaborators, expertise, and pathways to get built.',
   email: 'hello@resonanceartcollective.com',
-  sameAs: [],
   foundingDate: '2024',
   knowsAbout: [
     'Immersive Art',
@@ -111,8 +110,14 @@ const websiteJsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t)}catch(e){}})()`,
+          }}
+        />
+        <link rel="preconnect" href="https://api.fontshare.com" crossOrigin="anonymous" />
         <link
           rel="stylesheet"
           href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,600,700&f[]=satoshi@300,400,500,700&display=swap"

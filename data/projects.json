@@ -67,7 +67,31 @@
       }
     ],
     "scale": "Three-story climbable installation",
-    "contactEmail": "hello@resonanceartcollective.com"
+    "contactEmail": "hello@resonanceartcollective.com",
+    "milestones": [
+      { "label": "Physical Model Complete", "completed": true },
+      { "label": "Digital Model Complete", "completed": true },
+      { "label": "Website Launched", "completed": true },
+      { "label": "Fiscal Sponsor — Final Rounds", "completed": false },
+      { "label": "Fundraising Goal: $175,000", "completed": false }
+    ],
+    "updates": [
+      {
+        "date": "2026-03-21",
+        "text": "Resonance Network website launched — project page is live.",
+        "link": null
+      },
+      {
+        "date": "2026-03-01",
+        "text": "Physical scale model completed and photographed.",
+        "link": null
+      },
+      {
+        "date": "2026-02-15",
+        "text": "Digital parametric model finalized with structural analysis.",
+        "link": null
+      }
+    ]
   },
   {
     "id": "terra-nexus",
@@ -86,8 +110,8 @@
       "Community Infrastructure"
     ],
     "heroImage": {
-      "url": "https://images.adsttc.com/media/images/638d/8b1e/585a/8e4f/4753/33c0/large_jpg/sustainability-is-sparse-the-need-for-regenerative-architecture_1.jpg?1670220581",
-      "alt": "Regenerative community pavilion with green roof, constructed wetlands, and rammed earth walls in an urban setting"
+      "url": "/assets/images/projects/canopy-commons.png",
+      "alt": "Terra Nexus — regenerative community pavilion concept"
     },
     "galleryImages": [],
     "overviewLead": "Terra Nexus transforms degraded urban land into living community infrastructure.",
@@ -96,7 +120,26 @@
     "leadArtistBio": "Ecological designer and architect focused on regenerative urban systems.",
     "collaborators": [],
     "scale": "Community-scale pavilion, 2,000–4,000 sq ft",
-    "contactEmail": "jordan@terranexus.org"
+    "contactEmail": "jordan@terranexus.org",
+    "milestones": [
+      { "label": "Site Survey Complete", "completed": true },
+      { "label": "Wetland Systems Research", "completed": true },
+      { "label": "Schematic Design Complete", "completed": true },
+      { "label": "Community Input Sessions", "completed": false },
+      { "label": "Design Development Package", "completed": false }
+    ],
+    "updates": [
+      {
+        "date": "2026-03-10",
+        "text": "Schematic design finalized — integrating constructed wetland and rammed earth wall systems.",
+        "link": null
+      },
+      {
+        "date": "2026-02-01",
+        "text": "Completed ecological site survey with soil and hydrology analysis.",
+        "link": null
+      }
+    ]
   },
   {
     "id": "luminous-currents",
@@ -116,8 +159,8 @@
       "Festival Installation"
     ],
     "heroImage": {
-      "url": "https://cdn.sanity.io/images/cxgd3urn/production/24807b58fc035744fd876230bc4547fb12ce18f4-1542x896.jpg?w=1200&h=697&q=85&fit=crop&auto=format",
-      "alt": "A kinetic light sculpture for public waterfront spaces with hundreds of solar-powered responsive light elements"
+      "url": "/assets/images/projects/night-scene.jpg",
+      "alt": "Luminous Currents — kinetic light sculpture for waterfront spaces"
     },
     "galleryImages": [],
     "overviewLead": "Luminous Currents animates the interface between water, wind, and light.",
@@ -126,7 +169,27 @@
     "leadArtistBio": "Artist and engineer working at the intersection of kinetic sculpture and ecological data visualization.",
     "collaborators": [],
     "scale": "300–500 element installation, waterfront scale",
-    "contactEmail": "studio@ingridvoss.nl"
+    "contactEmail": "studio@ingridvoss.nl",
+    "milestones": [
+      { "label": "Concept Design Approved", "completed": true },
+      { "label": "LED & Sensor Prototyping", "completed": true },
+      { "label": "Structural Engineering Review", "completed": true },
+      { "label": "Firmware Development", "completed": true },
+      { "label": "Full-Scale Prototype Build", "completed": false },
+      { "label": "Site Installation Plan", "completed": false }
+    ],
+    "updates": [
+      {
+        "date": "2026-03-05",
+        "text": "Firmware for solar-powered LED response system tested with wind and water sensor inputs.",
+        "link": null
+      },
+      {
+        "date": "2026-01-20",
+        "text": "Structural engineering review complete — stainless steel mast design validated.",
+        "link": null
+      }
+    ]
   },
   {
     "id": "mycelium-sound-chamber",
@@ -146,7 +209,7 @@
       "Festival Installation"
     ],
     "heroImage": {
-      "url": "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800&q=80&fit=crop",
+      "url": "/assets/images/projects/tidal-angle.png",
       "alt": "Mycelium Sound Chamber — organic acoustic installation"
     },
     "galleryImages": [],
@@ -156,7 +219,26 @@
     "leadArtistBio": "Artist and material researcher working with biological materials in architectural contexts.",
     "collaborators": [],
     "scale": "Room-scale installation, 800–1200 sq ft",
-    "contactEmail": "studio@seraokafor.com"
+    "contactEmail": "studio@seraokafor.com",
+    "milestones": [
+      { "label": "Material Research Phase", "completed": true },
+      { "label": "Acoustic Testing — Lab Scale", "completed": true },
+      { "label": "Growth Protocol Established", "completed": true },
+      { "label": "Full-Scale Panel Fabrication", "completed": false },
+      { "label": "Acoustic Chamber Design Finalized", "completed": false }
+    ],
+    "updates": [
+      {
+        "date": "2026-03-12",
+        "text": "Mycelium panel acoustic testing shows promising sound absorption properties at lab scale.",
+        "link": null
+      },
+      {
+        "date": "2026-02-10",
+        "text": "Growth protocol for architectural-scale mycelium panels established with research partners.",
+        "link": null
+      }
+    ]
   },
   {
     "id": "canopy-commons",
@@ -175,7 +257,7 @@
       "Public Art"
     ],
     "heroImage": {
-      "url": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&fit=crop",
+      "url": "/assets/images/projects/canopy-commons.png",
       "alt": "Canopy Commons — public shade and gathering structure"
     },
     "galleryImages": [],
@@ -185,7 +267,26 @@
     "leadArtistBio": "Architect and community organizer focused on equitable public space design.",
     "collaborators": [],
     "scale": "Modular, variable deployment size",
-    "contactEmail": "studio@marcosei.com"
+    "contactEmail": "studio@marcosei.com",
+    "milestones": [
+      { "label": "Community Needs Assessment", "completed": true },
+      { "label": "Initial Concept Sketches", "completed": true },
+      { "label": "Tensile Fabric Material Research", "completed": false },
+      { "label": "Modular System Design", "completed": false },
+      { "label": "Pilot Site Selected", "completed": false }
+    ],
+    "updates": [
+      {
+        "date": "2026-02-28",
+        "text": "Community needs assessment completed across three target neighborhoods.",
+        "link": null
+      },
+      {
+        "date": "2026-01-15",
+        "text": "Initial concept sketches shared with community advisory group for feedback.",
+        "link": null
+      }
+    ]
   },
   {
     "id": "solaris-pavilion",
@@ -205,8 +306,8 @@
       "Community Infrastructure"
     ],
     "heroImage": {
-      "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80&fit=crop",
-      "alt": "Solaris Pavilion — solar-tracking gathering structure"
+      "url": "/assets/images/projects/coastal-entry.png",
+      "alt": "Solaris Pavilion — solar-responsive gathering structure"
     },
     "galleryImages": [],
     "overviewLead": "A structure that generates its own energy while serving as a public gathering place.",
@@ -215,7 +316,26 @@
     "leadArtistBio": "Architect and sustainable systems designer focused on energy-generating public infrastructure.",
     "collaborators": [],
     "scale": "Pavilion-scale, 3,000–5,000 sq ft canopy",
-    "contactEmail": "studio@yukitanaka.jp"
+    "contactEmail": "studio@yukitanaka.jp",
+    "milestones": [
+      { "label": "Solar Tracking System Research", "completed": true },
+      { "label": "Concept Design Approved", "completed": true },
+      { "label": "Structural & Mechanical Engineering", "completed": true },
+      { "label": "Solar Panel Integration Prototype", "completed": false },
+      { "label": "Tracking Mechanism Fabrication", "completed": false }
+    ],
+    "updates": [
+      {
+        "date": "2026-03-08",
+        "text": "Structural and mechanical engineering for canopy tracking system complete.",
+        "link": null
+      },
+      {
+        "date": "2026-02-05",
+        "text": "Solar panel integration approach finalized — moving to prototype phase.",
+        "link": null
+      }
+    ]
   },
   {
     "id": "deep-current",
@@ -234,7 +354,7 @@
       "Festival Installation"
     ],
     "heroImage": {
-      "url": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80&fit=crop",
+      "url": "/assets/images/projects/night-scene.jpg",
       "alt": "Deep Current — underwater-inspired immersive environment"
     },
     "galleryImages": [],
@@ -244,7 +364,26 @@
     "leadArtistBio": "Interdisciplinary artist working with immersive environments and aquatic ecosystems as artistic material.",
     "collaborators": [],
     "scale": "Large-scale gallery or pavilion installation",
-    "contactEmail": "studio@amaradiallo.com"
+    "contactEmail": "studio@amaradiallo.com",
+    "milestones": [
+      { "label": "Concept & Artistic Direction", "completed": true },
+      { "label": "Spatial Audio Design", "completed": true },
+      { "label": "Kinetic Fabric Prototype", "completed": true },
+      { "label": "Fundraising Goal: $120,000", "completed": false },
+      { "label": "Venue Partnership Secured", "completed": false }
+    ],
+    "updates": [
+      {
+        "date": "2026-03-15",
+        "text": "Kinetic fabric prototype tested — choreographed movement patterns validated.",
+        "link": null
+      },
+      {
+        "date": "2026-02-20",
+        "text": "Spatial audio design complete — 24-channel immersive sound system specified.",
+        "link": null
+      }
+    ]
   },
   {
     "id": "tidal-pavilion",
@@ -264,8 +403,8 @@
       "Community Infrastructure"
     ],
     "heroImage": {
-      "url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80&fit=crop",
-      "alt": "Tidal Pavilion — coastal gathering structure"
+      "url": "/assets/images/projects/tidal-angle.png",
+      "alt": "Tidal Pavilion — coastal gathering structure at the edge of land and sea"
     },
     "galleryImages": [],
     "overviewLead": "A structure that belongs to the tidal edge — shaped by the rhythms of land and sea.",
@@ -274,7 +413,26 @@
     "leadArtistBio": "Architect and cultural practitioner focused on Pacific coastal communities and tidal ecology.",
     "collaborators": [],
     "scale": "Coastal pavilion, site-specific",
-    "contactEmail": "studio@raiafatu.com"
+    "contactEmail": "studio@raiafatu.com",
+    "milestones": [
+      { "label": "Cultural & Ecological Research", "completed": true },
+      { "label": "Initial Concept Development", "completed": true },
+      { "label": "Tidal Ecology Site Analysis", "completed": false },
+      { "label": "Community Engagement Plan", "completed": false },
+      { "label": "Schematic Design", "completed": false }
+    ],
+    "updates": [
+      {
+        "date": "2026-03-01",
+        "text": "Cultural research phase complete — documenting Pacific coastal community gathering traditions.",
+        "link": null
+      },
+      {
+        "date": "2026-01-25",
+        "text": "Initial concept sketches developed — exploring forms shaped by tidal movement.",
+        "link": null
+      }
+    ]
   },
   {
     "id": "root-network",
@@ -294,8 +452,8 @@
       "Public Art"
     ],
     "heroImage": {
-      "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80&fit=crop",
-      "alt": "Root Network — ecological corridors in urban neighborhoods"
+      "url": "/assets/images/projects/top-down.png",
+      "alt": "Root Network — ecological corridors woven into urban neighborhoods"
     },
     "galleryImages": [],
     "overviewLead": "Embedding ecological corridors into the fabric of urban neighborhoods.",
@@ -304,6 +462,25 @@
     "leadArtistBio": "Landscape architect and community organizer specializing in urban ecological design and grassroots infrastructure.",
     "collaborators": [],
     "scale": "Neighborhood-scale, multi-block",
-    "contactEmail": "studio@rootnetwork.org"
+    "contactEmail": "studio@rootnetwork.org",
+    "milestones": [
+      { "label": "Neighborhood Mapping Complete", "completed": true },
+      { "label": "Community Design Workshops", "completed": true },
+      { "label": "Corridor Route Design", "completed": true },
+      { "label": "Planting & Materials Plan", "completed": false },
+      { "label": "Pilot Corridor Installation", "completed": false }
+    ],
+    "updates": [
+      {
+        "date": "2026-03-18",
+        "text": "Corridor route design finalized across three urban blocks with community input.",
+        "link": null
+      },
+      {
+        "date": "2026-02-12",
+        "text": "Completed second round of community design workshops with 40+ participants.",
+        "link": null
+      }
+    ]
   }
 ]

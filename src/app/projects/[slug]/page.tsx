@@ -80,12 +80,18 @@ function getBreadcrumbJsonLd(project: Project) {
       {
         '@type': 'ListItem',
         position: 1,
-        name: 'Projects',
+        name: 'Home',
         item: 'https://resonance.network',
       },
       {
         '@type': 'ListItem',
         position: 2,
+        name: 'Projects',
+        item: 'https://resonance.network/#projects',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
         name: project.title,
         item: `https://resonance.network/projects/${project.slug}`,
       },
@@ -112,7 +118,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
 
       {/* Breadcrumb navigation */}
       <nav aria-label="Breadcrumb" className="breadcrumb container" style={{ paddingTop: 'var(--space-4)' }}>
-        <Link href="/">Projects</Link> <span aria-hidden="true">/</span> <span>{project.title}</span>
+        <Link href="/">Home</Link> <span aria-hidden="true">/</span> <Link href="/#projects">Projects</Link> <span aria-hidden="true">/</span> <span>{project.title}</span>
       </nav>
 
       {/* Hero */}
@@ -138,6 +144,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         <section className="project-overview">
           <div className="container">
             <p className="section-label">The Vision</p>
+            <h2 className="sr-only">Project Overview</h2>
             <div className="overview-grid">
               <div>
                 {project.overviewLead && (
@@ -229,6 +236,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
       <section className="project-classification">
         <div className="container">
           <p className="section-label">DNA</p>
+          <h2 className="sr-only">Project Classification</h2>
           <div className="classification-grid">
             {project.domains.length > 0 && (
               <div className="classification-item">
@@ -263,6 +271,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         <section className="project-artist">
           <div className="container">
             <p className="section-label">The People Behind It</p>
+            <h2 className="sr-only">Team Members</h2>
             <div className="team-grid">
               {project.leadArtistName && (
                 <TeamCard
