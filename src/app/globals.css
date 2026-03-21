@@ -121,7 +121,7 @@ button {
   --color-accent-warm: #A0522D;
   --color-card-bg: #FAFAF7;
   --color-card-border: #E7E4DD;
-  --color-hero-overlay: rgba(20, 19, 18, 0.55);
+  --color-hero-overlay: rgba(20, 19, 18, 0.65);
 
   /* Badge colors — muted earth tones / desaturated jewels */
   --badge-engineering: #5B7B6F;

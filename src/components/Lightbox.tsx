@@ -82,6 +82,7 @@ export function Lightbox({ images, initialIndex, onClose }: Props) {
           alt={currentImage.alt}
           width={1200}
           height={800}
+          sizes="90vw"
           style={{ maxWidth: '90vw', maxHeight: '80vh', width: 'auto', height: 'auto', objectFit: 'contain' }}
         />
       </div>
