@@ -34,7 +34,7 @@ export function FilterBar({ domains, stages, activeDomains, activeStages, onDoma
           <select
             value={selectedStage}
             onChange={e => {
-              [...activeStages].forEach(s => onStageToggle(s))
+              Array.from(activeStages).forEach(s => onStageToggle(s))
               if (e.target.value) onStageToggle(e.target.value)
             }}
             className={`filter-select${selectedStage ? ' filter-select--active' : ''}`}
