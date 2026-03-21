@@ -156,7 +156,7 @@ export default function AboutPage() {
                 <span className="curation-timeline__line" />
               </div>
               <div className="step-content">
-                <h4>Submission</h4>
+                <h3>Submission</h3>
                 <p>Creators submit their project through our intake form, including images, descriptions, classification, and collaboration needs.</p>
               </div>
             </div>
@@ -166,7 +166,7 @@ export default function AboutPage() {
                 <span className="curation-timeline__line" />
               </div>
               <div className="step-content">
-                <h4>AI-Assisted Review</h4>
+                <h3>AI-Assisted Review</h3>
                 <p>Submissions receive an initial review for completeness, alignment with network values, and project stage readiness.</p>
               </div>
             </div>
@@ -176,7 +176,7 @@ export default function AboutPage() {
                 <span className="curation-timeline__line" />
               </div>
               <div className="step-content">
-                <h4>Human Review</h4>
+                <h3>Human Review</h3>
                 <p>A curation team of practicing artists and makers reviews every project. Human approval is required — AI assists but never decides.</p>
               </div>
             </div>
@@ -185,7 +185,7 @@ export default function AboutPage() {
                 <span className="step-number">4</span>
               </div>
               <div className="step-content">
-                <h4>Publish or Guide</h4>
+                <h3>Publish or Guide</h3>
                 <p>Approved projects are published to the network. Projects not yet ready receive clear, actionable feedback — with an explicit invitation to resubmit.</p>
               </div>
             </div>

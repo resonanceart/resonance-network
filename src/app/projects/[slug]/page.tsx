@@ -137,6 +137,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
       {(project.overviewLead || project.leadArtistName) && (
         <section className="project-overview">
           <div className="container">
+            <h2 className="sr-only">Project Overview</h2>
             <p className="section-label">The Vision</p>
             <div className="overview-grid">
               <div>
@@ -228,6 +229,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
       {/* Classification */}
       <section className="project-classification">
         <div className="container">
+          <h2 className="sr-only">Project Classification</h2>
           <p className="section-label">DNA</p>
           <div className="classification-grid">
             {project.domains.length > 0 && (
@@ -262,6 +264,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
       {(project.leadArtistName || project.collaborators.length > 0) && (
         <section className="project-artist">
           <div className="container">
+            <h2 className="sr-only">Team Members</h2>
             <p className="section-label">The People Behind It</p>
             <div className="team-grid">
               {project.leadArtistName && (
