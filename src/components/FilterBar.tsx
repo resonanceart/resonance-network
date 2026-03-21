@@ -10,41 +10,41 @@ interface Props {
 }
 
 export function FilterBar({ domains, stages, activeDomains, activeStages, onDomainToggle, onStageToggle }: Props) {
+  const selectedDomain = activeDomains.size === 1 ? Array.from(activeDomains)[0] : ''
+  const selectedStage = activeStages.size === 1 ? Array.from(activeStages)[0] : ''
+
   return (
-    <div className="filter-bar" id="projects">
+    <div className="filter-bar" id="projects" role="search" aria-label="Filter projects">
       <div className="container">
-        <span className="filter-label">Domains</span>
-        <div className="filter-group">
-          <button
-            className={`filter-btn${activeDomains.size === 0 ? ' active' : ''}`}
-            type="button"
-            onClick={() => onDomainToggle('__all__')}
+        <div className="filters-compact">
+          <select
+            value={selectedDomain}
+            onChange={e => {
+              onDomainToggle('__all__')
+              if (e.target.value) onDomainToggle(e.target.value)
+            }}
+            className={`filter-select${selectedDomain ? ' filter-select--active' : ''}`}
+            aria-label="Filter by domain"
           >
-            All
-          </button>
-          {domains.map(domain => (
-            <button
-              key={domain}
-              className={`filter-btn${activeDomains.has(domain) ? ' active' : ''}`}
-              type="button"
-              onClick={() => onDomainToggle(domain)}
-            >
-              {domain}
-            </button>
-          ))}
-        </div>
-        <span className="filter-label" style={{ marginLeft: 'var(--space-4)' }}>Stage</span>
-        <div className="filter-group">
-          {stages.map(stage => (
-            <button
-              key={stage}
-              className={`filter-btn${activeStages.has(stage) ? ' active' : ''}`}
-              type="button"
-              onClick={() => onStageToggle(stage)}
-            >
-              {stage}
-            </button>
-          ))}
+            <option value="">All Domains</option>
+            {domains.map(domain => (
+              <option key={domain} value={domain}>{domain}</option>
+            ))}
+          </select>
+          <select
+            value={selectedStage}
+            onChange={e => {
+              [...activeStages].forEach(s => onStageToggle(s))
+              if (e.target.value) onStageToggle(e.target.value)
+            }}
+            className={`filter-select${selectedStage ? ' filter-select--active' : ''}`}
+            aria-label="Filter by stage"
+          >
+            <option value="">All Stages</option>
+            {stages.map(stage => (
+              <option key={stage} value={stage}>{stage}</option>
+            ))}
+          </select>
         </div>
       </div>
     </div>
