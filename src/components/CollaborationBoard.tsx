@@ -26,6 +26,7 @@ const breadcrumbJsonLd = {
 }
 
 export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
+  const [activeTab, setActiveTab] = useState<'needs' | 'available'>('needs')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -63,61 +64,126 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
         </div>
       </section>
 
-      <section className="collab-filters">
+      {/* Tab Toggle */}
+      <section className="collab-tabs-section">
         <div className="container">
-          <div className="filters-compact">
-            <label htmlFor="collab-search" className="sr-only">Search collaboration opportunities</label>
-            <input
-              id="collab-search"
-              type="search"
-              placeholder="Search opportunities..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="filter-search"
-              aria-label="Search collaboration opportunities"
-            />
-            <select
-              value={selectedCategory}
-              onChange={e => setSelectedCategory(e.target.value)}
-              className="filter-select"
-              aria-label="Filter by category"
+          <div className="collab-tabs" role="tablist" aria-label="Collaboration view">
+            <button
+              role="tab"
+              aria-selected={activeTab === 'needs'}
+              className={`collab-tab${activeTab === 'needs' ? ' collab-tab--active' : ''}`}
+              onClick={() => setActiveTab('needs')}
             >
-              <option value="">All Categories</option>
-              {CATEGORIES.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+              Project Needs
+            </button>
+            <button
+              role="tab"
+              aria-selected={activeTab === 'available'}
+              className={`collab-tab${activeTab === 'available' ? ' collab-tab--active' : ''}`}
+              onClick={() => setActiveTab('available')}
+            >
+              Available Collaborators
+            </button>
           </div>
-          {(searchQuery || selectedCategory) && (
-            <p className="filter-count">
-              {filtered.length} {filtered.length === 1 ? 'opportunity' : 'opportunities'}
-              {selectedCategory && ` in ${selectedCategory}`}
-              {searchQuery && ` matching "${searchQuery}"`}
-            </p>
-          )}
         </div>
       </section>
 
-      <section className="collab-grid">
-        <div className="container">
-          <div className="task-grid">
-            {filtered.map(task => (
-              <CollaborationTaskCard key={task.id} task={task} />
-            ))}
-            {filtered.length === 0 && (
-              <p
-                style={{
-                  gridColumn: '1/-1',
-                  textAlign: 'center',
-                  color: 'var(--color-text-muted)',
-                }}
-              >
-                No roles match your current filters. Try broadening your search.
-              </p>
-            )}
+      {activeTab === 'needs' ? (
+        <>
+          <section className="collab-filters">
+            <div className="container">
+              <div className="filters-compact">
+                <label htmlFor="collab-search" className="sr-only">Search collaboration opportunities</label>
+                <input
+                  id="collab-search"
+                  type="search"
+                  placeholder="Search opportunities..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="filter-search"
+                  aria-label="Search collaboration opportunities"
+                />
+                <select
+                  value={selectedCategory}
+                  onChange={e => setSelectedCategory(e.target.value)}
+                  className="filter-select"
+                  aria-label="Filter by category"
+                >
+                  <option value="">All Categories</option>
+                  {CATEGORIES.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+              {(searchQuery || selectedCategory) && (
+                <p className="filter-count">
+                  {filtered.length} {filtered.length === 1 ? 'opportunity' : 'opportunities'}
+                  {selectedCategory && ` in ${selectedCategory}`}
+                  {searchQuery && ` matching "${searchQuery}"`}
+                </p>
+              )}
+            </div>
+          </section>
+
+          <section className="collab-grid">
+            <div className="container">
+              <div className="task-grid">
+                {filtered.map(task => (
+                  <CollaborationTaskCard key={task.id} task={task} />
+                ))}
+                {filtered.length === 0 && (
+                  <p
+                    style={{
+                      gridColumn: '1/-1',
+                      textAlign: 'center',
+                      color: 'var(--color-text-muted)',
+                    }}
+                  >
+                    No roles match your current filters. Try broadening your search.
+                  </p>
+                )}
+              </div>
+            </div>
+          </section>
+        </>
+      ) : (
+        <section className="collab-available">
+          <div className="container">
+            <div className="collab-available__inner">
+              <div className="collab-available__content">
+                <h2>Offer Your Skills</h2>
+                <p className="collab-available__body">
+                  Are you an engineer, fabricator, designer, or specialist looking for meaningful projects? Let us know what you bring to the table — your expertise, your availability, and the kind of work that matters to you.
+                </p>
+                <p className="collab-available__body">
+                  We&apos;ll connect you with curated projects that match your skills and values. Every project on the network has a real team behind it and a clear path forward.
+                </p>
+                <a
+                  href="mailto:hello@resonanceartcollective.com?subject=Collaborator%20Availability"
+                  className="btn btn--primary btn--large"
+                >
+                  Post Your Availability
+                </a>
+              </div>
+              <div className="collab-available__skills">
+                <p className="collab-available__skills-title">Skills in demand right now:</p>
+                <div className="collab-available__skills-list">
+                  <span className="skill-tag">Structural Engineering</span>
+                  <span className="skill-tag">Lighting Design</span>
+                  <span className="skill-tag">Grant Writing</span>
+                  <span className="skill-tag">Fabrication</span>
+                  <span className="skill-tag">Acoustic Engineering</span>
+                  <span className="skill-tag">Community Organizing</span>
+                  <span className="skill-tag">Landscape Architecture</span>
+                  <span className="skill-tag">Material Science</span>
+                  <span className="skill-tag">PV Systems</span>
+                  <span className="skill-tag">Coastal Engineering</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </>
   )
 }
