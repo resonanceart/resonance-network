@@ -29,6 +29,13 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
   const [activeTab, setActiveTab] = useState<'needs' | 'available'>('needs')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [profileName, setProfileName] = useState('')
+  const [profileEmail, setProfileEmail] = useState('')
+  const [profilePhoto, setProfilePhoto] = useState('')
+  const [profileSkills, setProfileSkills] = useState('')
+  const [profilePortfolio, setProfilePortfolio] = useState('')
+  const [profileAvailability, setProfileAvailability] = useState('')
+  const [profileNote, setProfileNote] = useState('')
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase()
@@ -43,6 +50,24 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
       return categoryMatch && textMatch
     })
   }, [tasks, selectedCategory, searchQuery])
+
+  function handleProfileSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    const subject = encodeURIComponent('Collaborator Profile Submission')
+    const body = encodeURIComponent(
+      `Collaborator Profile Submission\n` +
+      `================================\n\n` +
+      `Name: ${profileName}\n` +
+      `Email: ${profileEmail}\n` +
+      (profilePhoto ? `Photo URL: ${profilePhoto}\n` : '') +
+      `\nSkills / Expertise:\n${profileSkills}\n` +
+      (profilePortfolio ? `\nPortfolio / Past Projects:\n${profilePortfolio}\n` : '') +
+      (profileAvailability ? `\nAvailability: ${profileAvailability}\n` : '') +
+      (profileNote ? `\nAdditional Notes:\n${profileNote}\n` : '') +
+      `\n—\nSubmitted via Resonance Network`
+    )
+    window.location.href = `mailto:hello@resonanceartcollective.com?subject=${subject}&body=${body}`
+  }
 
   return (
     <>
@@ -153,17 +178,86 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
               <div className="collab-available__content">
                 <h2>Offer Your Skills</h2>
                 <p className="collab-available__body">
-                  Are you an engineer, fabricator, designer, or specialist looking for meaningful projects? Let us know what you bring to the table — your expertise, your availability, and the kind of work that matters to you.
+                  Are you an engineer, fabricator, designer, or specialist looking for meaningful projects? Fill out the form below and we&apos;ll connect you with curated projects that match your skills and values.
                 </p>
-                <p className="collab-available__body">
-                  We&apos;ll connect you with curated projects that match your skills and values. Every project on the network has a real team behind it and a clear path forward.
-                </p>
-                <a
-                  href="mailto:hello@resonanceartcollective.com?subject=Collaborator%20Availability"
-                  className="btn btn--primary btn--large"
-                >
-                  Post Your Availability
-                </a>
+                <form className="collab-profile-form" onSubmit={handleProfileSubmit}>
+                  <div className="form-field">
+                    <label htmlFor="profile-name">Full Name *</label>
+                    <input
+                      id="profile-name"
+                      type="text"
+                      required
+                      value={profileName}
+                      onChange={e => setProfileName(e.target.value)}
+                      placeholder="Your full name"
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label htmlFor="profile-email">Email *</label>
+                    <input
+                      id="profile-email"
+                      type="email"
+                      required
+                      value={profileEmail}
+                      onChange={e => setProfileEmail(e.target.value)}
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label htmlFor="profile-photo">Photo URL</label>
+                    <input
+                      id="profile-photo"
+                      type="url"
+                      value={profilePhoto}
+                      onChange={e => setProfilePhoto(e.target.value)}
+                      placeholder="Link to your headshot or profile photo"
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label htmlFor="profile-skills">Skills / Expertise *</label>
+                    <textarea
+                      id="profile-skills"
+                      required
+                      value={profileSkills}
+                      onChange={e => setProfileSkills(e.target.value)}
+                      placeholder="What do you bring? Engineering, design, fabrication, etc."
+                      rows={3}
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label htmlFor="profile-portfolio">Relevant Projects / Portfolio</label>
+                    <textarea
+                      id="profile-portfolio"
+                      value={profilePortfolio}
+                      onChange={e => setProfilePortfolio(e.target.value)}
+                      placeholder="Links to portfolio, past projects, or other work"
+                      rows={2}
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label htmlFor="profile-availability">Availability</label>
+                    <input
+                      id="profile-availability"
+                      type="text"
+                      value={profileAvailability}
+                      onChange={e => setProfileAvailability(e.target.value)}
+                      placeholder="Full-time, part-time, project-based?"
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label htmlFor="profile-note">A Brief Note</label>
+                    <textarea
+                      id="profile-note"
+                      value={profileNote}
+                      onChange={e => setProfileNote(e.target.value)}
+                      placeholder="Anything else you'd like us to know?"
+                      rows={2}
+                    />
+                  </div>
+                  <button type="submit" className="btn btn--primary btn--large">
+                    Submit Profile
+                  </button>
+                </form>
               </div>
               <div className="collab-available__skills">
                 <p className="collab-available__skills-title">Skills in demand right now:</p>
