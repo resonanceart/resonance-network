@@ -60,7 +60,7 @@ export function ProjectGallery({ projects }: { projects: Project[] }) {
         onDomainToggle={handleDomainToggle}
         onStageToggle={handleStageToggle}
       />
-      <section className="container">
+      <section className="container container--wide">
         <div className="project-grid">
           {filtered.map(project => (
             <ProjectCard key={project.id} project={project} />

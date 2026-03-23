@@ -652,21 +652,21 @@ main {
 .project-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-6);
+  gap: 20px;
   padding: var(--space-4) 0 var(--space-16);
 }
 
 @media (min-width: 640px) {
   .project-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-6);
+    gap: 20px;
   }
 }
 
 @media (min-width: 1024px) {
   .project-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-8);
+    gap: 20px;
   }
 }
 
@@ -674,24 +674,19 @@ main {
 .project-card {
   display: block;
   position: relative;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   aspect-ratio: 4 / 3;
-  min-height: 320px;
   background: #111;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15),
-              0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
   transition: box-shadow var(--duration-normal) var(--ease-out),
-              transform var(--duration-normal) var(--ease-out),
               border-color var(--duration-normal) var(--ease-out);
 }
 
 .project-card:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25),
-              0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-  transform: translateY(-3px);
-  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .project-card > img {
@@ -984,17 +979,20 @@ main {
 
 .overview-stats {
   display: grid;
-  gap: var(--space-5);
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  align-content: start;
 }
 
 .overview-stat {
-  padding-bottom: var(--space-5);
-  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-card-border);
 }
 
 .overview-stat:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+  /* No special styling needed */
 }
 
 .overview-stat__label {
