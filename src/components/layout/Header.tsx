@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from '@/components/ThemeProvider'
@@ -12,13 +12,21 @@ const navLinks = [
 
 export function Header() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
   const hamburgerRef = useRef<HTMLButtonElement>(null)
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
 
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 40)
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   return (
     <>
-      <header className="site-header">
+      <header className={`site-header${isScrolled ? ' site-header--scrolled' : ''}`}>
         <div className="container container--wide">
           <Link href="/" className="logo" aria-label="Resonance Network home">
             <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

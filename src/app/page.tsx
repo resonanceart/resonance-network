@@ -42,8 +42,7 @@ export default function HomePage() {
         />
         <div className="site-hero__overlay"></div>
         <div className="site-hero__content">
-          <h1 className="site-hero__title">Resonance Network</h1>
-          <p className="site-hero__tagline">We connect visionary creators with pathways to bring extraordinary visions to life.</p>
+          <h1 className="site-hero__tagline">We connect visionary creators with pathways to bring extraordinary visions to life.</h1>
           <div className="site-hero__actions">
             <a href="#projects" className="btn btn--hero">Explore Projects</a>
             <a href="/submit" className="btn btn--hero btn--hero-outline">Submit a Project</a>
@@ -53,10 +52,7 @@ export default function HomePage() {
 
       {/* Intro section — below the hero */}
       <section className="hero-intro">
-        <div className="hero-intro__inner">
-          <h2 className="hero-intro__heading">Where ambitious creative projects find the people and momentum to become real.</h2>
-          <p className="hero-intro__body">Immersive installations. Regenerative architecture. Living public spaces. We connect visionary creators with the collaborators, expertise, and pathways they need — so extraordinary work doesn&apos;t stall at the concept stage.</p>
-        </div>
+        <p className="hero-intro__text">Immersive art. Regenerative architecture. Ecological design. One network.</p>
       </section>
 
       {/* Project Gallery with filtering */}
