@@ -445,7 +445,7 @@ main {
   position: relative;
   z-index: 1;
   width: 100%;
-  padding: 0 var(--gutter) var(--space-16);
+  padding: 0 var(--gutter) var(--space-8);
   max-width: var(--container-max);
   margin: 0 auto;
   text-align: center;
@@ -463,11 +463,15 @@ main {
 }
 
 .site-hero__tagline {
-  color: rgba(255,255,255,0.82);
-  font-size: var(--text-lg);
-  max-width: 44ch;
+  font-family: var(--font-display);
+  font-size: var(--text-hero);
+  font-weight: 500;
+  font-style: italic;
+  color: #fff;
+  max-width: 18ch;
   margin: 0 auto var(--space-6);
-  line-height: 1.5;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
 }
 
 .site-hero__sub {
@@ -510,6 +514,12 @@ main {
   }
   .site-hero__content {
     padding-bottom: var(--space-10);
+  }
+}
+
+@media (max-width: 767px) {
+  .site-hero__actions .btn--hero:first-child {
+    display: none;
   }
 }
 
@@ -642,20 +652,22 @@ main {
 .project-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-8);
-  padding: 0 var(--space-2) var(--space-16);
+  gap: 24px;
+  padding: var(--space-4);
+  padding-bottom: var(--space-16);
 }
 
 @media (min-width: 640px) {
   .project-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
   }
 }
 
 @media (min-width: 1024px) {
   .project-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-8);
+    gap: 24px;
   }
 }
 
@@ -668,12 +680,10 @@ main {
   aspect-ratio: 4 / 3;
   min-height: 320px;
   background: #111;
-  transition: transform var(--duration-normal) var(--ease-out),
-              box-shadow var(--duration-normal) var(--ease-out);
+  transition: box-shadow var(--duration-normal) var(--ease-out);
 }
 
 .project-card:hover {
-  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
@@ -2287,15 +2297,48 @@ main {
   }
 
   .project-hero {
-    min-height: 40vh;
+    display: flex;
+    flex-direction: column;
+    position: static;
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .project-hero img {
+    position: relative !important;
+    inset: auto;
+    width: 100%;
+    height: 50vh;
+    display: block;
+  }
+
+  .project-hero__overlay {
+    display: none;
+  }
+
+  .project-hero__content {
+    position: static;
+    z-index: auto;
+    padding: var(--space-6) var(--gutter);
+    background: var(--color-bg);
   }
 
   .project-hero__title {
     font-size: var(--text-3xl);
+    color: var(--color-text);
   }
 
   .project-hero__desc {
     font-size: var(--text-base);
+    color: var(--color-text-secondary);
+  }
+
+  .project-hero .badge {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }
 

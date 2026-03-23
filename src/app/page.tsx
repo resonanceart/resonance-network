@@ -42,7 +42,7 @@ export default function HomePage() {
         />
         <div className="site-hero__overlay"></div>
         <div className="site-hero__content">
-          <h1 className="site-hero__tagline">We connect visionary creators with pathways to bring extraordinary visions to life.</h1>
+          <h1 className="site-hero__tagline">Art at the scale of your ambition.</h1>
           <div className="site-hero__actions">
             <a href="#projects" className="btn btn--hero">Explore Projects</a>
             <a href="/submit" className="btn btn--hero btn--hero-outline">Submit a Project</a>
