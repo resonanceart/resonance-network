@@ -43,6 +43,7 @@ export default function HomePage() {
         <div className="site-hero__overlay"></div>
         <div className="site-hero__content">
           <h1 className="site-hero__title">Resonance Network</h1>
+          <p className="site-hero__tagline">We connect visionary creators with pathways to bring extraordinary visions to life.</p>
           <div className="site-hero__actions">
             <a href="#projects" className="btn btn--hero">Explore Projects</a>
             <a href="/submit" className="btn btn--hero btn--hero-outline">Submit a Project</a>
