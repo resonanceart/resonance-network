@@ -145,7 +145,6 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           <div className="container">
             <h2 className="sr-only">Project Overview</h2>
             <p className="section-label">The Vision</p>
-            <h2 className="sr-only">Project Overview</h2>
             <div className="overview-grid">
               <div>
                 {project.overviewLead && (
@@ -238,7 +237,6 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         <div className="container">
           <h2 className="sr-only">Project Classification</h2>
           <p className="section-label">DNA</p>
-          <h2 className="sr-only">Project Classification</h2>
           <div className="classification-grid">
             {project.domains.length > 0 && (
               <div className="classification-item">
@@ -274,7 +272,6 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           <div className="container">
             <h2 className="sr-only">Team Members</h2>
             <p className="section-label">The People Behind It</p>
-            <h2 className="sr-only">Team Members</h2>
             <div className="team-grid">
               {project.leadArtistName && (
                 <TeamCard
