@@ -182,6 +182,7 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
                 <p className="collab-available__body">
                   Are you an engineer, fabricator, designer, or specialist looking for meaningful projects? Fill out the form below and we&apos;ll connect you with curated projects that match your skills and values.
                 </p>
+                <p className="typeform-notice">Typeform integration coming soon. For now, use the form below or contact <a href="mailto:resonanceartcollective@gmail.com">resonanceartcollective@gmail.com</a> directly.</p>
                 {isProfileSubmitted ? (
                   <div className="collab-available__confirmation">
                     <div className="confirmation-card">

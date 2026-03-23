@@ -1404,6 +1404,23 @@ main {
   border-top: 1px solid var(--color-border);
 }
 
+/* Typeform Notice */
+.typeform-notice {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.typeform-notice a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* Task Card Inline Form */
 .task-card__form-wrapper {
   margin-top: var(--space-4);

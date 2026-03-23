@@ -76,6 +76,7 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
         </div>
       ) : (
         <div className="task-card__form-wrapper" ref={formRef}>
+          <p className="typeform-notice">Typeform integration coming soon. For now, use the form below or contact <a href="mailto:resonanceartcollective@gmail.com">resonanceartcollective@gmail.com</a> directly.</p>
           <form className="task-card__form" onSubmit={handleSubmit}>
             <div className="form-field">
               <label htmlFor={`name-${task.id}`}>Name *</label>
