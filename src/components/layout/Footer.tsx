@@ -17,7 +17,7 @@ export function Footer() {
                 <span className="logo-text">Resonance Network</span>
               </Link>
               <p className="footer-tagline">We connect visionary creators with pathways to bring extraordinary visions to life.</p>
-              <a href="mailto:hello@resonanceartcollective.com" className="footer-email">hello@resonanceartcollective.com</a>
+              <a href="mailto:resonanceartcollective@gmail.com" className="footer-email">resonanceartcollective@gmail.com</a>
             </div>
 
             {/* Column 2: Explore */}
@@ -51,7 +51,7 @@ export function Footer() {
                   </svg>
                   <span>LinkedIn</span>
                 </a>
-                <a href="mailto:hello@resonanceartcollective.com">
+                <a href="mailto:resonanceartcollective@gmail.com">
                   <svg className="footer-social-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <rect x="2" y="4" width="20" height="16" rx="2"/>
                     <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>

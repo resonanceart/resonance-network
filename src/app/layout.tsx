@@ -94,7 +94,7 @@ const organizationJsonLd = {
   logo: 'https://resonance.network/assets/images/projects/money-shot.png',
   description:
     'An artist-led platform connecting creators of immersive installations, regenerative architecture, and ecological design with the collaborators, expertise, and pathways to get built.',
-  email: 'hello@resonanceartcollective.com',
+  email: 'resonanceartcollective@gmail.com',
   foundingDate: '2024',
   knowsAbout: [
     'Immersive Art Installations',

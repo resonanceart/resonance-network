@@ -36,6 +36,7 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
   const [profilePortfolio, setProfilePortfolio] = useState('')
   const [profileAvailability, setProfileAvailability] = useState('')
   const [profileNote, setProfileNote] = useState('')
+  const [isProfileSubmitted, setIsProfileSubmitted] = useState(false)
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase()
@@ -66,7 +67,8 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
       (profileNote ? `\nAdditional Notes:\n${profileNote}\n` : '') +
       `\n—\nSubmitted via Resonance Network`
     )
-    window.location.href = `mailto:hello@resonanceartcollective.com?subject=${subject}&body=${body}`
+    window.location.href = `mailto:resonanceartcollective@gmail.com?subject=${subject}&body=${body}`
+    setIsProfileSubmitted(true)
   }
 
   return (
@@ -180,84 +182,93 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
                 <p className="collab-available__body">
                   Are you an engineer, fabricator, designer, or specialist looking for meaningful projects? Fill out the form below and we&apos;ll connect you with curated projects that match your skills and values.
                 </p>
-                <form className="collab-profile-form" onSubmit={handleProfileSubmit}>
-                  <div className="form-field">
-                    <label htmlFor="profile-name">Full Name *</label>
-                    <input
-                      id="profile-name"
-                      type="text"
-                      required
-                      value={profileName}
-                      onChange={e => setProfileName(e.target.value)}
-                      placeholder="Your full name"
-                    />
+                {isProfileSubmitted ? (
+                  <div className="collab-available__confirmation">
+                    <div className="confirmation-card">
+                      <span className="confirmation-card__icon" aria-hidden="true">✓</span>
+                      <p className="confirmation-card__message">Thanks! We received your information and will be in touch soon.</p>
+                    </div>
                   </div>
-                  <div className="form-field">
-                    <label htmlFor="profile-email">Email *</label>
-                    <input
-                      id="profile-email"
-                      type="email"
-                      required
-                      value={profileEmail}
-                      onChange={e => setProfileEmail(e.target.value)}
-                      placeholder="you@example.com"
-                    />
-                  </div>
-                  <div className="form-field">
-                    <label htmlFor="profile-photo">Photo URL</label>
-                    <input
-                      id="profile-photo"
-                      type="url"
-                      value={profilePhoto}
-                      onChange={e => setProfilePhoto(e.target.value)}
-                      placeholder="Link to your headshot or profile photo"
-                    />
-                  </div>
-                  <div className="form-field">
-                    <label htmlFor="profile-skills">Skills / Expertise *</label>
-                    <textarea
-                      id="profile-skills"
-                      required
-                      value={profileSkills}
-                      onChange={e => setProfileSkills(e.target.value)}
-                      placeholder="What do you bring? Engineering, design, fabrication, etc."
-                      rows={3}
-                    />
-                  </div>
-                  <div className="form-field">
-                    <label htmlFor="profile-portfolio">Relevant Projects / Portfolio</label>
-                    <textarea
-                      id="profile-portfolio"
-                      value={profilePortfolio}
-                      onChange={e => setProfilePortfolio(e.target.value)}
-                      placeholder="Links to portfolio, past projects, or other work"
-                      rows={2}
-                    />
-                  </div>
-                  <div className="form-field">
-                    <label htmlFor="profile-availability">Availability</label>
-                    <input
-                      id="profile-availability"
-                      type="text"
-                      value={profileAvailability}
-                      onChange={e => setProfileAvailability(e.target.value)}
-                      placeholder="Full-time, part-time, project-based?"
-                    />
-                  </div>
-                  <div className="form-field">
-                    <label htmlFor="profile-note">A Brief Note</label>
-                    <textarea
-                      id="profile-note"
-                      value={profileNote}
-                      onChange={e => setProfileNote(e.target.value)}
-                      placeholder="Anything else you'd like us to know?"
-                      rows={2}
-                    />
-                  </div>
-                  <button type="submit" className="btn btn--primary btn--large">
-                    Submit Profile
-                  </button>
-                </form>
+                ) : (
+                  <form className="collab-profile-form" onSubmit={handleProfileSubmit}>
+                    <div className="form-field">
+                      <label htmlFor="profile-name">Full Name *</label>
+                      <input
+                        id="profile-name"
+                        type="text"
+                        required
+                        value={profileName}
+                        onChange={e => setProfileName(e.target.value)}
+                        placeholder="Your full name"
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label htmlFor="profile-email">Email *</label>
+                      <input
+                        id="profile-email"
+                        type="email"
+                        required
+                        value={profileEmail}
+                        onChange={e => setProfileEmail(e.target.value)}
+                        placeholder="you@example.com"
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label htmlFor="profile-photo">Photo URL</label>
+                      <input
+                        id="profile-photo"
+                        type="url"
+                        value={profilePhoto}
+                        onChange={e => setProfilePhoto(e.target.value)}
+                        placeholder="Link to your headshot or profile photo"
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label htmlFor="profile-skills">Skills / Expertise *</label>
+                      <textarea
+                        id="profile-skills"
+                        required
+                        value={profileSkills}
+                        onChange={e => setProfileSkills(e.target.value)}
+                        placeholder="What do you bring? Engineering, design, fabrication, etc."
+                        rows={3}
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label htmlFor="profile-portfolio">Relevant Projects / Portfolio</label>
+                      <textarea
+                        id="profile-portfolio"
+                        value={profilePortfolio}
+                        onChange={e => setProfilePortfolio(e.target.value)}
+                        placeholder="Links to portfolio, past projects, or other work"
+                        rows={2}
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label htmlFor="profile-availability">Availability</label>
+                      <input
+                        id="profile-availability"
+                        type="text"
+                        value={profileAvailability}
+                        onChange={e => setProfileAvailability(e.target.value)}
+                        placeholder="Full-time, part-time, project-based?"
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label htmlFor="profile-note">A Brief Note</label>
+                      <textarea
+                        id="profile-note"
+                        value={profileNote}
+                        onChange={e => setProfileNote(e.target.value)}
+                        placeholder="Anything else you'd like us to know?"
+                        rows={2}
+                      />
+                    </div>
+                    <button type="submit" className="btn btn--primary btn--large">
+                      Submit Profile
+                    </button>
+                  </form>
+                )}
               </div>
               <div className="collab-available__skills">
                 <p className="collab-available__skills-title">Skills in demand right now:</p>

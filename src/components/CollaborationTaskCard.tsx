@@ -5,6 +5,7 @@ import { Badge } from './ui/Badge'
 
 export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -25,6 +26,7 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
       `—\nSent via Resonance Network`
     )
     window.location.href = `mailto:${task.contactEmail}?subject=${subject}&body=${body}`
+    setIsSubmitted(true)
   }
 
   return (
@@ -64,6 +66,13 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
           >
             Connect Me
           </button>
+        </div>
+      ) : isSubmitted ? (
+        <div className="task-card__confirmation">
+          <div className="confirmation-card">
+            <span className="confirmation-card__icon" aria-hidden="true">✓</span>
+            <p className="confirmation-card__message">Thanks! We received your information and will be in touch soon.</p>
+          </div>
         </div>
       ) : (
         <div className="task-card__form-wrapper" ref={formRef}>
