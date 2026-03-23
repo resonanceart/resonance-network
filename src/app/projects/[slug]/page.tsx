@@ -23,16 +23,16 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const project = (projectsData as Project[]).find(p => p.slug === params.slug)
   if (!project) return {}
-  const title = `${project.title} — ${project.domains.slice(0, 2).join(' & ')} Project`
+  const title = `${project.title} — ${project.domains.slice(0, 2).join(' & ')} | Resonance Network`
   return {
     title,
-    description: project.shortDescription,
+    description: `${project.shortDescription} Explore this ${project.stage.toLowerCase()} stage ${project.domains[0]?.toLowerCase() || 'creative'} project on Resonance Network.`,
     alternates: {
       canonical: `https://resonance.network/projects/${project.slug}`,
     },
     openGraph: {
       title: project.title,
-      description: project.shortDescription,
+      description: `${project.shortDescription} A curated ${project.domains[0]?.toLowerCase() || 'creative'} project on Resonance Network.`,
       url: `https://resonance.network/projects/${project.slug}`,
       images: [{ url: project.heroImage.url, alt: project.heroImage.alt, width: 1200, height: 630 }],
       type: 'article',

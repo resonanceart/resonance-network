@@ -5,21 +5,21 @@ import type { Project } from '@/types'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Resonance Network — Immersive Art, Regenerative Architecture & Ecological Design',
-  description: 'Explore curated projects at the intersection of immersive art, regenerative architecture, and ecological design. An artist-led platform for ambitious work.',
+  title: 'Resonance Network — Immersive Art Installations, Regenerative Architecture & Ecological Design',
+  description: 'Discover curated immersive art installations, regenerative architecture, and ecological design projects. Connect with collaborators to build ambitious creative work.',
   alternates: {
     canonical: 'https://resonance.network',
   },
   openGraph: {
-    title: 'Resonance Network — Immersive Art, Regenerative Architecture & Ecological Design',
-    description: 'Explore curated projects at the intersection of immersive art, regenerative architecture, and ecological design. An artist-led platform for ambitious work.',
+    title: 'Resonance Network — Immersive Art Installations, Regenerative Architecture & Ecological Design',
+    description: 'Discover curated immersive art installations, regenerative architecture, and ecological design projects. Connect with collaborators to build ambitious creative work.',
     type: 'website',
     images: [{ url: '/og-image.jpg' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Resonance Network — Immersive Art, Regenerative Architecture & Ecological Design',
-    description: 'Curated projects at the intersection of immersive art, regenerative architecture, and ecological design.',
+    title: 'Resonance Network — Immersive Art Installations, Regenerative Architecture & Ecological Design',
+    description: 'Curated immersive art installations, regenerative architecture, and ecological design. An artist-led collaboration platform.',
     images: [{ url: '/og-image.jpg' }],
   },
 }
