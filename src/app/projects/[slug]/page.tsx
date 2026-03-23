@@ -171,6 +171,12 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
                     <p className="overview-stat__value">{project.scale}</p>
                   </div>
                 )}
+                {project.location && (
+                  <div className="overview-stat">
+                    <p className="overview-stat__label">Location</p>
+                    <p className="overview-stat__value">{project.location}</p>
+                  </div>
+                )}
                 {project.pathways.length > 0 && (
                   <div className="overview-stat">
                     <p className="overview-stat__label">Pathways</p>
@@ -186,6 +192,43 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
       {/* Gallery */}
       {project.galleryImages.length > 0 && (
         <ProjectGalleryGrid images={project.galleryImages} />
+      )}
+
+      {/* The Experience */}
+      {project.experience && (
+        <section className="project-experience">
+          <div className="container">
+            <p className="section-label">The Experience</p>
+            <h2>What It Feels Like</h2>
+            <p className="overview-body">{project.experience}</p>
+          </div>
+        </section>
+      )}
+
+      {/* The Story Behind It */}
+      {project.artistStory && (
+        <section className="project-story">
+          <div className="container">
+            <p className="section-label">Origin</p>
+            <h2>The Story Behind It</h2>
+            <p className="overview-body">{project.artistStory}</p>
+          </div>
+        </section>
+      )}
+
+      {/* Goals */}
+      {project.goals && project.goals.length > 0 && (
+        <section className="project-goals">
+          <div className="container">
+            <p className="section-label">Ambition</p>
+            <h2>What This Project Aims to Achieve</h2>
+            <ul className="goals-list">
+              {project.goals.map((goal, i) => (
+                <li key={i} className="goals-list__item">{goal}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
       )}
 
       {/* Milestones */}

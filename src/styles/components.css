@@ -1108,6 +1108,74 @@
   color: var(--color-text);
 }
 
+/* Project Experience */
+.project-experience {
+  padding: var(--space-12) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.project-experience h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+}
+
+/* Project Story */
+.project-story {
+  padding: var(--space-12) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.project-story h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+}
+
+/* Project Goals */
+.project-goals {
+  padding: var(--space-12) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.project-goals h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  margin-bottom: var(--space-6);
+}
+
+.goals-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.goals-list__item {
+  position: relative;
+  padding-left: var(--space-6);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.goals-list__item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  opacity: 0.6;
+}
+
 /* Collaboration tasks */
 .project-collab {
   padding: var(--space-12) 0;

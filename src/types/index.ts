@@ -46,6 +46,10 @@ export interface Project {
   contactEmail?: string
   milestones?: Milestone[]
   updates?: ProjectUpdate[]
+  experience?: string
+  artistStory?: string
+  goals?: string[]
+  location?: string
 }
 
 export interface CollaborationTask {

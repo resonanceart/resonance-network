@@ -91,7 +91,17 @@
         "text": "Digital parametric model finalized with structural analysis.",
         "link": null
       }
-    ]
+    ],
+    "experience": "Visitors enter through a low, organic opening at the base of the shell and begin spiraling upward through bamboo stairs, rope bridges, net hammocks, and open platforms. Sound and light shift with each level — from deep, resonant tones at the base to airy, wind-driven harmonics near the top. At the summit, an open platform offers panoramic views and a shared sense of arrival. The journey is physical, meditative, and collective — everyone who enters becomes part of the living rhythm of the structure.",
+    "artistStory": "Resonance was born from a single question: what would it feel like to climb inside a seashell? Elliot Fabri, a multidisciplinary artist and designer, spent years studying the geometry of the queen's conch — its logarithmic spiral, its acoustic properties, its structural elegance. After years of working on large-scale festival installations and immersive environments, Elliot founded Resonance Art Collective to bring this vision to life at permanent, architectural scale. The project is deeply personal — rooted in the belief that built spaces should invite wonder, not just function.",
+    "goals": [
+      "Build a permanent, climbable bamboo installation at architectural scale",
+      "Pioneer bamboo construction techniques adapted from traditional Balinese methods",
+      "Create an immersive space for 100+ simultaneous visitors",
+      "Establish Resonance as a model for artist-led regenerative architecture",
+      "Secure fiscal sponsorship and raise $175,000 for Phase 1 construction"
+    ],
+    "location": "Bali, Indonesia (primary); festival and exhibition sites worldwide"
   },
   {
     "id": "terra-nexus",
@@ -139,7 +149,17 @@
         "text": "Completed ecological site survey with soil and hydrology analysis.",
         "link": null
       }
-    ]
+    ],
+    "experience": "Approaching Terra Nexus, visitors first hear water — the soft movement of constructed wetlands filtering stormwater through gravel beds and native plantings. The pavilion's rammed earth walls radiate warmth, their layered strata telling the geological story of the site. Inside, the gathering space opens to a living roof where rainwater is visible moving through the system. The air smells of wet earth and native grasses. Community members gather on built-in earthen benches for workshops, meals, and conversation — surrounded by the quiet evidence that damaged land can be brought back to life.",
+    "artistStory": "Jordan Clarke grew up watching vacant lots in their Detroit neighborhood accumulate trash and standing water. Trained as both an ecologist and an architect, Jordan became obsessed with the question: what if the most neglected urban land could become the most cherished? Terra Nexus emerged from a decade of community work — mapping brownfield sites, running soil remediation workshops, and designing small-scale rain gardens with neighbors. This project is the culmination of that journey: a full-scale demonstration that regenerative infrastructure can be beautiful, functional, and community-owned.",
+    "goals": [
+      "Remediate a brownfield site through constructed wetland systems",
+      "Create a year-round community gathering pavilion with passive climate control",
+      "Demonstrate rammed earth construction using on-site soil",
+      "Establish a replicable model for regenerative community infrastructure",
+      "Engage 200+ residents in participatory design and construction"
+    ],
+    "location": "Detroit, Michigan"
   },
   {
     "id": "luminous-currents",
