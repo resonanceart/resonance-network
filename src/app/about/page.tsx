@@ -2,22 +2,22 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'About',
-  description: 'Built by artists, for artists. Learn how Resonance Network helps immersive art, regenerative architecture, and ecological design projects get built.',
+  title: 'About — Artist-Led Platform for Immersive & Regenerative Projects',
+  description: 'Built by artists, for artists. Resonance Network connects creators of immersive art, regenerative architecture, and ecological design with collaborators to get built.',
   alternates: {
     canonical: 'https://resonance.network/about',
   },
   openGraph: {
-    title: 'About Resonance Network',
-    description: 'An artist-led platform for work too ambitious to build alone — immersive installations, regenerative architecture, and ecological design at scale.',
+    title: 'About Resonance Network — Art Collaboration Platform',
+    description: 'An artist-led collaboration platform for immersive art installations, regenerative architecture, and ecological design — connecting creators with expertise at scale.',
     url: 'https://resonance.network/about',
     type: 'website',
     images: [{ url: '/og-image.jpg' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'About Resonance Network',
-    description: 'An artist-led platform for immersive art, regenerative architecture, and ecological design at scale.',
+    title: 'About Resonance Network — Art Collaboration Platform',
+    description: 'An artist-led platform connecting creators of immersive art and regenerative architecture with collaborators.',
     images: [{ url: '/og-image.jpg' }],
   },
 }

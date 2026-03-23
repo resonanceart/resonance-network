@@ -23,16 +23,16 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const project = (projectsData as Project[]).find(p => p.slug === params.slug)
   if (!project) return {}
-  const title = `${project.title} — ${project.domains.slice(0, 2).join(' & ')} Project`
+  const title = `${project.title} — ${project.domains.slice(0, 2).join(' & ')} | Resonance Network`
   return {
     title,
-    description: project.shortDescription,
+    description: `${project.shortDescription} Explore this ${project.stage.toLowerCase()} stage ${project.domains[0]?.toLowerCase() || 'creative'} project on Resonance Network.`,
     alternates: {
       canonical: `https://resonance.network/projects/${project.slug}`,
     },
     openGraph: {
       title: project.title,
-      description: project.shortDescription,
+      description: `${project.shortDescription} A curated ${project.domains[0]?.toLowerCase() || 'creative'} project on Resonance Network.`,
       url: `https://resonance.network/projects/${project.slug}`,
       images: [{ url: project.heroImage.url, alt: project.heroImage.alt, width: 1200, height: 630 }],
       type: 'article',
@@ -145,7 +145,6 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           <div className="container">
             <h2 className="sr-only">Project Overview</h2>
             <p className="section-label">The Vision</p>
-            <h2 className="sr-only">Project Overview</h2>
             <div className="overview-grid">
               <div>
                 {project.overviewLead && (
@@ -238,7 +237,6 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         <div className="container">
           <h2 className="sr-only">Project Classification</h2>
           <p className="section-label">DNA</p>
-          <h2 className="sr-only">Project Classification</h2>
           <div className="classification-grid">
             {project.domains.length > 0 && (
               <div className="classification-item">
@@ -274,7 +272,6 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           <div className="container">
             <h2 className="sr-only">Team Members</h2>
             <p className="section-label">The People Behind It</p>
-            <h2 className="sr-only">Team Members</h2>
             <div className="team-grid">
               {project.leadArtistName && (
                 <TeamCard

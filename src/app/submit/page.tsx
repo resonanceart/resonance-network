@@ -2,22 +2,22 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Submit a Project',
-  description: "You've done the hard part — now find the collaborators, expertise, and pathways to make it real. Submit your project to Resonance Network.",
+  title: 'Submit a Project — Open Call for Artists & Architects',
+  description: "Submit your immersive art, regenerative architecture, or ecological design project. Find collaborators, expertise, and pathways to make ambitious creative work real.",
   alternates: {
     canonical: 'https://resonance.network/submit',
   },
   openGraph: {
-    title: 'Submit a Project to Resonance Network',
-    description: 'You\'ve done the hard part — now find the people, pathways, and momentum to make it real.',
+    title: 'Submit a Project — Open Call for Artists | Resonance Network',
+    description: 'Submit your immersive art or regenerative architecture project. Find the collaborators and pathways to make it real.',
     url: 'https://resonance.network/submit',
     type: 'website',
     images: [{ url: '/og-image.jpg' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Submit a Project to Resonance Network',
-    description: "You've done the hard part — now find the collaborators and pathways to make it real.",
+    title: 'Submit a Project — Open Call for Artists | Resonance Network',
+    description: "Submit your immersive art or regenerative architecture project. Find collaborators and pathways to get built.",
     images: [{ url: '/og-image.jpg' }],
   },
 }
