@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server'
-
-// TODO: Add email notification via SendGrid or Resend
-// When an email service is configured, send a notification to
-// resonanceartcollective@gmail.com with the collaboration interest details.
+import { supabaseAdmin } from '@/lib/supabase'
 
 export async function POST(request: Request) {
   try {
@@ -16,15 +13,27 @@ export async function POST(request: Request) {
       )
     }
 
-    // Log submission for now — replace with database/email service
-    console.log('=== New Collaboration Interest ===')
-    console.log(`Task: ${taskTitle}`)
-    console.log(`Project: ${projectTitle}`)
-    console.log(`Name: ${name}`)
-    console.log(`Email: ${email}`)
-    if (phone) console.log(`Phone: ${phone}`)
-    console.log(`Experience: ${experience}`)
-    console.log('=================================')
+    // Store in Supabase
+    const { error } = await supabaseAdmin
+      .from('collaboration_interest')
+      .insert({
+        name,
+        email,
+        phone: phone || null,
+        experience,
+        task_title: taskTitle || null,
+        project_title: projectTitle || null,
+      })
+
+    if (error) {
+      console.error('Supabase insert error:', error)
+      // Fall back to logging if database isn't set up yet
+      console.log('=== New Collaboration Interest (fallback log) ===')
+      console.log({ name, email, phone, experience, taskTitle, projectTitle })
+    }
+
+    // TODO: Add email notification via SendGrid or Resend
+    // Send notification to resonanceartcollective@gmail.com
 
     return NextResponse.json({
       success: true,

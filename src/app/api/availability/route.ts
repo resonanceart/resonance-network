@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server'
-
-// TODO: Add email notification via SendGrid or Resend
-// When an email service is configured, send a notification to
-// resonanceartcollective@gmail.com with the collaborator profile details.
+import { supabaseAdmin } from '@/lib/supabase'
 
 export async function POST(request: Request) {
   try {
@@ -16,16 +13,28 @@ export async function POST(request: Request) {
       )
     }
 
-    // Log submission for now — replace with database/email service
-    console.log('=== New Collaborator Profile ===')
-    console.log(`Name: ${name}`)
-    console.log(`Email: ${email}`)
-    if (photoUrl) console.log(`Photo: ${photoUrl}`)
-    console.log(`Skills: ${skills}`)
-    if (portfolio) console.log(`Portfolio: ${portfolio}`)
-    if (availability) console.log(`Availability: ${availability}`)
-    if (notes) console.log(`Notes: ${notes}`)
-    console.log('================================')
+    // Store in Supabase
+    const { error } = await supabaseAdmin
+      .from('collaborator_profiles')
+      .insert({
+        name,
+        email,
+        photo_url: photoUrl || null,
+        skills,
+        portfolio: portfolio || null,
+        availability: availability || null,
+        notes: notes || null,
+      })
+
+    if (error) {
+      console.error('Supabase insert error:', error)
+      // Fall back to logging if database isn't set up yet
+      console.log('=== New Collaborator Profile (fallback log) ===')
+      console.log({ name, email, photoUrl, skills, portfolio, availability, notes })
+    }
+
+    // TODO: Add email notification via SendGrid or Resend
+    // Send notification to resonanceartcollective@gmail.com
 
     return NextResponse.json({
       success: true,
