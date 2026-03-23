@@ -56,8 +56,8 @@ export default function AboutPage() {
             <Link href="/">Home</Link> <span aria-hidden="true">/</span> <span>About</span>
           </nav>
           <p className="section-label">About Resonance Network</p>
-          <h1 className="about-hero__headline">We connect visionary creators with pathways to bring extraordinary visions to life.</h1>
-          <p className="about-hero__sub">Resonance Network is a curated, artist-led platform for large-scale immersive art, regenerative architecture, and ecological design.</p>
+          <h1 className="about-hero__headline">Built by artists. For artists.</h1>
+          <p className="about-hero__sub">A curated platform where extraordinary creative projects find the collaborators and momentum to get built.</p>
         </div>
       </section>
 

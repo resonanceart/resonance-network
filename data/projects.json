@@ -123,7 +123,20 @@
       "url": "/assets/images/projects/canopy-commons.png",
       "alt": "Terra Nexus — regenerative community pavilion concept"
     },
-    "galleryImages": [],
+    "galleryImages": [
+      {
+        "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80",
+        "alt": "Sweeping mountain landscape with layered terrain and dramatic light"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200&q=80",
+        "alt": "Sunlit valley with rolling green hills and natural contours"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=1200&q=80",
+        "alt": "Aerial view of lush forested landscape meeting open terrain"
+      }
+    ],
     "overviewLead": "Terra Nexus transforms degraded urban land into living community infrastructure.",
     "overviewBody": "A regenerative community pavilion integrating constructed wetlands, rammed earth walls, and community gathering spaces. Designed to serve as both ecological remediation and social gathering infrastructure.",
     "leadArtistName": "Jordan Clarke",
@@ -182,7 +195,20 @@
       "url": "/assets/images/projects/night-scene.jpg",
       "alt": "Luminous Currents — kinetic light sculpture for waterfront spaces"
     },
-    "galleryImages": [],
+    "galleryImages": [
+      {
+        "url": "https://images.unsplash.com/photo-1504893524553-b855bce32c67?w=1200&q=80",
+        "alt": "Flowing water reflecting ambient light in natural setting"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1507400492013-162706c8c05e?w=1200&q=80",
+        "alt": "Luminous light patterns dancing across a reflective surface"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=1200&q=80",
+        "alt": "Warm golden light streaming through atmospheric haze"
+      }
+    ],
     "overviewLead": "Luminous Currents animates the interface between water, wind, and light.",
     "overviewBody": "300–500 slender stainless steel masts rise from a waterfront plaza, each topped with a solar-powered LED element that responds to wind and water sensor data in real time.",
     "leadArtistName": "Ingrid Voss",
@@ -242,7 +268,20 @@
       "url": "/assets/images/projects/tidal-angle.png",
       "alt": "Mycelium Sound Chamber — organic acoustic installation"
     },
-    "galleryImages": [],
+    "galleryImages": [
+      {
+        "url": "https://images.unsplash.com/photo-1518882570164-46f1fe1a7294?w=1200&q=80",
+        "alt": "Close-up of organic fungal textures and natural growth patterns"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=1200&q=80",
+        "alt": "Intricate mycelium network spreading across natural substrate"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1504392022767-a8fc0771e239?w=1200&q=80",
+        "alt": "Atmospheric forest floor with dappled light and organic textures"
+      }
+    ],
     "overviewLead": "A new kind of acoustic space grown from living materials.",
     "overviewBody": "The Mycelium Sound Chamber explores how fungal networks can be shaped into acoustic architecture — combining material science, acoustic engineering, and sensory design into a single immersive environment.",
     "leadArtistName": "Sera Okafor",
@@ -300,7 +339,20 @@
       "url": "/assets/images/projects/canopy-commons.png",
       "alt": "Canopy Commons — public shade and gathering structure"
     },
-    "galleryImages": [],
+    "galleryImages": [
+      {
+        "url": "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1200&q=80",
+        "alt": "Dense forest canopy with light filtering through tall trees"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=1200&q=80",
+        "alt": "Sunlight streaming through green tree canopy from below"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=1200&q=80",
+        "alt": "Misty forest path beneath towering trees"
+      }
+    ],
     "overviewLead": "A modular shade system that activates public space for community gathering and civic life.",
     "overviewBody": "Canopy Commons is a modular tensile shade system designed for deployment in underserved public spaces — parks, plazas, and street corners — creating covered areas for workshops, markets, ceremonies, and everyday gathering.",
     "leadArtistName": "Marcus Osei",
@@ -359,7 +411,20 @@
       "url": "/assets/images/projects/coastal-entry.png",
       "alt": "Solaris Pavilion — solar-responsive gathering structure"
     },
-    "galleryImages": [],
+    "galleryImages": [
+      {
+        "url": "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1200&q=80",
+        "alt": "Solar panels catching golden sunlight against clear sky"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?w=1200&q=80",
+        "alt": "Dramatic sunburst over modern architectural structure"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1518623489648-a173ef7824f3?w=1200&q=80",
+        "alt": "Warm light illuminating contemporary pavilion at golden hour"
+      }
+    ],
     "overviewLead": "A structure that generates its own energy while serving as a public gathering place.",
     "overviewBody": "The Solaris Pavilion uses a solar-tracking canopy system to shade public space while generating renewable energy. The structure responds to daily and seasonal light cycles, creating a dynamic relationship between architecture, climate, and community.",
     "leadArtistName": "Yuki Tanaka",
@@ -417,7 +482,20 @@
       "url": "/assets/images/projects/night-scene.jpg",
       "alt": "Deep Current — underwater-inspired immersive environment"
     },
-    "galleryImages": [],
+    "galleryImages": [
+      {
+        "url": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200&q=80",
+        "alt": "Deep blue ocean waves with light refracting through water"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80",
+        "alt": "Crystal clear ocean water meeting white sand shore"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1200&q=80",
+        "alt": "Underwater view of sunlight penetrating deep blue water"
+      }
+    ],
     "overviewLead": "An immersive ocean experience built from light, sound, and moving fabric.",
     "overviewBody": "Deep Current creates a complete sensory environment inspired by the deep ocean — a space where visitors feel submerged in movement, light, and sound without water. Kinetic fabric structures move in choreographed patterns while spatial audio and projection create the sensation of being within a living tidal system.",
     "leadArtistName": "Amara Diallo",
@@ -476,7 +554,20 @@
       "url": "/assets/images/projects/tidal-angle.png",
       "alt": "Tidal Pavilion — coastal gathering structure at the edge of land and sea"
     },
-    "galleryImages": [],
+    "galleryImages": [
+      {
+        "url": "https://images.unsplash.com/photo-1414609245224-afa02bfb3fda?w=1200&q=80",
+        "alt": "Dramatic coastal waves crashing against rocky shoreline"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=1200&q=80",
+        "alt": "Aerial view of turquoise tidal waters meeting the coast"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1439405326854-014607f694d7?w=1200&q=80",
+        "alt": "Expansive ocean horizon with gentle waves at twilight"
+      }
+    ],
     "overviewLead": "A structure that belongs to the tidal edge — shaped by the rhythms of land and sea.",
     "overviewBody": "The Tidal Pavilion proposes a coastal gathering space whose form emerges from tidal ecology and human ritual. Designed for communities at the water's edge, it frames encounter, ceremony, and daily use within an architecture that acknowledges the dynamism of coastal environments.",
     "leadArtistName": "Raia Fatu",
@@ -535,7 +626,20 @@
       "url": "/assets/images/projects/top-down.png",
       "alt": "Root Network — ecological corridors woven into urban neighborhoods"
     },
-    "galleryImages": [],
+    "galleryImages": [
+      {
+        "url": "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=1200&q=80",
+        "alt": "Tangled root systems emerging from rich dark earth"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?w=1200&q=80",
+        "alt": "Golden sunset light over natural landscape with silhouetted figure"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1462275646964-a0e3c11f18a6?w=1200&q=80",
+        "alt": "Lush green vegetation with interconnected natural growth patterns"
+      }
+    ],
     "overviewLead": "Embedding ecological corridors into the fabric of urban neighborhoods.",
     "overviewBody": "Root Network is a participatory infrastructure project that works with urban communities to design and install ecological corridors — continuous green and permeable pathways that connect fragmented urban nature. The project uses art, participatory design, and community engagement to embed ecological thinking into neighborhood planning.",
     "leadArtistName": "Fatima Al-Hassan",
