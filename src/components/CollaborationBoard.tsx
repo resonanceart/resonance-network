@@ -29,6 +29,8 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
   const [activeTab, setActiveTab] = useState<'needs' | 'available'>('needs')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Profile form state
   const [profileName, setProfileName] = useState('')
   const [profileEmail, setProfileEmail] = useState('')
   const [profilePhoto, setProfilePhoto] = useState('')
@@ -36,7 +38,9 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
   const [profilePortfolio, setProfilePortfolio] = useState('')
   const [profileAvailability, setProfileAvailability] = useState('')
   const [profileNote, setProfileNote] = useState('')
+  const [isProfileSubmitting, setIsProfileSubmitting] = useState(false)
   const [isProfileSubmitted, setIsProfileSubmitted] = useState(false)
+  const [profileError, setProfileError] = useState('')
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase()
@@ -52,23 +56,35 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
     })
   }, [tasks, selectedCategory, searchQuery])
 
-  function handleProfileSubmit(e: React.FormEvent) {
+  async function handleProfileSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const subject = encodeURIComponent('Collaborator Profile Submission')
-    const body = encodeURIComponent(
-      `Collaborator Profile Submission\n` +
-      `================================\n\n` +
-      `Name: ${profileName}\n` +
-      `Email: ${profileEmail}\n` +
-      (profilePhoto ? `Photo URL: ${profilePhoto}\n` : '') +
-      `\nSkills / Expertise:\n${profileSkills}\n` +
-      (profilePortfolio ? `\nPortfolio / Past Projects:\n${profilePortfolio}\n` : '') +
-      (profileAvailability ? `\nAvailability: ${profileAvailability}\n` : '') +
-      (profileNote ? `\nAdditional Notes:\n${profileNote}\n` : '') +
-      `\n—\nSubmitted via Resonance Network`
-    )
-    window.location.href = `mailto:resonanceartcollective@gmail.com?subject=${subject}&body=${body}`
-    setIsProfileSubmitted(true)
+    setIsProfileSubmitting(true)
+    setProfileError('')
+    try {
+      const res = await fetch('/api/availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: profileName,
+          email: profileEmail,
+          photoUrl: profilePhoto || undefined,
+          skills: profileSkills,
+          portfolio: profilePortfolio || undefined,
+          availability: profileAvailability || undefined,
+          notes: profileNote || undefined,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setIsProfileSubmitted(true)
+      } else {
+        setProfileError(data.message || 'Something went wrong.')
+      }
+    } catch {
+      setProfileError('Network error. Please try again.')
+    } finally {
+      setIsProfileSubmitting(false)
+    }
   }
 
   return (
@@ -182,18 +198,19 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
                 <p className="collab-available__body">
                   Are you an engineer, fabricator, designer, or specialist looking for meaningful projects? Fill out the form below and we&apos;ll connect you with curated projects that match your skills and values.
                 </p>
-                <p className="typeform-notice">Typeform integration coming soon. For now, use the form below or contact <a href="mailto:resonanceartcollective@gmail.com">resonanceartcollective@gmail.com</a> directly.</p>
+
                 {isProfileSubmitted ? (
                   <div className="collab-available__confirmation">
-                    <div className="confirmation-card">
-                      <span className="confirmation-card__icon" aria-hidden="true">✓</span>
-                      <p className="confirmation-card__message">Thanks! We received your information and will be in touch soon.</p>
+                    <div className="form-success">
+                      <span className="form-success__icon" aria-hidden="true">✓</span>
+                      <p>Thanks! We&apos;ve received your profile. We&apos;ll connect you with matching projects soon.</p>
                     </div>
                   </div>
                 ) : (
                   <form className="collab-profile-form" onSubmit={handleProfileSubmit}>
-                    <div className="form-field">
-                      <label htmlFor="profile-name">Full Name *</label>
+                    {profileError && <p className="form-error">{profileError}</p>}
+                    <div className="form-group">
+                      <label htmlFor="profile-name" className="form-label">Full Name *</label>
                       <input
                         id="profile-name"
                         type="text"
@@ -201,10 +218,11 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
                         value={profileName}
                         onChange={e => setProfileName(e.target.value)}
                         placeholder="Your full name"
+                        className="form-input"
                       />
                     </div>
-                    <div className="form-field">
-                      <label htmlFor="profile-email">Email *</label>
+                    <div className="form-group">
+                      <label htmlFor="profile-email" className="form-label">Email *</label>
                       <input
                         id="profile-email"
                         type="email"
@@ -212,20 +230,22 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
                         value={profileEmail}
                         onChange={e => setProfileEmail(e.target.value)}
                         placeholder="you@example.com"
+                        className="form-input"
                       />
                     </div>
-                    <div className="form-field">
-                      <label htmlFor="profile-photo">Photo URL</label>
+                    <div className="form-group">
+                      <label htmlFor="profile-photo" className="form-label">Photo URL</label>
                       <input
                         id="profile-photo"
                         type="url"
                         value={profilePhoto}
                         onChange={e => setProfilePhoto(e.target.value)}
                         placeholder="Link to your headshot or profile photo"
+                        className="form-input"
                       />
                     </div>
-                    <div className="form-field">
-                      <label htmlFor="profile-skills">Skills / Expertise *</label>
+                    <div className="form-group">
+                      <label htmlFor="profile-skills" className="form-label">Skills and Expertise *</label>
                       <textarea
                         id="profile-skills"
                         required
@@ -233,40 +253,52 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
                         onChange={e => setProfileSkills(e.target.value)}
                         placeholder="What do you bring? Engineering, design, fabrication, etc."
                         rows={3}
+                        className="form-textarea"
                       />
                     </div>
-                    <div className="form-field">
-                      <label htmlFor="profile-portfolio">Relevant Projects / Portfolio</label>
+                    <div className="form-group">
+                      <label htmlFor="profile-portfolio" className="form-label">Portfolio / Past Projects</label>
                       <textarea
                         id="profile-portfolio"
                         value={profilePortfolio}
                         onChange={e => setProfilePortfolio(e.target.value)}
-                        placeholder="Links to portfolio, past projects, or other work"
+                        placeholder="Links to portfolio, past projects, or relevant work"
                         rows={2}
+                        className="form-textarea"
                       />
                     </div>
-                    <div className="form-field">
-                      <label htmlFor="profile-availability">Availability</label>
-                      <input
+                    <div className="form-group">
+                      <label htmlFor="profile-availability" className="form-label">Availability</label>
+                      <select
                         id="profile-availability"
-                        type="text"
                         value={profileAvailability}
                         onChange={e => setProfileAvailability(e.target.value)}
-                        placeholder="Full-time, part-time, project-based?"
-                      />
+                        className="form-select"
+                      >
+                        <option value="">Select availability...</option>
+                        <option value="Full-time">Full-time</option>
+                        <option value="Part-time">Part-time</option>
+                        <option value="Project-based">Project-based</option>
+                        <option value="Flexible">Flexible</option>
+                      </select>
                     </div>
-                    <div className="form-field">
-                      <label htmlFor="profile-note">A Brief Note</label>
+                    <div className="form-group">
+                      <label htmlFor="profile-note" className="form-label">Additional Notes</label>
                       <textarea
                         id="profile-note"
                         value={profileNote}
                         onChange={e => setProfileNote(e.target.value)}
                         placeholder="Anything else you'd like us to know?"
                         rows={2}
+                        className="form-textarea"
                       />
                     </div>
-                    <button type="submit" className="btn btn--primary btn--large">
-                      Submit Profile
+                    <button
+                      type="submit"
+                      className="btn btn--primary btn--large"
+                      disabled={isProfileSubmitting}
+                    >
+                      {isProfileSubmitting ? 'Submitting...' : 'Submit Profile'}
                     </button>
                   </form>
                 )}

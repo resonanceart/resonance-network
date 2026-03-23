@@ -1441,45 +1441,125 @@ main {
   gap: var(--space-3);
 }
 
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+/* =========================
+   FORM ELEMENTS
+   ========================= */
+.form-group {
+  margin-bottom: var(--space-4);
 }
 
-.form-field label {
-  font-size: var(--text-xs);
+.form-label {
+  display: block;
+  font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--color-text-secondary);
+  margin-bottom: var(--space-1);
+  color: var(--color-text);
 }
 
-.form-field input,
-.form-field textarea {
-  padding: var(--space-2) var(--space-3);
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  color: var(--color-text);
   background: var(--color-bg);
-  transition: border-color var(--duration-fast) var(--ease-out);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
 }
 
-.form-field input:focus,
-.form-field textarea:focus {
-  outline: none;
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
 }
 
-.form-field input::placeholder,
-.form-field textarea::placeholder {
+.form-input::placeholder,
+.form-textarea::placeholder {
   color: var(--color-text-faint);
 }
 
-.form-field textarea {
+.form-textarea {
+  min-height: 100px;
   resize: vertical;
-  min-height: 80px;
+}
+
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  padding-right: var(--space-8);
+  cursor: pointer;
+}
+
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .form-textarea,
+[data-theme="dark"] .form-select {
+  background: var(--color-surface-raised);
+}
+
+[data-theme="dark"] .form-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+}
+
+/* Form Success */
+.form-success {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6);
+  background: rgba(67, 122, 34, 0.1);
+  border: 1px solid rgba(67, 122, 34, 0.2);
+  border-radius: var(--radius-lg);
+}
+
+[data-theme="dark"] .form-success {
+  background: rgba(67, 122, 34, 0.15);
+  border-color: rgba(67, 122, 34, 0.25);
+}
+
+.form-success__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(67, 122, 34, 0.8);
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.form-success p {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+/* Form Error */
+.form-error {
+  font-size: var(--text-sm);
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+/* Button disabled state */
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .task-card__form-actions {

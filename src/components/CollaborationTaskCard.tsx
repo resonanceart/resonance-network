@@ -1,32 +1,48 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import type { CollaborationTask } from '@/types'
 import { Badge } from './ui/Badge'
 
 export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [error, setError] = useState('')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [experience, setExperience] = useState('')
-  const formRef = useRef<HTMLDivElement>(null)
 
   const categoryVariant = task.category.toLowerCase()
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const subject = encodeURIComponent(task.contactEmailSubject || `Collaboration Interest: ${task.title}`)
-    const body = encodeURIComponent(
-      `Hi,\n\nI'm interested in the "${task.title}" role on ${task.projectTitle}.\n\n` +
-      `Name: ${name}\n` +
-      `Email: ${email}\n` +
-      (phone ? `Phone: ${phone}\n` : '') +
-      `\nRelevant Experience:\n${experience}\n\n` +
-      `—\nSent via Resonance Network`
-    )
-    window.location.href = `mailto:${task.contactEmail}?subject=${subject}&body=${body}`
-    setIsSubmitted(true)
+    setIsSubmitting(true)
+    setError('')
+    try {
+      const res = await fetch('/api/collaborate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          email,
+          phone: phone || undefined,
+          experience,
+          taskTitle: task.title,
+          projectTitle: task.projectTitle,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setIsSubmitted(true)
+      } else {
+        setError(data.message || 'Something went wrong.')
+      }
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -69,17 +85,17 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
         </div>
       ) : isSubmitted ? (
         <div className="task-card__confirmation">
-          <div className="confirmation-card">
-            <span className="confirmation-card__icon" aria-hidden="true">✓</span>
-            <p className="confirmation-card__message">Thanks! We received your information and will be in touch soon.</p>
+          <div className="form-success">
+            <span className="form-success__icon" aria-hidden="true">✓</span>
+            <p>Thanks! We&apos;ve received your interest in this role. The project team will be in touch soon.</p>
           </div>
         </div>
       ) : (
-        <div className="task-card__form-wrapper" ref={formRef}>
-          <p className="typeform-notice">Typeform integration coming soon. For now, use the form below or contact <a href="mailto:resonanceartcollective@gmail.com">resonanceartcollective@gmail.com</a> directly.</p>
+        <div className="task-card__form-wrapper">
+          {error && <p className="form-error">{error}</p>}
           <form className="task-card__form" onSubmit={handleSubmit}>
-            <div className="form-field">
-              <label htmlFor={`name-${task.id}`}>Name *</label>
+            <div className="form-group">
+              <label htmlFor={`name-${task.id}`} className="form-label">Name *</label>
               <input
                 id={`name-${task.id}`}
                 type="text"
@@ -87,10 +103,11 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="Your full name"
+                className="form-input"
               />
             </div>
-            <div className="form-field">
-              <label htmlFor={`email-${task.id}`}>Email *</label>
+            <div className="form-group">
+              <label htmlFor={`email-${task.id}`} className="form-label">Email *</label>
               <input
                 id={`email-${task.id}`}
                 type="email"
@@ -98,20 +115,22 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@example.com"
+                className="form-input"
               />
             </div>
-            <div className="form-field">
-              <label htmlFor={`phone-${task.id}`}>Phone</label>
+            <div className="form-group">
+              <label htmlFor={`phone-${task.id}`} className="form-label">Phone</label>
               <input
                 id={`phone-${task.id}`}
                 type="tel"
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 placeholder="Optional"
+                className="form-input"
               />
             </div>
-            <div className="form-field">
-              <label htmlFor={`exp-${task.id}`}>Relevant Experience *</label>
+            <div className="form-group">
+              <label htmlFor={`exp-${task.id}`} className="form-label">Relevant Experience *</label>
               <textarea
                 id={`exp-${task.id}`}
                 required
@@ -119,11 +138,16 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
                 onChange={e => setExperience(e.target.value)}
                 placeholder="Tell us briefly about your relevant experience"
                 rows={3}
+                className="form-textarea"
               />
             </div>
             <div className="task-card__form-actions">
-              <button type="submit" className="btn btn--primary btn--full">
-                Send Introduction
+              <button
+                type="submit"
+                className="btn btn--primary btn--full"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Sending...' : 'Send Introduction'}
               </button>
               <button
                 type="button"
