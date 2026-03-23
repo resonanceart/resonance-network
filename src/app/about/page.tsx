@@ -227,35 +227,55 @@ export default function AboutPage() {
           <p className="about-section__intro">Knowing what we aren&apos;t is just as important as knowing what we are:</p>
           <div className="not-grid">
             <div className="not-grid__item">
-              <span className="not-icon">&times;</span>
+              <span className="not-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              </span>
               <div>
                 <strong>Not a social media platform.</strong>
                 <p>No feeds, follower counts, or engagement metrics. This is a working space, not a performance space.</p>
               </div>
             </div>
             <div className="not-grid__item">
-              <span className="not-icon">&times;</span>
+              <span className="not-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              </span>
               <div>
                 <strong>Not a crowdfunding site.</strong>
                 <p>We don&apos;t host campaigns or process donations. We connect creators with funding pathways.</p>
               </div>
             </div>
             <div className="not-grid__item">
-              <span className="not-icon">&times;</span>
+              <span className="not-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              </span>
               <div>
                 <strong>Not a portfolio directory.</strong>
                 <p>This is for serious projects in development that need collaborators and support to get built.</p>
               </div>
             </div>
             <div className="not-grid__item">
-              <span className="not-icon">&times;</span>
+              <span className="not-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              </span>
               <div>
                 <strong>Not a generic art marketplace.</strong>
                 <p>Specifically for large-scale, immersive, and regenerative spatial projects.</p>
               </div>
             </div>
             <div className="not-grid__item">
-              <span className="not-icon">&times;</span>
+              <span className="not-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              </span>
               <div>
                 <strong>Not a grant-making organization.</strong>
                 <p>We help creators navigate funding pathways and connect with the right supporters.</p>
