@@ -67,12 +67,30 @@ export default function SubmitPage() {
           <h2>Before You Begin</h2>
           <p className="submit-section__intro">Gather these materials so your project can shine:</p>
           <ul className="prepare-list">
-            <li><strong>Lead artist information</strong> — name, bio, portfolio or website link</li>
-            <li><strong>Project details</strong> — title, short description (2&ndash;3 sentences), and full project story/narrative</li>
-            <li><strong>Classification</strong> — project domains (what it is), pathways (how it may be realized), and current stage</li>
-            <li><strong>Images and renders</strong> — hero image plus 3&ndash;5 gallery images showing the project concept, materials, or models</li>
-            <li><strong>Collaboration needs</strong> — specific roles or expertise your project is seeking, with descriptions of scope and skills needed</li>
-            <li><strong>Contact information</strong> — how collaborators and the network can reach you</li>
+            <li>
+              <strong>Lead artist information</strong>
+              <span>Name, bio, portfolio or website link</span>
+            </li>
+            <li>
+              <strong>Project details</strong>
+              <span>Title, short description (2&ndash;3 sentences), and full project story/narrative</span>
+            </li>
+            <li>
+              <strong>Classification</strong>
+              <span>Project domains (what it is), pathways (how it may be realized), and current stage</span>
+            </li>
+            <li>
+              <strong>Images and renders</strong>
+              <span>Hero image plus 3&ndash;5 gallery images showing the project concept, materials, or models</span>
+            </li>
+            <li>
+              <strong>Collaboration needs</strong>
+              <span>Specific roles or expertise your project is seeking, with descriptions of scope and skills needed</span>
+            </li>
+            <li>
+              <strong>Contact information</strong>
+              <span>How collaborators and the network can reach you</span>
+            </li>
           </ul>
         </div>
       </section>
