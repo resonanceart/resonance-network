@@ -95,6 +95,45 @@ export default function SubmitPage() {
         </div>
       </section>
 
+      {/* What Makes a Strong Submission */}
+      <section className="submit-section">
+        <div className="container">
+          <h2>What Makes a Strong Submission</h2>
+          <p className="submit-section__intro">We&apos;re looking for projects that are past the idea stage and ready to engage with the network. Here&apos;s what stands out:</p>
+          <ul className="prepare-list">
+            <li>
+              <strong>Substance over polish</strong>
+              <span>Real work matters more than perfect renders. Show us what you&apos;ve built, tested, or prototyped.</span>
+            </li>
+            <li>
+              <strong>Clear creative vision</strong>
+              <span>We want to understand what the project IS, not just what it looks like. Tell us the story.</span>
+            </li>
+            <li>
+              <strong>Interdisciplinary ambition</strong>
+              <span>Projects that cross boundaries between art, architecture, ecology, technology, and community.</span>
+            </li>
+            <li>
+              <strong>Collaboration readiness</strong>
+              <span>You know what you need. Specific roles, specific expertise, specific gaps.</span>
+            </li>
+            <li>
+              <strong>Values alignment</strong>
+              <span>Regenerative thinking, inclusivity, and genuine care for the communities your work touches.</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      {/* Who Can Submit */}
+      <section className="submit-section">
+        <div className="container">
+          <h2>Who Can Submit</h2>
+          <p>Resonance Network is open to artists, architects, designers, collectives, and interdisciplinary teams working on large-scale creative projects. You don&apos;t need a track record of completed installations — but you do need a project with real substance and a clear path forward.</p>
+          <p>We welcome projects at any stage from Design Development through Production, across all domains: immersive art, regenerative architecture, ecological design, public space, experimental technology, and more.</p>
+        </div>
+      </section>
+
       {/* What to Expect */}
       <section className="submit-section">
         <div className="container">

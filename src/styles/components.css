@@ -1473,6 +1473,46 @@
 /* =========================
    ABOUT PAGE
    ========================= */
+.about-hero {
+  padding: var(--space-20) 0 var(--space-12);
+  background: linear-gradient(
+    135deg,
+    rgba(26, 107, 106, 0.06) 0%,
+    rgba(26, 107, 106, 0.02) 50%,
+    transparent 100%
+  );
+  text-align: center;
+  border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="dark"] .about-hero {
+  background: linear-gradient(
+    135deg,
+    rgba(58, 155, 154, 0.08) 0%,
+    rgba(58, 155, 154, 0.03) 50%,
+    transparent 100%
+  );
+}
+
+.about-hero__headline {
+  font-family: var(--font-display);
+  font-size: var(--text-hero);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  max-width: 20ch;
+  margin: 0 auto var(--space-5);
+}
+
+.about-hero__sub {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+  max-width: 52ch;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
 .page-header {
   padding: var(--space-12) 0 var(--space-8);
 }
