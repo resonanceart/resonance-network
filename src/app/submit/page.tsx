@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ProjectSubmissionForm } from '@/components/ProjectSubmissionForm'
 
 export const metadata: Metadata = {
   title: 'Submit a Project',
@@ -145,19 +146,12 @@ export default function SubmitPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="submit-cta">
+      {/* Submission Form */}
+      <section className="submit-form-section">
         <div className="container">
-          <h2>Your Project Deserves the Right People Behind It</h2>
+          <h2>Submit Your Project</h2>
           <p>The submission takes about 15 minutes. Every project is reviewed by practicing artists and makers — people who understand the work.</p>
-          <a
-            href="https://form.typeform.com/to/Szk6kJmX"
-            className="btn btn--primary btn--large"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Start Your Submission
-          </a>
+          <ProjectSubmissionForm />
         </div>
       </section>
     </>
