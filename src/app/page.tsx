@@ -1,7 +1,6 @@
 import Image from 'next/image'
 import { ProjectGallery } from '@/components/ProjectGallery'
-import projectsData from '../../data/projects.json'
-import type { Project } from '@/types'
+import { getProjects } from '@/lib/data'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -24,8 +23,10 @@ export const metadata: Metadata = {
   },
 }
 
-export default function HomePage() {
-  const projects = projectsData as Project[]
+export const revalidate = 60
+
+export default async function HomePage() {
+  const projects = await getProjects()
 
   return (
     <>

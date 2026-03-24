@@ -2,14 +2,16 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
-import profilesData from '../../../../data/profiles.json'
+import { getProfiles, getProfileBySlug } from '@/lib/data'
 import type { Profile } from '@/types'
 import type { Metadata } from 'next'
 
+export const revalidate = 60
+export const dynamicParams = true
+
 export async function generateStaticParams() {
-  return (profilesData as Profile[])
-    .filter(p => p.status === 'published')
-    .map(p => ({ slug: p.slug }))
+  const profiles = await getProfiles()
+  return profiles.map(p => ({ slug: p.slug }))
 }
 
 export async function generateMetadata({
@@ -17,7 +19,7 @@ export async function generateMetadata({
 }: {
   params: { slug: string }
 }): Promise<Metadata> {
-  const profile = (profilesData as Profile[]).find(p => p.slug === params.slug)
+  const profile = await getProfileBySlug(params.slug)
   if (!profile) return {}
   return {
     title: `${profile.name} — ${profile.title}`,
@@ -90,8 +92,8 @@ function getLinkIcon(type?: string) {
   }
 }
 
-export default function ProfilePage({ params }: { params: { slug: string } }) {
-  const profile = (profilesData as Profile[]).find(p => p.slug === params.slug)
+export default async function ProfilePage({ params }: { params: { slug: string } }) {
+  const profile = await getProfileBySlug(params.slug)
   if (!profile) notFound()
 
   return (

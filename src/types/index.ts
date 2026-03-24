@@ -50,6 +50,8 @@ export interface Project {
   artistStory?: string
   goals?: string[]
   location?: string
+  source?: 'json' | 'supabase'
+  supabaseId?: string
 }
 
 export interface ProfileProject {
@@ -85,6 +87,8 @@ export interface Profile {
   achievements?: string[]
   philosophy?: string
   status: 'published' | 'draft'
+  source?: 'json' | 'supabase'
+  supabaseId?: string
 }
 
 export interface CollaborationTask {

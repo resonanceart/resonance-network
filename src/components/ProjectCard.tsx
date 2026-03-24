@@ -28,15 +28,23 @@ export function ProjectCard({ project, index = 0, transitionDelay = 0 }: Props) 
     >
       <Link href={`/projects/${project.slug}`} className="project-card__link">
         {!imgError ? (
-          <Image
-            src={project.heroImage.url}
-            alt={project.heroImage.alt}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            loading="lazy"
-            style={{ objectFit: 'cover' }}
-            onError={() => setImgError(true)}
-          />
+          project.heroImage.url.startsWith('data:') ? (
+            <img
+              src={project.heroImage.url}
+              alt={project.heroImage.alt}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <Image
+              src={project.heroImage.url}
+              alt={project.heroImage.alt}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              loading="lazy"
+              style={{ objectFit: 'cover' }}
+              onError={() => setImgError(true)}
+            />
+          )
         ) : (
           <div
             style={{ position: 'absolute', inset: 0, backgroundColor: '#1a1a1a' }}

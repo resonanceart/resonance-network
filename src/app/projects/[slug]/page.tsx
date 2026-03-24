@@ -5,17 +5,18 @@ import { Badge } from '@/components/ui/Badge'
 import { ProjectGalleryGrid } from '@/components/ProjectGalleryGrid'
 import { CollaborationTaskCard } from '@/components/CollaborationTaskCard'
 import { TeamCard } from '@/components/TeamCard'
-import projectsData from '../../../../data/projects.json'
+import { getProjects, getProjectBySlug } from '@/lib/data'
 import profilesData from '../../../../data/profiles.json'
 import tasksData from '../../../../data/tasks.json'
-import type { Project, CollaborationTask, Milestone, ProjectUpdate } from '@/types'
-import type { Profile } from '@/types'
+import type { Project, CollaborationTask, Milestone, ProjectUpdate, Profile } from '@/types'
 import type { Metadata } from 'next'
 
+export const revalidate = 60
+export const dynamicParams = true
+
 export async function generateStaticParams() {
-  return (projectsData as Project[])
-    .filter(p => p.status === 'published')
-    .map(p => ({ slug: p.slug }))
+  const projects = await getProjects()
+  return projects.map(p => ({ slug: p.slug }))
 }
 
 export async function generateMetadata({
@@ -23,7 +24,7 @@ export async function generateMetadata({
 }: {
   params: { slug: string }
 }): Promise<Metadata> {
-  const project = (projectsData as Project[]).find(p => p.slug === params.slug)
+  const project = await getProjectBySlug(params.slug)
   if (!project) return {}
   const title = `${project.title} — ${project.domains.slice(0, 2).join(' & ')} | Resonance Network`
   return {
@@ -101,8 +102,8 @@ function getBreadcrumbJsonLd(project: Project) {
   }
 }
 
-export default function ProjectPage({ params }: { params: { slug: string } }) {
-  const project = (projectsData as Project[]).find(p => p.slug === params.slug)
+export default async function ProjectPage({ params }: { params: { slug: string } }) {
+  const project = await getProjectBySlug(params.slug)
   if (!project) notFound()
 
   const tasks = (tasksData as CollaborationTask[]).filter(t => t.projectId === project.slug)
