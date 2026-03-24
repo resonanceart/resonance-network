@@ -147,7 +147,7 @@ export default function SubmitPage() {
       </section>
 
       {/* Submission Form */}
-      <section className="submit-form-section">
+      <section className="submit-form-section" id="submission-form">
         <div className="container">
           <h2>Submit Your Project</h2>
           <p>The submission takes about 15 minutes. Every project is reviewed by practicing artists and makers — people who understand the work.</p>

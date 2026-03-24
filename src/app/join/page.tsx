@@ -55,7 +55,7 @@ export default function JoinPage() {
                 <li>Collaboration board listing for open roles</li>
                 <li>Visibility to funders and curators</li>
               </ul>
-              <Link href="/submit" className="btn btn--primary btn--large join-card__cta">
+              <Link href="/submit#submission-form" className="btn btn--primary btn--large join-card__cta">
                 Submit a Project &rarr;
               </Link>
             </div>
@@ -79,7 +79,7 @@ export default function JoinPage() {
                 <li>Direct connection to project teams</li>
                 <li>Skill-matched project alerts</li>
               </ul>
-              <Link href="/collaborate?tab=skills" className="btn btn--primary btn--large join-card__cta">
+              <Link href="/collaborate?tab=skills#join-form" className="btn btn--primary btn--large join-card__cta">
                 Create Your Profile &rarr;
               </Link>
             </div>

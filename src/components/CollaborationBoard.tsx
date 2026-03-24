@@ -151,13 +151,10 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
         <div className="container">
           <div className="collab-tabs" role="tablist" aria-label="Collaboration view">
             <button role="tab" aria-selected={activeTab === 'needs'} className={`collab-tab${activeTab === 'needs' ? ' collab-tab--active' : ''}`} onClick={() => setActiveTab('needs')}>
-              Open Roles
+              Open Projects
             </button>
-            <button role="tab" aria-selected={activeTab === 'people'} className={`collab-tab${activeTab === 'people' ? ' collab-tab--active' : ''}`} onClick={() => setActiveTab('people')}>
-              People in Network
-            </button>
-            <button role="tab" aria-selected={activeTab === 'available'} className={`collab-tab${activeTab === 'available' ? ' collab-tab--active' : ''}`} onClick={() => setActiveTab('available')}>
-              Offer Your Skills
+            <button role="tab" aria-selected={activeTab === 'people' || activeTab === 'available'} className={`collab-tab${activeTab === 'people' || activeTab === 'available' ? ' collab-tab--active' : ''}`} onClick={() => setActiveTab('people')}>
+              People
             </button>
           </div>
         </div>
@@ -356,7 +353,7 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
 
             {/* Existing form section */}
             <div className="collab-available__inner">
-              <div className="collab-available__content">
+              <div className="collab-available__content" id="join-form">
                 <h2>Offer Your Skills</h2>
                 <p className="collab-available__body">
                   Are you an engineer, fabricator, designer, or specialist looking for meaningful projects? Fill out the form below and we&apos;ll connect you with curated projects that match your skills and values.
