@@ -62,8 +62,8 @@ export function ProjectGallery({ projects }: { projects: Project[] }) {
       />
       <section className="container container--wide">
         <div className="project-grid">
-          {filtered.map(project => (
-            <ProjectCard key={project.id} project={project} />
+          {filtered.map((project, i) => (
+            <ProjectCard key={project.id} project={project} index={i} />
           ))}
           {filtered.length === 0 && (
             <p className="no-results">
