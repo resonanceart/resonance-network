@@ -63,6 +63,10 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('Supabase insert error:', error.message)
+      return NextResponse.json(
+        { success: false, message: 'Failed to save your profile. Please try again.' },
+        { status: 500 }
+      )
     }
 
     // Send formatted notification (non-blocking)

@@ -72,7 +72,7 @@ export default function AdminPage() {
       const res = await fetch('/api/admin/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, id, action }),
+        body: JSON.stringify({ type, id, action, adminPassword: password }),
       })
       const data = await res.json()
       if (data.success) {

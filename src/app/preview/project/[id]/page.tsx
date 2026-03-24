@@ -57,12 +57,15 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
     )
     if (!confirmed) return
 
+    const adminPassword = window.prompt('Enter admin password:')
+    if (!adminPassword) return
+
     setActionStatus(action === 'approve' ? 'approving' : 'rejecting')
     try {
       const res = await fetch('/api/admin/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'project', id: params.id, action }),
+        body: JSON.stringify({ type: 'project', id: params.id, action, adminPassword }),
       })
       const data = await res.json()
       if (data.success) {

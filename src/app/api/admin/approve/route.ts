@@ -16,6 +16,12 @@ export async function POST(request: Request) {
 
     const body = await request.json()
 
+    // Verify admin password
+    const adminPassword = body.adminPassword || request.headers.get('x-admin-password')
+    if (adminPassword !== process.env.ADMIN_PASSWORD) {
+      return NextResponse.json({ success: false, message: 'Unauthorized.' }, { status: 401 })
+    }
+
     const type = sanitizeText(body.type, 20)
     const id = sanitizeText(body.id, 50)
     const action = sanitizeText(body.action, 20)
