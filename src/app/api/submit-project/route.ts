@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, validateEmail, getClientIp } from '@/lib/sanitize'
+import { sendSubmissionNotification } from '@/lib/notify'
 
 export async function POST(request: Request) {
   try {
@@ -85,10 +86,21 @@ export async function POST(request: Request) {
       )
     }
 
+    // Send notification email (non-blocking)
+    const previewUrl = `/preview/project/${inserted.id}`
+    sendSubmissionNotification('project', {
+      project_title: projectTitle,
+      artist_name: artistName,
+      artist_email: artistEmail,
+      stage,
+      location,
+      one_sentence: oneSentence,
+    }, previewUrl).catch(err => console.error('Notification error:', err))
+
     return NextResponse.json({
       success: true,
       message: 'Submission received successfully.',
-      previewUrl: `/preview/project/${inserted.id}`,
+      previewUrl,
     })
   } catch {
     console.error('Submit project error: unexpected server error')

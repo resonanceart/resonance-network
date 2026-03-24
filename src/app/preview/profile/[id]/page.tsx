@@ -20,6 +20,7 @@ export default function ProfilePreviewPage({ params }: { params: { id: string } 
   const [profile, setProfile] = useState<CollaboratorProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [actionStatus, setActionStatus] = useState<'idle' | 'approving' | 'rejecting' | 'approved' | 'rejected'>('idle')
 
   useEffect(() => {
     async function fetchProfile() {
@@ -38,6 +39,34 @@ export default function ProfilePreviewPage({ params }: { params: { id: string } 
     }
     fetchProfile()
   }, [params.id])
+
+  async function handleAction(action: 'approve' | 'reject') {
+    const confirmed = window.confirm(
+      action === 'approve'
+        ? 'Approve this profile? It will become visible on the network.'
+        : 'Reject this profile?'
+    )
+    if (!confirmed) return
+
+    setActionStatus(action === 'approve' ? 'approving' : 'rejecting')
+    try {
+      const res = await fetch('/api/admin/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'profile', id: params.id, action }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setActionStatus(action === 'approve' ? 'approved' : 'rejected')
+      } else {
+        alert(data.message || 'Action failed')
+        setActionStatus('idle')
+      }
+    } catch {
+      alert('Network error. Please try again.')
+      setActionStatus('idle')
+    }
+  }
 
   if (loading) {
     return (
@@ -61,12 +90,43 @@ export default function ProfilePreviewPage({ params }: { params: { id: string } 
   return (
     <article className="profile-page">
       <head><meta name="robots" content="noindex,nofollow" /></head>
-      {/* Draft banner */}
-      <div className="draft-banner">
-        <div className="container">
-          <strong>DRAFT PREVIEW</strong> — This page is not public yet. Pending review by the Resonance Network team.
+      {/* Status banner */}
+      {actionStatus === 'approved' ? (
+        <div className="draft-banner draft-banner--approved">
+          <div className="container">
+            <strong>APPROVED</strong> — This profile is now live on the network.
+          </div>
         </div>
-      </div>
+      ) : actionStatus === 'rejected' ? (
+        <div className="draft-banner draft-banner--rejected">
+          <div className="container">
+            <strong>REJECTED</strong> — This profile has been declined.
+          </div>
+        </div>
+      ) : (
+        <div className="draft-banner">
+          <div className="container">
+            <strong>DRAFT PREVIEW</strong> — This page is not public yet. Pending review by the Resonance Network team.
+          </div>
+        </div>
+      )}
+
+      {/* Admin action bar */}
+      {profile.status === 'new' && actionStatus === 'idle' && (
+        <div className="admin-action-bar">
+          <div className="container" style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center', padding: 'var(--space-4) 0' }}>
+            <button className="btn btn--approve" onClick={() => handleAction('approve')}>Approve</button>
+            <button className="btn btn--reject" onClick={() => handleAction('reject')}>Reject</button>
+          </div>
+        </div>
+      )}
+      {(actionStatus === 'approving' || actionStatus === 'rejecting') && (
+        <div className="admin-action-bar">
+          <div className="container" style={{ textAlign: 'center', padding: 'var(--space-4) 0', color: 'var(--color-text-muted)' }}>
+            {actionStatus === 'approving' ? 'Approving...' : 'Rejecting...'}
+          </div>
+        </div>
+      )}
 
       {/* Profile Header */}
       <section className="profile-header" style={{ paddingTop: 'var(--space-8)' }}>

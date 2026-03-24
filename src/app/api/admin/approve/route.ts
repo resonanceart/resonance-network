@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { supabaseAdmin } from '@/lib/supabase'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, getClientIp } from '@/lib/sanitize'
@@ -43,6 +44,11 @@ export async function POST(request: Request) {
       console.error('Admin action error:', error)
       return NextResponse.json({ success: false, message: 'Failed to update status.' }, { status: 500 })
     }
+
+    // Revalidate affected pages
+    revalidatePath('/')
+    revalidatePath('/profiles')
+    revalidatePath('/collaborate')
 
     return NextResponse.json({ success: true, message: `Submission ${newStatus}.` })
   } catch (err) {

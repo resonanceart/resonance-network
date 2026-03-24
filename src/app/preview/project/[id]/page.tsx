@@ -32,6 +32,7 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
   const [project, setProject] = useState<ProjectSubmission | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [actionStatus, setActionStatus] = useState<'idle' | 'approving' | 'rejecting' | 'approved' | 'rejected'>('idle')
 
   useEffect(() => {
     async function fetchProject() {
@@ -50,6 +51,34 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
     }
     fetchProject()
   }, [params.id])
+
+  async function handleAction(action: 'approve' | 'reject') {
+    const confirmed = window.confirm(
+      action === 'approve'
+        ? 'Approve this project? It will become visible on the network.'
+        : 'Reject this submission? The creator will need to resubmit.'
+    )
+    if (!confirmed) return
+
+    setActionStatus(action === 'approve' ? 'approving' : 'rejecting')
+    try {
+      const res = await fetch('/api/admin/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'project', id: params.id, action }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setActionStatus(action === 'approve' ? 'approved' : 'rejected')
+      } else {
+        alert(data.message || 'Action failed')
+        setActionStatus('idle')
+      }
+    } catch {
+      alert('Network error. Please try again.')
+      setActionStatus('idle')
+    }
+  }
 
   if (loading) {
     return (
@@ -71,12 +100,53 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
   return (
     <article>
       <head><meta name="robots" content="noindex,nofollow" /></head>
-      {/* Draft banner */}
-      <div className="draft-banner">
-        <div className="container">
-          <strong>DRAFT PREVIEW</strong> — This page is not public yet. Pending review by the Resonance Network team.
+      {/* Status banner */}
+      {actionStatus === 'approved' ? (
+        <div className="draft-banner draft-banner--approved">
+          <div className="container">
+            <strong>APPROVED</strong> — This project is now live on the network.
+          </div>
         </div>
-      </div>
+      ) : actionStatus === 'rejected' ? (
+        <div className="draft-banner draft-banner--rejected">
+          <div className="container">
+            <strong>REJECTED</strong> — This submission has been declined.
+          </div>
+        </div>
+      ) : (
+        <div className="draft-banner">
+          <div className="container">
+            <strong>DRAFT PREVIEW</strong> — This page is not public yet. Pending review by the Resonance Network team.
+          </div>
+        </div>
+      )}
+
+      {/* Admin action bar */}
+      {project.status === 'new' && actionStatus === 'idle' && (
+        <div className="admin-action-bar">
+          <div className="container" style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center', padding: 'var(--space-4) 0' }}>
+            <button
+              className="btn btn--approve"
+              onClick={() => handleAction('approve')}
+            >
+              Approve
+            </button>
+            <button
+              className="btn btn--reject"
+              onClick={() => handleAction('reject')}
+            >
+              Reject
+            </button>
+          </div>
+        </div>
+      )}
+      {(actionStatus === 'approving' || actionStatus === 'rejecting') && (
+        <div className="admin-action-bar">
+          <div className="container" style={{ textAlign: 'center', padding: 'var(--space-4) 0', color: 'var(--color-text-muted)' }}>
+            {actionStatus === 'approving' ? 'Approving...' : 'Rejecting...'}
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <section className="project-hero" style={{ minHeight: '300px', background: '#1a1a1a' }}>

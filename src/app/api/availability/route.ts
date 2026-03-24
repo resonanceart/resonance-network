@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { sendNotification } from '@/lib/notify'
+import { sendNotification, sendSubmissionNotification } from '@/lib/notify'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, validateEmail, getClientIp } from '@/lib/sanitize'
 
@@ -79,6 +79,12 @@ export async function POST(request: Request) {
         `Submitted via Resonance Network`,
       ].filter(Boolean).join('\n'),
     }).catch(err => console.error('Notification error:', err))
+
+    // Send formatted notification (non-blocking)
+    if (inserted) {
+      sendSubmissionNotification('profile', { name, email, skills, availability, portfolio }, `/preview/profile/${inserted.id}`)
+        .catch(err => console.error('Notification error:', err))
+    }
 
     return NextResponse.json({
       success: true,
