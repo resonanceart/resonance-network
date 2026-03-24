@@ -1,0 +1,56 @@
+[
+  {
+    "id": "elliot-fabri",
+    "slug": "elliot-fabri",
+    "name": "Elliot Fabri",
+    "title": "Multidisciplinary Artist & Designer",
+    "type": "artist",
+    "photo": "/assets/images/team/elliot-fabri.png",
+    "coverImage": "/assets/images/projects/money-shot.png",
+    "bio": "Elliot Fabri is a multidisciplinary artist and designer whose work explores the intersection of immersive architecture, natural geometry, and collective experience. After years of creating large-scale festival installations and immersive environments, Elliot founded Resonance Art Collective to pursue a singular vision: a permanent, climbable bamboo installation inspired by the logarithmic spiral of the queen's conch shell.\n\nWith a background spanning sculpture, parametric design, and experiential production, Elliot's practice is rooted in the belief that built spaces should invite wonder, not just function. His work draws from biomimicry, acoustic physics, and the rituals of gathering — creating structures that people don't just observe, but physically inhabit.\n\nElliot leads all creative direction, vision, and project development for Resonance, working with a growing network of engineers, architects, and fabricators to bring the project from concept to architectural reality.",
+    "shortBio": "Founder of Resonance Art Collective. Building immersive architecture at the intersection of natural geometry and collective experience.",
+    "location": "Bali, Indonesia / Los Angeles, CA",
+    "email": "resonanceartcollective@gmail.com",
+    "specialties": [
+      "Immersive Architecture",
+      "Bamboo Construction",
+      "Parametric Design",
+      "Sound & Light Installation",
+      "Large-Scale Fabrication",
+      "Experiential Production",
+      "Biomimicry"
+    ],
+    "projects": [
+      {
+        "title": "Resonance",
+        "description": "A three-story climbable bamboo conch shell installation integrating sound, light, and collective movement. Currently in fundraising phase.",
+        "image": "/assets/images/projects/money-shot.png",
+        "url": "/projects/resonance",
+        "year": "2024–present",
+        "role": "Founder & Creative Director"
+      },
+      {
+        "title": "Resonance Network",
+        "description": "An artist-led platform connecting creators of immersive art, regenerative architecture, and ecological design with collaborators and pathways to get built.",
+        "url": "https://resonance.network",
+        "year": "2026",
+        "role": "Founder & Platform Lead"
+      }
+    ],
+    "links": [
+      { "label": "Resonance Art Collective", "url": "https://resonanceart.org", "type": "website" },
+      { "label": "Resonance Network", "url": "https://resonance.network", "type": "website" },
+      { "label": "Instagram", "url": "https://www.instagram.com/resonanceartcollective", "type": "instagram" },
+      { "label": "Linktree", "url": "https://linktr.ee/resonanceartcollective", "type": "other" },
+      { "label": "Support the Project", "url": "https://fundrazr.com/72glEe", "type": "other" }
+    ],
+    "achievements": [
+      "Founded Resonance Art Collective (2024)",
+      "Completed physical and digital scale models for Resonance",
+      "Launched Resonance Network platform",
+      "Partnered with bamboo construction specialists in Bali"
+    ],
+    "philosophy": "I believe the most powerful architecture is the kind you climb into, listen to, and share with strangers. My work asks: what if built spaces could make us feel the way music does — present, connected, and part of something larger than ourselves?",
+    "status": "published"
+  }
+]

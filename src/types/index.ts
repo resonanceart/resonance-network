@@ -52,6 +52,41 @@ export interface Project {
   location?: string
 }
 
+export interface ProfileProject {
+  title: string
+  description: string
+  image?: string
+  url?: string
+  year?: string
+  role?: string
+}
+
+export interface ProfileLink {
+  label: string
+  url: string
+  type?: 'website' | 'instagram' | 'linkedin' | 'portfolio' | 'press' | 'other'
+}
+
+export interface Profile {
+  id: string
+  slug: string
+  name: string
+  title: string
+  type: 'artist' | 'collaborator' | 'collective'
+  photo: string
+  coverImage?: string
+  bio: string
+  shortBio: string
+  location?: string
+  email?: string
+  specialties: string[]
+  projects: ProfileProject[]
+  links: ProfileLink[]
+  achievements?: string[]
+  philosophy?: string
+  status: 'published' | 'draft'
+}
+
 export interface CollaborationTask {
   id: string
   projectId: string
