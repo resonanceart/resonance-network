@@ -100,79 +100,91 @@ export default function ProfilePage({ params }: { params: { slug: string } }) {
         <Link href="/">Home</Link> <span aria-hidden="true">/</span> <Link href="/profiles">People</Link> <span aria-hidden="true">/</span> <span>{profile.name}</span>
       </nav>
 
-      {/* Cover Hero */}
-      <section className="profile-hero">
+      {/* Cover Banner */}
+      <section className="profile-banner">
         {profile.coverImage && (
-          <>
-            <Image
-              src={profile.coverImage}
-              alt={`Cover image for ${profile.name}`}
-              fill
-              priority
-              sizes="100vw"
-              style={{ objectFit: 'cover' }}
-            />
-            <div className="profile-hero__overlay" />
-          </>
+          <Image
+            src={profile.coverImage}
+            alt={`Cover image for ${profile.name}`}
+            fill
+            priority
+            sizes="100vw"
+            style={{ objectFit: 'cover' }}
+          />
         )}
-        <div className="profile-hero__content">
-          <h1 className="profile-hero__name">{profile.name}</h1>
-          <p className="profile-hero__title">{profile.title}</p>
-          {profile.location && (
-            <p className="profile-hero__location">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                <path d="M7 1C4.5 1 2.5 3 2.5 5.5C2.5 9 7 13 7 13s4.5-4 4.5-7.5C11.5 3 9.5 1 7 1z" stroke="currentColor" strokeWidth="1.2"/>
-                <circle cx="7" cy="5.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/>
-              </svg>
-              {profile.location}
-            </p>
-          )}
-          <div className="profile-hero__specialties">
+        <div className="profile-banner__overlay" />
+      </section>
+
+      {/* Profile Header — overlaps banner */}
+      <section className="profile-header">
+        <div className="container">
+          <div className="profile-header__inner">
+            <div className="profile-header__avatar">
+              <Image
+                src={profile.photo}
+                alt={`Photo of ${profile.name}`}
+                width={120}
+                height={120}
+                priority
+                style={{ objectFit: 'cover' }}
+              />
+            </div>
+            <div className="profile-header__info">
+              <h1 className="profile-header__name">{profile.name}</h1>
+              <p className="profile-header__title">{profile.title}</p>
+              {profile.location && (
+                <p className="profile-header__location">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                    <path d="M7 1C4.5 1 2.5 3 2.5 5.5C2.5 9 7 13 7 13s4.5-4 4.5-7.5C11.5 3 9.5 1 7 1z" stroke="currentColor" strokeWidth="1.2"/>
+                    <circle cx="7" cy="5.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                  </svg>
+                  {profile.location}
+                </p>
+              )}
+            </div>
+            <div className="profile-header__actions">
+              {profile.email && (
+                <a
+                  href={`mailto:${profile.email}?subject=Collaboration%20Inquiry%20via%20Resonance%20Network`}
+                  className="btn btn--primary"
+                >
+                  Get in Touch
+                </a>
+              )}
+              {profile.links.length > 0 && (
+                <a
+                  href={profile.links[0].url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn--outline"
+                >
+                  Visit Website
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Specialties */}
+      <section className="profile-specialties">
+        <div className="container">
+          <div className="profile-specialties__list">
             {profile.specialties.map(s => (
               <Badge key={s} variant="domain">{s}</Badge>
             ))}
           </div>
-          {profile.links.length > 0 && (
-            <div className="profile-hero__links">
-              {profile.links.map(link => (
-                <a
-                  key={link.url}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="profile-link-btn"
-                  aria-label={link.label}
-                >
-                  {getLinkIcon(link.type)}
-                  <span>{link.label}</span>
-                </a>
-              ))}
-            </div>
-          )}
         </div>
       </section>
 
-      {/* About */}
+      {/* About / Bio */}
       <section className="profile-about">
         <div className="container">
           <p className="section-label">About</p>
-          <div className="profile-about__grid">
-            <div className="profile-about__text">
-              {profile.bio.split('\n\n').map((paragraph, i) => (
-                <p key={i}>{paragraph}</p>
-              ))}
-            </div>
-            <div className="profile-about__photo">
-              <Image
-                src={profile.photo}
-                alt={`Photo of ${profile.name}`}
-                width={300}
-                height={400}
-                sizes="(max-width: 768px) 100vw, 300px"
-                loading="lazy"
-                style={{ objectFit: 'cover', width: '100%', height: 'auto', borderRadius: 'var(--radius-lg)' }}
-              />
-            </div>
+          <div className="profile-about__text">
+            {profile.bio.split('\n\n').map((paragraph, i) => (
+              <p key={i}>{paragraph}</p>
+            ))}
           </div>
         </div>
       </section>
@@ -205,7 +217,7 @@ export default function ProfilePage({ params }: { params: { slug: string } }) {
                         alt={project.title}
                         width={600}
                         height={400}
-                        sizes="(max-width: 768px) 100vw, 50vw"
+                        sizes="(max-width: 768px) 100vw, 33vw"
                         loading="lazy"
                         style={{ objectFit: 'cover', width: '100%', height: 'auto' }}
                       />
@@ -247,6 +259,30 @@ export default function ProfilePage({ params }: { params: { slug: string } }) {
                 </li>
               ))}
             </ul>
+          </div>
+        </section>
+      )}
+
+      {/* Links */}
+      {profile.links.length > 0 && (
+        <section className="profile-links-section">
+          <div className="container">
+            <p className="section-label">Connect</p>
+            <div className="profile-links-row">
+              {profile.links.map(link => (
+                <a
+                  key={link.url}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="profile-link-btn"
+                  aria-label={link.label}
+                >
+                  {getLinkIcon(link.type)}
+                  <span>{link.label}</span>
+                </a>
+              ))}
+            </div>
           </div>
         </section>
       )}
