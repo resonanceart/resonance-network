@@ -7,7 +7,7 @@ import { MobileNav } from './MobileNav'
 
 const navLinks = [
   { href: '/collaborate', label: 'Collaborate' },
-  { href: '/profiles', label: 'People' },
+  { href: '/collaborate?tab=people', label: 'People' },
   { href: '/about', label: 'About' },
 ]
 

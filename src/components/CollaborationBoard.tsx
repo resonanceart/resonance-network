@@ -1,9 +1,12 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import type { CollaborationTask } from '@/types'
+import profilesData from '../../data/profiles.json'
+import projectsData from '../../data/projects.json'
+import type { CollaborationTask, Profile, Project } from '@/types'
 import { CollaborationTaskCard } from './CollaborationTaskCard'
+import { Badge } from './ui/Badge'
 
 const CATEGORIES = ['Engineering', 'Architecture', 'Fabrication', 'Production', 'Funding', 'Admin', 'Other']
 
@@ -36,9 +39,16 @@ const SAMPLE_COLLABORATORS = [
 ]
 
 export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
-  const [activeTab, setActiveTab] = useState<'needs' | 'available'>('needs')
+  const [activeTab, setActiveTab] = useState<'needs' | 'people' | 'available'>('needs')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+
+  // People tab state
+  const [peopleSearch, setPeopleSearch] = useState('')
+  const [peopleTypeFilter, setPeopleTypeFilter] = useState<'all' | 'artist' | 'collaborator'>('all')
+
+  const profiles = (profilesData as Profile[]).filter(p => p.status === 'published')
+  const allProjects = projectsData as Project[]
 
   // Profile form state
   const [profileName, setProfileName] = useState('')
@@ -51,6 +61,14 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
   const [isProfileSubmitting, setIsProfileSubmitting] = useState(false)
   const [isProfileSubmitted, setIsProfileSubmitted] = useState(false)
   const [profileError, setProfileError] = useState('')
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const tab = new URLSearchParams(window.location.search).get('tab')
+      if (tab === 'people') setActiveTab('people')
+      if (tab === 'skills') setActiveTab('available')
+    }
+  }, [])
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase()
@@ -65,6 +83,15 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
       return categoryMatch && textMatch
     })
   }, [tasks, selectedCategory, searchQuery])
+
+  const filteredProfiles = useMemo(() => {
+    const q = peopleSearch.toLowerCase()
+    return profiles.filter(p => {
+      const typeMatch = peopleTypeFilter === 'all' || p.type === peopleTypeFilter
+      const textMatch = !q || p.name.toLowerCase().includes(q) || p.specialties.some(s => s.toLowerCase().includes(q))
+      return typeMatch && textMatch
+    })
+  }, [profiles, peopleSearch, peopleTypeFilter])
 
   async function handleProfileSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -121,21 +148,14 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
       <section className="collab-tabs-section">
         <div className="container">
           <div className="collab-tabs" role="tablist" aria-label="Collaboration view">
-            <button
-              role="tab"
-              aria-selected={activeTab === 'needs'}
-              className={`collab-tab${activeTab === 'needs' ? ' collab-tab--active' : ''}`}
-              onClick={() => setActiveTab('needs')}
-            >
-              Project Needs
+            <button role="tab" aria-selected={activeTab === 'needs'} className={`collab-tab${activeTab === 'needs' ? ' collab-tab--active' : ''}`} onClick={() => setActiveTab('needs')}>
+              Open Roles
             </button>
-            <button
-              role="tab"
-              aria-selected={activeTab === 'available'}
-              className={`collab-tab${activeTab === 'available' ? ' collab-tab--active' : ''}`}
-              onClick={() => setActiveTab('available')}
-            >
-              Available Collaborators
+            <button role="tab" aria-selected={activeTab === 'people'} className={`collab-tab${activeTab === 'people' ? ' collab-tab--active' : ''}`} onClick={() => setActiveTab('people')}>
+              People in Network
+            </button>
+            <button role="tab" aria-selected={activeTab === 'available'} className={`collab-tab${activeTab === 'available' ? ' collab-tab--active' : ''}`} onClick={() => setActiveTab('available')}>
+              Offer Your Skills
             </button>
           </div>
         </div>
@@ -196,6 +216,109 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
                   </p>
                 )}
               </div>
+            </div>
+          </section>
+        </>
+      ) : activeTab === 'people' ? (
+        <>
+          <section className="collab-filters">
+            <div className="container">
+              <div className="filters-compact">
+                <input
+                  type="search"
+                  placeholder="Search people by name or skill..."
+                  value={peopleSearch}
+                  onChange={e => setPeopleSearch(e.target.value)}
+                  className="filter-search"
+                  aria-label="Search people"
+                />
+                <div className="filter-pills">
+                  {(['all', 'artist', 'collaborator'] as const).map(type => (
+                    <button
+                      key={type}
+                      className={`filter-pill${peopleTypeFilter === type ? ' filter-pill--active' : ''}`}
+                      onClick={() => setPeopleTypeFilter(type)}
+                    >
+                      {type === 'all' ? 'All' : type === 'artist' ? 'Artists' : 'Collaborators'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="collab-grid">
+            <div className="container">
+              <div className="people-grid">
+                {filteredProfiles.map(profile => (
+                  <div key={profile.id} className="people-card">
+                    <div className="people-card__avatar">
+                      <Image
+                        src={profile.photo}
+                        alt={`Photo of ${profile.name}`}
+                        width={64}
+                        height={64}
+                        sizes="64px"
+                        loading="lazy"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    </div>
+                    <div className="people-card__info">
+                      <h3 className="people-card__name">{profile.name}</h3>
+                      <Badge variant={profile.type === 'artist' ? 'domain' : 'pathway'}>{profile.type === 'artist' ? 'Artist' : 'Collaborator'}</Badge>
+                      {profile.location && <p className="people-card__location">{profile.location}</p>}
+                      <div className="people-card__skills">
+                        {profile.specialties.slice(0, 3).map(s => (
+                          <span key={s} className="skill-tag">{s}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="people-card__actions">
+                      <Link href={`/profiles/${profile.slug}`} className="btn btn--outline btn--sm">View Profile</Link>
+                      {profile.email && (
+                        <a href={`mailto:${profile.email}?subject=Collaboration%20Inquiry%20via%20Resonance%20Network`} className="btn btn--primary btn--sm">Connect</a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {SAMPLE_COLLABORATORS.map((collab, i) => (
+                  <div key={`sample-${i}`} className="people-card">
+                    <div className="people-card__avatar">
+                      <Image
+                        src={collab.photo}
+                        alt={`Photo of ${collab.name}`}
+                        width={64}
+                        height={64}
+                        sizes="64px"
+                        loading="lazy"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    </div>
+                    <div className="people-card__info">
+                      <h3 className="people-card__name">{collab.name}</h3>
+                      <Badge variant="stage">Coming Soon</Badge>
+                      <div className="people-card__skills">
+                        {collab.skills.map(s => (
+                          <span key={s} className="skill-tag">{s}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="people-card__actions">
+                      <Link href="/profiles" className="btn btn--outline btn--sm">Directory</Link>
+                    </div>
+                  </div>
+                ))}
+                {filteredProfiles.length === 0 && SAMPLE_COLLABORATORS.length === 0 && (
+                  <p style={{ gridColumn: '1/-1', textAlign: 'center', color: 'var(--color-text-muted)', padding: 'var(--space-12) 0' }}>
+                    No people match your search.
+                  </p>
+                )}
+              </div>
+              <p style={{ textAlign: 'center', marginTop: 'var(--space-8)' }}>
+                <button className="btn btn--primary" onClick={() => setActiveTab('available')}>
+                  Join the Network — Create your profile
+                </button>
+              </p>
             </div>
           </section>
         </>
