@@ -35,7 +35,7 @@ export function Footer() {
             <div className="footer-col">
               <p className="footer-col-title">Connect</p>
               <div className="footer-links">
-                <a href="#" aria-label="Instagram">
+                <a href="https://www.instagram.com/resonanceartcollective" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                   <svg className="footer-social-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <rect x="2" y="2" width="20" height="20" rx="5"/>
                     <circle cx="12" cy="12" r="5"/>
@@ -43,13 +43,13 @@ export function Footer() {
                   </svg>
                   <span>Instagram</span>
                 </a>
-                <a href="#" aria-label="LinkedIn">
+                <a href="https://resonanceart.org" target="_blank" rel="noopener noreferrer" aria-label="Main Website">
                   <svg className="footer-social-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/>
                     <rect x="2" y="9" width="4" height="12"/>
                     <circle cx="4" cy="4" r="2"/>
                   </svg>
-                  <span>LinkedIn</span>
+                  <span>Main Website</span>
                 </a>
                 <a href="mailto:resonanceartcollective@gmail.com">
                   <svg className="footer-social-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -58,7 +58,7 @@ export function Footer() {
                   </svg>
                   <span>Email</span>
                 </a>
-                <a href="#">
+                <a href="https://linktr.ee/resonanceartcollective" target="_blank" rel="noopener noreferrer">
                   <svg className="footer-social-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
                     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
@@ -74,7 +74,8 @@ export function Footer() {
               <div className="footer-links">
                 <Link href="/submit">Submit a Project</Link>
                 <Link href="/about#process">How Curation Works</Link>
-                <Link href="/about">FAQ</Link>
+                <a href="https://fundrazr.com/72glEe" target="_blank" rel="noopener noreferrer">Support / Donate</a>
+                <Link href="/about">About Us</Link>
               </div>
             </div>
           </div>

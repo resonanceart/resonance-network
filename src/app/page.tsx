@@ -44,8 +44,7 @@ export default function HomePage() {
         <div className="site-hero__content">
           <h1 className="site-hero__tagline">Art at the scale of your ambition.</h1>
           <div className="site-hero__actions">
-            <a href="#projects" className="btn btn--hero">Explore Projects</a>
-            <a href="/submit" className="btn btn--hero btn--hero-outline">Submit a Project</a>
+            <a href="/submit" className="btn btn--hero">Submit a Project</a>
           </div>
         </div>
       </section>
