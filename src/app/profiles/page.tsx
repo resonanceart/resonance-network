@@ -11,6 +11,7 @@ export default function ProfilesPage() {
   const profiles = (profilesData as Profile[]).filter(p => p.status === 'published')
   const projects = projectsData as Project[]
   const [search, setSearch] = useState('')
+  const [selectedType, setSelectedType] = useState<string>('')
 
   const allSpecialties = useMemo(() => {
     const set = new Set<string>()
@@ -25,9 +26,10 @@ export default function ProfilesPage() {
     return profiles.filter(p => {
       const textMatch = !q || p.name.toLowerCase().includes(q) || p.specialties.some(s => s.toLowerCase().includes(q))
       const specMatch = !selectedSpecialty || p.specialties.includes(selectedSpecialty)
-      return textMatch && specMatch
+      const typeMatch = !selectedType || p.type === selectedType
+      return textMatch && specMatch && typeMatch
     })
-  }, [profiles, search, selectedSpecialty])
+  }, [profiles, search, selectedSpecialty, selectedType])
 
   function getProjectCount(profile: Profile): number {
     return projects.filter(pr => pr.leadArtistName === profile.name).length
@@ -48,10 +50,46 @@ export default function ProfilesPage() {
         </div>
       </section>
 
+      {/* Dual CTA */}
+      <section className="profiles-dual-cta">
+        <div className="container">
+          <div className="profiles-dual-cta__grid">
+            <Link href="/submit" className="profiles-dual-cta__card">
+              <h3>Submit a Project</h3>
+              <p>Have an ambitious creative project? Share it with the network and find collaborators.</p>
+              <span className="btn btn--primary">Get Started</span>
+            </Link>
+            <Link href="/collaborate" className="profiles-dual-cta__card">
+              <h3>Join as Collaborator</h3>
+              <p>Engineer, fabricator, producer, or specialist? Connect with projects that need you.</p>
+              <span className="btn btn--outline">Explore Roles</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Search/Filter Bar */}
       <section className="profiles-filter-section">
         <div className="container">
           <div className="profiles-filter-bar">
+            <div className="profiles-type-tabs" role="tablist" aria-label="Filter by type">
+              {[
+                { value: '', label: 'All' },
+                { value: 'artist', label: 'Artists' },
+                { value: 'collaborator', label: 'Collaborators' },
+                { value: 'collective', label: 'Collectives' },
+              ].map(tab => (
+                <button
+                  key={tab.value}
+                  role="tab"
+                  aria-selected={selectedType === tab.value}
+                  className={`profiles-type-tab${selectedType === tab.value ? ' profiles-type-tab--active' : ''}`}
+                  onClick={() => setSelectedType(tab.value)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
             <input
               type="search"
               placeholder="Search by name or specialty..."
@@ -135,8 +173,11 @@ export default function ProfilesPage() {
       <section className="profiles-cta">
         <div className="container" style={{ textAlign: 'center', padding: 'var(--space-12) 0' }}>
           <h2>Join the Network</h2>
-          <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)' }}>Have a project that needs the right people behind it?</p>
-          <Link href="/submit" className="btn btn--primary btn--large">Submit Your Project</Link>
+          <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)' }}>Have a project that needs the right people — or skills that projects need?</p>
+          <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/submit" className="btn btn--primary btn--large">Submit Your Project</Link>
+            <Link href="/collaborate" className="btn btn--outline btn--large">Join as Collaborator</Link>
+          </div>
         </div>
       </section>
     </>

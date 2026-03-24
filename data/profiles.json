@@ -52,5 +52,85 @@
     ],
     "philosophy": "I believe the most powerful architecture is the kind you climb into, listen to, and share with strangers. My work asks: what if built spaces could make us feel the way music does — present, connected, and part of something larger than ourselves?",
     "status": "published"
+  },
+  {
+    "id": "ed-wilkes",
+    "slug": "ed-wilkes",
+    "name": "Ed Wilkes",
+    "title": "Structural Engineer & Parametric Designer",
+    "type": "collaborator",
+    "photo": "/assets/images/team/ed-wilkes.png",
+    "bio": "Ed Wilkes is a structural engineer and parametric designer specializing in complex organic geometries and natural building materials. With over a decade of experience bridging computational design and hands-on fabrication, Ed brings technical rigor to projects that push the boundaries of what natural materials can achieve.\n\nHis work focuses on translating artistic vision into structurally sound, buildable reality — developing load calculations, connection details, and fabrication sequences for large-scale bamboo, timber, and hybrid structures. Ed has collaborated on installations and architectural projects across Southeast Asia and Latin America, always with a commitment to regenerative materials and local craft traditions.\n\nAs structural lead on the Resonance project, Ed is responsible for engineering the conch shell geometry to withstand climbing loads, seismic forces, and tropical weather conditions while preserving the sculptural intent of the design.",
+    "shortBio": "Structural engineer specializing in parametric design and natural material construction for large-scale installations.",
+    "location": "Bristol, UK / Bali, Indonesia",
+    "email": "ed@resonanceart.org",
+    "specialties": [
+      "Structural Engineering",
+      "Parametric Design",
+      "Bamboo Construction",
+      "Computational Geometry",
+      "Natural Materials",
+      "Load Analysis"
+    ],
+    "projects": [
+      {
+        "title": "Resonance",
+        "description": "Structural engineering lead for the three-story bamboo conch shell installation — developing load paths, connection details, and fabrication sequences.",
+        "image": "/assets/images/projects/money-shot.png",
+        "url": "/projects/resonance",
+        "year": "2024–present",
+        "role": "Structural Engineer"
+      }
+    ],
+    "links": [
+      { "label": "Portfolio", "url": "https://edwilkes.design", "type": "portfolio" }
+    ],
+    "achievements": [
+      "Engineered bamboo structures up to 18m span in Bali and Colombia",
+      "Developed parametric modeling pipeline for organic bamboo geometries",
+      "Published research on bamboo connection detailing for complex curvature"
+    ],
+    "philosophy": "The best engineering disappears into the architecture. My role is to make sure the structure does exactly what the artist imagined — safely, beautifully, and with materials that give back more than they take.",
+    "status": "published"
+  },
+  {
+    "id": "luis-echeverria",
+    "slug": "luis-echeverria",
+    "name": "Luis Echeverria",
+    "title": "Master Bamboo Builder & Fabrication Specialist",
+    "type": "collaborator",
+    "photo": "/assets/images/team/luis-echeverria.png",
+    "bio": "Luis Echeverria is a master bamboo builder and fabrication specialist with deep expertise in traditional and contemporary bamboo construction techniques. Born and raised in Colombia, Luis learned bamboo craft from three generations of builders before expanding his practice internationally.\n\nHis work sits at the intersection of ancestral building knowledge and modern fabrication methods — combining hand-selected bamboo species, traditional joinery, and contemporary treatment processes to create structures that are both culturally rooted and architecturally ambitious. Luis has built bamboo structures for cultural centers, eco-resorts, and art installations across Colombia, Mexico, and Indonesia.\n\nAs fabrication lead on the Resonance project, Luis oversees bamboo selection, treatment, bending, and assembly — translating parametric engineering drawings into physical reality through a combination of precision craft and adaptive problem-solving on site.",
+    "shortBio": "Master bamboo builder bridging ancestral craft and contemporary fabrication for ambitious architectural installations.",
+    "location": "Manizales, Colombia / Bali, Indonesia",
+    "email": "luis@resonanceart.org",
+    "specialties": [
+      "Bamboo Construction",
+      "Fabrication",
+      "Traditional Joinery",
+      "Material Selection",
+      "On-Site Construction Management",
+      "Bamboo Treatment"
+    ],
+    "projects": [
+      {
+        "title": "Resonance",
+        "description": "Fabrication lead for the bamboo conch shell — overseeing bamboo selection, treatment, bending techniques, and on-site assembly.",
+        "image": "/assets/images/projects/money-shot.png",
+        "url": "/projects/resonance",
+        "year": "2024–present",
+        "role": "Fabrication Lead"
+      }
+    ],
+    "links": [
+      { "label": "Instagram", "url": "https://instagram.com/luisbamboo", "type": "instagram" }
+    ],
+    "achievements": [
+      "Built over 40 bamboo structures across Colombia, Mexico, and Indonesia",
+      "Developed hybrid joinery techniques for complex curved bamboo assemblies",
+      "Trained local construction teams in sustainable bamboo building methods"
+    ],
+    "philosophy": "Bamboo teaches patience. Every pole has its own character — you learn to listen to the material, work with its grain, and let the structure grow from the ground up. The best buildings are grown, not forced.",
+    "status": "published"
   }
 ]
