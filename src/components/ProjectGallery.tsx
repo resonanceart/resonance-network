@@ -1,5 +1,5 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { FilterBar } from './FilterBar'
 import { ProjectCard } from './ProjectCard'
 import type { Project } from '@/types'
@@ -50,6 +50,19 @@ export function ProjectGallery({ projects }: { projects: Project[] }) {
     })
   }, [projects, activeDomains, activeStages])
 
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const filterChangeRef = useRef(false)
+
+  useEffect(() => {
+    if (!filterChangeRef.current) {
+      filterChangeRef.current = true
+      return
+    }
+    setIsTransitioning(true)
+    const timer = setTimeout(() => setIsTransitioning(false), 50)
+    return () => clearTimeout(timer)
+  }, [activeDomains, activeStages])
+
   return (
     <>
       <FilterBar
@@ -61,9 +74,9 @@ export function ProjectGallery({ projects }: { projects: Project[] }) {
         onStageToggle={handleStageToggle}
       />
       <section className="container container--wide">
-        <div className="project-grid">
+        <div className={`project-grid${isTransitioning ? ' project-grid--transitioning' : ''}`}>
           {filtered.map((project, i) => (
-            <ProjectCard key={project.id} project={project} index={i} />
+            <ProjectCard key={project.id} project={project} index={i} transitionDelay={(i % 3) * 0.05} />
           ))}
           {filtered.length === 0 && (
             <p className="no-results">

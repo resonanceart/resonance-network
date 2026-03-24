@@ -9,9 +9,10 @@ import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 interface Props {
   project: Project
   index?: number
+  transitionDelay?: number
 }
 
-export function ProjectCard({ project, index = 0 }: Props) {
+export function ProjectCard({ project, index = 0, transitionDelay = 0 }: Props) {
   const [imgError, setImgError] = useState(false)
   const { ref, isVisible } = useScrollAnimation(0.1)
   const staggerDelay = (index % 3) * 0.08
@@ -20,7 +21,10 @@ export function ProjectCard({ project, index = 0 }: Props) {
     <div
       ref={ref}
       className={`project-card${isVisible ? ' project-card--visible' : ''}`}
-      style={{ animationDelay: isVisible ? `${staggerDelay}s` : undefined }}
+      style={{
+        animationDelay: isVisible ? `${staggerDelay}s` : undefined,
+        transitionDelay: `${transitionDelay}s`,
+      }}
     >
       <Link href={`/projects/${project.slug}`} className="project-card__link">
         {!imgError ? (
