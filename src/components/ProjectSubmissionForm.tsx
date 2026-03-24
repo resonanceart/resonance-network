@@ -29,6 +29,7 @@ export function ProjectSubmissionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState('')
+  const [previewUrl, setPreviewUrl] = useState('')
 
   // Step 1 — About You
   const [artistName, setArtistName] = useState('')
@@ -106,6 +107,7 @@ export function ProjectSubmissionForm() {
       const data = await res.json()
       if (data.success) {
         setIsSubmitted(true)
+        if (data.previewUrl) setPreviewUrl(data.previewUrl)
       } else {
         setError(data.message || 'Something went wrong.')
       }
@@ -122,7 +124,12 @@ export function ProjectSubmissionForm() {
         <div className="submission-form__success">
           <span className="form-success__icon" aria-hidden="true">✓</span>
           <h3>Submission Received</h3>
-          <p>Thank you for submitting <strong>{projectTitle}</strong>. Our curation team will review your project within two weeks and reach out to <strong>{artistEmail}</strong>.</p>
+          <p>Your project has been submitted! Our team will review it within two weeks. In the meantime, you can preview how your page will look:</p>
+          {previewUrl && (
+            <a href={previewUrl} className="btn btn--primary" style={{ marginTop: 'var(--space-4)', display: 'inline-block' }}>
+              Preview Your Project Page →
+            </a>
+          )}
         </div>
       </div>
     )

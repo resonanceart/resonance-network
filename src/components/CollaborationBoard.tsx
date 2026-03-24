@@ -1,7 +1,6 @@
 'use client'
 import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import profilesData from '../../data/profiles.json'
 import projectsData from '../../data/projects.json'
@@ -40,15 +39,7 @@ const SAMPLE_COLLABORATORS = [
 ]
 
 export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
-  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<'needs' | 'people' | 'available'>('needs')
-
-  // Handle URL param tab selection (e.g. ?tab=skills or ?tab=people)
-  useEffect(() => {
-    const tab = searchParams.get('tab')
-    if (tab === 'skills') setActiveTab('available')
-    else if (tab === 'people') setActiveTab('people')
-  }, [searchParams])
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -69,6 +60,7 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
   const [profileNote, setProfileNote] = useState('')
   const [isProfileSubmitting, setIsProfileSubmitting] = useState(false)
   const [isProfileSubmitted, setIsProfileSubmitted] = useState(false)
+  const [profilePreviewUrl, setProfilePreviewUrl] = useState('')
   const [profileError, setProfileError] = useState('')
 
   useEffect(() => {
@@ -123,6 +115,7 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
       const data = await res.json()
       if (data.success) {
         setIsProfileSubmitted(true)
+        if (data.previewUrl) setProfilePreviewUrl(data.previewUrl)
       } else {
         setProfileError(data.message || 'Something went wrong.')
       }
@@ -373,7 +366,12 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
                   <div className="collab-available__confirmation">
                     <div className="form-success">
                       <span className="form-success__icon" aria-hidden="true">✓</span>
-                      <p>Thanks! We&apos;ve received your profile. We&apos;ll connect you with matching projects soon.</p>
+                      <p>Your profile has been submitted! We&apos;ll review it and publish it to the network soon.</p>
+                      {profilePreviewUrl && (
+                        <a href={profilePreviewUrl} className="btn btn--primary btn--sm" style={{ marginTop: 'var(--space-4)', display: 'inline-block' }}>
+                          Preview Your Profile →
+                        </a>
+                      )}
                     </div>
                   </div>
                 ) : (

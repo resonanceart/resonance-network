@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { error } = await supabaseAdmin
+    const { data: inserted, error } = await supabaseAdmin
       .from('project_submissions')
       .insert({
         artist_name: artistName,
@@ -58,6 +58,8 @@ export async function POST(request: Request) {
         gallery_images_data: galleryImagesData || null,
         status: 'new',
       })
+      .select('id')
+      .single()
 
     if (error) {
       console.error('Supabase insert error:', error)
@@ -67,7 +69,11 @@ export async function POST(request: Request) {
       )
     }
 
-    return NextResponse.json({ success: true, message: 'Submission received successfully.' })
+    return NextResponse.json({
+      success: true,
+      message: 'Submission received successfully.',
+      previewUrl: `/preview/project/${inserted.id}`,
+    })
   } catch (err) {
     console.error('Submit project error:', err)
     return NextResponse.json(

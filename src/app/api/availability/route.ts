@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     }
 
     // Store in Supabase
-    const { error } = await supabaseAdmin
+    const { data: inserted, error } = await supabaseAdmin
       .from('collaborator_profiles')
       .insert({
         name,
@@ -26,6 +26,8 @@ export async function POST(request: Request) {
         availability: availability || null,
         notes: notes || null,
       })
+      .select('id')
+      .single()
 
     if (error) {
       console.error('Supabase insert error:', error)
@@ -58,6 +60,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message: "Your profile has been submitted. We'll connect you with matching projects soon.",
+      previewUrl: inserted ? `/preview/profile/${inserted.id}` : undefined,
     })
   } catch {
     return NextResponse.json(
