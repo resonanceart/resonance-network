@@ -1,13 +1,10 @@
 'use client'
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { Widget } from '@typeform/embed-react'
 import type { CollaborationTask } from '@/types'
 import { CollaborationTaskCard } from './CollaborationTaskCard'
 
 const CATEGORIES = ['Engineering', 'Architecture', 'Fabrication', 'Production', 'Funding', 'Admin', 'Other']
-
-const AVAILABILITY_FORM_ID = process.env.NEXT_PUBLIC_TYPEFORM_AVAILABILITY_FORM_ID || 'M0IS4LTD'
 
 const breadcrumbJsonLd = {
   '@context': 'https://schema.org',
@@ -33,6 +30,18 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
+  // Profile form state
+  const [profileName, setProfileName] = useState('')
+  const [profileEmail, setProfileEmail] = useState('')
+  const [profilePhoto, setProfilePhoto] = useState('')
+  const [profileSkills, setProfileSkills] = useState('')
+  const [profilePortfolio, setProfilePortfolio] = useState('')
+  const [profileAvailability, setProfileAvailability] = useState('')
+  const [profileNote, setProfileNote] = useState('')
+  const [isProfileSubmitting, setIsProfileSubmitting] = useState(false)
+  const [isProfileSubmitted, setIsProfileSubmitted] = useState(false)
+  const [profileError, setProfileError] = useState('')
+
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase()
     return tasks.filter(t => {
@@ -46,6 +55,37 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
       return categoryMatch && textMatch
     })
   }, [tasks, selectedCategory, searchQuery])
+
+  async function handleProfileSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setIsProfileSubmitting(true)
+    setProfileError('')
+    try {
+      const res = await fetch('/api/availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: profileName,
+          email: profileEmail,
+          photoUrl: profilePhoto || undefined,
+          skills: profileSkills,
+          portfolio: profilePortfolio || undefined,
+          availability: profileAvailability || undefined,
+          notes: profileNote || undefined,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setIsProfileSubmitted(true)
+      } else {
+        setProfileError(data.message || 'Something went wrong.')
+      }
+    } catch {
+      setProfileError('Network error. Please try again.')
+    } finally {
+      setIsProfileSubmitting(false)
+    }
+  }
 
   return (
     <>
@@ -158,12 +198,110 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
                 <p className="collab-available__body">
                   Are you an engineer, fabricator, designer, or specialist looking for meaningful projects? Fill out the form below and we&apos;ll connect you with curated projects that match your skills and values.
                 </p>
-                <div style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginTop: 'var(--space-6)' }}>
-                  <Widget
-                    id={AVAILABILITY_FORM_ID}
-                    style={{ width: '100%', height: '500px' }}
-                  />
-                </div>
+
+                {isProfileSubmitted ? (
+                  <div className="collab-available__confirmation">
+                    <div className="form-success">
+                      <span className="form-success__icon" aria-hidden="true">✓</span>
+                      <p>Thanks! We&apos;ve received your profile. We&apos;ll connect you with matching projects soon.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <form className="collab-profile-form" onSubmit={handleProfileSubmit}>
+                    {profileError && <p className="form-error">{profileError}</p>}
+                    <div className="form-group">
+                      <label htmlFor="profile-name" className="form-label">Full Name *</label>
+                      <input
+                        id="profile-name"
+                        type="text"
+                        required
+                        value={profileName}
+                        onChange={e => setProfileName(e.target.value)}
+                        placeholder="Your full name"
+                        className="form-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="profile-email" className="form-label">Email *</label>
+                      <input
+                        id="profile-email"
+                        type="email"
+                        required
+                        value={profileEmail}
+                        onChange={e => setProfileEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        className="form-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="profile-photo" className="form-label">Photo URL</label>
+                      <input
+                        id="profile-photo"
+                        type="url"
+                        value={profilePhoto}
+                        onChange={e => setProfilePhoto(e.target.value)}
+                        placeholder="Link to your headshot or profile photo"
+                        className="form-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="profile-skills" className="form-label">Skills and Expertise *</label>
+                      <textarea
+                        id="profile-skills"
+                        required
+                        value={profileSkills}
+                        onChange={e => setProfileSkills(e.target.value)}
+                        placeholder="What do you bring? Engineering, design, fabrication, etc."
+                        rows={3}
+                        className="form-textarea"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="profile-portfolio" className="form-label">Portfolio / Past Projects</label>
+                      <textarea
+                        id="profile-portfolio"
+                        value={profilePortfolio}
+                        onChange={e => setProfilePortfolio(e.target.value)}
+                        placeholder="Links to portfolio, past projects, or relevant work"
+                        rows={2}
+                        className="form-textarea"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="profile-availability" className="form-label">Availability</label>
+                      <select
+                        id="profile-availability"
+                        value={profileAvailability}
+                        onChange={e => setProfileAvailability(e.target.value)}
+                        className="form-select"
+                      >
+                        <option value="">Select availability...</option>
+                        <option value="Full-time">Full-time</option>
+                        <option value="Part-time">Part-time</option>
+                        <option value="Project-based">Project-based</option>
+                        <option value="Flexible">Flexible</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="profile-note" className="form-label">Additional Notes</label>
+                      <textarea
+                        id="profile-note"
+                        value={profileNote}
+                        onChange={e => setProfileNote(e.target.value)}
+                        placeholder="Anything else you'd like us to know?"
+                        rows={2}
+                        className="form-textarea"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="btn btn--primary btn--large"
+                      disabled={isProfileSubmitting}
+                    >
+                      {isProfileSubmitting ? 'Submitting...' : 'Submit Profile'}
+                    </button>
+                  </form>
+                )}
               </div>
               <div className="collab-available__skills">
                 <p className="collab-available__skills-title">Skills in demand right now:</p>

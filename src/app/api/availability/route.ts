@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { sendNotification } from '@/lib/notify'
 
 export async function POST(request: Request) {
   try {
@@ -28,13 +29,31 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('Supabase insert error:', error)
-      // Fall back to logging if database isn't set up yet
       console.log('=== New Collaborator Profile (fallback log) ===')
       console.log({ name, email, photoUrl, skills, portfolio, availability, notes })
     }
 
-    // TODO: Add email notification via SendGrid or Resend
-    // Send notification to resonanceartcollective@gmail.com
+    // Send notification email (non-blocking)
+    sendNotification({
+      to: ['resonanceartcollective@gmail.com'],
+      subject: `New collaborator profile: ${name}`,
+      body: [
+        `A new collaborator has submitted their profile!\n`,
+        `— Profile Details —`,
+        `Name: ${name}`,
+        `Email: ${email}`,
+        photoUrl ? `Photo: ${photoUrl}` : null,
+        ``,
+        `— Skills & Expertise —`,
+        skills,
+        portfolio ? `\n— Portfolio / Past Projects —\n${portfolio}` : null,
+        availability ? `\nAvailability: ${availability}` : null,
+        notes ? `\n— Additional Notes —\n${notes}` : null,
+        ``,
+        `---`,
+        `Submitted via Resonance Network`,
+      ].filter(Boolean).join('\n'),
+    }).catch(err => console.error('Notification error:', err))
 
     return NextResponse.json({
       success: true,

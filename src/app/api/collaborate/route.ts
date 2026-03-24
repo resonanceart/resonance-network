@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { sendNotification } from '@/lib/notify'
+import projectsData from '../../../../data/projects.json'
+
+// Look up the project artist's contact email
+function getProjectContactEmail(projectTitle: string): string | null {
+  const project = (projectsData as Array<{ title: string; contactEmail?: string }>)
+    .find(p => p.title === projectTitle)
+  return project?.contactEmail || null
+}
 
 export async function POST(request: Request) {
   try {
@@ -27,13 +36,37 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('Supabase insert error:', error)
-      // Fall back to logging if database isn't set up yet
       console.log('=== New Collaboration Interest (fallback log) ===')
       console.log({ name, email, phone, experience, taskTitle, projectTitle })
     }
 
-    // TODO: Add email notification via SendGrid or Resend
-    // Send notification to resonanceartcollective@gmail.com
+    // Send notification emails (non-blocking)
+    const recipients = ['resonanceartcollective@gmail.com']
+    const artistEmail = projectTitle ? getProjectContactEmail(projectTitle) : null
+    if (artistEmail && artistEmail !== 'resonanceartcollective@gmail.com') {
+      recipients.push(artistEmail)
+    }
+
+    sendNotification({
+      to: recipients,
+      subject: `New collaboration interest: ${taskTitle || 'General'} on ${projectTitle || 'Resonance Network'}`,
+      body: [
+        `Someone is interested in collaborating!\n`,
+        `Role: ${taskTitle || 'Not specified'}`,
+        `Project: ${projectTitle || 'Not specified'}`,
+        ``,
+        `— Submitter Details —`,
+        `Name: ${name}`,
+        `Email: ${email}`,
+        phone ? `Phone: ${phone}` : null,
+        ``,
+        `— Relevant Experience —`,
+        experience,
+        ``,
+        `---`,
+        `Submitted via Resonance Network`,
+      ].filter(Boolean).join('\n'),
+    }).catch(err => console.error('Notification error:', err))
 
     return NextResponse.json({
       success: true,
