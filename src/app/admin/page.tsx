@@ -43,6 +43,7 @@ export default function AdminPage() {
       const data = await res.json()
       if (data.success) {
         setIsAuthenticated(true)
+        fetchData()
       } else {
         setAuthError(data.message || 'Invalid password.')
       }
@@ -64,7 +65,7 @@ export default function AdminPage() {
     setLoading(false)
   }
 
-  useEffect(() => { fetchData() }, [])
+  // Only fetch data after authentication — not on mount
 
   async function handleAction(type: 'project' | 'profile', id: string, action: 'approve' | 'reject') {
     setActionMsg('')

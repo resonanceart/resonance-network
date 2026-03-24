@@ -76,6 +76,7 @@ export function ProjectSubmissionForm() {
     setError('')
     try {
       const heroBase64 = heroImage ? await fileToBase64(heroImage) : null
+      const headshotBase64 = artistHeadshot ? await fileToBase64(artistHeadshot) : null
       const galleryBase64 = await Promise.all(galleryImages.map(f => fileToBase64(f)))
 
       const res = await fetch('/api/submit-project', {
@@ -86,7 +87,7 @@ export function ProjectSubmissionForm() {
           artistBio,
           artistEmail,
           artistWebsite: artistWebsite || null,
-          artistHeadshotData: heroBase64 ? 'attached' : null,
+          artistHeadshotData: headshotBase64,
           projectTitle,
           oneSentence,
           vision,
