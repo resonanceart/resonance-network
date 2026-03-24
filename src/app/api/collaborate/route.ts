@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { sendNotification } from '@/lib/notify'
 import projectsData from '../../../../data/projects.json'
+import { rateLimit } from '@/lib/rate-limit'
+import { sanitizeText, validateEmail, getClientIp } from '@/lib/sanitize'
 
 // Look up the project artist's contact email
 function getProjectContactEmail(projectTitle: string): string | null {
@@ -12,8 +14,30 @@ function getProjectContactEmail(projectTitle: string): string | null {
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request)
+    if (!rateLimit(ip)) {
+      return NextResponse.json(
+        { success: false, message: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
+    const origin = request.headers.get('origin')
+    if (origin && !origin.includes('resonance.network') && !origin.includes('localhost')) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid request origin.' },
+        { status: 403 }
+      )
+    }
+
     const data = await request.json()
-    const { name, email, phone, experience, taskTitle, projectTitle } = data
+
+    const name = sanitizeText(data.name, 200)
+    const email = validateEmail(data.email)
+    const phone = sanitizeText(data.phone, 20)
+    const experience = sanitizeText(data.experience, 5000)
+    const taskTitle = sanitizeText(data.taskTitle, 200)
+    const projectTitle = sanitizeText(data.projectTitle, 200)
 
     if (!name || !email || !experience) {
       return NextResponse.json(

@@ -21,10 +21,37 @@ interface ProfileSubmission extends Submission {
 }
 
 export default function AdminPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [password, setPassword] = useState('')
+  const [authError, setAuthError] = useState('')
+  const [authLoading, setAuthLoading] = useState(false)
   const [projects, setProjects] = useState<ProjectSubmission[]>([])
   const [profiles, setProfiles] = useState<ProfileSubmission[]>([])
   const [loading, setLoading] = useState(true)
   const [actionMsg, setActionMsg] = useState('')
+
+  async function handleAuth(e: React.FormEvent) {
+    e.preventDefault()
+    setAuthLoading(true)
+    setAuthError('')
+    try {
+      const res = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setIsAuthenticated(true)
+      } else {
+        setAuthError(data.message || 'Invalid password.')
+      }
+    } catch {
+      setAuthError('Network error.')
+    } finally {
+      setAuthLoading(false)
+    }
+  }
 
   async function fetchData() {
     setLoading(true)
@@ -63,6 +90,32 @@ export default function AdminPage() {
     if (s === 'approved') return 'var(--color-primary)'
     if (s === 'rejected') return '#c44'
     return 'var(--color-text-muted)'
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="container" style={{ padding: 'var(--space-16) 0', maxWidth: '400px', margin: '0 auto' }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', marginBottom: 'var(--space-6)', textAlign: 'center' }}>Admin Access</h1>
+        <form onSubmit={handleAuth}>
+          {authError && <p className="form-error" style={{ marginBottom: 'var(--space-4)' }}>{authError}</p>}
+          <div className="form-group">
+            <label htmlFor="admin-password" className="form-label">Password</label>
+            <input
+              id="admin-password"
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className="form-input"
+              placeholder="Enter admin password"
+              autoFocus
+            />
+          </div>
+          <button type="submit" className="btn btn--primary btn--full" disabled={authLoading} style={{ marginTop: 'var(--space-4)' }}>
+            {authLoading ? 'Checking...' : 'Sign In'}
+          </button>
+        </form>
+      </div>
+    )
   }
 
   return (

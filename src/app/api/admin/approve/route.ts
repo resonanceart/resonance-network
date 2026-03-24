@@ -1,12 +1,30 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { rateLimit } from '@/lib/rate-limit'
+import { sanitizeText, getClientIp } from '@/lib/sanitize'
 
 export async function POST(request: Request) {
   try {
-    const { type, id, action } = await request.json()
+    const ip = getClientIp(request)
+    if (!rateLimit(ip)) {
+      return NextResponse.json(
+        { success: false, message: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
+    const body = await request.json()
+
+    const type = sanitizeText(body.type, 20)
+    const id = sanitizeText(body.id, 50)
+    const action = sanitizeText(body.action, 20)
 
     if (!type || !id || !action) {
       return NextResponse.json({ success: false, message: 'Missing required fields.' }, { status: 400 })
+    }
+
+    if (!['project', 'profile'].includes(type)) {
+      return NextResponse.json({ success: false, message: 'Invalid type.' }, { status: 400 })
     }
 
     if (!['approve', 'reject'].includes(action)) {

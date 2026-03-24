@@ -1,11 +1,36 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { sendNotification } from '@/lib/notify'
+import { rateLimit } from '@/lib/rate-limit'
+import { sanitizeText, validateEmail, getClientIp } from '@/lib/sanitize'
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request)
+    if (!rateLimit(ip)) {
+      return NextResponse.json(
+        { success: false, message: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
+    const origin = request.headers.get('origin')
+    if (origin && !origin.includes('resonance.network') && !origin.includes('localhost')) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid request origin.' },
+        { status: 403 }
+      )
+    }
+
     const data = await request.json()
-    const { name, email, photoUrl, skills, portfolio, availability, notes } = data
+
+    const name = sanitizeText(data.name, 200)
+    const email = validateEmail(data.email)
+    const photoUrl = sanitizeText(data.photoUrl, 500)
+    const skills = sanitizeText(data.skills, 5000)
+    const portfolio = sanitizeText(data.portfolio, 5000)
+    const availability = sanitizeText(data.availability, 100)
+    const notes = sanitizeText(data.notes, 5000)
 
     if (!name || !email || !skills) {
       return NextResponse.json(
