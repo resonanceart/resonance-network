@@ -116,16 +116,6 @@ export default function ProfilePage({ params }: { params: { slug: string } }) {
           </>
         )}
         <div className="profile-hero__content">
-          <div className="profile-hero__photo-wrap">
-            <Image
-              src={profile.photo}
-              alt={`Photo of ${profile.name}`}
-              width={160}
-              height={160}
-              className="profile-hero__photo"
-              style={{ objectFit: 'cover' }}
-            />
-          </div>
           <h1 className="profile-hero__name">{profile.name}</h1>
           <p className="profile-hero__title">{profile.title}</p>
           {profile.location && (
@@ -166,10 +156,23 @@ export default function ProfilePage({ params }: { params: { slug: string } }) {
       <section className="profile-about">
         <div className="container">
           <p className="section-label">About</p>
-          <div className="profile-about__text">
-            {profile.bio.split('\n\n').map((paragraph, i) => (
-              <p key={i}>{paragraph}</p>
-            ))}
+          <div className="profile-about__grid">
+            <div className="profile-about__text">
+              {profile.bio.split('\n\n').map((paragraph, i) => (
+                <p key={i}>{paragraph}</p>
+              ))}
+            </div>
+            <div className="profile-about__photo">
+              <Image
+                src={profile.photo}
+                alt={`Photo of ${profile.name}`}
+                width={300}
+                height={400}
+                sizes="(max-width: 768px) 100vw, 300px"
+                loading="lazy"
+                style={{ objectFit: 'cover', width: '100%', height: 'auto', borderRadius: 'var(--radius-lg)' }}
+              />
+            </div>
           </div>
         </div>
       </section>

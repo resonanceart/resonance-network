@@ -2889,8 +2889,34 @@ main {
   border-top: 1px solid var(--color-border);
 }
 
+.profile-about__grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-8);
+  align-items: start;
+}
+
+@media (max-width: 767px) {
+  .profile-about__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-about__photo {
+    order: -1;
+    max-width: 280px;
+  }
+}
+
+.profile-about__photo {
+  position: sticky;
+  top: 100px;
+}
+
+.profile-about__photo img {
+  border-radius: var(--radius-lg);
+}
+
 .profile-about__text {
-  max-width: 65ch;
   font-size: var(--text-base);
   line-height: 1.75;
   color: var(--color-text-secondary);
