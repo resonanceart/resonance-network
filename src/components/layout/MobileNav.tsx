@@ -63,7 +63,7 @@ export function MobileNav({ isOpen, onClose }: Props) {
         <Link href="/collaborate" onClick={onClose}>Collaborate</Link>
         <Link href="/profiles" onClick={onClose}>People</Link>
         <Link href="/about" onClick={onClose}>About</Link>
-        <Link href="/submit" onClick={onClose}>Submit Your Project</Link>
+        <Link href="/join" onClick={onClose}>Join the Network</Link>
       </div>
 
       {/* Dark mode toggle */}

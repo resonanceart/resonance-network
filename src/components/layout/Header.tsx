@@ -41,10 +41,10 @@ export function Header() {
               </Link>
             ))}
             <Link
-              href="/submit"
-              className={`nav-cta${pathname === '/submit' ? ' active' : ''}`}
+              href="/join"
+              className={`nav-cta${pathname === '/join' ? ' active' : ''}`}
             >
-              Submit Your Project
+              Join the Network
             </Link>
           </nav>
 

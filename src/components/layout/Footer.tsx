@@ -76,6 +76,7 @@ export function Footer() {
                 <Link href="/about#process">How Curation Works</Link>
                 <a href="https://fundrazr.com/72glEe" target="_blank" rel="noopener noreferrer">Support / Donate</a>
                 <Link href="/about">About Us</Link>
+                <Link href="/join">Join as Collaborator</Link>
               </div>
             </div>
           </div>
