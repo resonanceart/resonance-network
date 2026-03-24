@@ -2,5 +2,7 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /_next/
+Disallow: /admin/
+Disallow: /preview/
 
 Sitemap: https://resonance.network/sitemap.xml

@@ -32,6 +32,12 @@ export async function generateMetadata({
       images: profile.photo ? [{ url: profile.photo }] : [],
       type: 'profile',
     },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${profile.name} — ${profile.title}`,
+      description: profile.shortBio,
+      images: profile.photo ? [profile.photo] : [],
+    },
   }
 }
 
