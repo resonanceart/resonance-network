@@ -1,5 +1,5 @@
 'use client'
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import profilesData from '../../data/profiles.json'
@@ -39,7 +39,8 @@ const SAMPLE_COLLABORATORS = [
 ]
 
 export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
-  const [activeTab, setActiveTab] = useState<'needs' | 'people' | 'available'>('needs')
+  const [activeTab, setActiveTab] = useState<'needs' | 'people'>('needs')
+  const formRef = useRef<HTMLDivElement>(null)
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -66,8 +67,14 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const tab = new URLSearchParams(window.location.search).get('tab')
-      if (tab === 'people') setActiveTab('people')
-      if (tab === 'skills') setActiveTab('available')
+      if (tab === 'people' || tab === 'skills') {
+        setActiveTab('people')
+        if (tab === 'skills') {
+          setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }, 300)
+        }
+      }
     }
   }, [])
 
@@ -153,7 +160,7 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
             <button role="tab" aria-selected={activeTab === 'needs'} className={`collab-tab${activeTab === 'needs' ? ' collab-tab--active' : ''}`} onClick={() => setActiveTab('needs')}>
               Open Projects
             </button>
-            <button role="tab" aria-selected={activeTab === 'people' || activeTab === 'available'} className={`collab-tab${activeTab === 'people' || activeTab === 'available' ? ' collab-tab--active' : ''}`} onClick={() => setActiveTab('people')}>
+            <button role="tab" aria-selected={activeTab === 'people'} className={`collab-tab${activeTab === 'people' ? ' collab-tab--active' : ''}`} onClick={() => setActiveTab('people')}>
               People
             </button>
           </div>
@@ -204,13 +211,7 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
                   <CollaborationTaskCard key={task.id} task={task} />
                 ))}
                 {filtered.length === 0 && (
-                  <p
-                    style={{
-                      gridColumn: '1/-1',
-                      textAlign: 'center',
-                      color: 'var(--color-text-muted)',
-                    }}
-                  >
+                  <p style={{ gridColumn: '1/-1', textAlign: 'center', color: 'var(--color-text-muted)' }}>
                     No roles match your current filters. Try broadening your search.
                   </p>
                 )}
@@ -218,8 +219,9 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
             </div>
           </section>
         </>
-      ) : activeTab === 'people' ? (
+      ) : (
         <>
+          {/* People search/filter */}
           <section className="collab-filters">
             <div className="container">
               <div className="filters-compact">
@@ -246,6 +248,7 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
             </div>
           </section>
 
+          {/* People grid */}
           <section className="collab-grid">
             <div className="container">
               <div className="people-grid">
@@ -313,179 +316,93 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
                   </p>
                 )}
               </div>
-              <p style={{ textAlign: 'center', marginTop: 'var(--space-8)' }}>
-                <button className="btn btn--primary" onClick={() => setActiveTab('available')}>
-                  Join the Network — Create your profile
-                </button>
-              </p>
             </div>
           </section>
-        </>
-      ) : (
-        <section className="collab-available">
-          <div className="container">
-            {/* Roster showcase */}
-            <div className="collab-roster-section">
-              <p className="section-label">Available Now</p>
-              <h2>People Ready to Collaborate</h2>
-              <div className="collab-roster">
-                {SAMPLE_COLLABORATORS.map(person => (
-                  <div key={person.name} className="collab-roster-card">
-                    <Image
-                      src={person.photo}
-                      alt={person.name}
-                      width={64}
-                      height={64}
-                      className="collab-roster-card__photo"
-                    />
-                    <p className="collab-roster-card__name">{person.name}</p>
-                    <div className="collab-roster-card__skills">
-                      {person.skills.map(skill => (
-                        <span key={skill} className="skill-tag">{skill}</span>
-                      ))}
-                    </div>
-                    <p className="collab-roster-card__availability">{person.availability}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="collab-roster-note">These are community members who have offered their expertise. Submit your profile below to join them.</p>
-            </div>
 
-            {/* Existing form section */}
-            <div className="collab-available__inner">
-              <div className="collab-available__content" id="join-form">
-                <h2>Offer Your Skills</h2>
-                <p className="collab-available__body">
-                  Are you an engineer, fabricator, designer, or specialist looking for meaningful projects? Fill out the form below and we&apos;ll connect you with curated projects that match your skills and values.
-                </p>
+          {/* Offer Your Skills form */}
+          <section className="collab-available">
+            <div className="container">
+              <div className="collab-available__inner">
+                <div className="collab-available__content" id="join-form" ref={formRef}>
+                  <h2>Offer Your Skills</h2>
+                  <p className="collab-available__body">
+                    Are you an engineer, fabricator, designer, or specialist looking for meaningful projects? Fill out the form below and we&apos;ll connect you with curated projects that match your skills and values.
+                  </p>
 
-                {isProfileSubmitted ? (
-                  <div className="collab-available__confirmation">
-                    <div className="form-success">
-                      <span className="form-success__icon" aria-hidden="true">✓</span>
-                      <p>Your profile has been submitted! We&apos;ll review it and publish it to the network soon.</p>
-                      {profilePreviewUrl && (
-                        <a href={profilePreviewUrl} className="btn btn--primary btn--sm" style={{ marginTop: 'var(--space-4)', display: 'inline-block' }}>
-                          Preview Your Profile →
-                        </a>
-                      )}
+                  {isProfileSubmitted ? (
+                    <div className="collab-available__confirmation">
+                      <div className="form-success">
+                        <span className="form-success__icon" aria-hidden="true">✓</span>
+                        <p>Your profile has been submitted! We&apos;ll review it and publish it to the network soon.</p>
+                        {profilePreviewUrl && (
+                          <a href={profilePreviewUrl} className="btn btn--primary btn--sm" style={{ marginTop: 'var(--space-4)', display: 'inline-block' }}>
+                            Preview Your Profile →
+                          </a>
+                        )}
+                      </div>
                     </div>
+                  ) : (
+                    <form className="collab-profile-form" onSubmit={handleProfileSubmit}>
+                      {profileError && <p className="form-error">{profileError}</p>}
+                      <div className="form-group">
+                        <label htmlFor="profile-name" className="form-label">Full Name *</label>
+                        <input id="profile-name" type="text" required value={profileName} onChange={e => setProfileName(e.target.value)} placeholder="Your full name" className="form-input" />
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="profile-email" className="form-label">Email *</label>
+                        <input id="profile-email" type="email" required value={profileEmail} onChange={e => setProfileEmail(e.target.value)} placeholder="you@example.com" className="form-input" />
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="profile-photo" className="form-label">Photo URL</label>
+                        <input id="profile-photo" type="url" value={profilePhoto} onChange={e => setProfilePhoto(e.target.value)} placeholder="Link to your headshot or profile photo" className="form-input" />
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="profile-skills" className="form-label">Skills and Expertise *</label>
+                        <textarea id="profile-skills" required value={profileSkills} onChange={e => setProfileSkills(e.target.value)} placeholder="What do you bring? Engineering, design, fabrication, etc." rows={3} className="form-textarea" />
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="profile-portfolio" className="form-label">Portfolio / Past Projects</label>
+                        <textarea id="profile-portfolio" value={profilePortfolio} onChange={e => setProfilePortfolio(e.target.value)} placeholder="Links to portfolio, past projects, or relevant work" rows={2} className="form-textarea" />
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="profile-availability" className="form-label">Availability</label>
+                        <select id="profile-availability" value={profileAvailability} onChange={e => setProfileAvailability(e.target.value)} className="form-select">
+                          <option value="">Select availability...</option>
+                          <option value="Full-time">Full-time</option>
+                          <option value="Part-time">Part-time</option>
+                          <option value="Project-based">Project-based</option>
+                          <option value="Flexible">Flexible</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="profile-note" className="form-label">Additional Notes</label>
+                        <textarea id="profile-note" value={profileNote} onChange={e => setProfileNote(e.target.value)} placeholder="Anything else you'd like us to know?" rows={2} className="form-textarea" />
+                      </div>
+                      <button type="submit" className="btn btn--primary btn--large" disabled={isProfileSubmitting}>
+                        {isProfileSubmitting ? 'Submitting...' : 'Submit Profile'}
+                      </button>
+                    </form>
+                  )}
+                </div>
+                <div className="collab-available__skills">
+                  <p className="collab-available__skills-title">Skills in demand right now:</p>
+                  <div className="collab-available__skills-list">
+                    <span className="skill-tag">Structural Engineering</span>
+                    <span className="skill-tag">Lighting Design</span>
+                    <span className="skill-tag">Grant Writing</span>
+                    <span className="skill-tag">Fabrication</span>
+                    <span className="skill-tag">Acoustic Engineering</span>
+                    <span className="skill-tag">Community Organizing</span>
+                    <span className="skill-tag">Landscape Architecture</span>
+                    <span className="skill-tag">Material Science</span>
+                    <span className="skill-tag">PV Systems</span>
+                    <span className="skill-tag">Coastal Engineering</span>
                   </div>
-                ) : (
-                  <form className="collab-profile-form" onSubmit={handleProfileSubmit}>
-                    {profileError && <p className="form-error">{profileError}</p>}
-                    <div className="form-group">
-                      <label htmlFor="profile-name" className="form-label">Full Name *</label>
-                      <input
-                        id="profile-name"
-                        type="text"
-                        required
-                        value={profileName}
-                        onChange={e => setProfileName(e.target.value)}
-                        placeholder="Your full name"
-                        className="form-input"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="profile-email" className="form-label">Email *</label>
-                      <input
-                        id="profile-email"
-                        type="email"
-                        required
-                        value={profileEmail}
-                        onChange={e => setProfileEmail(e.target.value)}
-                        placeholder="you@example.com"
-                        className="form-input"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="profile-photo" className="form-label">Photo URL</label>
-                      <input
-                        id="profile-photo"
-                        type="url"
-                        value={profilePhoto}
-                        onChange={e => setProfilePhoto(e.target.value)}
-                        placeholder="Link to your headshot or profile photo"
-                        className="form-input"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="profile-skills" className="form-label">Skills and Expertise *</label>
-                      <textarea
-                        id="profile-skills"
-                        required
-                        value={profileSkills}
-                        onChange={e => setProfileSkills(e.target.value)}
-                        placeholder="What do you bring? Engineering, design, fabrication, etc."
-                        rows={3}
-                        className="form-textarea"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="profile-portfolio" className="form-label">Portfolio / Past Projects</label>
-                      <textarea
-                        id="profile-portfolio"
-                        value={profilePortfolio}
-                        onChange={e => setProfilePortfolio(e.target.value)}
-                        placeholder="Links to portfolio, past projects, or relevant work"
-                        rows={2}
-                        className="form-textarea"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="profile-availability" className="form-label">Availability</label>
-                      <select
-                        id="profile-availability"
-                        value={profileAvailability}
-                        onChange={e => setProfileAvailability(e.target.value)}
-                        className="form-select"
-                      >
-                        <option value="">Select availability...</option>
-                        <option value="Full-time">Full-time</option>
-                        <option value="Part-time">Part-time</option>
-                        <option value="Project-based">Project-based</option>
-                        <option value="Flexible">Flexible</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="profile-note" className="form-label">Additional Notes</label>
-                      <textarea
-                        id="profile-note"
-                        value={profileNote}
-                        onChange={e => setProfileNote(e.target.value)}
-                        placeholder="Anything else you'd like us to know?"
-                        rows={2}
-                        className="form-textarea"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      className="btn btn--primary btn--large"
-                      disabled={isProfileSubmitting}
-                    >
-                      {isProfileSubmitting ? 'Submitting...' : 'Submit Profile'}
-                    </button>
-                  </form>
-                )}
-              </div>
-              <div className="collab-available__skills">
-                <p className="collab-available__skills-title">Skills in demand right now:</p>
-                <div className="collab-available__skills-list">
-                  <span className="skill-tag">Structural Engineering</span>
-                  <span className="skill-tag">Lighting Design</span>
-                  <span className="skill-tag">Grant Writing</span>
-                  <span className="skill-tag">Fabrication</span>
-                  <span className="skill-tag">Acoustic Engineering</span>
-                  <span className="skill-tag">Community Organizing</span>
-                  <span className="skill-tag">Landscape Architecture</span>
-                  <span className="skill-tag">Material Science</span>
-                  <span className="skill-tag">PV Systems</span>
-                  <span className="skill-tag">Coastal Engineering</span>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </>
       )}
     </>
   )
