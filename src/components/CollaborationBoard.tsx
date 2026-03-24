@@ -1,6 +1,7 @@
 'use client'
 import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import profilesData from '../../data/profiles.json'
 import projectsData from '../../data/projects.json'
@@ -39,7 +40,15 @@ const SAMPLE_COLLABORATORS = [
 ]
 
 export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<'needs' | 'people' | 'available'>('needs')
+
+  // Handle URL param tab selection (e.g. ?tab=skills or ?tab=people)
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab === 'skills') setActiveTab('available')
+    else if (tab === 'people') setActiveTab('people')
+  }, [searchParams])
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
