@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
-import { supabase } from '@/lib/supabase'
 
 interface CollaboratorProfile {
   id: string
@@ -13,6 +12,9 @@ interface CollaboratorProfile {
   portfolio: string | null
   availability: string | null
   notes: string | null
+  bio: string | null
+  location: string | null
+  headshot_data: string | null
   status: string
 }
 
@@ -24,16 +26,14 @@ export default function ProfilePreviewPage({ params }: { params: { id: string } 
 
   useEffect(() => {
     async function fetchProfile() {
-      const { data, error } = await supabase
-        .from('collaborator_profiles')
-        .select('*')
-        .eq('id', params.id)
-        .single()
-
-      if (error || !data) {
+      try {
+        const res = await fetch(`/api/preview?type=profile&id=${params.id}`)
+        if (!res.ok) { setNotFound(true); setLoading(false); return }
+        const json = await res.json()
+        if (json.data) setProfile(json.data)
+        else setNotFound(true)
+      } catch {
         setNotFound(true)
-      } else {
-        setProfile(data)
       }
       setLoading(false)
     }
@@ -132,14 +132,15 @@ export default function ProfilePreviewPage({ params }: { params: { id: string } 
       <section className="profile-header" style={{ paddingTop: 'var(--space-8)' }}>
         <div className="container">
           <div className="profile-header__inner">
-            {profile.photo_url && (
+            {(profile.headshot_data || profile.photo_url) && (
               <div className="profile-header__avatar">
-                <img src={profile.photo_url} alt={`Photo of ${profile.name}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={profile.headshot_data || profile.photo_url!} alt={`Photo of ${profile.name}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
             )}
             <div className="profile-header__info">
               <h1 className="profile-header__name">{profile.name}</h1>
               <p className="profile-header__title">{profile.availability || 'Collaborator'}</p>
+              {profile.location && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>{profile.location}</p>}
               <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>{profile.email}</p>
             </div>
           </div>
@@ -152,6 +153,18 @@ export default function ProfilePreviewPage({ params }: { params: { id: string } 
           <div className="container">
             <div className="profile-specialties__list">
               {specialties.map(s => <Badge key={s} variant="domain">{s}</Badge>)}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Bio */}
+      {profile.bio && (
+        <section className="profile-about">
+          <div className="container">
+            <p className="section-label">About</p>
+            <div className="profile-about__text">
+              <p>{profile.bio}</p>
             </div>
           </div>
         </section>

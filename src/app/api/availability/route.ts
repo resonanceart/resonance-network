@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { sendNotification, sendSubmissionNotification } from '@/lib/notify'
+import { sendSubmissionNotification } from '@/lib/notify'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, validateEmail, getClientIp } from '@/lib/sanitize'
 
@@ -31,6 +31,10 @@ export async function POST(request: Request) {
     const portfolio = sanitizeText(data.portfolio, 5000)
     const availability = sanitizeText(data.availability, 100)
     const notes = sanitizeText(data.notes, 5000)
+    const bio = sanitizeText(data.bio, 5000)
+    const location = sanitizeText(data.location, 200)
+    const headshotData = typeof data.headshotData === 'string' && data.headshotData.length <= 7_340_032 ? data.headshotData : null
+    const website = sanitizeText(data.website, 500)
 
     if (!name || !email || !skills) {
       return NextResponse.json(
@@ -47,9 +51,12 @@ export async function POST(request: Request) {
         email,
         photo_url: photoUrl || null,
         skills,
-        portfolio: portfolio || null,
+        portfolio: website || portfolio || null,
         availability: availability || null,
         notes: notes || null,
+        bio: bio || null,
+        location: location || null,
+        headshot_data: headshotData || null,
       })
       .select('id')
       .single()
@@ -57,28 +64,6 @@ export async function POST(request: Request) {
     if (error) {
       console.error('Supabase insert error:', error.message)
     }
-
-    // Send notification email (non-blocking)
-    sendNotification({
-      to: ['resonanceartcollective@gmail.com'],
-      subject: `New collaborator profile: ${name}`,
-      body: [
-        `A new collaborator has submitted their profile!\n`,
-        `— Profile Details —`,
-        `Name: ${name}`,
-        `Email: ${email}`,
-        photoUrl ? `Photo: ${photoUrl}` : null,
-        ``,
-        `— Skills & Expertise —`,
-        skills,
-        portfolio ? `\n— Portfolio / Past Projects —\n${portfolio}` : null,
-        availability ? `\nAvailability: ${availability}` : null,
-        notes ? `\n— Additional Notes —\n${notes}` : null,
-        ``,
-        `---`,
-        `Submitted via Resonance Network`,
-      ].filter(Boolean).join('\n'),
-    }).catch(err => console.error('Notification error:', err))
 
     // Send formatted notification (non-blocking)
     if (inserted) {

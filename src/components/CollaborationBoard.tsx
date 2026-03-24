@@ -8,6 +8,15 @@ import type { CollaborationTask, Profile, Project } from '@/types'
 import { CollaborationTaskCard } from './CollaborationTaskCard'
 import { Badge } from './ui/Badge'
 
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
 const CATEGORIES = ['Engineering', 'Architecture', 'Fabrication', 'Production', 'Funding', 'Admin', 'Other']
 
 const breadcrumbJsonLd = {
@@ -54,11 +63,12 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
   // Profile form state
   const [profileName, setProfileName] = useState('')
   const [profileEmail, setProfileEmail] = useState('')
-  const [profilePhoto, setProfilePhoto] = useState('')
+  const [profileBio, setProfileBio] = useState('')
+  const [profileLocation, setProfileLocation] = useState('')
+  const [profileHeadshot, setProfileHeadshot] = useState<File | null>(null)
   const [profileSkills, setProfileSkills] = useState('')
-  const [profilePortfolio, setProfilePortfolio] = useState('')
+  const [profileWebsite, setProfileWebsite] = useState('')
   const [profileAvailability, setProfileAvailability] = useState('')
-  const [profileNote, setProfileNote] = useState('')
   const [isProfileSubmitting, setIsProfileSubmitting] = useState(false)
   const [isProfileSubmitted, setIsProfileSubmitted] = useState(false)
   const [profilePreviewUrl, setProfilePreviewUrl] = useState('')
@@ -106,17 +116,20 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
     setIsProfileSubmitting(true)
     setProfileError('')
     try {
+      const headshotBase64 = profileHeadshot ? await fileToBase64(profileHeadshot) : null
+
       const res = await fetch('/api/availability', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: profileName,
           email: profileEmail,
-          photoUrl: profilePhoto || undefined,
+          bio: profileBio || undefined,
+          location: profileLocation || undefined,
+          headshotData: headshotBase64,
           skills: profileSkills,
-          portfolio: profilePortfolio || undefined,
+          website: profileWebsite || undefined,
           availability: profileAvailability || undefined,
-          notes: profileNote || undefined,
         }),
       })
       const data = await res.json()
@@ -353,16 +366,27 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
                         <input id="profile-email" type="email" required value={profileEmail} onChange={e => setProfileEmail(e.target.value)} placeholder="you@example.com" className="form-input" />
                       </div>
                       <div className="form-group">
-                        <label htmlFor="profile-photo" className="form-label">Photo URL</label>
-                        <input id="profile-photo" type="url" value={profilePhoto} onChange={e => setProfilePhoto(e.target.value)} placeholder="Link to your headshot or profile photo" className="form-input" />
+                        <label htmlFor="profile-bio" className="form-label">Bio (700 characters max)</label>
+                        <textarea id="profile-bio" value={profileBio} onChange={e => { if (e.target.value.length <= 700) setProfileBio(e.target.value) }} placeholder="Tell us about yourself and your practice" rows={4} className="form-textarea" />
+                        <span className="form-hint">{profileBio.length}/700</span>
                       </div>
                       <div className="form-group">
-                        <label htmlFor="profile-skills" className="form-label">Skills and Expertise *</label>
+                        <label htmlFor="profile-location" className="form-label">Location</label>
+                        <input id="profile-location" type="text" value={profileLocation} onChange={e => setProfileLocation(e.target.value)} placeholder="City, region, or remote" className="form-input" />
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="profile-headshot" className="form-label">Upload Headshot</label>
+                        <input id="profile-headshot" type="file" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f && f.size <= 5 * 1024 * 1024) setProfileHeadshot(f); else if (f) setProfileError('Headshot must be under 5MB') }} className="form-input" />
+                        <span className="form-hint">Max 5MB. JPG, PNG, or WebP.</span>
+                        {profileHeadshot && <span className="form-hint" style={{ color: 'var(--color-primary)' }}>✓ {profileHeadshot.name}</span>}
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="profile-skills" className="form-label">Skills &amp; Expertise *</label>
                         <textarea id="profile-skills" required value={profileSkills} onChange={e => setProfileSkills(e.target.value)} placeholder="What do you bring? Engineering, design, fabrication, etc." rows={3} className="form-textarea" />
                       </div>
                       <div className="form-group">
-                        <label htmlFor="profile-portfolio" className="form-label">Portfolio / Past Projects</label>
-                        <textarea id="profile-portfolio" value={profilePortfolio} onChange={e => setProfilePortfolio(e.target.value)} placeholder="Links to portfolio, past projects, or relevant work" rows={2} className="form-textarea" />
+                        <label htmlFor="profile-website" className="form-label">Website / Portfolio URL</label>
+                        <input id="profile-website" type="url" value={profileWebsite} onChange={e => setProfileWebsite(e.target.value)} placeholder="https://..." className="form-input" />
                       </div>
                       <div className="form-group">
                         <label htmlFor="profile-availability" className="form-label">Availability</label>
@@ -373,10 +397,6 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
                           <option value="Project-based">Project-based</option>
                           <option value="Flexible">Flexible</option>
                         </select>
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="profile-note" className="form-label">Additional Notes</label>
-                        <textarea id="profile-note" value={profileNote} onChange={e => setProfileNote(e.target.value)} placeholder="Anything else you'd like us to know?" rows={2} className="form-textarea" />
                       </div>
                       <button type="submit" className="btn btn--primary btn--large" disabled={isProfileSubmitting}>
                         {isProfileSubmitting ? 'Submitting...' : 'Submit Profile'}

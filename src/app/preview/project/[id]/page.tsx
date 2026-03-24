@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
-import { supabase } from '@/lib/supabase'
 
 interface ProjectSubmission {
   id: string
@@ -36,16 +35,14 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
 
   useEffect(() => {
     async function fetchProject() {
-      const { data, error } = await supabase
-        .from('project_submissions')
-        .select('*')
-        .eq('id', params.id)
-        .single()
-
-      if (error || !data) {
+      try {
+        const res = await fetch(`/api/preview?type=project&id=${params.id}`)
+        if (!res.ok) { setNotFound(true); setLoading(false); return }
+        const json = await res.json()
+        if (json.data) setProject(json.data)
+        else setNotFound(true)
+      } catch {
         setNotFound(true)
-      } else {
-        setProject(data)
       }
       setLoading(false)
     }
