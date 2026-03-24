@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     }
 
     const origin = request.headers.get('origin')
-    if (origin && !origin.includes('resonance.network') && !origin.includes('localhost')) {
+    if (origin && !origin.includes('resonance') && !origin.includes('localhost') && !origin.includes('vercel.app')) {
       return NextResponse.json(
         { success: false, message: 'Invalid request origin.' },
         { status: 403 }
