@@ -6,8 +6,10 @@ import { ProjectGalleryGrid } from '@/components/ProjectGalleryGrid'
 import { CollaborationTaskCard } from '@/components/CollaborationTaskCard'
 import { TeamCard } from '@/components/TeamCard'
 import projectsData from '../../../../data/projects.json'
+import profilesData from '../../../../data/profiles.json'
 import tasksData from '../../../../data/tasks.json'
 import type { Project, CollaborationTask, Milestone, ProjectUpdate } from '@/types'
+import type { Profile } from '@/types'
 import type { Metadata } from 'next'
 
 export async function generateStaticParams() {
@@ -104,6 +106,12 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
   if (!project) notFound()
 
   const tasks = (tasksData as CollaborationTask[]).filter(t => t.projectId === project.slug)
+
+  const profiles = profilesData as Profile[]
+  function getProfileHref(name: string): string | undefined {
+    const profile = profiles.find(p => p.name === name && p.status === 'published')
+    return profile ? `/profiles/${profile.slug}` : undefined
+  }
 
   return (
     <article>
@@ -321,6 +329,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
                   name={project.leadArtistName}
                   bio={project.leadArtistBio || ''}
                   photo={project.leadArtistPhoto}
+                  href={getProfileHref(project.leadArtistName)}
                 />
               )}
               {project.collaborators.map(c => (
@@ -329,6 +338,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
                   name={c.name}
                   bio={c.role}
                   photo={c.photo}
+                  href={getProfileHref(c.name)}
                 />
               ))}
             </div>
@@ -347,6 +357,11 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
                 <CollaborationTaskCard key={task.id} task={task} />
               ))}
             </div>
+            <p style={{ marginTop: 'var(--space-6)', textAlign: 'center' }}>
+              <Link href="/collaborate" className="btn btn--outline">
+                See all open roles across the network →
+              </Link>
+            </p>
           </div>
         </section>
       )}

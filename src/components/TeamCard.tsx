@@ -1,14 +1,16 @@
 import Image from 'next/image'
+import Link from 'next/link'
 
 interface Props {
   name: string
   bio: string
   photo?: string
+  href?: string
 }
 
-export function TeamCard({ name, bio, photo }: Props) {
-  return (
-    <div className="team-card">
+export function TeamCard({ name, bio, photo, href }: Props) {
+  const content = (
+    <>
       {photo && (
         <Image
           className="team-card__photo"
@@ -24,7 +26,18 @@ export function TeamCard({ name, bio, photo }: Props) {
       <div className="team-card__body">
         <h3 className="team-card__name">{name}</h3>
         <p className="team-card__bio">{bio}</p>
+        {href && <span className="team-card__view-profile">View Profile →</span>}
       </div>
-    </div>
+    </>
   )
+
+  if (href) {
+    return (
+      <Link href={href} className="team-card team-card--linked">
+        {content}
+      </Link>
+    )
+  }
+
+  return <div className="team-card">{content}</div>
 }

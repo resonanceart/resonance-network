@@ -1,6 +1,9 @@
 'use client'
 import { useState } from 'react'
-import type { CollaborationTask } from '@/types'
+import Link from 'next/link'
+import projectsData from '../../data/projects.json'
+import profilesData from '../../data/profiles.json'
+import type { CollaborationTask, Project, Profile } from '@/types'
 import { Badge } from './ui/Badge'
 
 export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
@@ -14,6 +17,10 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
   const [experience, setExperience] = useState('')
 
   const categoryVariant = task.category.toLowerCase()
+
+  const project = (projectsData as Project[]).find(p => p.slug === task.projectId || p.id === task.projectId)
+  const leadName = project?.leadArtistName
+  const leadProfile = leadName ? (profilesData as Profile[]).find(p => p.name === leadName && p.status === 'published') : null
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -55,6 +62,16 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
       <p className="task-card__project">
         Project: <a href={`/projects/${task.projectId}`}>{task.projectTitle}</a>
       </p>
+      {leadName && (
+        <p className="task-card__lead">
+          Lead:{' '}
+          {leadProfile ? (
+            <Link href={`/profiles/${leadProfile.slug}`}>{leadName}</Link>
+          ) : (
+            <span>{leadName}</span>
+          )}
+        </p>
+      )}
       <p className="task-card__desc">{task.description}</p>
       <div className="task-card__skills">
         {task.skillsNeeded.map(skill => (
