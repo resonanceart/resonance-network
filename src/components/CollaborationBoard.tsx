@@ -1,6 +1,7 @@
 'use client'
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import type { CollaborationTask } from '@/types'
 import { CollaborationTaskCard } from './CollaborationTaskCard'
 
@@ -24,6 +25,15 @@ const breadcrumbJsonLd = {
     },
   ],
 }
+
+const SAMPLE_COLLABORATORS = [
+  { name: "Maya Chen", photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face", skills: ["Structural Engineering", "Parametric Design"], availability: "Project-based" },
+  { name: "James Okonkwo", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face", skills: ["Lighting Design", "Interactive Electronics"], availability: "Part-time" },
+  { name: "Sofia Reyes", photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face", skills: ["Landscape Architecture", "Ecological Design"], availability: "Full-time" },
+  { name: "Kai Tanaka", photo: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&h=200&fit=crop&crop=face", skills: ["Fabrication", "Bamboo Construction"], availability: "Project-based" },
+  { name: "Amara Osei", photo: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=200&h=200&fit=crop&crop=face", skills: ["Grant Writing", "Arts Administration"], availability: "Flexible" },
+  { name: "Luca Romano", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face", skills: ["Sound Design", "Acoustic Engineering"], availability: "Part-time" },
+]
 
 export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
   const [activeTab, setActiveTab] = useState<'needs' | 'available'>('needs')
@@ -192,6 +202,34 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
       ) : (
         <section className="collab-available">
           <div className="container">
+            {/* Roster showcase */}
+            <div className="collab-roster-section">
+              <p className="section-label">Available Now</p>
+              <h2>People Ready to Collaborate</h2>
+              <div className="collab-roster">
+                {SAMPLE_COLLABORATORS.map(person => (
+                  <div key={person.name} className="collab-roster-card">
+                    <Image
+                      src={person.photo}
+                      alt={person.name}
+                      width={64}
+                      height={64}
+                      className="collab-roster-card__photo"
+                    />
+                    <p className="collab-roster-card__name">{person.name}</p>
+                    <div className="collab-roster-card__skills">
+                      {person.skills.map(skill => (
+                        <span key={skill} className="skill-tag">{skill}</span>
+                      ))}
+                    </div>
+                    <p className="collab-roster-card__availability">{person.availability}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="collab-roster-note">These are community members who have offered their expertise. Submit your profile below to join them.</p>
+            </div>
+
+            {/* Existing form section */}
             <div className="collab-available__inner">
               <div className="collab-available__content">
                 <h2>Offer Your Skills</h2>
