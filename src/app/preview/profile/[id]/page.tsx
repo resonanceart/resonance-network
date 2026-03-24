@@ -60,6 +60,7 @@ export default function ProfilePreviewPage({ params }: { params: { id: string } 
 
   return (
     <article className="profile-page">
+      <head><meta name="robots" content="noindex,nofollow" /></head>
       {/* Draft banner */}
       <div className="draft-banner">
         <div className="container">

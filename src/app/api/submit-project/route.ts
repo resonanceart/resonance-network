@@ -78,7 +78,7 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      console.error('Supabase insert error:', error)
+      console.error('Supabase insert error:', error.message)
       return NextResponse.json(
         { success: false, message: 'Failed to save submission. Please try again.' },
         { status: 500 }
@@ -90,8 +90,8 @@ export async function POST(request: Request) {
       message: 'Submission received successfully.',
       previewUrl: `/preview/project/${inserted.id}`,
     })
-  } catch (err) {
-    console.error('Submit project error:', err)
+  } catch {
+    console.error('Submit project error: unexpected server error')
     return NextResponse.json(
       { success: false, message: 'Server error. Please try again.' },
       { status: 500 }

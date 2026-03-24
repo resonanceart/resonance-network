@@ -55,9 +55,7 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      console.error('Supabase insert error:', error)
-      console.log('=== New Collaborator Profile (fallback log) ===')
-      console.log({ name, email, photoUrl, skills, portfolio, availability, notes })
+      console.error('Supabase insert error:', error.message)
     }
 
     // Send notification email (non-blocking)

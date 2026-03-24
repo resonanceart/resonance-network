@@ -70,6 +70,7 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
 
   return (
     <article>
+      <head><meta name="robots" content="noindex,nofollow" /></head>
       {/* Draft banner */}
       <div className="draft-banner">
         <div className="container">
