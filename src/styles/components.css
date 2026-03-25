@@ -97,6 +97,45 @@ main {
   gap: var(--space-2);
 }
 
+/* Auth nav */
+.nav-user {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+.nav-user__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+.nav-user__avatar:hover {
+  opacity: 0.85;
+}
+.nav-login {
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+  white-space: nowrap;
+}
+.nav-login:hover {
+  color: #fff;
+}
+[data-theme="light"] .nav-login {
+  color: var(--color-text-muted);
+}
+[data-theme="light"] .nav-login:hover {
+  color: var(--color-text);
+}
+
 /* Theme toggle */
 .theme-toggle {
   width: 44px;

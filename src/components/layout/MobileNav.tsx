@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useTheme } from '@/components/ThemeProvider'
+import { useAuth } from '@/components/AuthProvider'
 
 interface Props {
   isOpen: boolean
@@ -11,6 +12,7 @@ interface Props {
 export function MobileNav({ isOpen, onClose }: Props) {
   const navRef = useRef<HTMLElement>(null)
   const { theme, toggleTheme } = useTheme()
+  const { user, loading: authLoading } = useAuth()
 
   useEffect(() => {
     if (!isOpen) return
@@ -67,6 +69,13 @@ export function MobileNav({ isOpen, onClose }: Props) {
         <Link href="/about" onClick={onClose}>About</Link>
         <Link href="/submit" onClick={onClose}>Submit</Link>
         <Link href="/join" onClick={onClose}>Join the Network</Link>
+        {!authLoading && (
+          user ? (
+            <Link href="/dashboard" onClick={onClose}>Dashboard</Link>
+          ) : (
+            <Link href="/login" onClick={onClose}>Log In</Link>
+          )
+        )}
       </div>
 
       {/* Dark mode toggle */}

@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
-import { supabase } from '@/lib/supabase-client'
 
 interface ProjectSubmission {
   id: string
@@ -54,16 +53,24 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
 
   useEffect(() => {
     async function fetchProject() {
-      const { data, error } = await supabase
-        .from('project_submissions')
-        .select('*')
-        .eq('id', params.id)
-        .single()
-
-      if (error || !data) {
+      try {
+        const res = await fetch(`/api/preview?type=project&id=${encodeURIComponent(params.id)}`)
+        if (!res.ok) {
+          console.error('Preview fetch failed:', res.status, res.statusText)
+          setNotFound(true)
+          setLoading(false)
+          return
+        }
+        const json = await res.json()
+        if (json.error || !json.data) {
+          console.error('Preview fetch error:', json.error)
+          setNotFound(true)
+        } else {
+          setProject(json.data)
+        }
+      } catch (err) {
+        console.error('Preview fetch exception:', err)
         setNotFound(true)
-      } else {
-        setProject(data)
       }
       setLoading(false)
     }

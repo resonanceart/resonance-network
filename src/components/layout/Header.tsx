@@ -3,6 +3,7 @@ import { useState, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from '@/components/ThemeProvider'
+import { useAuth } from '@/components/AuthProvider'
 import { MobileNav } from './MobileNav'
 
 const navLinks = [
@@ -17,6 +18,7 @@ export function Header() {
   const hamburgerRef = useRef<HTMLButtonElement>(null)
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
+  const { user, loading: authLoading } = useAuth()
 
   return (
     <>
@@ -50,6 +52,17 @@ export function Header() {
           </nav>
 
           <div className="nav-actions">
+            {!authLoading && (
+              user ? (
+                <Link href="/dashboard" className="nav-user" aria-label="Go to dashboard">
+                  <span className="nav-user__avatar">
+                    {user.user_metadata?.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || '?'}
+                  </span>
+                </Link>
+              ) : (
+                <Link href="/login" className="nav-login">Log In</Link>
+              )
+            )}
             <button
               className="theme-toggle"
               aria-label="Toggle dark mode"
