@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { sendSubmissionNotification } from '@/lib/notify'
+import { sendEmail } from '@/lib/gmail'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, validateEmail, getClientIp } from '@/lib/sanitize'
 
@@ -73,6 +74,19 @@ export async function POST(request: Request) {
     if (inserted) {
       sendSubmissionNotification('profile', { name, email, skills, availability, portfolio }, `/preview/profile/${inserted.id}`)
         .catch(err => console.error('Notification error:', err))
+    }
+
+    // Send confirmation email to applicant (non-blocking)
+    if (inserted && email) {
+      sendEmail({
+        to: email,
+        subject: 'We received your profile — Resonance Network',
+        html: `<p>Hi ${name},</p>
+<p>Thank you for submitting your collaborator profile to Resonance Network. We'll review it and connect you with matching projects soon.</p>
+<p>You can preview your profile here:<br><a href="https://resonance.network/preview/profile/${inserted.id}">https://resonance.network/preview/profile/${inserted.id}</a></p>
+<p>Welcome to the network!</p>
+<p>— The Resonance Network Team</p>`,
+      }).catch(err => console.error('Confirmation email error:', err))
     }
 
     return NextResponse.json({

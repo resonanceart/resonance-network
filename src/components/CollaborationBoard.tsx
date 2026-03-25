@@ -8,12 +8,19 @@ import type { CollaborationTask, Profile, Project } from '@/types'
 import { CollaborationTaskCard } from './CollaborationTaskCard'
 import { Badge } from './ui/Badge'
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
+async function compressImage(file: File, maxWidth = 1200, quality = 0.7): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new window.Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      const ratio = Math.min(maxWidth / img.width, 1)
+      canvas.width = img.width * ratio
+      canvas.height = img.height * ratio
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      resolve(canvas.toDataURL('image/jpeg', quality))
+    }
+    img.src = URL.createObjectURL(file)
   })
 }
 
@@ -116,7 +123,7 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
     setIsProfileSubmitting(true)
     setProfileError('')
     try {
-      const headshotBase64 = profileHeadshot ? await fileToBase64(profileHeadshot) : null
+      const headshotBase64 = profileHeadshot ? await compressImage(profileHeadshot, 400, 0.8) : null
 
       const res = await fetch('/api/availability', {
         method: 'POST',

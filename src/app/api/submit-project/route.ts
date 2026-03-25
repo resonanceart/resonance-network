@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, validateEmail, getClientIp } from '@/lib/sanitize'
 import { sendSubmissionNotification } from '@/lib/notify'
+import { sendEmail } from '@/lib/gmail'
 
 export async function POST(request: Request) {
   try {
@@ -43,6 +44,8 @@ export async function POST(request: Request) {
     const pathways = Array.isArray(body.pathways) ? body.pathways.filter((p: unknown) => typeof p === 'string').map((p: string) => p.slice(0, 100)) : null
     const heroImageData = typeof body.heroImageData === 'string' && body.heroImageData.length <= 7_340_032 ? body.heroImageData : null
     const galleryImagesData = typeof body.galleryImagesData === 'string' && body.galleryImagesData.length <= 44_040_192 ? body.galleryImagesData : null
+    const collaborationNeeds = sanitizeText(body.collaborationNeeds, 5000)
+    const artistHeadshotData = typeof body.artistHeadshotData === 'string' && body.artistHeadshotData.length <= 7_340_032 ? body.artistHeadshotData : null
 
     if (!artistName || !artistEmail || !projectTitle) {
       return NextResponse.json(
@@ -73,6 +76,8 @@ export async function POST(request: Request) {
         special_needs: specialNeeds || null,
         hero_image_data: heroImageData || null,
         gallery_images_data: galleryImagesData || null,
+        collaboration_needs: collaborationNeeds || null,
+        artist_headshot_data: artistHeadshotData || null,
         status: 'new',
       })
       .select('id')
@@ -96,6 +101,17 @@ export async function POST(request: Request) {
       location,
       one_sentence: oneSentence,
     }, previewUrl).catch(err => console.error('Notification error:', err))
+
+    // Send confirmation email to applicant (non-blocking)
+    sendEmail({
+      to: artistEmail,
+      subject: 'We received your project submission — Resonance Network',
+      html: `<p>Hi ${artistName},</p>
+<p>Thank you for submitting <strong>${projectTitle}</strong> to Resonance Network. Our curation team will review your submission within two weeks.</p>
+<p>You can preview how your page will look here:<br><a href="https://resonance.network${previewUrl}">https://resonance.network${previewUrl}</a></p>
+<p>We'll be in touch soon!</p>
+<p>— The Resonance Network Team</p>`,
+    }).catch(err => console.error('Confirmation email error:', err))
 
     return NextResponse.json({
       success: true,

@@ -15,12 +15,19 @@ const STAGES = ['Concept', 'Design Development', 'Engineering', 'Fundraising', '
 
 const STEPS = ['About You', 'Your Project', 'Classification', 'Images', 'Review & Submit']
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
+async function compressImage(file: File, maxWidth = 1200, quality = 0.7): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new window.Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      const ratio = Math.min(maxWidth / img.width, 1)
+      canvas.width = img.width * ratio
+      canvas.height = img.height * ratio
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      resolve(canvas.toDataURL('image/jpeg', quality))
+    }
+    img.src = URL.createObjectURL(file)
   })
 }
 
@@ -54,6 +61,8 @@ export function ProjectSubmissionForm() {
   const [location, setLocation] = useState('')
   const [materials, setMaterials] = useState('')
   const [specialNeeds, setSpecialNeeds] = useState('')
+  const [collaborationNeeds, setCollaborationNeeds] = useState('')
+  const [collaborationRoleCount, setCollaborationRoleCount] = useState('')
 
   // Step 4 — Images
   const [heroImage, setHeroImage] = useState<File | null>(null)
@@ -66,7 +75,7 @@ export function ProjectSubmissionForm() {
   function canProceed(): boolean {
     if (step === 0) return !!(artistName && artistBio && artistEmail)
     if (step === 1) return !!(projectTitle && oneSentence && vision && experience && story && goals)
-    if (step === 2) return !!(domains.length > 0 && pathways.length > 0 && stage)
+    if (step === 2) return !!(domains.length > 0 && pathways.length > 0 && stage && collaborationNeeds)
     if (step === 3) return !!heroImage
     return true
   }
@@ -75,9 +84,9 @@ export function ProjectSubmissionForm() {
     setIsSubmitting(true)
     setError('')
     try {
-      const heroBase64 = heroImage ? await fileToBase64(heroImage) : null
-      const headshotBase64 = artistHeadshot ? await fileToBase64(artistHeadshot) : null
-      const galleryBase64 = await Promise.all(galleryImages.map(f => fileToBase64(f)))
+      const heroBase64 = heroImage ? await compressImage(heroImage) : null
+      const headshotBase64 = artistHeadshot ? await compressImage(artistHeadshot, 400, 0.8) : null
+      const galleryBase64 = await Promise.all(galleryImages.map(f => compressImage(f)))
 
       const res = await fetch('/api/submit-project', {
         method: 'POST',
@@ -87,7 +96,6 @@ export function ProjectSubmissionForm() {
           artistBio,
           artistEmail,
           artistWebsite: artistWebsite || null,
-          artistHeadshotData: headshotBase64,
           projectTitle,
           oneSentence,
           vision,
@@ -101,6 +109,9 @@ export function ProjectSubmissionForm() {
           location: location || null,
           materials: materials || null,
           specialNeeds: specialNeeds || null,
+          collaborationNeeds: collaborationNeeds || null,
+          collaborationRoleCount: collaborationRoleCount ? parseInt(collaborationRoleCount) : null,
+          artistHeadshotData: headshotBase64,
           heroImageData: heroBase64,
           galleryImagesData: JSON.stringify(galleryBase64),
         }),
@@ -262,6 +273,14 @@ export function ProjectSubmissionForm() {
             <textarea id="sf-materials" value={materials} onChange={e => setMaterials(e.target.value)} className="form-textarea" rows={3} placeholder="e.g. steel fabrication, living plant systems, projection mapping..." />
           </div>
           <div className="form-group">
+            <label htmlFor="sf-collab-needs" className="form-label">What roles or expertise does your project need? *</label>
+            <textarea id="sf-collab-needs" required value={collaborationNeeds} onChange={e => setCollaborationNeeds(e.target.value)} className="form-textarea" rows={4} placeholder="e.g. Structural engineer for load analysis, lighting designer for immersive experience, grant writer for NEA application..." />
+          </div>
+          <div className="form-group">
+            <label htmlFor="sf-role-count" className="form-label">How many collaboration roles are you looking to fill?</label>
+            <input id="sf-role-count" type="number" min="1" max="20" value={collaborationRoleCount} onChange={e => setCollaborationRoleCount(e.target.value)} className="form-input" placeholder="e.g. 3" />
+          </div>
+          <div className="form-group">
             <label htmlFor="sf-special" className="form-label">Special Needs</label>
             <textarea id="sf-special" value={specialNeeds} onChange={e => setSpecialNeeds(e.target.value)} className="form-textarea" rows={2} placeholder="Anything else you'd like us to know?" />
           </div>
@@ -317,6 +336,7 @@ export function ProjectSubmissionForm() {
               <p><strong>Domains:</strong> {domains.join(', ')}</p>
               <p><strong>Pathways:</strong> {pathways.join(', ')}</p>
               <p><strong>Stage:</strong> {stage}</p>
+              {collaborationNeeds && <p><strong>Collaboration needs:</strong> {collaborationNeeds.slice(0, 200)}{collaborationNeeds.length > 200 ? '...' : ''}</p>}
               {scale && <p><strong>Scale:</strong> {scale}</p>}
               {location && <p><strong>Location:</strong> {location}</p>}
             </div>
