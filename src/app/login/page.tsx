@@ -1,9 +1,27 @@
 'use client'
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-auth'
+import Link from 'next/link'
 
 type Tab = 'signin' | 'signup'
+
+function getPasswordStrength(password: string) {
+  let score = 0
+  if (password.length >= 8) score++
+  if (/[A-Z]/.test(password)) score++
+  if (/\d/.test(password)) score++
+  if (/[^A-Za-z0-9]/.test(password)) score++
+
+  if (score <= 1) return { label: 'Weak', color: '#dc2626', width: 25 }
+  if (score === 2) return { label: 'Fair', color: '#f59e0b', width: 50 }
+  if (score === 3) return { label: 'Good', color: '#84cc16', width: 75 }
+  return { label: 'Strong', color: '#16a34a', width: 100 }
+}
+
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
 
 export default function LoginPage() {
   return (
@@ -26,6 +44,8 @@ function LoginForm() {
   const supabase = createSupabaseBrowserClient()
 
   const urlError = searchParams.get('error')
+  const emailValid = email.length > 0 && isValidEmail(email)
+  const passwordStrength = useMemo(() => getPasswordStrength(password), [password])
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,7 +66,7 @@ function LoginForm() {
     setError('')
     setLoading(true)
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -54,11 +74,22 @@ function LoginForm() {
       },
     })
     if (error) {
-      setError(error.message)
+      // Supabase returns this when email already exists with "fake" signup
+      if (error.message.toLowerCase().includes('already registered') || error.message.toLowerCase().includes('already been registered')) {
+        setError('email_exists')
+      } else {
+        setError(error.message)
+      }
       setLoading(false)
     } else {
-      setMessage('Check your email for a confirmation link.')
-      setLoading(false)
+      // Supabase may return a user with identities=[] if the email already exists
+      if (data.user && data.user.identities && data.user.identities.length === 0) {
+        setError('email_exists')
+        setLoading(false)
+      } else {
+        setMessage('Check your email for a confirmation link.')
+        setLoading(false)
+      }
     }
   }
 
@@ -85,9 +116,36 @@ function LoginForm() {
         {tab === 'signin' ? 'Sign In' : 'Create Account'}
       </h1>
 
-      {(error || urlError) && (
+      {error && error !== 'email_exists' && (
         <div className="form-error" style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', borderRadius: '8px', background: 'rgba(220,38,38,0.08)' }}>
-          {error || 'Authentication failed. Please try again.'}
+          {error}
+        </div>
+      )}
+
+      {!error && urlError && (
+        <div className="form-error" style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', borderRadius: '8px', background: 'rgba(220,38,38,0.08)' }}>
+          Authentication failed. Please try again.
+        </div>
+      )}
+
+      {error === 'email_exists' && (
+        <div className="form-error" style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', borderRadius: '8px', background: 'rgba(220,38,38,0.08)' }}>
+          An account with this email already exists.{' '}
+          <button
+            type="button"
+            onClick={() => { setTab('signin'); setError('') }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--color-primary)',
+              cursor: 'pointer',
+              textDecoration: 'underline',
+              padding: 0,
+              font: 'inherit',
+            }}
+          >
+            Try signing in instead.
+          </button>
         </div>
       )}
 
@@ -100,14 +158,14 @@ function LoginForm() {
       <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-6)' }}>
         <button
           onClick={() => { setTab('signin'); setError(''); setMessage('') }}
-          className={`btn ${tab === 'signin' ? 'btn--primary' : 'btn--secondary'}`}
+          className={`btn ${tab === 'signin' ? 'btn--primary' : 'btn--outline'}`}
           style={{ flex: 1 }}
         >
           Sign In
         </button>
         <button
           onClick={() => { setTab('signup'); setError(''); setMessage('') }}
-          className={`btn ${tab === 'signup' ? 'btn--primary' : 'btn--secondary'}`}
+          className={`btn ${tab === 'signup' ? 'btn--primary' : 'btn--outline'}`}
           style={{ flex: 1 }}
         >
           Create Account
@@ -132,15 +190,24 @@ function LoginForm() {
 
         <div className="form-group">
           <label className="form-label" htmlFor="email">Email</label>
-          <input
-            id="email"
-            className="form-input"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            required
-          />
+          <div className="form-input-wrapper">
+            <input
+              id="email"
+              className="form-input"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+            />
+            {emailValid && (
+              <span className="form-input-wrapper__check" aria-label="Valid email">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="form-group">
@@ -153,8 +220,22 @@ function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             required
-            minLength={6}
+            minLength={8}
           />
+          {tab === 'signup' && password.length > 0 && (
+            <div className="password-strength">
+              <div className="password-strength__bar">
+                <div
+                  className="password-strength__fill"
+                  style={{ width: `${passwordStrength.width}%`, background: passwordStrength.color }}
+                />
+              </div>
+              <span className="password-strength__label" style={{ color: passwordStrength.color }}>
+                {passwordStrength.label}
+                {password.length < 8 && ' — minimum 8 characters'}
+              </span>
+            </div>
+          )}
         </div>
 
         <button
@@ -168,14 +249,19 @@ function LoginForm() {
       </form>
 
       {tab === 'signin' && (
-        <button
-          onClick={handleMagicLink}
-          className="btn btn--secondary"
-          disabled={loading}
-          style={{ width: '100%' }}
-        >
-          Send Magic Link Instead
-        </button>
+        <>
+          <button
+            onClick={handleMagicLink}
+            className="btn btn--outline"
+            disabled={loading}
+            style={{ width: '100%', marginBottom: 'var(--space-4)' }}
+          >
+            Send Magic Link Instead
+          </button>
+          <p style={{ textAlign: 'center', fontSize: 'var(--text-sm)' }}>
+            <Link href="/reset-password" style={{ color: 'var(--color-primary)' }}>Forgot password?</Link>
+          </p>
+        </>
       )}
     </section>
   )
