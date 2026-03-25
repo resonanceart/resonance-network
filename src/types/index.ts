@@ -91,6 +91,43 @@ export interface Profile {
   supabaseId?: string
 }
 
+export interface UserProfile {
+  id: string
+  created_at: string
+  updated_at: string
+  display_name: string
+  email: string
+  avatar_url: string | null
+  bio: string | null
+  location: string | null
+  website: string | null
+  skills: string[] | null
+  role: 'collaborator' | 'creator' | 'admin'
+  collaborator_profile_id: string | null
+  onboarding_complete: boolean
+}
+
+export interface UserFollow {
+  id: string
+  created_at: string
+  user_id: string
+  project_id: string
+}
+
+export interface UserMessage {
+  id: string
+  created_at: string
+  recipient_id: string
+  sender_id: string | null
+  sender_name: string | null
+  subject: string
+  body: string
+  read: boolean
+  message_type: 'notification' | 'collaboration_interest' | 'project_update' | 'system'
+  related_project: string | null
+  related_task: string | null
+}
+
 export interface CollaborationTask {
   id: string
   projectId: string
