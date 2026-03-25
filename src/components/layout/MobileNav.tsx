@@ -43,6 +43,8 @@ export function MobileNav({ isOpen, onClose }: Props) {
   return (
     <nav
       ref={navRef}
+      role="dialog"
+      aria-modal="true"
       className={`nav-mobile${isOpen ? ' active' : ''}`}
       aria-label="Mobile navigation"
       aria-hidden={!isOpen}

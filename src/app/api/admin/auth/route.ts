@@ -1,7 +1,17 @@
 import { NextResponse } from 'next/server'
+import { rateLimit } from '@/lib/rate-limit'
+import { getClientIp } from '@/lib/sanitize'
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request)
+    if (!rateLimit(ip)) {
+      return NextResponse.json(
+        { success: false, message: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
     const { password } = await request.json()
     const adminPassword = process.env.ADMIN_PASSWORD
 
