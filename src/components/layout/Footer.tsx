@@ -82,6 +82,10 @@ export function Footer() {
 
           <div className="footer-bottom">
             <span className="footer-copyright">&copy; 2026 Resonance Network. All rights reserved.</span>
+            <nav className="footer-legal" aria-label="Legal">
+              <Link href="/privacy">Privacy Policy</Link>
+              <Link href="/terms">Terms of Service</Link>
+            </nav>
             <span className="footer-tagline-small">Built by artists, for artists.</span>
             <Link href="/" className="footer-logo-small" aria-label="Resonance Network">
               <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="20" height="20">

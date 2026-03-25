@@ -38,6 +38,7 @@ export default function SettingsPage() {
 
         <ChangePasswordSection supabase={supabase} />
         <EmailPreferencesSection />
+        <DataExportSection />
         <SignOutAllSection supabase={supabase} router={router} />
         <DeleteAccountSection router={router} />
       </div>
@@ -203,6 +204,63 @@ function EmailPreferencesSection() {
         style={{ marginTop: 'var(--space-4)' }}
       >
         {loading ? 'Saving...' : 'Save Preferences'}
+      </button>
+    </div>
+  )
+}
+
+function DataExportSection() {
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+
+  const handleExport = async () => {
+    setLoading(true)
+    setMessage('')
+
+    try {
+      const res = await fetch('/api/user/export')
+      if (!res.ok) {
+        setMessage('Failed to export data.')
+        setLoading(false)
+        return
+      }
+
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `resonance-data-export-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      setMessage('Data downloaded successfully.')
+    } catch {
+      setMessage('Something went wrong.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{ marginBottom: 'var(--space-8)', padding: 'var(--space-6)', background: 'var(--color-surface)', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
+      <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-2)' }}>Download My Data</h2>
+      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
+        Export all your data (profile, follows, messages, submissions) as a JSON file.
+      </p>
+
+      {message && (
+        <div style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', borderRadius: '8px', background: 'rgba(20,184,166,0.08)', color: 'var(--color-primary)', fontSize: 'var(--text-sm)' }}>
+          {message}
+        </div>
+      )}
+
+      <button
+        className="btn btn--outline btn--sm"
+        onClick={handleExport}
+        disabled={loading}
+      >
+        {loading ? 'Exporting...' : 'Download My Data'}
       </button>
     </div>
   )

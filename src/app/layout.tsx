@@ -5,6 +5,7 @@ import { AuthProvider } from '@/components/AuthProvider'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { ScrollToTop } from '@/components/ScrollToTop'
+import { CookieConsent } from '@/components/CookieConsent'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://resonance.network'),
@@ -160,6 +161,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main id="main-content">{children}</main>
             <Footer />
             <ScrollToTop />
+            <CookieConsent />
           </AuthProvider>
         </ThemeProvider>
       </body>
