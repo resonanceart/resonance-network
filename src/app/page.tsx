@@ -4,21 +4,21 @@ import { getProjects } from '@/lib/data'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Resonance Network — Immersive Art Installations, Regenerative Architecture & Ecological Design',
-  description: 'Discover curated immersive art installations, regenerative architecture, and ecological design projects. Connect with collaborators to build ambitious creative work.',
+  title: 'Resonance Network — Where Ambitious Creative Projects Find Their People',
+  description: 'An artist-led platform for large-scale art, regenerative architecture, and ecological design. Find collaborators and build the work you can\'t build alone.',
   alternates: {
     canonical: 'https://resonance.network',
   },
   openGraph: {
-    title: 'Resonance Network — Immersive Art Installations, Regenerative Architecture & Ecological Design',
-    description: 'Discover curated immersive art installations, regenerative architecture, and ecological design projects. Connect with collaborators to build ambitious creative work.',
+    title: 'Resonance Network — Where Ambitious Creative Projects Find Their People',
+    description: 'An artist-led platform for large-scale art, regenerative architecture, and ecological design. Find collaborators and build the work you can\'t build alone.',
     type: 'website',
     images: [{ url: '/og-image.jpg' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Resonance Network — Immersive Art Installations, Regenerative Architecture & Ecological Design',
-    description: 'Curated immersive art installations, regenerative architecture, and ecological design. An artist-led collaboration platform.',
+    title: 'Resonance Network — Where Ambitious Creative Projects Find Their People',
+    description: 'An artist-led platform connecting creators with collaborators to build ambitious work at the intersection of art and ecology.',
     images: [{ url: '/og-image.jpg' }],
   },
 }
@@ -52,7 +52,7 @@ export default async function HomePage() {
 
       {/* Intro section — below the hero */}
       <section className="hero-intro">
-        <p className="hero-intro__text">Immersive art. Regenerative architecture. Ecological design. One network.</p>
+        <p className="hero-intro__text">A curated network for ambitious creative work — from first sketch to standing structure.</p>
       </section>
 
       {/* Project Gallery with filtering */}
@@ -62,7 +62,7 @@ export default async function HomePage() {
       <section className="cta-bottom">
         <div className="cta-bottom__inner">
           <h2 className="cta-bottom__heading">Your Skills Belong Here</h2>
-          <p className="cta-bottom__body">Whether you&apos;re an artist with a vision, an engineer who wants meaningful work, or an ecologist seeking projects that match your values — the network is waiting.</p>
+          <p className="cta-bottom__body">Whether you&apos;re an artist with a vision, an engineer seeking meaningful work, or a specialist looking for projects that match your values — there&apos;s a place for you here.</p>
           <div className="cta-bottom__actions">
             <a href="/submit" className="btn btn--primary btn--large">Submit Your Project</a>
             <a href="/collaborate" className="btn btn--outline btn--large">Find a Role</a>

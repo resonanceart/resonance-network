@@ -2,14 +2,14 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'About — Artist-Led Platform for Immersive & Regenerative Projects',
-  description: 'Built by artists, for artists. Resonance Network connects creators of immersive art, regenerative architecture, and ecological design with collaborators to get built.',
+  title: 'About — An Artist-Led Platform for Ambitious Creative Work',
+  description: 'Built by artists, for artists. Resonance Network connects creators of large-scale art and architecture with the collaborators they need to get built.',
   alternates: {
     canonical: 'https://resonance.network/about',
   },
   openGraph: {
     title: 'About Resonance Network — Art Collaboration Platform',
-    description: 'An artist-led collaboration platform for immersive art installations, regenerative architecture, and ecological design — connecting creators with expertise at scale.',
+    description: 'An artist-led collaboration platform connecting creators of ambitious projects with the expertise to make them real.',
     url: 'https://resonance.network/about',
     type: 'website',
     images: [{ url: '/og-image.jpg' }],
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'About Resonance Network — Art Collaboration Platform',
-    description: 'An artist-led platform connecting creators of immersive art and regenerative architecture with collaborators.',
+    description: 'An artist-led platform connecting creators of ambitious projects with the collaborators to make them real.',
     images: [{ url: '/og-image.jpg' }],
   },
 }
@@ -57,7 +57,7 @@ export default function AboutPage() {
           </nav>
           <p className="section-label">About Resonance Network</p>
           <h1 className="about-hero__headline">Built by artists. For artists.</h1>
-          <p className="about-hero__sub">A curated platform where extraordinary creative projects find the collaborators and momentum to get built.</p>
+          <p className="about-hero__sub">A curated platform where ambitious creative projects find the people and momentum to get built.</p>
         </div>
       </section>
 
@@ -70,10 +70,10 @@ export default function AboutPage() {
               <h2>The Gap We Close</h2>
             </div>
             <div className="about-two-col__body">
-              <p className="about-lead-text">Resonance Network helps serious, visionary spatial projects cross the gap from concept-ready to buildable reality.</p>
-              <p>We do this by curating aligned projects, offering transparent feedback, and connecting creators with the technical expertise, collaborators, and funding pathways they need — so ambitious immersive and regenerative works can be realized without creators sacrificing their financial or emotional well-being.</p>
+              <p className="about-lead-text">Resonance Network helps ambitious creative projects cross the gap from concept to buildable reality.</p>
+              <p>We curate aligned projects, offer transparent feedback, and connect creators with the expertise, collaborators, and funding pathways they need — so the work gets built without creators sacrificing their financial or emotional well-being.</p>
               <blockquote className="about-pullquote">
-                <p>Resonance Network should feel like a deep exhale. Creators who arrive here have already done enormous work. What they need is not validation — they need to realize they do not have to do it alone.</p>
+                <p>Resonance Network should feel like a deep exhale. Creators who arrive here have already done enormous work. What they need isn&apos;t validation — it&apos;s knowing they don&apos;t have to do it alone.</p>
               </blockquote>
             </div>
           </div>
@@ -88,19 +88,19 @@ export default function AboutPage() {
           <div className="values-grid">
             <div className="value-card value-card--accent-1">
               <h3>Inspiration</h3>
-              <p>We share work and stories that generate awe and emotional resonance. Every project we feature, every story we tell, should remind creators why this work matters.</p>
+              <p>Every project we feature and story we tell should remind creators why this work matters — and make others want to be part of it.</p>
             </div>
             <div className="value-card value-card--accent-2">
               <h3>Participation</h3>
-              <p>We treat the public and each other as active participants, not spectators. The network itself is participatory — shaped by the needs, ideas, and contributions of its members.</p>
+              <p>We treat everyone as active participants, not spectators. The network is shaped by the needs, ideas, and contributions of its members.</p>
             </div>
             <div className="value-card value-card--accent-3">
               <h3>Inclusivity</h3>
-              <p>We uplift diverse voices across disciplines, cultures, and backgrounds. We actively seek perspectives underrepresented in mainstream art and architecture platforms.</p>
+              <p>We uplift diverse voices across disciplines, cultures, and backgrounds — actively seeking perspectives underrepresented in mainstream art and architecture.</p>
             </div>
             <div className="value-card value-card--accent-4">
               <h3>Originality</h3>
-              <p>We support distinctive ideas, protecting space for experimentation over trends. The projects that thrive here are too ambitious, too interdisciplinary, or too unconventional for traditional pathways.</p>
+              <p>We protect space for experimentation over trends. The projects that thrive here are too ambitious, too interdisciplinary, or too unconventional for traditional pathways.</p>
             </div>
             <div className="value-card value-card--accent-5">
               <h3>Regeneration</h3>
@@ -108,11 +108,11 @@ export default function AboutPage() {
             </div>
             <div className="value-card value-card--accent-6">
               <h3>Transparency</h3>
-              <p>We are clear about our processes, criteria, and limitations. Creators understand where they stand, what is missing, and what to do next.</p>
+              <p>We&apos;re clear about our processes, criteria, and limitations. Creators always know where they stand and what to do next.</p>
             </div>
             <div className="value-card value-card--accent-7">
               <h3>Integrity</h3>
-              <p>We respect the labor and lived experience behind each project. Every creator who engages with Resonance Network — whether accepted or redirected — should feel they were treated with genuine care.</p>
+              <p>We respect the labor behind each project. Every creator who engages with us — whether accepted or redirected — should feel they were treated with genuine care.</p>
             </div>
           </div>
         </div>
@@ -129,21 +129,21 @@ export default function AboutPage() {
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-4 3.5-7 7-7s7 3 7 7"/></svg>
               </div>
               <h3>Creators</h3>
-              <p>Artists, architects, designers, and interdisciplinary creators with substantive, large-scale projects beyond the idea stage — immersive installations, regenerative architecture, public art, interactive environments.</p>
+              <p>Artists, architects, designers, and interdisciplinary creators with substantive projects beyond the idea stage — large-scale installations, public art, interactive environments, and regenerative buildings.</p>
             </div>
             <div className="audience-card">
               <div className="audience-card__icon">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
               </div>
               <h3>Collaborators &amp; Experts</h3>
-              <p>Engineers, fabricators, producers, technologists, and sustainability consultants whose expertise is essential — professionals who care about the work and want access to meaningful, values-aligned projects.</p>
+              <p>Engineers, fabricators, producers, technologists, and sustainability consultants who care about the work — professionals seeking meaningful, values-aligned projects.</p>
             </div>
             <div className="audience-card">
               <div className="audience-card__icon">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
               </div>
               <h3>Curators, Venues &amp; Funders</h3>
-              <p>Museum curators, festival programmers, public art commissioners, foundations, and donors seeking high-quality immersive and regenerative projects with vetted, build-ready materials.</p>
+              <p>Museum curators, festival programmers, public art commissioners, foundations, and donors seeking vetted, build-ready projects at the intersection of art and ecology.</p>
             </div>
           </div>
         </div>
@@ -154,7 +154,7 @@ export default function AboutPage() {
         <div className="container">
           <p className="section-label">Process</p>
           <h2>How Curation Works</h2>
-          <p className="about-section__intro">Every project submitted to Resonance Network is reviewed for alignment with shared values and readiness to engage. Here&apos;s how it works:</p>
+          <p className="about-section__intro">Every project is reviewed for values alignment and readiness to engage. Here&apos;s how it works:</p>
           <div className="curation-timeline">
             <div className="curation-timeline__step">
               <div className="curation-timeline__marker">
@@ -211,9 +211,9 @@ export default function AboutPage() {
               <h2>By Artists, For Artists</h2>
             </div>
             <div className="about-two-col__body">
-              <p>This is not just a tagline — it describes how we&apos;re built. Resonance Network is created and stewarded by practicing artists and makers who know firsthand how hard it is to carry a large, interdisciplinary project.</p>
-              <p>The founding team has personally experienced the challenges — budget overruns, isolation, the need for technical expertise that&apos;s hard to find. This lived experience informs every decision: what curation criteria to set, how to give feedback, and how to treat creators.</p>
-              <p>We believe the strongest projects grow from love, intention, and collaboration — not from chasing trends. When a visitor sees that the people running Resonance Network are peers — not venture-backed platform operators — trust is immediate and earned.</p>
+              <p>This isn&apos;t just a tagline — it&apos;s how we&apos;re built. Resonance Network is created and stewarded by practicing artists and makers who know firsthand how hard it is to carry a large, interdisciplinary project.</p>
+              <p>The founding team has lived the challenges — budget overruns, isolation, the search for expertise that&apos;s hard to find. That experience shapes every decision we make, from curation criteria to how we give feedback.</p>
+              <p>The strongest projects grow from love, intention, and collaboration — not from chasing trends. The people running this network are peers, not platform operators. That&apos;s how trust gets built.</p>
             </div>
           </div>
         </div>

@@ -101,12 +101,12 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
         {/* Action */}
         {!isFormOpen ? (
           <button className="btn btn--primary btn--full btn--sm" onClick={() => setIsFormOpen(true)}>
-            Connect Me
+            I&apos;m Interested
           </button>
         ) : isSubmitted ? (
           <div className="form-success" style={{ padding: 'var(--space-3) 0' }}>
             <span className="form-success__icon" aria-hidden="true">✓</span>
-            <p style={{ fontSize: 'var(--text-sm)' }}>Received! The team will be in touch.</p>
+            <p style={{ fontSize: 'var(--text-sm)' }}>Sent! The team will reach out soon.</p>
           </div>
         ) : (
           <form className="task-card__form" onSubmit={handleSubmit}>

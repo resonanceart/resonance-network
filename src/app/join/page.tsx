@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Join the Network',
-  description: 'Join Resonance Network as a project creator or skilled collaborator. Submit your immersive art or regenerative architecture project, or offer your expertise.',
+  description: 'Join Resonance Network as a project creator or skilled collaborator. Submit your project or offer your expertise to ambitious creative work.',
   alternates: {
     canonical: 'https://resonance.network/join',
   },
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Join Resonance Network',
-    description: 'Submit a project or join as a collaborator on immersive art and regenerative architecture.',
+    description: 'Submit a project or join as a collaborator on ambitious creative work.',
     images: [{ url: '/og-image.jpg' }],
   },
 }
@@ -47,7 +47,7 @@ export default function JoinPage() {
                 </svg>
               </div>
               <h2>Submit a Project</h2>
-              <p className="join-card__desc">You have a large-scale creative project — immersive art, regenerative architecture, ecological design — and you need collaborators, expertise, or pathways to make it real.</p>
+              <p className="join-card__desc">You have an ambitious creative project — and you need collaborators, expertise, or pathways to make it real.</p>
               <p className="join-card__outcome">We&apos;ll create your project page and artist profile on the network.</p>
               <ul className="join-card__benefits">
                 <li>Project page with gallery and overview</li>

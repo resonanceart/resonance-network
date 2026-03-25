@@ -8,7 +8,7 @@
     "photo": "/assets/images/team/elliot-fabri.png",
     "coverImage": "/assets/images/projects/money-shot.png",
     "bio": "Elliot Fabri is a multidisciplinary artist and designer whose work explores the intersection of immersive architecture, natural geometry, and collective experience. After years of creating large-scale festival installations and immersive environments, Elliot founded Resonance Art Collective to pursue a singular vision: a permanent, climbable bamboo installation inspired by the logarithmic spiral of the queen's conch shell.\n\nWith a background spanning sculpture, parametric design, and experiential production, Elliot's practice is rooted in the belief that built spaces should invite wonder, not just function. His work draws from biomimicry, acoustic physics, and the rituals of gathering — creating structures that people don't just observe, but physically inhabit.\n\nElliot leads all creative direction, vision, and project development for Resonance, working with a growing network of engineers, architects, and fabricators to bring the project from concept to architectural reality.",
-    "shortBio": "Founder of Resonance Art Collective. Building immersive architecture at the intersection of natural geometry and collective experience.",
+    "shortBio": "Founder of Resonance Art Collective. Building climbable architecture at the intersection of natural geometry and shared experience.",
     "location": "Bali, Indonesia / Los Angeles, CA",
     "email": "resonanceartcollective@gmail.com",
     "specialties": [
@@ -31,7 +31,7 @@
       },
       {
         "title": "Resonance Network",
-        "description": "An artist-led platform connecting creators of immersive art, regenerative architecture, and ecological design with collaborators and pathways to get built.",
+        "description": "An artist-led platform connecting creators across architecture, ecological design, and immersive art with the people and pathways to get built.",
         "url": "https://resonance.network",
         "year": "2026",
         "role": "Founder & Platform Lead"

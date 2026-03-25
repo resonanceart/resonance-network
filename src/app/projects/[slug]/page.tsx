@@ -230,7 +230,7 @@ export default async function ProjectPage({ params }: { params: { slug: string }
         <section className="project-goals">
           <div className="container">
             <p className="section-label">Ambition</p>
-            <h2>What This Project Aims to Achieve</h2>
+            <h2>What We&apos;re Working Toward</h2>
             <ul className="goals-list">
               {project.goals.map((goal, i) => (
                 <li key={i} className="goals-list__item">{goal}</li>
@@ -352,7 +352,7 @@ export default async function ProjectPage({ params }: { params: { slug: string }
         <section className="project-collab">
           <div className="container">
             <p className="section-label">Join This Project</p>
-            <h2>Roles Seeking People</h2>
+            <h2>Open Roles</h2>
             <div className="task-grid">
               {tasks.map(task => (
                 <CollaborationTaskCard key={task.id} task={task} />
@@ -372,8 +372,8 @@ export default async function ProjectPage({ params }: { params: { slug: string }
         <section className="project-contact">
           <div className="container">
             <p className="section-label">Reach Out</p>
-            <h2>Start a Conversation</h2>
-            <p>Interested in supporting, hosting, or collaborating on this project? The team would love to hear from you.</p>
+            <h2>Get in Touch</h2>
+            <p>Want to support, host, or collaborate on this project? We&apos;d love to hear from you.</p>
             <a
               href={`mailto:${project.contactEmail}?subject=Inquiry%20about%20${encodeURIComponent(project.title)}%20via%20Resonance%20Network`}
               className="btn btn--primary btn--large"
@@ -387,9 +387,9 @@ export default async function ProjectPage({ params }: { params: { slug: string }
       {/* Internal linking: back to gallery and collaborate */}
       <nav className="project-nav" aria-label="Related pages">
         <div className="container" style={{ display: 'flex', gap: 'var(--space-4)', paddingBottom: 'var(--space-8)', flexWrap: 'wrap' }}>
-          <Link href="/" className="btn btn--outline">Explore All Projects</Link>
-          <Link href="/collaborate" className="btn btn--outline">See All Open Roles</Link>
-          <Link href="/submit" className="btn btn--outline">Bring Your Own Project</Link>
+          <Link href="/" className="btn btn--outline">All Projects</Link>
+          <Link href="/collaborate" className="btn btn--outline">All Open Roles</Link>
+          <Link href="/submit" className="btn btn--outline">Submit Your Project</Link>
         </div>
       </nav>
     </article>

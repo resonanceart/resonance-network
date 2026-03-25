@@ -43,7 +43,7 @@ export function ProfilesPageClient({ profiles }: { profiles: Profile[] }) {
           <p className="section-label">Community</p>
           <h1>The People Behind the Work</h1>
           <p className="lead">
-            Artists, architects, designers, and collaborators building extraordinary things.
+            Artists, architects, engineers, and makers building extraordinary things — together.
           </p>
         </div>
       </section>
@@ -54,12 +54,12 @@ export function ProfilesPageClient({ profiles }: { profiles: Profile[] }) {
           <div className="profiles-dual-cta__grid">
             <Link href="/submit" className="profiles-dual-cta__card">
               <h3>Submit a Project</h3>
-              <p>Have an ambitious creative project? Share it with the network and find collaborators.</p>
+              <p>Have an ambitious project? Share it with the network and find the right people.</p>
               <span className="btn btn--primary">Get Started</span>
             </Link>
             <Link href="/collaborate" className="profiles-dual-cta__card">
               <h3>Join as Collaborator</h3>
-              <p>Engineer, fabricator, producer, or specialist? Connect with projects that need you.</p>
+              <p>Engineer, fabricator, or specialist? Find projects that need what you do.</p>
               <span className="btn btn--outline">Explore Roles</span>
             </Link>
           </div>
@@ -171,7 +171,7 @@ export function ProfilesPageClient({ profiles }: { profiles: Profile[] }) {
       <section className="profiles-cta">
         <div className="container" style={{ textAlign: 'center', padding: 'var(--space-12) 0' }}>
           <h2>Join the Network</h2>
-          <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)' }}>Have a project that needs the right people — or skills that projects need?</p>
+          <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)' }}>Bring a project or bring your skills — either way, there&apos;s a place for you here.</p>
           <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/submit" className="btn btn--primary btn--large">Submit Your Project</Link>
             <Link href="/collaborate" className="btn btn--outline btn--large">Join as Collaborator</Link>

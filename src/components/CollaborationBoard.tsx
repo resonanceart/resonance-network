@@ -168,7 +168,7 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
           <p className="section-label">Collaborate</p>
           <h1>The Work Is Better Together</h1>
           <p className="lead">
-            Every project here has a real team and a clear vision. They just need people like you. Find a role that fits your skills, or share your expertise and let projects come to you.
+            Every project here has a real team and a clear vision — they just need people like you. Find a role that fits, or share what you do and let projects find you.
           </p>
         </div>
       </section>
@@ -178,7 +178,7 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
         <div className="container">
           <div className="collab-tabs" role="tablist" aria-label="Collaboration view">
             <button role="tab" aria-selected={activeTab === 'needs'} className={`collab-tab${activeTab === 'needs' ? ' collab-tab--active' : ''}`} onClick={() => setActiveTab('needs')}>
-              Open Projects
+              Open Roles
             </button>
             <button role="tab" aria-selected={activeTab === 'people'} className={`collab-tab${activeTab === 'people' ? ' collab-tab--active' : ''}`} onClick={() => setActiveTab('people')}>
               People
@@ -346,14 +346,14 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
                 <div className="collab-available__content" id="join-form" ref={formRef}>
                   <h2>Offer Your Skills</h2>
                   <p className="collab-available__body">
-                    Are you an engineer, fabricator, designer, or specialist looking for meaningful projects? Fill out the form below and we&apos;ll connect you with curated projects that match your skills and values.
+                    Engineer, fabricator, designer, or specialist? Tell us what you do and we&apos;ll connect you with projects that match your skills.
                   </p>
 
                   {isProfileSubmitted ? (
                     <div className="collab-available__confirmation">
                       <div className="form-success">
                         <span className="form-success__icon" aria-hidden="true">✓</span>
-                        <p>Your profile has been submitted! We&apos;ll review it and publish it to the network soon.</p>
+                        <p>You&apos;re in! We&apos;ll review your profile and add you to the network soon.</p>
                         {profilePreviewUrl && (
                           <a href={profilePreviewUrl} className="btn btn--primary btn--sm" style={{ marginTop: 'var(--space-4)', display: 'inline-block' }}>
                             Preview Your Profile →
@@ -412,7 +412,7 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
                   )}
                 </div>
                 <div className="collab-available__skills">
-                  <p className="collab-available__skills-title">Skills in demand right now:</p>
+                  <p className="collab-available__skills-title">Skills projects are looking for:</p>
                   <div className="collab-available__skills-list">
                     <span className="skill-tag">Structural Engineering</span>
                     <span className="skill-tag">Lighting Design</span>

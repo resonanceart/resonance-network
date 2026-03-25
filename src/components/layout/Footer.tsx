@@ -16,7 +16,7 @@ export function Footer() {
                 </svg>
                 <span className="logo-text">Resonance Network</span>
               </Link>
-              <p className="footer-tagline">We connect visionary creators with pathways to bring extraordinary visions to life.</p>
+              <p className="footer-tagline">Connecting creators with the people and pathways to bring extraordinary work to life.</p>
               <a href="mailto:resonanceartcollective@gmail.com" className="footer-email">resonanceartcollective@gmail.com</a>
             </div>
 

@@ -58,7 +58,7 @@ export default function SubmitPage() {
           </nav>
           <p className="section-label">Submit</p>
           <h1>You&apos;ve Done the Hard Part. Let Us Help With the Rest.</h1>
-          <p className="lead">If you have a large-scale creative project with real substance — images, plans, a clear vision — and you need collaborators, expertise, or pathways to make it real, this is the place.</p>
+          <p className="lead">You have a project with real substance — images, plans, a clear vision. Now you need the right people to make it real. This is the place.</p>
         </div>
       </section>
 
@@ -100,7 +100,7 @@ export default function SubmitPage() {
       <section className="submit-section">
         <div className="container">
           <h2>What Makes a Strong Submission</h2>
-          <p className="submit-section__intro">We&apos;re looking for projects that are past the idea stage and ready to engage with the network. Here&apos;s what stands out:</p>
+          <p className="submit-section__intro">We&apos;re looking for projects past the idea stage and ready to engage. Here&apos;s what stands out:</p>
           <ul className="prepare-list">
             <li>
               <strong>Substance over polish</strong>
@@ -130,8 +130,8 @@ export default function SubmitPage() {
       <section className="submit-section">
         <div className="container">
           <h2>Who Can Submit</h2>
-          <p>Resonance Network is open to artists, architects, designers, collectives, and interdisciplinary teams working on large-scale creative projects. You don&apos;t need a track record of completed installations — but you do need a project with real substance and a clear path forward.</p>
-          <p>We welcome projects at any stage from Design Development through Production, across all domains: immersive art, regenerative architecture, ecological design, public space, experimental technology, and more.</p>
+          <p>Resonance Network is open to artists, architects, designers, collectives, and interdisciplinary teams. You don&apos;t need a track record of completed works — but you do need a project with real substance and a clear path forward.</p>
+          <p>We welcome projects from Design Development through Production, across all domains: large-scale installations, regenerative buildings, public art, ecological design, experimental technology, and more.</p>
         </div>
       </section>
 
@@ -140,8 +140,8 @@ export default function SubmitPage() {
         <div className="container">
           <h2>After You Submit</h2>
           <p>Our curation team reviews every project personally within two weeks. You&apos;ll hear from us either way.</p>
-          <p>If your project is approved, we&apos;ll work with you to create your project page — a curated, visual anchor for your work on the network that you can share with funders, curators, and potential collaborators.</p>
-          <p>If your project isn&apos;t quite ready, you&apos;ll receive clear, specific feedback on what would strengthen your application — with an explicit invitation to resubmit.</p>
+          <p>If approved, we&apos;ll work with you to build your project page — a curated, visual home for your work that you can share with funders, curators, and potential collaborators.</p>
+          <p>If your project isn&apos;t quite ready, you&apos;ll get clear, specific feedback on what would strengthen it — and an open invitation to resubmit.</p>
           <p className="submit-about-link">Want to know more about our curation philosophy and values? <Link href="/about#process">Read about our process</Link>.</p>
         </div>
       </section>
@@ -150,7 +150,7 @@ export default function SubmitPage() {
       <section className="submit-form-section" id="submission-form">
         <div className="container">
           <h2>Submit Your Project</h2>
-          <p>The submission takes about 15 minutes. Every project is reviewed by practicing artists and makers — people who understand the work.</p>
+          <p>It takes about 15 minutes. Every project is reviewed by practicing artists and makers — people who understand the work.</p>
           <ProjectSubmissionForm />
         </div>
       </section>
