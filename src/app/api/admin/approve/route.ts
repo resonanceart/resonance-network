@@ -3,6 +3,8 @@ import { revalidatePath } from 'next/cache'
 import { supabaseAdmin } from '@/lib/supabase'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, getClientIp } from '@/lib/sanitize'
+import { sendEmail } from '@/lib/gmail'
+import { submissionApproved, submissionRejected } from '@/lib/email-templates'
 
 export async function POST(request: Request) {
   try {
@@ -85,6 +87,24 @@ export async function POST(request: Request) {
             message_type: 'submission_status',
             related_project: type === 'project' ? submissionTitle : null,
           })
+        }
+
+        // Send email notification
+        if (submitterEmail) {
+          const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance-network.vercel.app'
+          const recipientName = type === 'project' ? row.artist_email?.split('@')[0] : row.name
+          try {
+            if (action === 'approve') {
+              const pageUrl = type === 'project'
+                ? `${siteUrl}/projects/sub-${submissionTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`
+                : `${siteUrl}/profiles/collab-${submissionTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`
+              const approvedEmail = submissionApproved(recipientName || 'there', type as 'project' | 'profile', submissionTitle, pageUrl)
+              await sendEmail({ to: submitterEmail, subject: approvedEmail.subject, html: approvedEmail.html })
+            } else {
+              const rejectedEmail = submissionRejected(recipientName || 'there', type as 'project' | 'profile', submissionTitle)
+              await sendEmail({ to: submitterEmail, subject: rejectedEmail.subject, html: rejectedEmail.html })
+            }
+          } catch (emailErr) { console.error('Status email error:', (emailErr as Error).message) }
         }
       }
     } catch (err) { console.error('In-app notification error:', (err as Error).message) }

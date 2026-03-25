@@ -5,6 +5,7 @@ import { sanitizeText, validateEmail, getClientIp } from '@/lib/sanitize'
 import { validateCsrf } from '@/lib/csrf'
 import { sendSubmissionNotification } from '@/lib/notify'
 import { sendEmail } from '@/lib/gmail'
+import { projectSubmissionConfirmation } from '@/lib/email-templates'
 
 export async function POST(request: Request) {
   try {
@@ -109,22 +110,12 @@ export async function POST(request: Request) {
     } catch (err) { console.error('Admin notification error:', (err as Error).message) }
 
     try {
+      const confirmEmail = projectSubmissionConfirmation(artistName, projectTitle, previewUrl)
       await sendEmail({
         to: artistEmail,
-        subject: 'We received your project submission — Resonance Network',
-      html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:40px 24px">
-<div style="background:#fff;border-radius:12px;padding:32px;border:1px solid #e5e2dc">
-<h2 style="color:#14b8a6;margin:0 0 16px;font-size:14px;text-transform:uppercase;letter-spacing:0.1em">Resonance Network</h2>
-<p>Hi ${artistName},</p>
-<p>Thank you for submitting <strong>${projectTitle}</strong> to Resonance Network. Our curation team will review your submission within two weeks.</p>
-<p>You can preview how your page will look:</p>
-<div style="text-align:center;margin:24px 0">
-<a href="${siteUrl}${previewUrl}" style="display:inline-block;padding:14px 32px;background:#14b8a6;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Preview Your Project Page</a>
-</div>
-<p>We'll be in touch soon!</p>
-<p style="color:#888;margin-top:24px">— The Resonance Network Team</p>
-</div></div>`,
-    })
+        subject: confirmEmail.subject,
+        html: confirmEmail.html,
+      })
     } catch (err) { console.error('Applicant confirmation error:', (err as Error).message) }
 
     return NextResponse.json({

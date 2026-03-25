@@ -69,6 +69,9 @@ export default function WelcomePage() {
     const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || ''
     setDisplayName(fullName)
 
+    // Send welcome email (deduped server-side)
+    fetch('/api/auth/welcome', { method: 'POST' }).catch(() => {})
+
     // Auto-link existing submissions
     fetch('/api/user/link-submissions', { method: 'POST' })
       .then(res => res.ok ? res.json() : null)
