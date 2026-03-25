@@ -1,35 +1,37 @@
-import type { Metadata } from 'next'
-import Link from 'next/link'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Join the Network',
-  description: 'Join Resonance Network as a project creator or skilled collaborator. Submit your ambitious project or offer your expertise to creative work in art and ecology.',
-  alternates: {
-    canonical: 'https://resonance.network/join',
-  },
-  openGraph: {
-    title: 'Join Resonance Network',
-    description: 'Whether you bring a project or offer expertise, there is a place for you here.',
-    url: 'https://resonance.network/join',
-    type: 'website',
-    images: [{ url: '/og-image.jpg' }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Join Resonance Network',
-    description: 'Submit a project or join as a collaborator on ambitious creative work.',
-    images: [{ url: '/og-image.jpg' }],
-  },
-}
+import Link from 'next/link'
+import { useAuth } from '@/components/AuthProvider'
 
 export default function JoinPage() {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <section className="join-hero">
+        <div className="container" style={{ textAlign: 'center', padding: 'var(--space-16) 0' }}>
+          <div className="dashboard-spinner" aria-label="Loading" />
+        </div>
+      </section>
+    )
+  }
+
   return (
     <>
       <section className="join-hero">
         <div className="container">
           <p className="section-label">Get Involved</p>
-          <h1>Join Resonance Network</h1>
-          <p className="join-hero__sub">Whether you&apos;re bringing a project or offering your expertise, there&apos;s a place for you here.</p>
+          <h1>{user ? 'Your Network' : 'Join Resonance Network'}</h1>
+          <p className="join-hero__sub">
+            {user
+              ? 'You\u2019re part of the network. Here\u2019s what you can do next.'
+              : 'Whether you\u2019re bringing a project or offering your expertise, there\u2019s a place for you here.'}
+          </p>
+          {!user && (
+            <p style={{ color: 'var(--color-primary)', fontSize: 'var(--text-sm)', fontWeight: 500, marginTop: 'var(--space-3)' }}>
+              Create a free account to get started
+            </p>
+          )}
         </div>
       </section>
 
@@ -55,12 +57,15 @@ export default function JoinPage() {
                 <li>Collaboration board listing for open roles</li>
                 <li>Visibility to funders and curators</li>
               </ul>
-              <Link href="/submit#submission-form" className="btn btn--primary btn--large join-card__cta">
+              <Link
+                href={user ? '/submit#submission-form' : '/login?redirect=/submit&tab=signup'}
+                className="btn btn--primary btn--large join-card__cta"
+              >
                 Submit a Project &rarr;
               </Link>
             </div>
 
-            {/* Card 2: Join as Collaborator */}
+            {/* Card 2: Join as Collaborator / Edit Profile */}
             <div className="join-card join-card--collaborator">
               <div className="join-card__icon">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -70,20 +75,43 @@ export default function JoinPage() {
                   <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
               </div>
-              <h2>Join as Collaborator</h2>
-              <p className="join-card__desc">You&apos;re an engineer, fabricator, designer, grant writer, or specialist looking for meaningful projects that match your skills and values.</p>
-              <p className="join-card__outcome">We&apos;ll create your collaborator profile so project teams can find you.</p>
+              <h2>{user ? 'Edit Your Profile' : 'Join as Collaborator'}</h2>
+              <p className="join-card__desc">
+                {user
+                  ? 'Update your collaborator profile so project teams can find you.'
+                  : 'You\u2019re an engineer, fabricator, designer, grant writer, or specialist looking for meaningful projects that match your skills and values.'}
+              </p>
+              <p className="join-card__outcome">
+                {user
+                  ? 'Keep your profile current with your latest skills and availability.'
+                  : 'We\u2019ll create your collaborator profile so project teams can find you.'}
+              </p>
               <ul className="join-card__benefits">
                 <li>Collaborator profile on the network</li>
                 <li>Access to open roles on curated projects</li>
                 <li>Direct connection to project teams</li>
                 <li>Skill-matched project alerts</li>
               </ul>
-              <Link href="/collaborate?tab=skills#join-form" className="btn btn--primary btn--large join-card__cta">
-                Create Your Profile &rarr;
+              <Link
+                href={user ? '/dashboard/profile' : '/login?redirect=/collaborate%3Ftab%3Dskills%23join-form&tab=signup'}
+                className="btn btn--primary btn--large join-card__cta"
+              >
+                {user ? 'Edit Your Profile' : 'Create Your Profile'} &rarr;
               </Link>
             </div>
           </div>
+
+          {/* Logged-in extras */}
+          {user && (
+            <div style={{ textAlign: 'center', marginTop: 'var(--space-8)' }}>
+              <Link href="/collaborate" className="btn btn--outline" style={{ marginRight: 'var(--space-3)' }}>
+                Browse Open Roles
+              </Link>
+              <Link href="/dashboard" className="btn btn--outline">
+                Go to Dashboard
+              </Link>
+            </div>
+          )}
         </div>
       </section>
     </>

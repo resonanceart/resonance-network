@@ -61,12 +61,21 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/join"
-              className={`nav-cta${pathname === '/join' ? ' active' : ''}`}
-            >
-              Join the Network
-            </Link>
+            {!authLoading && user ? (
+              <Link
+                href="/dashboard"
+                className={`nav-cta${pathname?.startsWith('/dashboard') ? ' active' : ''}`}
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/join"
+                className={`nav-cta${pathname === '/join' ? ' active' : ''}`}
+              >
+                Join the Network
+              </Link>
+            )}
           </nav>
 
           <div className="nav-actions">

@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import { ProjectGallery } from '@/components/ProjectGallery'
+import { AuthAwareCTA } from '@/components/AuthAwareCTA'
 import { getProjects } from '@/lib/data'
 import type { Metadata } from 'next'
 
@@ -46,8 +47,20 @@ export default async function HomePage() {
         <div className="site-hero__content">
           <h1 className="site-hero__tagline">Art at the scale of your ambition.</h1>
           <div className="site-hero__actions">
-            <a href="/submit" className="btn btn--hero">Submit a Project</a>
-            <a href="/collaborate" className="btn btn--hero btn--hero-outline">Find a Role</a>
+            <AuthAwareCTA
+              loggedOutHref="/submit"
+              loggedOutLabel="Submit a Project"
+              loggedInHref="/submit"
+              loggedInLabel="Submit a Project"
+              className="btn btn--hero"
+            />
+            <AuthAwareCTA
+              loggedOutHref="/collaborate"
+              loggedOutLabel="Find a Role"
+              loggedInHref="/collaborate"
+              loggedInLabel="Find a Role"
+              className="btn btn--hero btn--hero-outline"
+            />
           </div>
         </div>
       </section>
@@ -70,8 +83,20 @@ export default async function HomePage() {
           <h2 className="cta-bottom__heading">Your Skills Belong Here</h2>
           <p className="cta-bottom__body">Whether you&apos;re an artist with a vision, an engineer seeking meaningful work, or a specialist looking for projects that match your values — there&apos;s a place for you here.</p>
           <div className="cta-bottom__actions">
-            <a href="/submit" className="btn btn--primary btn--large">Submit Your Project</a>
-            <a href="/collaborate" className="btn btn--outline btn--large">Find a Role</a>
+            <AuthAwareCTA
+              loggedOutHref="/join"
+              loggedOutLabel="Submit Your Project"
+              loggedInHref="/submit"
+              loggedInLabel="Submit Your Project"
+              className="btn btn--primary btn--large"
+            />
+            <AuthAwareCTA
+              loggedOutHref="/collaborate"
+              loggedOutLabel="Find a Role"
+              loggedInHref="/dashboard"
+              loggedInLabel="Go to Dashboard"
+              className="btn btn--outline btn--large"
+            />
           </div>
         </div>
       </section>

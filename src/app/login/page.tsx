@@ -34,7 +34,9 @@ export default function LoginPage() {
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [tab, setTab] = useState<Tab>('signin')
+  const redirectTo = searchParams.get('redirect') || '/dashboard'
+  const defaultTab = searchParams.get('tab') as Tab | null
+  const [tab, setTab] = useState<Tab>(defaultTab === 'signup' ? 'signup' : 'signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
@@ -57,7 +59,7 @@ function LoginForm() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push('/dashboard')
+      router.push(redirectTo)
     }
   }
 
@@ -87,7 +89,11 @@ function LoginForm() {
         setError('email_exists')
         setLoading(false)
       } else {
-        setMessage('Check your email for a confirmation link.')
+        setMessage(
+          redirectTo !== '/dashboard'
+            ? 'Check your email for a confirmation link. You\u2019ll be redirected after confirming.'
+            : 'Check your email for a confirmation link.'
+        )
         setLoading(false)
       }
     }
