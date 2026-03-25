@@ -33,6 +33,24 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [actionStatus, setActionStatus] = useState<'idle' | 'approving' | 'rejecting' | 'approved' | 'rejected'>('idle')
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  // Check if URL has ?admin=true to show the admin login option
+  useEffect(() => {
+    const params2 = new URLSearchParams(window.location.search)
+    if (params2.get('admin') === 'true') {
+      const pw = window.prompt('Enter admin password to enable approval controls:')
+      if (pw) {
+        fetch('/api/admin/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw }),
+        }).then(r => r.json()).then(d => {
+          if (d.success) setIsAdmin(true)
+        }).catch(() => {})
+      }
+    }
+  }, [])
 
   useEffect(() => {
     async function fetchProject() {
@@ -122,8 +140,8 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
         </div>
       )}
 
-      {/* Admin action bar */}
-      {project.status === 'new' && actionStatus === 'idle' && (
+      {/* Admin action bar — only visible to authenticated admins */}
+      {isAdmin && project.status === 'new' && actionStatus === 'idle' && (
         <div className="admin-action-bar">
           <div className="container" style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center', padding: 'var(--space-4) 0' }}>
             <button className="btn btn--approve" onClick={() => handleAction('approve')}>Approve</button>

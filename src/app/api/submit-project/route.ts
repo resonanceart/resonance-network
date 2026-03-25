@@ -102,15 +102,23 @@ export async function POST(request: Request) {
       one_sentence: oneSentence,
     }, previewUrl).catch(err => console.error('Notification error:', err))
 
-    // Send confirmation email to applicant (non-blocking)
+    // Send confirmation email to applicant (non-blocking) — NO admin param
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance-network.vercel.app'
     sendEmail({
       to: artistEmail,
       subject: 'We received your project submission — Resonance Network',
-      html: `<p>Hi ${artistName},</p>
+      html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:40px 24px">
+<div style="background:#fff;border-radius:12px;padding:32px;border:1px solid #e5e2dc">
+<h2 style="color:#14b8a6;margin:0 0 16px;font-size:14px;text-transform:uppercase;letter-spacing:0.1em">Resonance Network</h2>
+<p>Hi ${artistName},</p>
 <p>Thank you for submitting <strong>${projectTitle}</strong> to Resonance Network. Our curation team will review your submission within two weeks.</p>
-<p>You can preview how your page will look here:<br><a href="https://resonance.network${previewUrl}">https://resonance.network${previewUrl}</a></p>
+<p>You can preview how your page will look:</p>
+<div style="text-align:center;margin:24px 0">
+<a href="${siteUrl}${previewUrl}" style="display:inline-block;padding:14px 32px;background:#14b8a6;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Preview Your Project Page</a>
+</div>
 <p>We'll be in touch soon!</p>
-<p>— The Resonance Network Team</p>`,
+<p style="color:#888;margin-top:24px">— The Resonance Network Team</p>
+</div></div>`,
     }).catch(err => console.error('Confirmation email error:', err))
 
     return NextResponse.json({

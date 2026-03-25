@@ -37,7 +37,8 @@ export async function sendSubmissionNotification(
   previewUrl: string
 ) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance-network.vercel.app'
-  const fullPreviewUrl = siteUrl + previewUrl
+  // Admin preview URL includes ?admin=true so you get the approve/reject controls
+  const fullPreviewUrl = siteUrl + previewUrl + '?admin=true'
   const adminUrl = siteUrl + '/admin'
 
   const subject = type === 'project'
