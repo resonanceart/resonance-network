@@ -227,8 +227,12 @@ p {
   color: var(--color-text-secondary);
 }
 
+/* Accessibility: Focus indicators */
 a:focus-visible,
-button:focus-visible {
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
