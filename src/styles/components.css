@@ -464,14 +464,15 @@ main {
 
 .site-hero__tagline {
   font-family: var(--font-display);
-  font-size: var(--text-hero);
+  font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 500;
   font-style: italic;
   color: #fff;
-  max-width: 18ch;
+  max-width: 20ch;
   margin: 0 auto var(--space-6);
   line-height: 1.15;
   letter-spacing: -0.02em;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.3);
 }
 
 .site-hero__sub {
@@ -649,9 +650,10 @@ main {
 .project-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 10px;
-  padding: var(--space-4) 0 var(--space-16);
-  background-color: #0e0f0e;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  padding-bottom: var(--space-16);
+  background: var(--color-surface-alt);
 }
 
 @media (min-width: 640px) {
@@ -2001,12 +2003,12 @@ main {
 }
 
 [data-theme="dark"] .step-number {
-  border-color: #3A9B9A;
-  color: #3A9B9A;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 [data-theme="dark"] .curation-timeline__line {
-  background: linear-gradient(to bottom, #3A9B9A, transparent);
+  background: linear-gradient(to bottom, var(--color-primary), transparent);
 }
 
 /* =========================
@@ -2059,6 +2061,9 @@ main {
 
 .collab-tab {
   padding: var(--space-2) var(--space-5);
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
   border-radius: 999px;
   border: none;
   background: transparent;
@@ -2991,7 +2996,11 @@ main {
   position: relative;
   height: 300px;
   overflow: hidden;
-  background: var(--color-surface);
+  background: linear-gradient(135deg, #1A6B6A 0%, #0D3D3C 40%, #111110 100%);
+}
+
+[data-theme="dark"] .profile-banner {
+  background: linear-gradient(135deg, #1A6B6A 0%, #0F4544 40%, #111110 100%);
 }
 
 .profile-banner > img {
