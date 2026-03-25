@@ -46,6 +46,27 @@ ul, ol {
   list-style: none;
 }
 
+/* --- Skip Link (accessibility) --- */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-accent, #14b8a6);
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0 0 0.5rem 0.5rem;
+  font-weight: 600;
+  z-index: 10000;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+.skip-link:focus {
+  top: 0;
+  outline: 2px solid var(--color-accent, #14b8a6);
+  outline-offset: 2px;
+}
+
 button {
   cursor: pointer;
   border: none;
@@ -114,8 +135,8 @@ button {
   --color-border: #D4D1CA;
   --color-text: #1A1A1A;
   --color-text-secondary: #4A4A47;
-  --color-text-muted: #7A7974;
-  --color-text-faint: #BAB9B4;
+  --color-text-muted: #656360;
+  --color-text-faint: #8A8985;
   --color-primary: #1A6B6A;
   --color-primary-hover: #145755;
   --color-primary-light: rgba(26, 107, 106, 0.08);
@@ -150,8 +171,8 @@ button {
   --color-border: #393836;
   --color-text: #E0DEDA;
   --color-text-secondary: #B8B6B2;
-  --color-text-muted: #8A8884;
-  --color-text-faint: #5A5957;
+  --color-text-muted: #9A9894;
+  --color-text-faint: #747270;
   --color-primary: #3A9B9A;
   --color-primary-hover: #2A8584;
   --color-primary-light: rgba(58, 155, 154, 0.1);

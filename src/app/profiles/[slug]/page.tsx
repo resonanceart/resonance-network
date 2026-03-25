@@ -222,7 +222,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
                     <div className="profile-project-card__image">
                       <Image
                         src={project.image}
-                        alt={project.title}
+                        alt={`Project image for ${project.title}`}
                         width={600}
                         height={400}
                         sizes="(max-width: 768px) 100vw, 33vw"

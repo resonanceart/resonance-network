@@ -50,7 +50,7 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
         <div className="task-card__banner">
           <Image
             src={heroImage}
-            alt={task.projectTitle}
+            alt={`Hero image for the ${task.projectTitle} project`}
             width={600}
             height={200}
             sizes="(max-width: 768px) 100vw, 50vw"

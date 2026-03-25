@@ -162,7 +162,7 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
         {project.hero_image_data && (
           <img
             src={project.hero_image_data}
-            alt={project.project_title}
+            alt={`Hero image for the ${project.project_title} project`}
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
           />
         )}
