@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     // Send emails BEFORE responding (Vercel kills function after response)
     if (inserted) {
       try {
-        await sendSubmissionNotification('profile', { name, email, skills, availability, portfolio }, `/preview/profile/${inserted.id}`)
+        await sendSubmissionNotification('profile', { name, email, skills, availability, portfolio: website || portfolio }, `/preview/profile/${inserted.id}`)
       } catch (err) { console.error('Admin notification error:', (err as Error).message) }
 
       if (email) {

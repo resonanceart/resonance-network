@@ -45,6 +45,7 @@ export async function POST(request: Request) {
     const heroImageData = typeof body.heroImageData === 'string' && body.heroImageData.length <= 7_340_032 ? body.heroImageData : null
     const galleryImagesData = typeof body.galleryImagesData === 'string' && body.galleryImagesData.length <= 44_040_192 ? body.galleryImagesData : null
     const collaborationNeeds = sanitizeText(body.collaborationNeeds, 5000)
+    const collaborationRoleCount = typeof body.collaborationRoleCount === 'number' && body.collaborationRoleCount >= 1 && body.collaborationRoleCount <= 20 ? body.collaborationRoleCount : null
     const artistHeadshotData = typeof body.artistHeadshotData === 'string' && body.artistHeadshotData.length <= 7_340_032 ? body.artistHeadshotData : null
 
     if (!artistName || !artistEmail || !projectTitle) {
@@ -77,6 +78,7 @@ export async function POST(request: Request) {
         hero_image_data: heroImageData || null,
         gallery_images_data: galleryImagesData || null,
         collaboration_needs: collaborationNeeds || null,
+        collaboration_role_count: collaborationRoleCount,
         artist_headshot_data: artistHeadshotData || null,
         status: 'new',
       })
