@@ -165,10 +165,10 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
           <nav aria-label="Breadcrumb" className="breadcrumb">
             <Link href="/">Home</Link> <span aria-hidden="true">/</span> <span>Collaborate</span>
           </nav>
-          <p className="section-label">Open Roles</p>
-          <h1>Put Your Skills to Work on Something You Believe In</h1>
+          <p className="section-label">Collaborate</p>
+          <h1>The Work Is Better Together</h1>
           <p className="lead">
-            Every role listed here is tied to a curated project with a real team behind it — from structural engineering to sound design to grant writing. This is meaningful work, not busywork.
+            Every project here has a real team and a clear vision. They just need people like you. Find a role that fits your skills, or share your expertise and let projects come to you.
           </p>
         </div>
       </section>
