@@ -2,13 +2,13 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'People — Artists & Collaborators',
-  description: 'Meet the artists, architects, designers, and collaborators building immersive art and regenerative architecture on Resonance Network.',
+  description: 'Meet the creators, engineers, and makers behind Resonance Network projects.',
   alternates: {
     canonical: 'https://resonance.network/profiles',
   },
   openGraph: {
     title: 'People — Resonance Network',
-    description: 'Artists and collaborators building immersive art, regenerative architecture, and ecological design.',
+    description: 'Artists and collaborators building ambitious work at the intersection of art, architecture, and ecology.',
     url: 'https://resonance.network/profiles',
     type: 'website',
     images: [{ url: '/og-image.jpg' }],

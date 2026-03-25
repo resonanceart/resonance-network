@@ -5,13 +5,13 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Resonance Network — Where Ambitious Creative Projects Find Their People',
-  description: 'An artist-led platform for large-scale art, regenerative architecture, and ecological design. Find collaborators and build the work you can\'t build alone.',
+  description: 'An artist-led platform for ambitious creative work across art, architecture, and ecology. Find collaborators and build the work you can\'t build alone.',
   alternates: {
     canonical: 'https://resonance.network',
   },
   openGraph: {
     title: 'Resonance Network — Where Ambitious Creative Projects Find Their People',
-    description: 'An artist-led platform for large-scale art, regenerative architecture, and ecological design. Find collaborators and build the work you can\'t build alone.',
+    description: 'Large-scale art and architecture projects, curated and connected with the collaborators to get built.',
     type: 'website',
     images: [{ url: '/og-image.jpg' }],
   },
