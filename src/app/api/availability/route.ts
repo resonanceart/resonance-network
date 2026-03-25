@@ -70,19 +70,19 @@ export async function POST(request: Request) {
       )
     }
 
-    // Send formatted notification (non-blocking)
+    // Send emails BEFORE responding (Vercel kills function after response)
     if (inserted) {
-      sendSubmissionNotification('profile', { name, email, skills, availability, portfolio }, `/preview/profile/${inserted.id}`)
-        .catch(err => console.error('Notification error:', err))
-    }
+      try {
+        await sendSubmissionNotification('profile', { name, email, skills, availability, portfolio }, `/preview/profile/${inserted.id}`)
+      } catch (err) { console.error('Admin notification error:', (err as Error).message) }
 
-    // Send confirmation email to applicant (non-blocking) — NO admin param
-    if (inserted && email) {
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance-network.vercel.app'
-      sendEmail({
-        to: email,
-        subject: 'We received your profile — Resonance Network',
-        html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:40px 24px">
+      if (email) {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance-network.vercel.app'
+        try {
+          await sendEmail({
+            to: email,
+            subject: 'We received your profile — Resonance Network',
+            html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:40px 24px">
 <div style="background:#fff;border-radius:12px;padding:32px;border:1px solid #e5e2dc">
 <h2 style="color:#14b8a6;margin:0 0 16px;font-size:14px;text-transform:uppercase;letter-spacing:0.1em">Resonance Network</h2>
 <p>Hi ${name},</p>
@@ -94,7 +94,9 @@ export async function POST(request: Request) {
 <p>Welcome to the network!</p>
 <p style="color:#888;margin-top:24px">— The Resonance Network Team</p>
 </div></div>`,
-      }).catch(err => console.error('Confirmation email error:', err))
+          })
+        } catch (err) { console.error('Applicant confirmation error:', (err as Error).message) }
+      }
     }
 
     return NextResponse.json({

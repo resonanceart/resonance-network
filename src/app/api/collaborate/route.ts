@@ -73,26 +73,29 @@ export async function POST(request: Request) {
       recipients.push(artistEmail)
     }
 
-    sendNotification({
-      to: recipients,
-      subject: `New collaboration interest: ${taskTitle || 'General'} on ${projectTitle || 'Resonance Network'}`,
-      body: [
-        `Someone is interested in collaborating!\n`,
-        `Role: ${taskTitle || 'Not specified'}`,
-        `Project: ${projectTitle || 'Not specified'}`,
-        ``,
-        `— Submitter Details —`,
-        `Name: ${name}`,
-        `Email: ${email}`,
-        phone ? `Phone: ${phone}` : null,
-        ``,
-        `— Relevant Experience —`,
-        experience,
-        ``,
-        `---`,
-        `Submitted via Resonance Network`,
-      ].filter(Boolean).join('\n'),
-    }).catch(err => console.error('Notification error:', err))
+    // Send emails BEFORE responding (Vercel kills function after response)
+    try {
+      await sendNotification({
+        to: recipients,
+        subject: `New collaboration interest: ${taskTitle || 'General'} on ${projectTitle || 'Resonance Network'}`,
+        body: [
+          `Someone is interested in collaborating!\n`,
+          `Role: ${taskTitle || 'Not specified'}`,
+          `Project: ${projectTitle || 'Not specified'}`,
+          ``,
+          `— Submitter Details —`,
+          `Name: ${name}`,
+          `Email: ${email}`,
+          phone ? `Phone: ${phone}` : null,
+          ``,
+          `— Relevant Experience —`,
+          experience,
+          ``,
+          `---`,
+          `Submitted via Resonance Network`,
+        ].filter(Boolean).join('\n'),
+      })
+    } catch (err) { console.error('Notification error:', (err as Error).message) }
 
     return NextResponse.json({
       success: true,
