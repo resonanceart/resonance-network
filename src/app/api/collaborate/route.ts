@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { sendNotification } from '@/lib/notify'
+import { sendEmail } from '@/lib/gmail'
 import projectsData from '../../../../data/projects.json'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, validateEmail, getClientIp } from '@/lib/sanitize'
@@ -73,29 +73,54 @@ export async function POST(request: Request) {
       recipients.push(artistEmail)
     }
 
-    // Send emails BEFORE responding (Vercel kills function after response)
+    // Send styled admin notification
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance-network.vercel.app'
+    for (const recipient of recipients) {
+      try {
+        await sendEmail({
+          to: recipient,
+          subject: `New interest in ${taskTitle || 'a role'} on ${projectTitle || 'Resonance Network'}`,
+          html: `<div style="font-family:-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:40px 24px">
+<div style="background:#fff;border-radius:12px;padding:32px;border:1px solid #e5e2dc">
+  <h2 style="color:#14b8a6;margin:0 0 20px;font-size:14px;text-transform:uppercase;letter-spacing:0.1em">Resonance Network</h2>
+  <h1 style="margin:0 0 4px;font-size:20px;color:#1a1a1a">Someone wants to collaborate</h1>
+  <p style="margin:0 0 20px;color:#888;font-size:14px">on <strong>${projectTitle || 'Resonance Network'}</strong> — ${taskTitle || 'General interest'}</p>
+  <table style="width:100%;border-collapse:collapse;font-size:14px">
+    <tr><td style="padding:8px 0;color:#888;width:100px;vertical-align:top">Name</td><td style="padding:8px 0;color:#333;font-weight:600">${name}</td></tr>
+    <tr><td style="padding:8px 0;color:#888;vertical-align:top">Email</td><td style="padding:8px 0"><a href="mailto:${email}" style="color:#14b8a6">${email}</a></td></tr>
+    ${phone ? `<tr><td style="padding:8px 0;color:#888;vertical-align:top">Phone</td><td style="padding:8px 0;color:#333">${phone}</td></tr>` : ''}
+    <tr><td style="padding:8px 0;color:#888;vertical-align:top;border-top:1px solid #eee">Experience</td><td style="padding:8px 0;color:#333;border-top:1px solid #eee;line-height:1.5">${experience}</td></tr>
+  </table>
+  <div style="text-align:center;margin:24px 0">
+    <a href="mailto:${email}?subject=Re:%20Your%20interest%20in%20${encodeURIComponent(taskTitle || 'collaborating')}%20on%20${encodeURIComponent(projectTitle || 'Resonance Network')}" style="display:inline-block;padding:12px 28px;background:#14b8a6;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px">Reply to ${name.split(' ')[0]}</a>
+  </div>
+  <p style="text-align:center;margin:0"><a href="${siteUrl}/admin" style="color:#888;font-size:12px;text-decoration:underline">View in Admin Dashboard</a></p>
+</div>
+<p style="text-align:center;margin-top:20px;font-size:11px;color:#aaa">Resonance Network — resonanceartcollective@gmail.com</p>
+</div>`,
+        })
+      } catch (err) { console.error('Admin notification error:', (err as Error).message) }
+    }
+
+    // Send confirmation to applicant
     try {
-      await sendNotification({
-        to: recipients,
-        subject: `New collaboration interest: ${taskTitle || 'General'} on ${projectTitle || 'Resonance Network'}`,
-        body: [
-          `Someone is interested in collaborating!\n`,
-          `Role: ${taskTitle || 'Not specified'}`,
-          `Project: ${projectTitle || 'Not specified'}`,
-          ``,
-          `— Submitter Details —`,
-          `Name: ${name}`,
-          `Email: ${email}`,
-          phone ? `Phone: ${phone}` : null,
-          ``,
-          `— Relevant Experience —`,
-          experience,
-          ``,
-          `---`,
-          `Submitted via Resonance Network`,
-        ].filter(Boolean).join('\n'),
+      await sendEmail({
+        to: email,
+        subject: `We received your interest — Resonance Network`,
+        html: `<div style="font-family:-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:40px 24px">
+<div style="background:#fff;border-radius:12px;padding:32px;border:1px solid #e5e2dc">
+  <h2 style="color:#14b8a6;margin:0 0 16px;font-size:14px;text-transform:uppercase;letter-spacing:0.1em">Resonance Network</h2>
+  <p>Hi ${name.split(' ')[0]},</p>
+  <p>Thanks for your interest in <strong>${taskTitle || 'collaborating'}</strong> on <strong>${projectTitle || 'a Resonance Network project'}</strong>.</p>
+  <p>The project team has been notified and will reach out if there's a good fit. In the meantime, feel free to explore other open roles on the network.</p>
+  <div style="text-align:center;margin:24px 0">
+    <a href="${siteUrl}/collaborate" style="display:inline-block;padding:12px 28px;background:#14b8a6;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px">Browse Open Roles</a>
+  </div>
+  <p style="color:#888;margin-top:20px">— The Resonance Network Team</p>
+</div>
+</div>`,
       })
-    } catch (err) { console.error('Notification error:', (err as Error).message) }
+    } catch (err) { console.error('Applicant confirmation error:', (err as Error).message) }
 
     return NextResponse.json({
       success: true,
