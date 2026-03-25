@@ -99,8 +99,8 @@ main {
 
 /* Theme toggle */
 .theme-toggle {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -127,8 +127,8 @@ main {
 
 /* Hamburger */
 .hamburger {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: none;
   flex-direction: column;
   align-items: center;
@@ -361,6 +361,7 @@ main {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
   text-decoration: none;
+  min-height: 44px;
   transition: color var(--duration-fast) var(--ease-out);
 }
 
@@ -634,6 +635,7 @@ main {
   color: var(--color-text);
   cursor: pointer;
   appearance: none;
+  min-height: 44px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237A7974' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
@@ -642,8 +644,12 @@ main {
 }
 
 .filter-select:focus {
-  outline: none;
   border-color: var(--color-primary);
+}
+
+.filter-select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .filter-select--active {
@@ -1549,6 +1555,7 @@ main {
   color: var(--color-text);
   font-family: var(--font-body);
   font-size: var(--text-base);
+  min-height: 44px;
   transition: border-color var(--duration-fast) var(--ease-out),
               box-shadow var(--duration-fast) var(--ease-out);
 }
@@ -1557,8 +1564,14 @@ main {
 .form-textarea:focus,
 .form-select:focus {
   border-color: var(--color-primary);
-  outline: none;
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+}
+
+.form-input:focus-visible,
+.form-textarea:focus-visible,
+.form-select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .form-input::placeholder,
@@ -1659,6 +1672,7 @@ main {
   font-family: var(--font-body);
   font-size: var(--text-sm);
   padding: var(--space-2);
+  min-height: 44px;
   transition: color var(--duration-fast) var(--ease-out);
 }
 
@@ -1677,6 +1691,7 @@ main {
   font-weight: 600;
   padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-md);
+  min-height: 44px;
   transition: background var(--duration-fast) var(--ease-out),
               color var(--duration-fast) var(--ease-out),
               border-color var(--duration-fast) var(--ease-out),
@@ -2662,7 +2677,6 @@ main {
 }
 
 .form-select:focus {
-  outline: none;
   border-color: var(--color-primary);
 }
 
@@ -2803,8 +2817,12 @@ main {
 }
 
 .profiles-filter-bar__search:focus {
-  outline: none;
   border-color: var(--color-primary);
+}
+
+.profiles-filter-bar__search:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .profiles-filter-bar__select {
@@ -2823,8 +2841,12 @@ main {
 }
 
 .profiles-filter-bar__select:focus {
-  outline: none;
   border-color: var(--color-primary);
+}
+
+.profiles-filter-bar__select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 @media (max-width: 639px) {
@@ -4014,4 +4036,5 @@ main {
 .btn--sm {
   padding: var(--space-2) var(--space-4);
   font-size: var(--text-xs);
+  min-height: 44px;
 }
