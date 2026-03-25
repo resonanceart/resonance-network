@@ -298,15 +298,34 @@ export function ProjectSubmissionForm() {
             {heroImage && <span className="form-hint" style={{ color: 'var(--color-primary)' }}>✓ {heroImage.name}</span>}
           </div>
           <div className="form-group">
-            <label htmlFor="sf-gallery" className="form-label">Gallery images (up to 6, max 5MB each)</label>
-            <input id="sf-gallery" type="file" accept="image/*" multiple onChange={e => {
-              const files = Array.from(e.target.files || [])
-              const valid = files.filter(f => f.size <= 5 * 1024 * 1024).slice(0, 6)
-              if (valid.length < files.length) setError('Some files were skipped (over 5MB or exceeding 6 files)')
-              setGalleryImages(valid)
-            }} className="form-input" />
-            <span className="form-hint">Additional images showing concept, materials, models, or renders.</span>
-            {galleryImages.length > 0 && <span className="form-hint" style={{ color: 'var(--color-primary)' }}>✓ {galleryImages.length} image{galleryImages.length > 1 ? 's' : ''} selected</span>}
+            <label className="form-label">Gallery images (up to 6, max 5MB each)</label>
+            <span className="form-hint" style={{ marginBottom: 'var(--space-3)', display: 'block' }}>Additional images showing concept, materials, models, or renders. Each slot is one image.</span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--space-3)' }}>
+              {[0, 1, 2, 3, 4, 5].map(i => (
+                <div key={i}>
+                  <label htmlFor={`sf-gallery-${i}`} className="form-label" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+                    Image {i + 1} {i === 0 ? '' : '(optional)'}
+                  </label>
+                  <input
+                    id={`sf-gallery-${i}`}
+                    type="file"
+                    accept="image/*"
+                    onChange={e => {
+                      const f = e.target.files?.[0]
+                      if (f && f.size > 5 * 1024 * 1024) { setError('Image must be under 5MB'); return }
+                      setGalleryImages(prev => {
+                        const next = [...prev]
+                        if (f) { next[i] = f } else { next.splice(i, 1) }
+                        return next.filter(Boolean)
+                      })
+                      setError('')
+                    }}
+                    className="form-input"
+                  />
+                  {galleryImages[i] && <span className="form-hint" style={{ color: 'var(--color-primary)', fontSize: 'var(--text-xs)' }}>✓ {galleryImages[i].name}</span>}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

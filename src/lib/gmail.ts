@@ -1,40 +1,55 @@
-import { google } from 'googleapis'
+// Gmail API via direct HTTP — lightweight, no googleapis dependency needed in serverless
 
-// Lazy initialization — only create the client when sendEmail is actually called
-// This prevents crashes if env vars aren't available at module load time
-let gmailClient: ReturnType<typeof google.gmail> | null = null
+interface TokenResponse {
+  access_token: string
+  expires_in: number
+  token_type: string
+}
 
-function getGmailClient() {
-  if (gmailClient) return gmailClient
+let cachedToken: { token: string; expiry: number } | null = null
+
+async function getAccessToken(): Promise<string> {
+  // Return cached token if still valid (with 60s buffer)
+  if (cachedToken && Date.now() < cachedToken.expiry - 60000) {
+    return cachedToken.token
+  }
 
   const clientId = process.env.GOOGLE_CLIENT_ID
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET
   const refreshToken = process.env.GOOGLE_REFRESH_TOKEN
 
   if (!clientId || !clientSecret || !refreshToken) {
-    console.error('Gmail credentials missing:', {
-      hasClientId: !!clientId,
-      hasClientSecret: !!clientSecret,
-      hasRefreshToken: !!refreshToken,
-    })
-    return null
+    throw new Error(`Gmail credentials missing: clientId=${!!clientId}, secret=${!!clientSecret}, refresh=${!!refreshToken}`)
   }
 
-  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, 'http://localhost')
-  oauth2Client.setCredentials({ refresh_token: refreshToken })
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: 'refresh_token',
+    }),
+  })
 
-  gmailClient = google.gmail({ version: 'v1', auth: oauth2Client })
-  return gmailClient
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`Token refresh failed (${response.status}): ${errorText}`)
+  }
+
+  const data: TokenResponse = await response.json()
+  cachedToken = {
+    token: data.access_token,
+    expiry: Date.now() + data.expires_in * 1000,
+  }
+  return data.access_token
 }
 
 export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
-  const gmail = getGmailClient()
-  if (!gmail) {
-    console.error(`EMAIL NOT SENT (no Gmail credentials): to=${to}, subject=${subject}`)
-    return
-  }
+  const accessToken = await getAccessToken()
 
-  // RFC 2822 formatted message
+  // Build RFC 2822 message
   const messageParts = [
     `To: ${to}`,
     `From: Resonance Network <resonanceartcollective@gmail.com>`,
@@ -44,22 +59,23 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
     '',
     html,
   ]
-  const message = messageParts.join('\r\n')
-  const encodedMessage = Buffer.from(message).toString('base64url')
+  const rawMessage = Buffer.from(messageParts.join('\r\n')).toString('base64url')
 
-  try {
-    const result = await gmail.users.messages.send({
-      userId: 'me',
-      requestBody: { raw: encodedMessage },
-    })
-    console.log(`Email sent successfully: to=${to}, messageId=${result.data.id}`)
-  } catch (err: unknown) {
-    const error = err as Error & { response?: { status: number; data: unknown } }
-    console.error(`Gmail API error: ${error.message}`)
-    if (error.response) {
-      console.error(`Gmail API status: ${error.response.status}`)
-      console.error(`Gmail API data: ${JSON.stringify(error.response.data)}`)
-    }
-    throw err
+  const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ raw: rawMessage }),
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`Gmail send failed (${response.status}): ${errorText}`)
   }
+
+  const result = await response.json()
+  console.log(`Email sent: to=${to}, messageId=${result.id}`)
+  return result
 }
