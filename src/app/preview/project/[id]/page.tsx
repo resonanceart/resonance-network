@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
+import { supabase } from '@/lib/supabase'
 
 interface ProjectSubmission {
   id: string
@@ -35,14 +36,16 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
 
   useEffect(() => {
     async function fetchProject() {
-      try {
-        const res = await fetch(`/api/preview?type=project&id=${params.id}`)
-        if (!res.ok) { setNotFound(true); setLoading(false); return }
-        const json = await res.json()
-        if (json.data) setProject(json.data)
-        else setNotFound(true)
-      } catch {
+      const { data, error } = await supabase
+        .from('project_submissions')
+        .select('*')
+        .eq('id', params.id)
+        .single()
+
+      if (error || !data) {
         setNotFound(true)
+      } else {
+        setProject(data)
       }
       setLoading(false)
     }
@@ -57,15 +60,12 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
     )
     if (!confirmed) return
 
-    const adminPassword = window.prompt('Enter admin password:')
-    if (!adminPassword) return
-
     setActionStatus(action === 'approve' ? 'approving' : 'rejecting')
     try {
       const res = await fetch('/api/admin/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'project', id: params.id, action, adminPassword }),
+        body: JSON.stringify({ type: 'project', id: params.id, action }),
       })
       const data = await res.json()
       if (data.success) {
@@ -97,9 +97,10 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
     )
   }
 
+  const goalsList = project.goals ? project.goals.split('\n').filter(Boolean) : []
+
   return (
     <article>
-      <head><meta name="robots" content="noindex,nofollow" /></head>
       {/* Status banner */}
       {actionStatus === 'approved' ? (
         <div className="draft-banner draft-banner--approved">
@@ -125,18 +126,8 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
       {project.status === 'new' && actionStatus === 'idle' && (
         <div className="admin-action-bar">
           <div className="container" style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center', padding: 'var(--space-4) 0' }}>
-            <button
-              className="btn btn--approve"
-              onClick={() => handleAction('approve')}
-            >
-              Approve
-            </button>
-            <button
-              className="btn btn--reject"
-              onClick={() => handleAction('reject')}
-            >
-              Reject
-            </button>
+            <button className="btn btn--approve" onClick={() => handleAction('approve')}>Approve</button>
+            <button className="btn btn--reject" onClick={() => handleAction('reject')}>Reject</button>
           </div>
         </div>
       )}
@@ -149,7 +140,7 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
       )}
 
       {/* Hero */}
-      <section className="project-hero" style={{ minHeight: '300px', background: '#1a1a1a' }}>
+      <section className="project-hero" style={{ minHeight: '400px', background: '#1a1a1a' }}>
         {project.hero_image_data && (
           <img
             src={project.hero_image_data}
@@ -165,7 +156,7 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
         </div>
       </section>
 
-      {/* Vision */}
+      {/* Overview with stats sidebar */}
       {(project.vision || project.artist_name) && (
         <section className="project-overview">
           <div className="container">
@@ -226,13 +217,13 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
       )}
 
       {/* Goals */}
-      {project.goals && (
+      {goalsList.length > 0 && (
         <section className="project-goals">
           <div className="container">
             <p className="section-label">Ambition</p>
             <h2>What This Project Aims to Achieve</h2>
             <ul className="goals-list">
-              {project.goals.split('\n').filter(Boolean).map((goal, i) => (
+              {goalsList.map((goal, i) => (
                 <li key={i} className="goals-list__item">{goal}</li>
               ))}
             </ul>
@@ -283,18 +274,43 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
         </section>
       )}
 
-      {/* Artist info */}
+      {/* Artist */}
       <section className="project-artist">
         <div className="container">
           <p className="section-label">The Creator</p>
           <div style={{ maxWidth: '65ch' }}>
             <h3>{project.artist_name}</h3>
             {project.artist_bio && <p className="overview-body">{project.artist_bio}</p>}
-            {project.artist_email && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>{project.artist_email}</p>}
-            {project.artist_website && <p style={{ fontSize: 'var(--text-sm)' }}><a href={project.artist_website} target="_blank" rel="noopener noreferrer">{project.artist_website}</a></p>}
+            {project.artist_email && (
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
+                {project.artist_email}
+              </p>
+            )}
+            {project.artist_website && (
+              <p style={{ fontSize: 'var(--text-sm)' }}>
+                <a href={project.artist_website} target="_blank" rel="noopener noreferrer">{project.artist_website}</a>
+              </p>
+            )}
           </div>
         </div>
       </section>
+
+      {/* Contact CTA */}
+      {project.artist_email && (
+        <section className="project-contact">
+          <div className="container">
+            <p className="section-label">Reach Out</p>
+            <h2>Start a Conversation</h2>
+            <p>Interested in supporting, hosting, or collaborating on this project?</p>
+            <a
+              href={`mailto:${project.artist_email}?subject=Inquiry%20about%20${encodeURIComponent(project.project_title)}%20via%20Resonance%20Network`}
+              className="btn btn--primary btn--large"
+            >
+              Contact the Team
+            </a>
+          </div>
+        </section>
+      )}
     </article>
   )
 }
