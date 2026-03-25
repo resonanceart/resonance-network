@@ -69,10 +69,15 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
+        url: '/favicon.png',
+        type: 'image/png',
+      },
+      {
         url: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><circle cx="16" cy="16" r="4" stroke="%2314b8a6" stroke-width="1.5" fill="none"/><circle cx="16" cy="16" r="9" stroke="%2314b8a6" stroke-width="1.2" fill="none" opacity="0.6"/><circle cx="16" cy="16" r="14" stroke="%2314b8a6" stroke-width="0.9" fill="none" opacity="0.3"/></svg>',
         type: 'image/svg+xml',
       },
     ],
+    apple: '/favicon.png',
   },
   alternates: {
     canonical: 'https://resonance.network',
