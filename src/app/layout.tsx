@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { ThemeProvider } from '@/components/ThemeProvider'
+import { AuthProvider } from '@/components/AuthProvider'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { ScrollToTop } from '@/components/ScrollToTop'
@@ -153,11 +154,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <ThemeProvider>
-          <a href="#main-content" className="skip-link">Skip to main content</a>
-          <Header />
-          <main id="main-content">{children}</main>
-          <Footer />
-          <ScrollToTop />
+          <AuthProvider>
+            <a href="#main-content" className="skip-link">Skip to main content</a>
+            <Header />
+            <main id="main-content">{children}</main>
+            <Footer />
+            <ScrollToTop />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
