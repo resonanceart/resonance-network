@@ -52,6 +52,10 @@ export default function WelcomePage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Link submissions state
+  const [linkedCount, setLinkedCount] = useState(0)
+  const [linkedItems, setLinkedItems] = useState<{ type: string; title: string }[]>([])
+
   // Follow state
   const [followedSlugs, setFollowedSlugs] = useState<Set<string>>(new Set())
 
@@ -64,6 +68,17 @@ export default function WelcomePage() {
     // Pre-fill name from user metadata
     const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || ''
     setDisplayName(fullName)
+
+    // Auto-link existing submissions
+    fetch('/api/user/link-submissions', { method: 'POST' })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && data.count > 0) {
+          setLinkedCount(data.count)
+          setLinkedItems(data.linked)
+        }
+      })
+      .catch(() => {})
   }, [user, authLoading, router])
 
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -203,6 +218,28 @@ export default function WelcomePage() {
                 </div>
               </div>
             </div>
+
+            {linkedCount > 0 && (
+              <div style={{
+                marginTop: 'var(--space-5)',
+                padding: 'var(--space-4)',
+                borderRadius: '10px',
+                background: 'rgba(20,184,166,0.08)',
+                border: '1px solid rgba(20,184,166,0.2)',
+              }}>
+                <strong style={{ color: 'var(--color-primary)' }}>
+                  We found {linkedCount} existing submission{linkedCount !== 1 ? 's' : ''}!
+                </strong>
+                <ul style={{ margin: 'var(--space-2) 0 0', paddingLeft: 'var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
+                  {linkedItems.map((item, i) => (
+                    <li key={i}>{item.title} ({item.type})</li>
+                  ))}
+                </ul>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-2)' }}>
+                  These are now linked to your account. View them in your dashboard.
+                </p>
+              </div>
+            )}
           </div>
         )}
 

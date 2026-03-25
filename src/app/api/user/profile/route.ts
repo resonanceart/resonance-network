@@ -36,7 +36,60 @@ export async function GET(request: Request) {
       )
     }
 
-    return NextResponse.json({ profile })
+    // Fetch linked submissions by email
+    const [projResult, profResult, interestResult] = await Promise.all([
+      supabaseAdmin.from('project_submissions')
+        .select('id, project_title, status, created_at')
+        .eq('artist_email', profile.email),
+      supabaseAdmin.from('collaborator_profiles')
+        .select('id, name, status, created_at')
+        .eq('email', profile.email),
+      supabaseAdmin.from('collaboration_interest')
+        .select('id, task_title, project_title, status, created_at')
+        .eq('email', profile.email),
+    ])
+
+    const submissions: { id: string; title: string; type: string; status: string; created_at: string }[] = []
+
+    if (projResult.data) {
+      for (const p of projResult.data) {
+        submissions.push({
+          id: p.id,
+          title: p.project_title,
+          type: 'project',
+          status: p.status || 'new',
+          created_at: p.created_at,
+        })
+      }
+    }
+
+    if (profResult.data) {
+      for (const p of profResult.data) {
+        submissions.push({
+          id: p.id,
+          title: p.name,
+          type: 'profile',
+          status: p.status || 'new',
+          created_at: p.created_at,
+        })
+      }
+    }
+
+    if (interestResult.data) {
+      for (const i of interestResult.data) {
+        const task = i.task_title || 'A role'
+        const project = i.project_title || 'a project'
+        submissions.push({
+          id: i.id,
+          title: `${task} on ${project}`,
+          type: 'interest',
+          status: i.status || 'new',
+          created_at: i.created_at,
+        })
+      }
+    }
+
+    return NextResponse.json({ profile, submissions })
   } catch {
     return NextResponse.json(
       { error: 'Something went wrong.' },

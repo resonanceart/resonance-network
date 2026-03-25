@@ -12,14 +12,13 @@ interface UserProfile {
   bio: string | null
   location: string | null
   specialties: string[]
-  submissions: Submission[]
 }
 
 interface Submission {
   id: string
   title: string
-  type: 'project' | 'profile'
-  status: 'new' | 'approved' | 'rejected'
+  type: 'project' | 'profile' | 'interest'
+  status: string
   created_at: string
 }
 
@@ -46,6 +45,7 @@ export default function DashboardPage() {
   const router = useRouter()
 
   const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [submissions, setSubmissions] = useState<Submission[]>([])
   const [follows, setFollows] = useState<FollowedProject[]>([])
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
@@ -65,7 +65,8 @@ export default function DashboardPage() {
           router.push('/dashboard/welcome')
           return
         }
-        setProfile(data)
+        setProfile(data.profile)
+        setSubmissions(data.submissions ?? [])
       }
       if (followsRes.ok) {
         const data = await followsRes.json()
@@ -123,7 +124,6 @@ export default function DashboardPage() {
   const displayName = profile?.display_name || user.email?.split('@')[0] || 'there'
   const avatarUrl = profile?.avatar_url
   const unreadCount = messages.filter(m => !m.read).length
-  const submissions = profile?.submissions ?? []
 
   // Profile completion calculation
   const completionFields = [
@@ -301,22 +301,37 @@ export default function DashboardPage() {
           <div className="dashboard-section">
             <h2 className="section-label">Your Submissions</h2>
             <div className="dashboard-submissions">
-              {submissions.map(sub => (
-                <div key={sub.id} className="dashboard-submission">
-                  <div className="dashboard-submission__info">
-                    <span className="dashboard-submission__title">{sub.title}</span>
-                    <span className="dashboard-submission__type">{sub.type}</span>
+              {submissions.map(sub => {
+                const typeLabel = sub.type === 'project' ? 'Project' : sub.type === 'profile' ? 'Profile' : 'Interest'
+                const previewLink = sub.type === 'project'
+                  ? `/preview/project/${sub.id}`
+                  : sub.type === 'profile'
+                    ? `/preview/profile/${sub.id}`
+                    : null
+
+                return (
+                  <div key={`${sub.type}-${sub.id}`} className="dashboard-submission">
+                    <div className="dashboard-submission__info">
+                      {previewLink ? (
+                        <Link href={previewLink} className="dashboard-submission__title" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>
+                          {sub.title}
+                        </Link>
+                      ) : (
+                        <span className="dashboard-submission__title">{sub.title}</span>
+                      )}
+                      <span className="dashboard-submission__type">{typeLabel}</span>
+                    </div>
+                    <div className="dashboard-submission__meta">
+                      <Badge variant={sub.status === 'approved' ? 'stage' : sub.status === 'rejected' ? 'domain' : 'pathway'}>
+                        {sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
+                      </Badge>
+                      <time className="dashboard-submission__date">
+                        {new Date(sub.created_at).toLocaleDateString()}
+                      </time>
+                    </div>
                   </div>
-                  <div className="dashboard-submission__meta">
-                    <Badge variant={sub.status === 'approved' ? 'stage' : sub.status === 'rejected' ? 'domain' : 'pathway'}>
-                      {sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
-                    </Badge>
-                    <time className="dashboard-submission__date">
-                      {new Date(sub.created_at).toLocaleDateString()}
-                    </time>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
