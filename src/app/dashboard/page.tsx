@@ -61,6 +61,10 @@ export default function DashboardPage() {
 
       if (profileRes.ok) {
         const data = await profileRes.json()
+        if (data.profile && !data.profile.onboarding_complete) {
+          router.push('/dashboard/welcome')
+          return
+        }
         setProfile(data)
       }
       if (followsRes.ok) {
@@ -136,6 +140,12 @@ export default function DashboardPage() {
   return (
     <section className="dashboard">
       <div className="container">
+        {/* Navigation */}
+        <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
+          <Link href="/dashboard/profile" className="btn btn--outline btn--sm">Edit Profile</Link>
+          <Link href="/dashboard/settings" className="btn btn--outline btn--sm">Settings</Link>
+        </div>
+
         {/* Welcome Header */}
         <div className="dashboard-header">
           <div className="dashboard-header__user">
@@ -234,7 +244,10 @@ export default function DashboardPage() {
 
         {/* Recent Messages */}
         <div className="dashboard-section">
-          <h2 className="section-label">Recent Messages</h2>
+          <div className="dashboard-section-header">
+            <h2 className="section-label">Recent Messages</h2>
+            <Link href="/dashboard/messages" className="dashboard-section-header__link">View all</Link>
+          </div>
           {messages.length === 0 ? (
             <div className="dashboard-empty">
               <p>No messages yet.</p>

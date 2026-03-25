@@ -4,6 +4,7 @@ import { sendEmail } from '@/lib/gmail'
 import projectsData from '../../../../data/projects.json'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, validateEmail, getClientIp } from '@/lib/sanitize'
+import { validateCsrf } from '@/lib/csrf'
 
 // Look up the project artist's contact email
 function getProjectContactEmail(projectTitle: string): string | null {
@@ -22,8 +23,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const origin = request.headers.get('origin')
-    if (origin && !origin.includes('resonance') && !origin.includes('localhost') && !origin.includes('vercel.app')) {
+    if (!validateCsrf(request)) {
       return NextResponse.json(
         { success: false, message: 'Invalid request origin.' },
         { status: 403 }
@@ -121,6 +121,27 @@ export async function POST(request: Request) {
 </div>`,
       })
     } catch (err) { console.error('Applicant confirmation error:', (err as Error).message) }
+
+    // Create in-app message for project creator if they have an account
+    try {
+      const { data: creatorProfile } = await supabaseAdmin
+        .from('user_profiles')
+        .select('id')
+        .eq('email', artistEmail)
+        .single()
+
+      if (creatorProfile) {
+        await supabaseAdmin.from('user_messages').insert({
+          recipient_id: creatorProfile.id,
+          sender_name: name,
+          subject: `New interest in "${taskTitle || 'a role'}" on ${projectTitle}`,
+          body: `${name} (${email}) is interested in collaborating.\n\nExperience: ${experience}${phone ? `\nPhone: ${phone}` : ''}`,
+          message_type: 'collaboration_interest',
+          related_project: projectTitle,
+          related_task: taskTitle,
+        })
+      }
+    } catch (err) { console.error('In-app message error:', (err as Error).message) }
 
     return NextResponse.json({
       success: true,

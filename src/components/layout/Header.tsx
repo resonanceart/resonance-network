@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from '@/components/ThemeProvider'
@@ -15,10 +15,28 @@ const navLinks = [
 
 export function Header() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
   const hamburgerRef = useRef<HTMLButtonElement>(null)
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
   const { user, loading: authLoading } = useAuth()
+
+  useEffect(() => {
+    if (!user) { setUnreadCount(0); return }
+    let cancelled = false
+    const fetchUnread = async () => {
+      try {
+        const res = await fetch('/api/user/messages?limit=0')
+        if (res.ok) {
+          const data = await res.json()
+          if (!cancelled) setUnreadCount(data.unread_count ?? 0)
+        }
+      } catch { /* silent */ }
+    }
+    fetchUnread()
+    const interval = setInterval(fetchUnread, 60000)
+    return () => { cancelled = true; clearInterval(interval) }
+  }, [user])
 
   return (
     <>
@@ -54,11 +72,20 @@ export function Header() {
           <div className="nav-actions">
             {!authLoading && (
               user ? (
-                <Link href="/dashboard" className="nav-user" aria-label="Go to dashboard">
-                  <span className="nav-user__avatar">
-                    {user.user_metadata?.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || '?'}
-                  </span>
-                </Link>
+                <>
+                  <Link href="/dashboard/messages" className="nav-bell" aria-label={`Messages${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    {unreadCount > 0 && <span className="nav-bell__badge">{unreadCount > 9 ? '9+' : unreadCount}</span>}
+                  </Link>
+                  <Link href="/dashboard" className="nav-user" aria-label="Go to dashboard">
+                    <span className="nav-user__avatar">
+                      {user.user_metadata?.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || '?'}
+                    </span>
+                  </Link>
+                </>
               ) : (
                 <Link href="/login" className="nav-login">Log In</Link>
               )

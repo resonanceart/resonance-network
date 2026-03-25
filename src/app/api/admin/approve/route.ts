@@ -51,6 +51,44 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Failed to update status.' }, { status: 500 })
     }
 
+    // Create in-app notification for the submitter
+    try {
+      const selectFields = type === 'project' ? 'artist_email, project_title' : 'email, name'
+      const { data: submission } = await supabaseAdmin
+        .from(table)
+        .select(selectFields)
+        .eq('id', id)
+        .single()
+
+      if (submission) {
+        const row = submission as Record<string, string>
+        const submitterEmail = type === 'project' ? row.artist_email : row.email
+        const submissionTitle = type === 'project' ? row.project_title : row.name
+
+        const { data: submitterProfile } = await supabaseAdmin
+          .from('user_profiles')
+          .select('id')
+          .eq('email', submitterEmail)
+          .single()
+
+        if (submitterProfile) {
+          const isApproved = action === 'approve'
+          await supabaseAdmin.from('user_messages').insert({
+            recipient_id: submitterProfile.id,
+            sender_name: 'Resonance Network',
+            subject: isApproved
+              ? `Your ${type} "${submissionTitle}" has been approved!`
+              : `Update on your ${type} submission "${submissionTitle}"`,
+            body: isApproved
+              ? `Great news! Your ${type} "${submissionTitle}" has been approved and is now live on Resonance Network. Visit the site to see it in action.`
+              : `Your ${type} submission "${submissionTitle}" has been reviewed. Unfortunately, it wasn't selected at this time. Feel free to revise and resubmit.`,
+            message_type: 'submission_status',
+            related_project: type === 'project' ? submissionTitle : null,
+          })
+        }
+      }
+    } catch (err) { console.error('In-app notification error:', (err as Error).message) }
+
     // Revalidate affected pages
     revalidatePath('/')
     revalidatePath('/profiles')
