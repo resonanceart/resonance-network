@@ -47,13 +47,18 @@ export default async function HomePage() {
           <h1 className="site-hero__tagline">Art at the scale of your ambition.</h1>
           <div className="site-hero__actions">
             <a href="/submit" className="btn btn--hero">Submit a Project</a>
+            <a href="/collaborate" className="btn btn--hero btn--hero-outline">Find a Role</a>
           </div>
         </div>
       </section>
 
       {/* Intro section — below the hero */}
       <section className="hero-intro">
-        <p className="hero-intro__text">A curated network for ambitious creative work — from first sketch to standing structure.</p>
+        <div className="hero-intro__inner">
+          <h2 className="hero-intro__heading">Where visionary projects find the right people.</h2>
+          <p className="hero-intro__body">Resonance Network connects artists, architects, and makers with the collaborators, expertise, and pathways to build what can&apos;t be built alone. Every project here is curated, every role is real.</p>
+          <a href="/about" className="hero-intro__link">Learn how it works →</a>
+        </div>
       </section>
 
       {/* Project Gallery with filtering */}

@@ -27,7 +27,7 @@ export function Footer() {
                 <Link href="/">Projects</Link>
                 <Link href="/collaborate">Collaborate</Link>
                 <Link href="/about">About</Link>
-                <Link href="/submit">Submit a Project</Link>
+                <Link href="/submit#faq">FAQ</Link>
               </nav>
             </div>
 

@@ -9,6 +9,7 @@ const navLinks = [
   { href: '/collaborate', label: 'Collaborate' },
   { href: '/profiles', label: 'People' },
   { href: '/about', label: 'About' },
+  { href: '/submit', label: 'Submit' },
 ]
 
 export function Header() {

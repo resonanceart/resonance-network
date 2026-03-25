@@ -535,19 +535,45 @@ main {
 
 /* Hero intro section */
 .hero-intro {
-  padding: var(--space-6) 0;
+  padding: var(--space-12) 0;
   text-align: center;
   background: var(--color-surface);
 }
 
-.hero-intro__text {
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  letter-spacing: 0.02em;
-  margin: 0;
+.hero-intro__inner {
+  max-width: 52ch;
+  margin: 0 auto;
   padding: 0 var(--gutter);
+}
+
+.hero-intro__heading {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  line-height: 1.35;
+  margin-bottom: var(--space-4);
+  color: var(--color-text);
+}
+
+.hero-intro__body {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.hero-intro__link {
+  display: inline-block;
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.hero-intro__link:hover {
+  color: var(--color-primary-hover);
 }
 
 /* =========================
@@ -2346,6 +2372,34 @@ main {
   border-left-color: var(--color-primary);
 }
 
+/* FAQ */
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.faq-item {
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-md);
+}
+
+.faq-item h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 600;
+  margin: 0 0 var(--space-2);
+}
+
+.faq-item p {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
 .submit-cta {
   padding: var(--space-12) 0 var(--space-16);
   text-align: center;
@@ -3925,16 +3979,33 @@ main {
   text-decoration: underline;
 }
 
-.task-card__meta-compact {
-  display: flex;
-  gap: var(--space-3);
+.task-card__scope {
   font-size: var(--text-xs);
   color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
 }
 
-.task-card__meta-compact span {
+.task-card__reward {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--color-primary-light);
+  border-radius: var(--radius-sm, 6px);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  line-height: 1.4;
+  margin-bottom: var(--space-3);
+}
+
+.task-card__reward svg {
+  flex-shrink: 0;
+  color: var(--color-primary);
+  margin-top: 2px;
+}
+
+.task-card__reward strong {
+  color: var(--color-primary);
 }
 
 /* =========================

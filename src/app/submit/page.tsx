@@ -96,6 +96,15 @@ export default function SubmitPage() {
         </div>
       </section>
 
+      {/* Submission Form */}
+      <section className="submit-form-section" id="submission-form">
+        <div className="container">
+          <h2>Submit Your Project</h2>
+          <p>It takes about 15 minutes. Every project is reviewed by practicing artists and makers — people who understand the work.</p>
+          <ProjectSubmissionForm />
+        </div>
+      </section>
+
       {/* What Makes a Strong Submission */}
       <section className="submit-section">
         <div className="container">
@@ -146,12 +155,28 @@ export default function SubmitPage() {
         </div>
       </section>
 
-      {/* Submission Form */}
-      <section className="submit-form-section" id="submission-form">
+      {/* FAQ */}
+      <section className="submit-section" id="faq">
         <div className="container">
-          <h2>Submit Your Project</h2>
-          <p>It takes about 15 minutes. Every project is reviewed by practicing artists and makers — people who understand the work.</p>
-          <ProjectSubmissionForm />
+          <h2>Frequently Asked Questions</h2>
+          <div className="faq-list">
+            <div className="faq-item">
+              <h3>What if my project gets rejected?</h3>
+              <p>You&apos;ll get personal feedback and an open invitation to resubmit. The answer is never &quot;no&quot; — it&apos;s &quot;not yet.&quot;</p>
+            </div>
+            <div className="faq-item">
+              <h3>When will I hear back?</h3>
+              <p>Within two weeks. Every project is reviewed personally by our curation team.</p>
+            </div>
+            <div className="faq-item">
+              <h3>Is there a fee?</h3>
+              <p>No. Resonance Network is free for creators and collaborators.</p>
+            </div>
+            <div className="faq-item">
+              <h3>What happens after approval?</h3>
+              <p>We&apos;ll build your project page — a curated, visual home for your work — and list your collaboration needs on the network.</p>
+            </div>
+          </div>
         </div>
       </section>
     </>

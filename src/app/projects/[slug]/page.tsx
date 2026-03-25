@@ -210,6 +210,11 @@ export default async function ProjectPage({ params }: { params: { slug: string }
             <p className="section-label">The Experience</p>
             <h2>What It Feels Like</h2>
             <p className="overview-body">{project.experience}</p>
+            {project.stage !== 'Production' && project.stage !== 'Completed' && (
+              <p style={{ fontStyle: 'italic', color: 'var(--color-text-muted)', marginTop: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>
+                This project is currently in {project.stage} stage. The experience above reflects the artist&apos;s vision for the completed work.
+              </p>
+            )}
           </div>
         </section>
       )}
