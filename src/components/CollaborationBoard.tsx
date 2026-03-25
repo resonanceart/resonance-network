@@ -303,34 +303,7 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
                     </div>
                   </div>
                 ))}
-                {SAMPLE_COLLABORATORS.map((collab, i) => (
-                  <div key={`sample-${i}`} className="people-card">
-                    <div className="people-card__avatar">
-                      <Image
-                        src={collab.photo}
-                        alt={`Photo of ${collab.name}`}
-                        width={64}
-                        height={64}
-                        sizes="64px"
-                        loading="lazy"
-                        style={{ objectFit: 'cover' }}
-                      />
-                    </div>
-                    <div className="people-card__info">
-                      <h3 className="people-card__name">{collab.name}</h3>
-                      <Badge variant="stage">Coming Soon</Badge>
-                      <div className="people-card__skills">
-                        {collab.skills.map(s => (
-                          <span key={s} className="skill-tag">{s}</span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="people-card__actions">
-                      <Link href="/profiles" className="btn btn--outline btn--sm">Directory</Link>
-                    </div>
-                  </div>
-                ))}
-                {filteredProfiles.length === 0 && SAMPLE_COLLABORATORS.length === 0 && (
+                {filteredProfiles.length === 0 && (
                   <p style={{ gridColumn: '1/-1', textAlign: 'center', color: 'var(--color-text-muted)', padding: 'var(--space-12) 0' }}>
                     No people match your search.
                   </p>
