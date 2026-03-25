@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/Badge'
 import { ProjectGalleryGrid } from '@/components/ProjectGalleryGrid'
 import { CollaborationTaskCard } from '@/components/CollaborationTaskCard'
 import { TeamCard } from '@/components/TeamCard'
+import { ProjectFollowWrapper } from '@/components/ProjectFollowWrapper'
 import { getProjects, getProjectBySlug } from '@/lib/data'
 import profilesData from '../../../../data/profiles.json'
 import tasksData from '../../../../data/tasks.json'
@@ -145,6 +146,9 @@ export default async function ProjectPage({ params }: { params: { slug: string }
           <Badge variant="stage">{project.stage}</Badge>
           <h1 className="project-hero__title">{project.title}</h1>
           <p className="project-hero__desc">{project.shortDescription}</p>
+          <div style={{ marginTop: 'var(--space-4)' }}>
+            <ProjectFollowWrapper projectId={project.slug} />
+          </div>
         </div>
       </section>
 
