@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Join the Network',
-  description: 'Join Resonance Network as a project creator or skilled collaborator. Submit your project or offer your expertise to ambitious creative work.',
+  description: 'Join Resonance Network as a project creator or skilled collaborator. Submit your ambitious project or offer your expertise to creative work in art and ecology.',
   alternates: {
     canonical: 'https://resonance.network/join',
   },

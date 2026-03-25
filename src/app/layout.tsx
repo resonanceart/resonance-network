@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     template: '%s — Resonance Network',
   },
   description:
-    'An artist-led platform where ambitious creative projects find the collaborators and expertise to get built.',
+    'An artist-led platform where ambitious creative projects in art, architecture, and ecology find the collaborators, expertise, and momentum to get built.',
   keywords: [
     'immersive art',
     'regenerative architecture',

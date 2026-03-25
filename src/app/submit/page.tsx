@@ -4,7 +4,7 @@ import { ProjectSubmissionForm } from '@/components/ProjectSubmissionForm'
 
 export const metadata: Metadata = {
   title: 'Submit a Project',
-  description: "You've done the hard part — now find the collaborators, expertise, and pathways to make it real. Submit your project to Resonance Network.",
+  description: "You've done the hard part — now find the collaborators, expertise, and pathways to make it real. Submit your creative project to Resonance Network today.",
   alternates: {
     canonical: 'https://resonance.network/submit',
   },

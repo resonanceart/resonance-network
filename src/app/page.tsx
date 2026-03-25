@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Resonance Network — Where Ambitious Creative Projects Find Their People',
     description: 'Large-scale art and architecture projects, curated and connected with the collaborators to get built.',
+    url: 'https://resonance.network',
     type: 'website',
     images: [{ url: '/og-image.jpg' }],
   },

@@ -21,6 +21,5 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
     html,
   })
 
-  console.log(`Email sent: to=${to}, id=${result.messageId}`)
   return result
 }

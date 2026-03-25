@@ -12,9 +12,6 @@ interface NotificationPayload {
  * or falls back to console logging.
  */
 export async function sendNotification({ to, subject, body }: NotificationPayload) {
-  // Log subject only (no PII in production logs)
-  console.log(`Sending notification: ${subject}`)
-
   for (const recipient of to) {
     try {
       await sendEmail({

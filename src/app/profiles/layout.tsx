@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'People — Artists & Collaborators',
-  description: 'Meet the creators, engineers, and makers behind Resonance Network projects.',
+  description: 'Meet the artists, engineers, architects, and makers building ambitious creative projects on Resonance Network across art, architecture, and ecology.',
   alternates: {
     canonical: 'https://resonance.network/profiles',
   },

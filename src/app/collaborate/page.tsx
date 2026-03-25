@@ -5,7 +5,7 @@ import { CollaborationBoard } from '@/components/CollaborationBoard'
 
 export const metadata: Metadata = {
   title: 'Open Roles — Art Jobs & Creative Collaboration Opportunities',
-  description: 'Find art jobs and creative collaboration roles on ambitious creative projects — engineering, fabrication, grant writing, and more.',
+  description: 'Find art jobs and creative collaboration roles on ambitious projects across art, architecture, and ecology — engineering, fabrication, design, grant writing, and more.',
   alternates: {
     canonical: 'https://resonance.network/collaborate',
   },
