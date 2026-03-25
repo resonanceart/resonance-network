@@ -14,12 +14,13 @@ export async function middleware(request: NextRequest) {
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://api.fontshare.com",
+      "script-src 'self' 'unsafe-inline' https://api.fontshare.com",
       "style-src 'self' 'unsafe-inline' https://api.fontshare.com",
       "img-src 'self' data: blob: https://images.unsplash.com https://*.supabase.co",
       "connect-src 'self' https://*.supabase.co",
       "font-src 'self' https://api.fontshare.com",
       "frame-src 'none'",
+      "form-action 'self'",
     ].join('; ')
   )
 

@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, getClientIp } from '@/lib/sanitize'
+import { validateCsrf } from '@/lib/csrf'
 
 export async function GET(request: Request) {
   try {
@@ -44,6 +45,61 @@ export async function GET(request: Request) {
   }
 }
 
+export async function DELETE(request: Request) {
+  try {
+    const ip = getClientIp(request)
+    if (!rateLimit(ip)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
+    if (!validateCsrf(request)) {
+      return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 })
+    }
+
+    const supabase = await createSupabaseServerClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Delete user profile row
+    const { error: profileError } = await supabaseAdmin
+      .from('user_profiles')
+      .delete()
+      .eq('id', user.id)
+
+    if (profileError) {
+      console.error('Profile delete error:', profileError.message)
+      return NextResponse.json(
+        { error: 'Failed to delete account.' },
+        { status: 500 }
+      )
+    }
+
+    // Delete the auth user
+    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user.id)
+
+    if (deleteError) {
+      console.error('Auth user delete error:', deleteError.message)
+      return NextResponse.json(
+        { error: 'Failed to delete account.' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ success: true })
+  } catch {
+    return NextResponse.json(
+      { error: 'Something went wrong.' },
+      { status: 500 }
+    )
+  }
+}
+
 export async function PUT(request: Request) {
   try {
     const ip = getClientIp(request)
@@ -52,6 +108,10 @@ export async function PUT(request: Request) {
         { error: 'Too many requests. Please try again later.' },
         { status: 429 }
       )
+    }
+
+    if (!validateCsrf(request)) {
+      return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 })
     }
 
     const supabase = await createSupabaseServerClient()

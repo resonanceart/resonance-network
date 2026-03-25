@@ -4,6 +4,7 @@ import { sendSubmissionNotification } from '@/lib/notify'
 import { sendEmail } from '@/lib/gmail'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, validateEmail, getClientIp } from '@/lib/sanitize'
+import { validateCsrf } from '@/lib/csrf'
 
 export async function POST(request: Request) {
   try {
@@ -15,8 +16,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const origin = request.headers.get('origin')
-    if (origin && !origin.includes('resonance') && !origin.includes('localhost') && !origin.includes('vercel.app')) {
+    if (!validateCsrf(request)) {
       return NextResponse.json(
         { success: false, message: 'Invalid request origin.' },
         { status: 403 }

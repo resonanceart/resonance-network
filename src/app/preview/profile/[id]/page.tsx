@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
-import { supabase } from '@/lib/supabase-client'
 
 interface CollaboratorProfile {
   id: string
@@ -46,16 +45,24 @@ export default function ProfilePreviewPage({ params }: { params: { id: string } 
 
   useEffect(() => {
     async function fetchProfile() {
-      const { data, error } = await supabase
-        .from('collaborator_profiles')
-        .select('*')
-        .eq('id', params.id)
-        .single()
-
-      if (error || !data) {
+      try {
+        const res = await fetch(`/api/preview?type=profile&id=${encodeURIComponent(params.id)}`)
+        if (!res.ok) {
+          console.error('Profile preview fetch failed:', res.status, res.statusText)
+          setNotFound(true)
+          setLoading(false)
+          return
+        }
+        const json = await res.json()
+        if (json.error || !json.data) {
+          console.error('Profile preview fetch error:', json.error)
+          setNotFound(true)
+        } else {
+          setProfile(json.data)
+        }
+      } catch (err) {
+        console.error('Profile preview fetch exception:', err)
         setNotFound(true)
-      } else {
-        setProfile(data)
       }
       setLoading(false)
     }

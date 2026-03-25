@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, getClientIp } from '@/lib/sanitize'
+import { validateCsrf } from '@/lib/csrf'
 
 export async function GET(request: Request) {
   try {
@@ -52,6 +53,10 @@ export async function POST(request: Request) {
         { error: 'Too many requests. Please try again later.' },
         { status: 429 }
       )
+    }
+
+    if (!validateCsrf(request)) {
+      return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 })
     }
 
     const supabase = await createSupabaseServerClient()
@@ -108,6 +113,10 @@ export async function DELETE(request: Request) {
         { error: 'Too many requests. Please try again later.' },
         { status: 429 }
       )
+    }
+
+    if (!validateCsrf(request)) {
+      return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 })
     }
 
     const supabase = await createSupabaseServerClient()
