@@ -47,13 +47,13 @@ export async function GET(request: Request) {
     const [projResult, profResult, interestResult] = await Promise.all([
       supabaseAdmin.from('project_submissions')
         .select('id, project_title, status, created_at')
-        .eq('artist_email', profile.email),
+        .or(`user_id.eq.${user.id},artist_email.eq.${profile.email}`),
       supabaseAdmin.from('collaborator_profiles')
         .select('id, name, status, created_at')
         .eq('email', profile.email),
       supabaseAdmin.from('collaboration_interest')
         .select('id, task_title, project_title, status, created_at')
-        .eq('email', profile.email),
+        .or(`user_id.eq.${user.id},email.eq.${profile.email}`),
     ])
 
     const submissions: { id: string; title: string; type: string; status: string; created_at: string }[] = []
