@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
+import Link from 'next/link'
 
 const DOMAINS = [
   'Architecture', 'Immersive Art', 'Ecological Design', 'Material Innovation',
@@ -40,9 +41,9 @@ interface DraftData {
   collaborationRoleCount: string
 }
 
-function loadDraft(): DraftData | null {
+function loadDraft(key: string): DraftData | null {
   try {
-    const raw = localStorage.getItem(DRAFT_KEY)
+    const raw = localStorage.getItem(key)
     if (!raw) return null
     return JSON.parse(raw)
   } catch {
@@ -50,15 +51,15 @@ function loadDraft(): DraftData | null {
   }
 }
 
-function saveDraft(data: DraftData) {
+function saveDraft(data: DraftData, key: string) {
   try {
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(data))
+    localStorage.setItem(key, JSON.stringify(data))
   } catch { /* localStorage unavailable */ }
 }
 
-function clearDraft() {
+function clearDraft(key: string) {
   try {
-    localStorage.removeItem(DRAFT_KEY)
+    localStorage.removeItem(key)
   } catch { /* localStorage unavailable */ }
 }
 
@@ -78,7 +79,31 @@ async function compressImage(file: File, maxWidth = 1200, quality = 0.7): Promis
   })
 }
 
-export function ProjectSubmissionForm() {
+interface ProjectSubmissionFormProps {
+  mode?: 'anonymous' | 'authenticated'
+  initialData?: Record<string, unknown>
+  submissionId?: string
+  userProfile?: { name: string; email: string; website?: string }
+  onSuccess?: (id: string) => void
+}
+
+export function ProjectSubmissionForm({ mode = 'anonymous', initialData, submissionId, userProfile, onSuccess }: ProjectSubmissionFormProps) {
+  const isAuthenticated = mode === 'authenticated'
+  const isEditMode = !!submissionId
+  const steps = isAuthenticated
+    ? ['Your Project', 'Classification & Details', 'Images', 'Review & Submit']
+    : STEPS
+  const maxStep = steps.length - 1
+
+  const draftKey = isEditMode ? `resonance-project-draft-edit-${submissionId}` : isAuthenticated ? 'resonance-project-draft-authenticated' : DRAFT_KEY
+
+  // Map visible step index to original form step index
+  function formStep(): number {
+    if (!isAuthenticated) return step
+    // Authenticated skips step 0 (About You), so add 1
+    return step + 1
+  }
+
   const [step, setStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -119,7 +144,32 @@ export function ProjectSubmissionForm() {
 
   // Restore draft on mount
   useEffect(() => {
-    const draft = loadDraft()
+    if (initialData) {
+      setProjectTitle((initialData.projectTitle as string) || '')
+      setOneSentence((initialData.oneSentence as string) || '')
+      setVision((initialData.vision as string) || '')
+      setExperience((initialData.experience as string) || '')
+      setStory((initialData.story as string) || '')
+      setGoals((initialData.goals as string) || '')
+      setDomains((initialData.domains as string[]) || [])
+      setPathways((initialData.pathways as string[]) || [])
+      setStage((initialData.stage as string) || '')
+      setScale((initialData.scale as string) || '')
+      setLocation((initialData.location as string) || '')
+      setMaterials((initialData.materials as string) || '')
+      setSpecialNeeds((initialData.specialNeeds as string) || '')
+      setCollaborationNeeds((initialData.collaborationNeeds as string) || '')
+      setCollaborationRoleCount((initialData.collaborationRoleCount as string) || '')
+      return // skip draft restoration when editing
+    }
+
+    if (userProfile) {
+      setArtistName(userProfile.name || '')
+      setArtistEmail(userProfile.email || '')
+      setArtistWebsite(userProfile.website || '')
+    }
+
+    const draft = loadDraft(draftKey)
     if (draft) {
       setStep(draft.step || 0)
       setArtistName(draft.artistName || '')
@@ -144,6 +194,7 @@ export function ProjectSubmissionForm() {
       setDraftStatus('restored')
       setTimeout(() => setDraftStatus('idle'), 3000)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Debounced auto-save
@@ -156,7 +207,7 @@ export function ProjectSubmissionForm() {
         projectTitle, oneSentence, vision, experience, story, goals,
         domains, pathways, stage, scale, location, materials,
         specialNeeds, collaborationNeeds, collaborationRoleCount,
-      })
+      }, draftKey)
       setDraftStatus('saved')
       setTimeout(() => setDraftStatus('idle'), 2000)
     }, 1000)
@@ -164,20 +215,20 @@ export function ProjectSubmissionForm() {
     step, artistName, artistBio, artistEmail, artistWebsite,
     projectTitle, oneSentence, vision, experience, story, goals,
     domains, pathways, stage, scale, location, materials,
-    specialNeeds, collaborationNeeds, collaborationRoleCount,
+    specialNeeds, collaborationNeeds, collaborationRoleCount, draftKey,
   ])
 
   // Trigger save on any field change
   useEffect(() => {
     if (isSubmitted) return
-    if (artistName || artistEmail || projectTitle) {
+    if (projectTitle || artistName || artistEmail) {
       scheduleSave()
     }
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current) }
   }, [scheduleSave, isSubmitted, artistName, artistEmail, projectTitle])
 
   function handleClearDraft() {
-    clearDraft()
+    clearDraft(draftKey)
     setStep(0)
     setArtistName(''); setArtistBio(''); setArtistEmail(''); setArtistWebsite('')
     setProjectTitle(''); setOneSentence(''); setVision(''); setExperience('')
@@ -193,10 +244,11 @@ export function ProjectSubmissionForm() {
   }
 
   function canProceed(): boolean {
-    if (step === 0) return !!(artistName && artistBio && artistEmail)
-    if (step === 1) return !!(projectTitle && oneSentence && vision && experience && story && goals)
-    if (step === 2) return !!(domains.length > 0 && pathways.length > 0 && stage && collaborationNeeds)
-    if (step === 3) return !!heroImage
+    const fs = formStep()
+    if (fs === 0) return !!(artistName && artistBio && artistEmail)
+    if (fs === 1) return !!(projectTitle && oneSentence && vision && experience && story && goals)
+    if (fs === 2) return !!(domains.length > 0 && pathways.length > 0 && stage && collaborationNeeds)
+    if (fs === 3) return isEditMode ? true : !!heroImage  // Edit mode doesn't require re-uploading hero
     return true
   }
 
@@ -208,30 +260,52 @@ export function ProjectSubmissionForm() {
       const headshotBase64 = artistHeadshot ? await compressImage(artistHeadshot, 400, 0.8) : null
       const galleryBase64 = await Promise.all(galleryImages.map(f => compressImage(f)))
 
-      const res = await fetch('/api/submit-project', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          artistName, artistBio, artistEmail,
-          artistWebsite: artistWebsite || null,
-          projectTitle, oneSentence, vision, experience, story, goals,
-          domains, pathways, stage,
-          scale: scale || null,
-          location: location || null,
-          materials: materials || null,
-          specialNeeds: specialNeeds || null,
-          collaborationNeeds: collaborationNeeds || null,
-          collaborationRoleCount: collaborationRoleCount ? parseInt(collaborationRoleCount) : null,
-          artistHeadshotData: headshotBase64,
-          heroImageData: heroBase64,
-          galleryImagesData: JSON.stringify(galleryBase64),
-        }),
-      })
+      const payload: Record<string, unknown> = {
+        artistName: userProfile?.name || artistName,
+        artistBio: isAuthenticated ? undefined : artistBio,
+        artistEmail: userProfile?.email || artistEmail,
+        artistWebsite: userProfile?.website || artistWebsite || null,
+        projectTitle, oneSentence, vision, experience, story, goals,
+        domains, pathways, stage,
+        scale: scale || null,
+        location: location || null,
+        materials: materials || null,
+        specialNeeds: specialNeeds || null,
+        collaborationNeeds: collaborationNeeds || null,
+        collaborationRoleCount: collaborationRoleCount ? parseInt(collaborationRoleCount) : null,
+      }
+
+      if (!isEditMode) {
+        payload.artistHeadshotData = headshotBase64
+        payload.heroImageData = heroBase64
+        payload.galleryImagesData = JSON.stringify(galleryBase64)
+      } else {
+        if (heroBase64) payload.heroImageData = heroBase64
+        if (galleryBase64.length > 0) payload.galleryImagesData = JSON.stringify(galleryBase64)
+        if (headshotBase64) payload.artistHeadshotData = headshotBase64
+      }
+
+      let res: Response
+      if (isEditMode) {
+        res = await fetch('/api/user/projects', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ submissionId, ...payload }),
+        })
+      } else {
+        res = await fetch('/api/submit-project', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      }
+
       const data = await res.json()
-      if (data.success) {
+      if (data.success || res.ok) {
         setIsSubmitted(true)
-        clearDraft()
+        clearDraft(draftKey)
         if (data.previewUrl) setPreviewUrl(data.previewUrl)
+        if (onSuccess) onSuccess(data.id || submissionId || '')
       } else {
         setError(data.message || 'Something went wrong.')
       }
@@ -247,12 +321,24 @@ export function ProjectSubmissionForm() {
       <div className="submission-form">
         <div className="submission-form__success">
           <span className="form-success__icon" aria-hidden="true">&#10003;</span>
-          <h3>Submission Received</h3>
-          <p>Your project has been submitted! Our team will review it within two weeks. In the meantime, you can preview how your page will look:</p>
-          {previewUrl && (
+          <h3>{isEditMode ? 'Project Updated' : 'Submission Received'}</h3>
+          <p>
+            {isEditMode
+              ? 'Your project has been updated successfully.'
+              : 'Your project has been submitted! Our team will review it within two weeks.'
+            }
+          </p>
+          {!isEditMode && previewUrl && (
             <a href={previewUrl} className="btn btn--primary" style={{ marginTop: 'var(--space-4)', display: 'inline-block' }}>
               Preview Your Project Page &rarr;
             </a>
+          )}
+          {!isAuthenticated && !isEditMode && (
+            <div className="submission-form__signup-prompt">
+              <h4>Want to manage your submission?</h4>
+              <p>Create a free account to edit your project, track its status, and connect with collaborators.</p>
+              <Link href="/login?redirect=/dashboard" className="btn btn--primary btn--sm">Create Account</Link>
+            </div>
           )}
         </div>
       </div>
@@ -263,7 +349,7 @@ export function ProjectSubmissionForm() {
     <div className="submission-form">
       {/* Progress indicator */}
       <div className="submission-form__progress">
-        {STEPS.map((label, i) => (
+        {steps.map((label, i) => (
           <button
             key={label}
             className={`submission-form__step${i === step ? ' submission-form__step--active' : ''}${i < step ? ' submission-form__step--done' : ''}`}
@@ -301,7 +387,7 @@ export function ProjectSubmissionForm() {
       {error && <p className="form-error" style={{ marginBottom: 'var(--space-4)' }}>{error}</p>}
 
       {/* Step 1: About You */}
-      {step === 0 && (
+      {formStep() === 0 && (
         <div className="submission-form__section">
           <h3 className="submission-form__section-title">About You</h3>
           <div className="form-group">
@@ -330,7 +416,7 @@ export function ProjectSubmissionForm() {
       )}
 
       {/* Step 2: Your Project */}
-      {step === 1 && (
+      {formStep() === 1 && (
         <div className="submission-form__section">
           <h3 className="submission-form__section-title">Your Project</h3>
           <div className="form-group">
@@ -361,7 +447,7 @@ export function ProjectSubmissionForm() {
       )}
 
       {/* Step 3: Classification & Details */}
-      {step === 2 && (
+      {formStep() === 2 && (
         <div className="submission-form__section">
           <h3 className="submission-form__section-title">Classification &amp; Details</h3>
           <div className="form-group">
@@ -421,11 +507,11 @@ export function ProjectSubmissionForm() {
       )}
 
       {/* Step 4: Images */}
-      {step === 3 && (
+      {formStep() === 3 && (
         <div className="submission-form__section">
           <h3 className="submission-form__section-title">Images</h3>
           <div className="form-group">
-            <label htmlFor="sf-hero" className="form-label">Main project image *</label>
+            <label htmlFor="sf-hero" className="form-label">Main project image {isEditMode ? '' : '*'}</label>
             <input id="sf-hero" type="file" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f && f.size <= 5 * 1024 * 1024) { setHeroImage(f); setError('') } else if (f) setError('Hero image must be under 5MB') }} className="form-input" />
             <span className="form-hint">This will be your project&apos;s primary visual. Max 5MB.</span>
             {heroImage && <span className="form-hint" style={{ color: 'var(--color-primary)' }}>&#10003; {heroImage.name}</span>}
@@ -464,18 +550,27 @@ export function ProjectSubmissionForm() {
       )}
 
       {/* Step 5: Review */}
-      {step === 4 && (
+      {formStep() === 4 && (
         <div className="submission-form__section">
           <h3 className="submission-form__section-title">Review Your Submission</h3>
           <div className="submission-form__review">
-            <div className="submission-form__review-group">
-              <h4>About You</h4>
-              <p><strong>Name:</strong> {artistName}</p>
-              <p><strong>Email:</strong> {artistEmail}</p>
-              {artistWebsite && <p><strong>Website:</strong> {artistWebsite}</p>}
-              {artistHeadshot && <p><strong>Headshot:</strong> {artistHeadshot.name}</p>}
-              <p><strong>Bio:</strong> {artistBio}</p>
-            </div>
+            {isAuthenticated && userProfile ? (
+              <div className="submission-form__review-group">
+                <h4>Submitting As</h4>
+                <p><strong>Name:</strong> {userProfile.name}</p>
+                <p><strong>Email:</strong> {userProfile.email}</p>
+                {userProfile.website && <p><strong>Website:</strong> {userProfile.website}</p>}
+              </div>
+            ) : (
+              <div className="submission-form__review-group">
+                <h4>About You</h4>
+                <p><strong>Name:</strong> {artistName}</p>
+                <p><strong>Email:</strong> {artistEmail}</p>
+                {artistWebsite && <p><strong>Website:</strong> {artistWebsite}</p>}
+                {artistHeadshot && <p><strong>Headshot:</strong> {artistHeadshot.name}</p>}
+                <p><strong>Bio:</strong> {artistBio}</p>
+              </div>
+            )}
             <div className="submission-form__review-group">
               <h4>Project</h4>
               <p><strong>Title:</strong> {projectTitle}</p>
@@ -497,7 +592,7 @@ export function ProjectSubmissionForm() {
             </div>
             <div className="submission-form__review-group">
               <h4>Images</h4>
-              <p><strong>Hero:</strong> {heroImage?.name || 'None'}</p>
+              <p><strong>Hero:</strong> {heroImage?.name || (isEditMode ? '(keeping existing)' : 'None')}</p>
               <p><strong>Gallery:</strong> {galleryImages.length} image{galleryImages.length !== 1 ? 's' : ''}</p>
             </div>
           </div>
@@ -512,13 +607,13 @@ export function ProjectSubmissionForm() {
           </button>
         )}
         <div style={{ flex: 1 }} />
-        {step < 4 ? (
+        {step < maxStep ? (
           <button type="button" className="btn btn--primary" disabled={!canProceed()} onClick={() => setStep(s => s + 1)}>
             Continue
           </button>
         ) : (
           <button type="button" className="btn btn--primary btn--large" disabled={isSubmitting} onClick={handleSubmit}>
-            {isSubmitting ? 'Submitting...' : 'Submit Project'}
+            {isSubmitting ? (isEditMode ? 'Updating...' : 'Submitting...') : (isEditMode ? 'Update Project' : 'Submit Project')}
           </button>
         )}
       </div>

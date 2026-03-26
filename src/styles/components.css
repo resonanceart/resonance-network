@@ -6335,3 +6335,136 @@ main {
     width: 100%;
   }
 }
+
+/* =========================
+   MY PROJECTS — DASHBOARD
+   ========================= */
+.my-projects-page {
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-10);
+}
+
+.my-projects-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+  gap: var(--space-4);
+}
+
+.my-projects-page__header h1 {
+  margin: 0;
+}
+
+.my-projects-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.my-projects-card {
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: border-color 0.2s;
+}
+
+.my-projects-card:hover {
+  border-color: var(--color-primary);
+}
+
+.my-projects-card__title {
+  font-family: var(--font-display, inherit);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin: 0;
+}
+
+.my-projects-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.my-projects-card__summary {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.my-projects-card__actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.my-projects-empty {
+  text-align: center;
+  padding: var(--space-10) var(--space-4);
+  color: var(--color-text-muted);
+}
+
+.my-projects-empty p {
+  margin-bottom: var(--space-4);
+  font-size: var(--text-base);
+}
+
+.my-projects-empty__icon {
+  font-size: 48px;
+  margin-bottom: var(--space-4);
+  opacity: 0.3;
+}
+
+/* =========================
+   SUBMISSION FORM — SIGNUP PROMPT
+   ========================= */
+.submission-form__signup-prompt {
+  margin-top: var(--space-6);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.submission-form__signup-prompt h4 {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.submission-form__signup-prompt p {
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+/* =========================
+   MY PROJECTS — RESPONSIVE
+   ========================= */
+@media (max-width: 768px) {
+  .my-projects-page__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .my-projects-card {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .my-projects-card__actions {
+    flex-direction: column;
+  }
+
+  .my-projects-card__actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+}
