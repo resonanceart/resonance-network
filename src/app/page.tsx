@@ -48,9 +48,9 @@ export default async function HomePage() {
           <h1 className="site-hero__tagline">Art at the scale of your ambition.</h1>
           <div className="site-hero__actions">
             <AuthAwareCTA
-              loggedOutHref="/submit"
+              loggedOutHref="/login?tab=signup&redirect=/dashboard/projects/new"
               loggedOutLabel="Submit a Project"
-              loggedInHref="/submit"
+              loggedInHref="/dashboard/projects/new"
               loggedInLabel="Submit a Project"
               className="btn btn--hero"
             />
@@ -84,15 +84,15 @@ export default async function HomePage() {
           <p className="cta-bottom__body">Whether you&apos;re an artist with a vision, an engineer seeking meaningful work, or a specialist looking for projects that match your values — there&apos;s a place for you here.</p>
           <div className="cta-bottom__actions">
             <AuthAwareCTA
-              loggedOutHref="/join"
+              loggedOutHref="/login?tab=signup&redirect=/dashboard/projects/new"
               loggedOutLabel="Submit Your Project"
-              loggedInHref="/submit"
+              loggedInHref="/dashboard/projects/new"
               loggedInLabel="Submit Your Project"
               className="btn btn--primary btn--large"
             />
             <AuthAwareCTA
-              loggedOutHref="/collaborate"
-              loggedOutLabel="Find a Role"
+              loggedOutHref="/login?tab=signup&redirect=/dashboard/welcome"
+              loggedOutLabel="Join the Network"
               loggedInHref="/dashboard"
               loggedInLabel="Go to Dashboard"
               className="btn btn--outline btn--large"

@@ -71,11 +71,11 @@ export function Footer() {
             <div className="footer-col">
               <p className="footer-col-title">For Creators</p>
               <div className="footer-links">
-                <Link href="/submit">Submit a Project</Link>
+                <Link href="/join">Submit a Project</Link>
                 <Link href="/about#process">How Curation Works</Link>
                 <a href="https://fundrazr.com/72glEe" target="_blank" rel="noopener noreferrer">Support / Donate</a>
                 <Link href="/about">About Us</Link>
-                <Link href="/join">Join as Collaborator</Link>
+                <Link href="/join">Join the Network</Link>
               </div>
             </div>
           </div>

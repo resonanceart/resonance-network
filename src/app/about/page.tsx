@@ -224,8 +224,8 @@ export default function AboutPage() {
         <div className="container">
           <h2>Carrying something ambitious?</h2>
           <p>You don&apos;t have to build it alone. Tell us what you&apos;re working on.</p>
-          <Link href="/submit" className="btn btn--primary btn--large">
-            Submit a Project
+          <Link href="/join" className="btn btn--primary btn--large">
+            Join the Network
           </Link>
           <Link href="/collaborate" className="btn btn--outline btn--large">
             Explore Open Roles
