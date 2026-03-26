@@ -1,40 +1,30 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/components/AuthProvider'
 
 export function SubmitPageContent() {
   const { user, loading } = useAuth()
+  const router = useRouter()
 
-  if (loading) {
-    return (
-      <div style={{ textAlign: 'center', padding: 'var(--space-8)' }}>
-        <div className="dashboard-spinner" aria-label="Loading" />
-      </div>
-    )
-  }
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/dashboard/projects/new')
+    }
+  }, [user, loading, router])
 
-  if (user) {
-    // Authenticated users should use the dashboard form
+  if (loading || user) {
     return (
       <section className="submit-form-section" id="submission-form">
-        <div className="container">
-          <h2>Submit Your Project</h2>
-          <p style={{ marginBottom: 'var(--space-4)' }}>
-            You&apos;re signed in! Head to your dashboard to submit and manage your project.
-          </p>
-          <Link href="/dashboard/projects/new" className="btn btn--primary btn--large">
-            Go to Project Submission &rarr;
-          </Link>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-3)' }}>
-            You can also manage existing submissions from your <Link href="/dashboard" style={{ color: 'var(--color-primary)' }}>dashboard</Link>.
-          </p>
+        <div className="container" style={{ textAlign: 'center', padding: 'var(--space-8)' }}>
+          <div className="dashboard-spinner" aria-label="Loading" />
         </div>
       </section>
     )
   }
 
-  // Anonymous users see signup CTA instead of the form
   return (
     <section className="submit-form-section" id="submission-form">
       <div className="container">
@@ -49,17 +39,17 @@ export function SubmitPageContent() {
           margin: '0 auto',
         }}>
           <p style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-3)' }}>
-            To submit a project, you&apos;ll need a free account first.
+            To submit a project, create your free profile first.
           </p>
           <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-5)', fontSize: 'var(--text-sm)' }}>
-            This lets you manage your submission, edit it later, and build your artist profile on the network.
+            Your profile becomes your portfolio on the network. You can manage your submission, edit it later, and connect with collaborators.
           </p>
           <Link
             href="/login?tab=signup&redirect=/dashboard/projects/new"
             className="btn btn--primary btn--large"
             style={{ marginBottom: 'var(--space-3)', display: 'inline-block' }}
           >
-            Create Account &amp; Submit
+            Create Account &amp; Submit &rarr;
           </Link>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
             Already have an account?{' '}

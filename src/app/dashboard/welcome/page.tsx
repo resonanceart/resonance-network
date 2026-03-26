@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import Link from 'next/link'
 
@@ -38,13 +38,11 @@ const FEATURED_PROJECTS = [
 
 const TOTAL_STEPS = 4
 
-function WelcomeContent() {
+export default function WelcomePage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [saving, setSaving] = useState(false)
-  const searchParams = useSearchParams()
-  const intent = searchParams.get('intent')
 
   // Profile fields
   const [displayName, setDisplayName] = useState('')
@@ -350,66 +348,45 @@ function WelcomeContent() {
           </div>
         )}
 
-        {/* Step 3: Discover Projects or Submit Project */}
+        {/* Step 3: What's Next */}
         {step === 3 && (
           <div className="onboarding__panel">
-            {intent === 'project' ? (
-              <>
-                <h1 className="onboarding__title">Now, Submit Your Project</h1>
-                <p className="onboarding__subtitle">
-                  Your profile is set up. Let&apos;s get your project on the network.
+            <h1 className="onboarding__title">What Would You Like to Do?</h1>
+            <p className="onboarding__subtitle">
+              You can always do both — your profile is your home base.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 'var(--space-4)', marginTop: 'var(--space-5)' }}>
+              <div style={{
+                padding: 'var(--space-5)',
+                borderRadius: 'var(--radius-lg)',
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                textAlign: 'center',
+              }}>
+                <h3 style={{ marginBottom: 'var(--space-2)' }}>Submit a Project</h3>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>
+                  Got an ambitious project? Let&apos;s get it on the network.
                 </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', alignItems: 'center', marginTop: 'var(--space-6)' }}>
-                  <Link href="/dashboard/projects/new" className="btn btn--primary btn--large" style={{ width: '100%', maxWidth: '400px', textAlign: 'center' }}>
-                    Submit a Project &rarr;
-                  </Link>
-                  <button
-                    className="btn btn--ghost"
-                    onClick={handleNext}
-                    style={{ fontSize: 'var(--text-sm)' }}
-                  >
-                    Skip for now — I&apos;ll submit later
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <h1 className="onboarding__title">Discover Projects</h1>
-                <p className="onboarding__subtitle">
-                  Here are a few projects to get you started. Follow the ones that inspire you.
+                <Link href="/dashboard/projects/new" className="btn btn--primary" style={{ width: '100%' }}>
+                  Submit a Project &rarr;
+                </Link>
+              </div>
+              <div style={{
+                padding: 'var(--space-5)',
+                borderRadius: 'var(--radius-lg)',
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                textAlign: 'center',
+              }}>
+                <h3 style={{ marginBottom: 'var(--space-2)' }}>Browse Open Roles</h3>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>
+                  Looking to collaborate? Explore opportunities on curated projects.
                 </p>
-                <div className="onboarding__projects">
-                  {FEATURED_PROJECTS.map(project => (
-                    <div key={project.slug} className="onboarding__project-card">
-                      <img
-                        src={project.heroImage}
-                        alt={project.title}
-                        className="onboarding__project-image"
-                      />
-                      <div className="onboarding__project-body">
-                        <h3 className="onboarding__project-title">{project.title}</h3>
-                        <p className="onboarding__project-desc">{project.description}</p>
-                        <div className="onboarding__project-domains">
-                          {project.domains.map(d => (
-                            <span key={d} className="onboarding__domain-tag">{d}</span>
-                          ))}
-                        </div>
-                      </div>
-                      <button
-                        className={`btn btn--sm ${followedSlugs.has(project.slug) ? 'btn--primary' : 'btn--outline'}`}
-                        onClick={() => toggleFollow(project.slug)}
-                        style={{ flexShrink: 0 }}
-                      >
-                        {followedSlugs.has(project.slug) ? 'Following' : 'Follow'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-4)' }}>
-                  You can discover more projects on the <Link href="/" style={{ color: 'var(--color-accent)' }}>homepage</Link>.
-                </p>
-              </>
-            )}
+                <Link href="/collaborate" className="btn btn--outline" style={{ width: '100%' }}>
+                  Explore Roles &rarr;
+                </Link>
+              </div>
+            </div>
           </div>
         )}
 
@@ -468,13 +445,5 @@ function WelcomeContent() {
         </div>
       </div>
     </section>
-  )
-}
-
-export default function WelcomePage() {
-  return (
-    <Suspense fallback={<div className="container" style={{ textAlign: 'center', padding: 'var(--space-10)' }}><div className="dashboard-spinner" aria-label="Loading" /></div>}>
-      <WelcomeContent />
-    </Suspense>
   )
 }

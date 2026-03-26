@@ -16,102 +16,85 @@ export default function JoinPage() {
     )
   }
 
+  if (user) {
+    return (
+      <>
+        <section className="join-hero">
+          <div className="container">
+            <p className="section-label">Your Network</p>
+            <h1>Welcome Back</h1>
+            <p className="join-hero__sub">Here&apos;s what you can do next.</p>
+          </div>
+        </section>
+        <section className="join-paths">
+          <div className="container">
+            <div className="join-cards">
+              <Link href="/dashboard" className="join-card" style={{ textDecoration: 'none' }}>
+                <h2>Go to Dashboard</h2>
+                <p className="join-card__desc">View your submissions, messages, and profile.</p>
+              </Link>
+              <Link href="/dashboard/profile" className="join-card" style={{ textDecoration: 'none' }}>
+                <h2>Edit Your Profile</h2>
+                <p className="join-card__desc">Update your portfolio, skills, and availability.</p>
+              </Link>
+              <Link href="/dashboard/projects/new" className="join-card" style={{ textDecoration: 'none' }}>
+                <h2>Submit a Project</h2>
+                <p className="join-card__desc">Bring your ambitious project to the network.</p>
+              </Link>
+              <Link href="/collaborate" className="join-card" style={{ textDecoration: 'none' }}>
+                <h2>Browse Open Roles</h2>
+                <p className="join-card__desc">Find collaboration opportunities on curated projects.</p>
+              </Link>
+            </div>
+          </div>
+        </section>
+      </>
+    )
+  }
+
   return (
     <>
       <section className="join-hero">
         <div className="container">
           <p className="section-label">Get Involved</p>
-          <h1>{user ? 'Your Network' : 'Join Resonance Network'}</h1>
+          <h1>Join Resonance Network</h1>
           <p className="join-hero__sub">
-            {user
-              ? 'You\u2019re part of the network. Here\u2019s what you can do next.'
-              : 'Whether you\u2019re bringing a project or offering your expertise, there\u2019s a place for you here.'}
+            Create your free profile and become part of a community where ambitious creative projects find their people.
           </p>
-          {!user && (
-            <p style={{ color: 'var(--color-primary)', fontSize: 'var(--text-sm)', fontWeight: 500, marginTop: 'var(--space-3)' }}>
-              Create a free account to get started
-            </p>
-          )}
+          <Link
+            href="/login?tab=signup&redirect=/dashboard/welcome"
+            className="btn btn--primary btn--large"
+            style={{ marginTop: 'var(--space-4)' }}
+          >
+            Create Your Free Profile &rarr;
+          </Link>
         </div>
       </section>
 
       <section className="join-paths">
         <div className="container">
-          <div className="join-cards">
-            {/* Card 1: Submit a Project */}
-            <div className="join-card join-card--project">
-              <div className="join-card__icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <rect x="3" y="3" width="7" height="7" rx="1"/>
-                  <rect x="14" y="3" width="7" height="7" rx="1"/>
-                  <rect x="3" y="14" width="7" height="7" rx="1"/>
-                  <rect x="14" y="14" width="7" height="7" rx="1"/>
-                </svg>
-              </div>
-              <h2>Submit a Project</h2>
-              <p className="join-card__desc">You have an ambitious creative project — and you need collaborators, expertise, or pathways to make it real.</p>
-              <p className="join-card__outcome">Create your free account, build your profile, then submit your project — all in one flow.</p>
-              <ul className="join-card__benefits">
-                <li>Project page with gallery and overview</li>
-                <li>Artist profile on the network</li>
-                <li>Collaboration board listing for open roles</li>
-                <li>Visibility to funders and curators</li>
-              </ul>
-              <Link
-                href={user ? '/dashboard/projects/new' : '/login?tab=signup&redirect=/dashboard/welcome?intent=project'}
-                className="btn btn--primary btn--large join-card__cta"
-              >
-                Submit a Project &rarr;
-              </Link>
-            </div>
-
-            {/* Card 2: Join as Collaborator / Edit Profile */}
-            <div className="join-card join-card--collaborator">
-              <div className="join-card__icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                  <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-              </div>
-              <h2>{user ? 'Edit Your Profile' : 'Join as Collaborator'}</h2>
-              <p className="join-card__desc">
-                {user
-                  ? 'Update your collaborator profile so project teams can find you.'
-                  : 'You\u2019re an engineer, fabricator, designer, grant writer, or specialist looking for meaningful projects that match your skills and values.'}
-              </p>
-              <p className="join-card__outcome">
-                {user
-                  ? 'Keep your profile current with your latest skills and availability.'
-                  : 'Create your free account and build your collaborator profile so project teams can find you.'}
-              </p>
-              <ul className="join-card__benefits">
-                <li>Collaborator profile on the network</li>
-                <li>Access to open roles on curated projects</li>
-                <li>Direct connection to project teams</li>
-                <li>Skill-matched project alerts</li>
-              </ul>
-              <Link
-                href={user ? '/dashboard/profile' : '/login?tab=signup&redirect=/dashboard/welcome'}
-                className="btn btn--primary btn--large join-card__cta"
-              >
-                {user ? 'Edit Your Profile' : 'Create Your Profile'} &rarr;
-              </Link>
-            </div>
-          </div>
-
-          {/* Logged-in extras */}
-          {user && (
-            <div style={{ textAlign: 'center', marginTop: 'var(--space-8)' }}>
-              <Link href="/collaborate" className="btn btn--outline" style={{ marginRight: 'var(--space-3)' }}>
-                Browse Open Roles
-              </Link>
-              <Link href="/dashboard" className="btn btn--outline">
-                Go to Dashboard
-              </Link>
-            </div>
-          )}
+          <ul className="join-benefits">
+            <li>
+              <strong>Build your portfolio</strong>
+              <span>Showcase your work, skills, and experience</span>
+            </li>
+            <li>
+              <strong>Submit projects</strong>
+              <span>Bring your ambitious ideas to the network</span>
+            </li>
+            <li>
+              <strong>Find collaborators</strong>
+              <span>Connect with engineers, fabricators, designers, and more</span>
+            </li>
+            <li>
+              <strong>Get discovered</strong>
+              <span>Project teams and curators can find you</span>
+            </li>
+          </ul>
+          <p style={{ textAlign: 'center', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-6)' }}>
+            Already have an account?{' '}
+            <Link href="/login" style={{ color: 'var(--color-primary)' }}>Sign in</Link>
+          </p>
         </div>
       </section>
     </>
