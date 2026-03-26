@@ -61,7 +61,7 @@ export default function ProfileEditPage() {
 
     fetch('/api/user/profile')
       .then(res => res.json())
-      .then((data: { profile: UserProfile }) => {
+      .then((data: { profile: UserProfile; extendedProfile?: Record<string, unknown> }) => {
         if (data.profile) {
           setDisplayName(data.profile.display_name || '')
           setBio(data.profile.bio || '')
@@ -69,16 +69,19 @@ export default function ProfileEditPage() {
           setWebsite(data.profile.website || '')
           setSkills(data.profile.skills || [])
           setAvatarUrl(data.profile.avatar_url || null)
-          setToolsAndMaterials(data.profile.tools_and_materials || [])
-          setAvailabilityStatus(data.profile.availability_status || 'open')
-          setAvailabilityNote(data.profile.availability_note || '')
-          setCoverImageUrl(data.profile.cover_image_url || null)
-          setMediaGallery(data.profile.media_gallery || [])
-          setProjects(data.profile.projects || [])
-          setTimeline(data.profile.timeline || [])
-          setAchievements(data.profile.achievements || [])
-          setPhilosophy(data.profile.philosophy || '')
-          setLinks(data.profile.links || [])
+        }
+        const ext = data.extendedProfile
+        if (ext) {
+          setToolsAndMaterials((ext.tools_and_materials as string[]) || [])
+          setAvailabilityStatus((ext.availability_status as string) || 'open')
+          setAvailabilityNote((ext.availability_note as string) || '')
+          setCoverImageUrl((ext.cover_image_url as string) || null)
+          setMediaGallery((ext.media_gallery as unknown[]) || [])
+          setProjects((ext.projects as unknown[]) || [])
+          setTimeline((ext.timeline as unknown[]) || [])
+          setAchievements((ext.achievements as string[]) || [])
+          setPhilosophy((ext.philosophy as string) || '')
+          setLinks((ext.links as unknown[]) || [])
         }
       })
       .catch(() => setMessage({ type: 'error', text: 'Failed to load profile.' }))
