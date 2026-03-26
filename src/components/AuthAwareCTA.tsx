@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useAuth } from '@/components/AuthProvider'
 
 interface CTAProps {
@@ -15,15 +16,15 @@ export function AuthAwareCTA({ loggedOutHref, loggedOutLabel, loggedInHref, logg
 
   if (loading) {
     return (
-      <a href={loggedOutHref} className={className}>
+      <Link href={loggedOutHref} className={className}>
         {loggedOutLabel}
-      </a>
+      </Link>
     )
   }
 
   return (
-    <a href={user ? loggedInHref : loggedOutHref} className={className}>
+    <Link href={user ? loggedInHref : loggedOutHref} className={className}>
       {user ? loggedInLabel : loggedOutLabel}
-    </a>
+    </Link>
   )
 }

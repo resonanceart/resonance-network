@@ -238,7 +238,11 @@ export default async function ProfilePage({ params }: { params: { slug: string }
                     </div>
                     <h3 className="profile-project-card__title">
                       {project.url ? (
-                        <Link href={project.url}>{project.title}</Link>
+                        project.url.startsWith('http') ? (
+                          <a href={project.url} target="_blank" rel="noopener noreferrer">{project.title}</a>
+                        ) : (
+                          <Link href={project.url}>{project.title}</Link>
+                        )
                       ) : (
                         project.title
                       )}
@@ -296,25 +300,25 @@ export default async function ProfilePage({ params }: { params: { slug: string }
       )}
 
       {/* CTA */}
-      {profile.email && (
-        <section className="profile-cta">
-          <div className="container">
-            <h2>Work with {profile.name.split(' ')[0]}</h2>
-            <p>Interested in collaborating or learning more about upcoming projects?</p>
-            <div className="profile-cta__actions">
+      <section className="profile-cta">
+        <div className="container">
+          <h2>Work with {profile.name.split(' ')[0]}</h2>
+          <p>Interested in collaborating or learning more about upcoming projects?</p>
+          <div className="profile-cta__actions">
+            {profile.email && (
               <a
                 href={`mailto:${profile.email}?subject=Collaboration%20Inquiry%20via%20Resonance%20Network`}
                 className="btn btn--primary btn--large"
               >
                 Get in Touch
               </a>
-              <Link href="/collaborate" className="btn btn--outline btn--large">
-                Browse Open Roles
-              </Link>
-            </div>
+            )}
+            <Link href="/collaborate" className="btn btn--outline btn--large">
+              Browse Open Roles
+            </Link>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
     </article>
   )
 }
