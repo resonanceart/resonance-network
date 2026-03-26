@@ -132,7 +132,7 @@ function mapUserProfileRow(row: Record<string, unknown>, extended?: Record<strin
     projects: [],
     links: typeof row.website === 'string' && row.website ? [{ label: 'Website', url: row.website, type: 'website' as const }] : [],
     status: 'published',
-    source: 'supabase-user' as const,
+    source: 'supabase' as const,
     supabaseId: String(row.id),
     ...(extended ? {
       mediaGallery: extended.media_gallery || undefined,

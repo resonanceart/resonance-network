@@ -36,20 +36,20 @@ export async function POST(request: Request) {
     const email = profile.email
 
     // Link project submissions
-    const { count: projectsLinked } = await supabaseAdmin
+    const { data: linkedProjects } = await supabaseAdmin
       .from('project_submissions')
       .update({ user_id: user.id })
       .eq('artist_email', email)
       .is('user_id', null)
-      .select('id', { count: 'exact', head: true })
+      .select('id')
 
     // Link collaboration interests
-    const { count: interestsLinked } = await supabaseAdmin
+    const { data: linkedInterests } = await supabaseAdmin
       .from('collaboration_interest')
       .update({ user_id: user.id })
       .eq('email', email)
       .is('user_id', null)
-      .select('id', { count: 'exact', head: true })
+      .select('id')
 
     // Link collaborator profiles
     const { data: collabProfile } = await supabaseAdmin
@@ -69,8 +69,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       linked: {
-        projects: projectsLinked || 0,
-        interests: interestsLinked || 0,
+        projects: linkedProjects?.length || 0,
+        interests: linkedInterests?.length || 0,
         collaboratorProfile: collabProfile ? true : false,
       },
     })
