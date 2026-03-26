@@ -80,6 +80,37 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* What We're Not */}
+      <section className="about-section about-section--alt">
+        <div className="container">
+          <p className="section-label">Boundaries</p>
+          <h2>What We&apos;re Not</h2>
+          <p className="about-section__intro">Knowing what we aren&apos;t is as important as knowing what we are.</p>
+          <div className="not-grid">
+            <div className="not-item">
+              <strong>Not a social media platform.</strong>
+              <p>No feeds, follower counts, or engagement metrics. This is a working space, not a performance space.</p>
+            </div>
+            <div className="not-item">
+              <strong>Not a crowdfunding site.</strong>
+              <p>We don&apos;t host campaigns or process donations. We connect creators with funding pathways.</p>
+            </div>
+            <div className="not-item">
+              <strong>Not a portfolio directory.</strong>
+              <p>This is for serious projects in development that need collaborators and support to get built.</p>
+            </div>
+            <div className="not-item">
+              <strong>Not a generic art marketplace.</strong>
+              <p>We are specifically for large-scale, immersive, and regenerative spatial projects.</p>
+            </div>
+            <div className="not-item">
+              <strong>Not a grant-making organization.</strong>
+              <p>We help creators navigate funding pathways and connect with the right supporters.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Core Values */}
       <section className="about-section">
         <div className="container">

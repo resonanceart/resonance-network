@@ -24,7 +24,7 @@ export function Footer() {
             <div className="footer-col">
               <p className="footer-col-title">Explore</p>
               <nav className="footer-links" aria-label="Footer navigation">
-                <Link href="/">Projects</Link>
+                <Link href="/#projects">Projects</Link>
                 <Link href="/collaborate">Collaborate</Link>
                 <Link href="/about">About</Link>
                 <Link href="/submit#faq">FAQ</Link>

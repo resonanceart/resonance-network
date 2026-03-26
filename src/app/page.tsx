@@ -91,21 +91,15 @@ export default async function HomePage() {
       {/* Bottom CTA */}
       <section className="cta-bottom">
         <div className="cta-bottom__inner">
-          <h2 className="cta-bottom__heading">Your Skills Belong Here</h2>
-          <p className="cta-bottom__body">Whether you&apos;re an artist with a vision, an engineer seeking meaningful work, or a specialist looking for projects that match your values — there&apos;s a place for you here.</p>
+          <h2 className="cta-bottom__heading">Your expertise belongs on work that matters.</h2>
+          <p className="cta-bottom__body">Whether you&apos;re a structural engineer, grant writer, fabricator, lighting designer, or production specialist — there are projects here that need exactly what you do.</p>
           <div className="cta-bottom__actions">
+            <a href="/collaborate" className="btn btn--primary btn--large">Find Open Roles</a>
             <AuthAwareCTA
-              loggedOutHref="/login?tab=signup&redirect=/dashboard/projects/new"
-              loggedOutLabel="Submit Your Project"
+              loggedOutHref="/join"
+              loggedOutLabel="Submit a Project"
               loggedInHref="/dashboard/projects/new"
-              loggedInLabel="Submit Your Project"
-              className="btn btn--primary btn--large"
-            />
-            <AuthAwareCTA
-              loggedOutHref="/login?tab=signup&redirect=/dashboard/welcome"
-              loggedOutLabel="Join the Network"
-              loggedInHref="/dashboard"
-              loggedInLabel="Go to Dashboard"
+              loggedInLabel="Submit a Project"
               className="btn btn--outline btn--large"
             />
           </div>

@@ -7,6 +7,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { MobileNav } from './MobileNav'
 
 const navLinks = [
+  { href: '/#projects', label: 'Projects' },
   { href: '/collaborate', label: 'Collaborate' },
   { href: '/profiles', label: 'People' },
   { href: '/about', label: 'About' },
