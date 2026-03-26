@@ -4,7 +4,7 @@ import { SubmitPageContent } from './SubmitPageContent'
 
 export const metadata: Metadata = {
   title: 'Submit a Project',
-  description: "You've done the hard part — now find the collaborators, expertise, and pathways to make it real. Submit your creative project to Resonance Network today.",
+  description: 'Submit your large-scale creative project to Resonance Network. Free curation, honest feedback, and connection to the collaborators your project needs.',
   alternates: {
     canonical: 'https://resonance.network/submit',
   },

@@ -6,7 +6,7 @@ export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'People',
-  description: 'Browse the artists, engineers, architects, and makers building extraordinary creative projects on Resonance Network — from large-scale installations to regenerative buildings.',
+  description: 'Meet the creators and collaborators behind Resonance Network — artists, engineers, fabricators, and designers building ambitious work.',
   alternates: { canonical: 'https://resonance.network/profiles' },
   openGraph: {
     title: 'People — Resonance Network',

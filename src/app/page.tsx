@@ -6,7 +6,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Resonance Network — Where Ambitious Creative Projects Find Their People',
-  description: 'An artist-led platform for ambitious creative work across art, architecture, and ecology. Find collaborators and build the work you can\'t build alone.',
+  description: 'Resonance Network connects artists, architects, and makers with collaborators, expertise, and funding to build large-scale immersive and regenerative projects.',
   alternates: {
     canonical: 'https://resonance.network',
   },
@@ -45,7 +45,7 @@ export default async function HomePage() {
         />
         <div className="site-hero__overlay"></div>
         <div className="site-hero__content">
-          <h1 className="site-hero__tagline">Art at the scale of your ambition.</h1>
+          <h1 className="site-hero__tagline">Where ambitious creative projects find the people to get built.</h1>
           <div className="site-hero__actions">
             <AuthAwareCTA
               loggedOutHref="/login?tab=signup&redirect=/dashboard/projects/new"
@@ -68,14 +68,25 @@ export default async function HomePage() {
       {/* Intro section — below the hero */}
       <section className="hero-intro">
         <div className="hero-intro__inner">
-          <h2 className="hero-intro__heading">Where visionary projects find the right people.</h2>
-          <p className="hero-intro__body">Resonance Network connects artists, architects, and makers with the collaborators, expertise, and pathways to build what can&apos;t be built alone. Every project here is curated, every role is real.</p>
+          <h2 className="hero-intro__heading">The gap between vision and reality is not a lack of talent. It&apos;s a lack of connection.</h2>
+          <p className="hero-intro__body">Across art, architecture, and regenerative design, extraordinary spatial projects rarely make it past the proposal stage — not because the vision isn&apos;t strong, but because creators are isolated from the technical expertise, production partners, and funding pathways they need. Resonance Network closes that gap.</p>
           <a href="/about" className="hero-intro__link">Learn how it works →</a>
         </div>
       </section>
 
+      {/* Social proof */}
+      <div className="social-proof">
+        <span className="social-proof__stat">9 curated projects</span>
+        <span className="social-proof__divider" aria-hidden="true">&middot;</span>
+        <span className="social-proof__stat">30+ open roles</span>
+        <span className="social-proof__divider" aria-hidden="true">&middot;</span>
+        <span className="social-proof__stat">3 countries represented</span>
+      </div>
+
       {/* Project Gallery with filtering */}
-      <ProjectGallery projects={projects} />
+      <section id="projects">
+        <ProjectGallery projects={projects} />
+      </section>
 
       {/* Bottom CTA */}
       <section className="cta-bottom">

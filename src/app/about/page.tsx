@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'About — An Artist-Led Platform for Ambitious Creative Work',
-  description: 'Built by artists, for artists. Resonance Network connects creators of large-scale art and architecture with the collaborators they need to get built.',
+  description: 'Built by artists, for artists. Resonance Network is a curated platform where ambitious creative projects find the people and pathways to get built.',
   alternates: {
     canonical: 'https://resonance.network/about',
   },
