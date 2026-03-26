@@ -27,7 +27,8 @@
         "image": "/assets/images/projects/money-shot.png",
         "url": "/projects/resonance",
         "year": "2024–present",
-        "role": "Founder & Creative Director"
+        "role": "Founder & Creative Director",
+        "isFeatured": true
       },
       {
         "title": "Resonance Network",
@@ -51,6 +52,25 @@
       "Partnered with bamboo construction specialists in Bali"
     ],
     "philosophy": "I believe the most powerful architecture is the kind you climb into, listen to, and share with strangers. My work asks: what if built spaces could make us feel the way music does — present, connected, and part of something larger than ourselves?",
+    "mediaGallery": [
+      { "url": "/assets/images/projects/money-shot.png", "alt": "Resonance conch shell rendering — exterior view", "type": "image", "isFeatured": true, "order": 0 },
+      { "url": "/assets/images/projects/interior-immersive.jpeg", "alt": "Interior immersive light experience", "type": "image", "isFeatured": true, "order": 1 },
+      { "url": "/assets/images/projects/coastal-entry.png", "alt": "Coastal site entry perspective", "type": "image", "order": 2 },
+      { "url": "/assets/images/projects/night-scene.jpg", "alt": "Night scene with ambient lighting", "type": "image", "order": 3 },
+      { "url": "/assets/images/projects/tidal-angle.png", "alt": "Tidal angle structural view", "type": "image", "order": 4 },
+      { "url": "/assets/images/projects/top-down.png", "alt": "Top-down aerial view of the spiral form", "type": "image", "order": 5 }
+    ],
+    "timeline": [
+      { "year": "2026", "title": "Launched Resonance Network", "organization": "Resonance Art Collective", "description": "Artist-led platform connecting creators across architecture, ecological design, and immersive art.", "category": "career" },
+      { "year": "2024", "title": "Founded Resonance Art Collective", "organization": "Resonance Art Collective", "description": "Established the collective to develop the Resonance installation and build a network of collaborators.", "category": "career" },
+      { "year": "2023", "title": "Artist-in-Residence — Green School Bali", "organization": "Green School Bali", "description": "Three-month residency exploring bamboo as a medium for immersive sculpture.", "category": "residency" },
+      { "year": "2022", "title": "Best Immersive Installation — Desert Arts Festival", "description": "Awarded for a 40-foot climbable woven structure integrating sound and projection.", "category": "award" },
+      { "year": "2019", "title": "MFA Architectural Sculpture", "organization": "California Institute of the Arts", "description": "Thesis: inhabitable geometry and the phenomenology of collective space.", "category": "education" },
+      { "year": "2017", "title": "Featured in Archinect — Emerging Voices", "description": "Profile on experimental approaches to public-scale installation art.", "category": "publication" }
+    ],
+    "toolsAndMaterials": ["Bamboo", "Parametric Design", "Grasshopper", "Rhino 3D", "Natural Fiber Composites", "Adobe Creative Suite"],
+    "availabilityStatus": "open",
+    "availabilityNote": "Currently accepting collaboration inquiries",
     "status": "published"
   },
   {

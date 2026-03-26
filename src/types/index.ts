@@ -61,12 +61,34 @@ export interface ProfileProject {
   url?: string
   year?: string
   role?: string
+  materials?: string[]
+  outcomes?: string
+  galleryImages?: { url: string; alt: string; caption?: string }[]
+  isFeatured?: boolean
 }
 
 export interface ProfileLink {
   label: string
   url: string
   type?: 'website' | 'instagram' | 'linkedin' | 'portfolio' | 'press' | 'other'
+}
+
+export interface ProfileMediaItem {
+  url: string
+  alt: string
+  caption?: string
+  type: 'image' | 'video'
+  videoEmbedUrl?: string
+  isFeatured?: boolean
+  order: number
+}
+
+export interface ProfileTimelineEntry {
+  year: string
+  title: string
+  organization?: string
+  description?: string
+  category: 'exhibition' | 'education' | 'award' | 'residency' | 'career' | 'publication' | 'other'
 }
 
 export interface Profile {
@@ -86,6 +108,11 @@ export interface Profile {
   links: ProfileLink[]
   achievements?: string[]
   philosophy?: string
+  mediaGallery?: ProfileMediaItem[]
+  timeline?: ProfileTimelineEntry[]
+  toolsAndMaterials?: string[]
+  availabilityStatus?: 'open' | 'busy' | 'unavailable'
+  availabilityNote?: string
   status: 'published' | 'draft'
   source?: 'json' | 'supabase'
   supabaseId?: string
