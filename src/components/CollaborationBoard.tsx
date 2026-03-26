@@ -1,6 +1,7 @@
 'use client'
 import { useState, useMemo, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { useAuth } from '@/components/AuthProvider'
 import Image from 'next/image'
 import profilesData from '../../data/profiles.json'
 import projectsData from '../../data/projects.json'
@@ -46,6 +47,7 @@ const breadcrumbJsonLd = {
 }
 
 export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<'needs' | 'people'>('needs')
   const formRef = useRef<HTMLDivElement>(null)
   const [selectedCategory, setSelectedCategory] = useState('')
@@ -303,76 +305,40 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
             </div>
           </section>
 
-          {/* Offer Your Skills form */}
+          {/* Offer Your Skills / Account CTA */}
           <section className="collab-available">
             <div className="container">
               <div className="collab-available__inner">
                 <div className="collab-available__content" id="join-form" ref={formRef}>
-                  <h2>Offer Your Skills</h2>
-                  <p className="collab-available__body">
-                    Engineer, fabricator, designer, or specialist? Tell us what you do and we&apos;ll connect you with projects that match your skills.
-                  </p>
-
-                  {isProfileSubmitted ? (
-                    <div className="collab-available__confirmation">
-                      <div className="form-success">
-                        <span className="form-success__icon" aria-hidden="true">✓</span>
-                        <p>You&apos;re in! We&apos;ll review your profile and add you to the network soon.</p>
-                        {profilePreviewUrl && (
-                          <a href={profilePreviewUrl} className="btn btn--primary btn--sm" style={{ marginTop: 'var(--space-4)', display: 'inline-block' }}>
-                            Preview Your Profile →
-                          </a>
-                        )}
-                      </div>
+                  <h2>{user ? 'Your Profile' : 'Offer Your Skills'}</h2>
+                  {user ? (
+                    <div>
+                      <p className="collab-available__body">
+                        Edit your profile to update your skills and availability so project teams can find you.
+                      </p>
+                      <Link href="/dashboard/profile" className="btn btn--primary btn--large" style={{ marginTop: 'var(--space-4)' }}>
+                        Edit Your Profile &rarr;
+                      </Link>
                     </div>
                   ) : (
-                    <form className="collab-profile-form" onSubmit={handleProfileSubmit}>
-                      {profileError && <p className="form-error">{profileError}</p>}
-                      <div className="form-group">
-                        <label htmlFor="profile-name" className="form-label">Full Name *</label>
-                        <input id="profile-name" type="text" required value={profileName} onChange={e => setProfileName(e.target.value)} placeholder="Your full name" className="form-input" />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="profile-email" className="form-label">Email *</label>
-                        <input id="profile-email" type="email" required value={profileEmail} onChange={e => setProfileEmail(e.target.value)} placeholder="you@example.com" className="form-input" />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="profile-bio" className="form-label">Bio (700 characters max)</label>
-                        <textarea id="profile-bio" value={profileBio} onChange={e => { if (e.target.value.length <= 700) setProfileBio(e.target.value) }} placeholder="Tell us about yourself and your practice" rows={4} className="form-textarea" />
-                        <span className="form-hint">{profileBio.length}/700</span>
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="profile-location" className="form-label">Location</label>
-                        <input id="profile-location" type="text" value={profileLocation} onChange={e => setProfileLocation(e.target.value)} placeholder="City, region, or remote" className="form-input" />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="profile-headshot" className="form-label">Upload Headshot</label>
-                        <input id="profile-headshot" type="file" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f && f.size <= 5 * 1024 * 1024) setProfileHeadshot(f); else if (f) setProfileError('Headshot must be under 5MB') }} className="form-input" />
-                        <span className="form-hint">Max 5MB. JPG, PNG, or WebP.</span>
-                        {profileHeadshot && <span className="form-hint" style={{ color: 'var(--color-primary)' }}>✓ {profileHeadshot.name}</span>}
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="profile-skills" className="form-label">Skills &amp; Expertise *</label>
-                        <textarea id="profile-skills" required value={profileSkills} onChange={e => setProfileSkills(e.target.value)} placeholder="What do you bring? Engineering, design, fabrication, etc." rows={3} className="form-textarea" />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="profile-website" className="form-label">Website / Portfolio URL</label>
-                        <input id="profile-website" type="url" value={profileWebsite} onChange={e => setProfileWebsite(e.target.value)} placeholder="https://..." className="form-input" />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="profile-availability" className="form-label">Availability</label>
-                        <select id="profile-availability" value={profileAvailability} onChange={e => setProfileAvailability(e.target.value)} className="form-select">
-                          <option value="">Select availability...</option>
-                          <option value="Full-time">Full-time</option>
-                          <option value="Part-time">Part-time</option>
-                          <option value="Project-based">Project-based</option>
-                          <option value="Flexible">Flexible</option>
-                        </select>
-                      </div>
-                      <button type="submit" className="btn btn--primary btn--large" disabled={isProfileSubmitting}>
-                        {isProfileSubmitting ? 'Submitting...' : 'Submit Profile'}
-                      </button>
-                    </form>
+                    <div>
+                      <p className="collab-available__body">
+                        Create a free account to build your collaborator profile and connect with project teams.
+                      </p>
+                      <Link
+                        href="/login?tab=signup&redirect=/dashboard/welcome"
+                        className="btn btn--primary btn--large"
+                        style={{ marginTop: 'var(--space-4)' }}
+                      >
+                        Join the Network &rarr;
+                      </Link>
+                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-3)' }}>
+                        Already have an account?{' '}
+                        <Link href="/login?redirect=/dashboard/profile" style={{ color: 'var(--color-primary)' }}>
+                          Sign in
+                        </Link>
+                      </p>
+                    </div>
                   )}
                 </div>
                 <div className="collab-available__skills">
