@@ -27,14 +27,14 @@ export default function SettingsPage() {
 
   return (
     <section className="dashboard">
-      <div className="container" style={{ maxWidth: '40rem', margin: '0 auto' }}>
-        <div style={{ marginBottom: 'var(--space-6)' }}>
-          <Link href="/dashboard" style={{ color: 'var(--color-primary)', fontSize: 'var(--text-sm)' }}>
+      <div className="container settings-container">
+        <div className="settings-back">
+          <Link href="/dashboard" className="settings-back__link">
             &larr; Back to Dashboard
           </Link>
         </div>
 
-        <h1 className="section__title" style={{ marginBottom: 'var(--space-8)' }}>Account Settings</h1>
+        <h1 className="settings-title">Account Settings</h1>
 
         <ChangePasswordSection supabase={supabase} />
         <EmailPreferencesSection />
@@ -83,8 +83,8 @@ function ChangePasswordSection({ supabase }: { supabase: ReturnType<typeof creat
   }
 
   return (
-    <div style={{ marginBottom: 'var(--space-8)', padding: 'var(--space-6)', background: 'var(--color-surface)', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
-      <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>Change Password</h2>
+    <div className="settings-card">
+      <h2 className="settings-card__title">Change Password</h2>
 
       {error && (
         <div className="form-error" style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', borderRadius: '8px', background: 'rgba(220,38,38,0.08)' }}>
@@ -93,7 +93,7 @@ function ChangePasswordSection({ supabase }: { supabase: ReturnType<typeof creat
       )}
 
       {message && (
-        <div style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', borderRadius: '8px', background: 'rgba(20,184,166,0.08)', color: 'var(--color-primary)', fontSize: 'var(--text-sm)' }}>
+        <div className="settings-success">
           {message}
         </div>
       )}
@@ -170,29 +170,29 @@ function EmailPreferencesSection() {
   }
 
   return (
-    <div style={{ marginBottom: 'var(--space-8)', padding: 'var(--space-6)', background: 'var(--color-surface)', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
-      <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>Email Preferences</h2>
+    <div className="settings-card">
+      <h2 className="settings-card__title">Email Preferences</h2>
 
       {message && (
-        <div style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', borderRadius: '8px', background: 'rgba(20,184,166,0.08)', color: 'var(--color-primary)', fontSize: 'var(--text-sm)' }}>
+        <div className="settings-success">
           {message}
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+      <div className="settings-checkboxes">
         {([
           { key: 'project_updates' as const, label: 'Project update emails' },
           { key: 'collaboration_notifications' as const, label: 'Collaboration notifications' },
           { key: 'newsletter' as const, label: 'Newsletter' },
         ]).map(({ key, label }) => (
-          <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', cursor: 'pointer' }}>
+          <label key={key} className="settings-checkbox">
             <input
               type="checkbox"
               checked={prefs[key]}
               onChange={() => handleToggle(key)}
-              style={{ width: '18px', height: '18px', accentColor: 'var(--color-primary)' }}
+              className="settings-checkbox__input"
             />
-            <span style={{ fontSize: 'var(--text-sm)' }}>{label}</span>
+            <span className="settings-checkbox__label">{label}</span>
           </label>
         ))}
       </div>
@@ -201,7 +201,6 @@ function EmailPreferencesSection() {
         className="btn btn--primary btn--sm"
         onClick={handleSave}
         disabled={loading}
-        style={{ marginTop: 'var(--space-4)' }}
       >
         {loading ? 'Saving...' : 'Save Preferences'}
       </button>
@@ -243,14 +242,14 @@ function DataExportSection() {
   }
 
   return (
-    <div style={{ marginBottom: 'var(--space-8)', padding: 'var(--space-6)', background: 'var(--color-surface)', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
-      <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-2)' }}>Download My Data</h2>
-      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
+    <div className="settings-card">
+      <h2 className="settings-card__title">Download My Data</h2>
+      <p className="settings-card__desc">
         Export all your data (profile, follows, messages, submissions) as a JSON file.
       </p>
 
       {message && (
-        <div style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', borderRadius: '8px', background: 'rgba(20,184,166,0.08)', color: 'var(--color-primary)', fontSize: 'var(--text-sm)' }}>
+        <div className="settings-success">
           {message}
         </div>
       )}
@@ -276,9 +275,9 @@ function SignOutAllSection({ supabase, router }: { supabase: ReturnType<typeof c
   }
 
   return (
-    <div style={{ marginBottom: 'var(--space-8)', padding: 'var(--space-6)', background: 'var(--color-surface)', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
-      <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-2)' }}>Sign Out Everywhere</h2>
-      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
+    <div className="settings-card">
+      <h2 className="settings-card__title">Sign Out Everywhere</h2>
+      <p className="settings-card__desc">
         This will sign you out of all devices and browsers.
       </p>
       <button
@@ -321,9 +320,9 @@ function DeleteAccountSection({ router }: { router: ReturnType<typeof useRouter>
   }
 
   return (
-    <div style={{ padding: 'var(--space-6)', background: 'var(--color-surface)', borderRadius: '12px', border: '1px solid rgba(220,38,38,0.3)' }}>
-      <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-2)', color: '#dc2626' }}>Delete Account</h2>
-      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
+    <div className="settings-card settings-card--danger">
+      <h2 className="settings-card__title settings-card__title--danger">Delete Account</h2>
+      <p className="settings-card__desc">
         Permanently delete your account and all associated data. This action cannot be undone.
       </p>
 
@@ -335,31 +334,28 @@ function DeleteAccountSection({ router }: { router: ReturnType<typeof useRouter>
 
       {!showConfirm ? (
         <button
-          className="btn btn--sm"
+          className="btn btn--sm settings-btn--danger"
           onClick={() => setShowConfirm(true)}
-          style={{ background: '#dc2626', color: '#fff', border: 'none' }}
         >
           Delete My Account
         </button>
       ) : (
         <div>
-          <p style={{ fontSize: 'var(--text-sm)', marginBottom: 'var(--space-3)', fontWeight: 600 }}>
+          <p className="settings-card__confirm-label">
             Type DELETE to confirm:
           </p>
           <input
-            className="form-input"
+            className="form-input settings-card__confirm-input"
             type="text"
             value={confirmText}
             onChange={(e) => setConfirmText(e.target.value)}
             placeholder="DELETE"
-            style={{ marginBottom: 'var(--space-3)' }}
           />
-          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+          <div className="settings-card__actions">
             <button
-              className="btn btn--sm"
+              className="btn btn--sm settings-btn--danger"
               onClick={handleDelete}
               disabled={confirmText !== 'DELETE' || loading}
-              style={{ background: '#dc2626', color: '#fff', border: 'none', opacity: confirmText !== 'DELETE' ? 0.5 : 1 }}
             >
               {loading ? 'Deleting...' : 'Permanently Delete'}
             </button>

@@ -107,7 +107,7 @@ export default async function ProjectPage({ params }: { params: { slug: string }
   const project = await getProjectBySlug(params.slug)
   if (!project) notFound()
 
-  const tasks = (tasksData as CollaborationTask[]).filter(t => t.projectId === project.slug)
+  const tasks = (tasksData as CollaborationTask[]).filter(t => t.projectId === project.slug || t.projectId === project.id)
 
   const profiles = profilesData as Profile[]
   function getProfileHref(name: string): string | undefined {

@@ -15,7 +15,7 @@ function mapSubmissionToProject(row: Record<string, unknown>): Project {
 
   return {
     id: String(row.id),
-    slug: 'sub-' + slugify(String(row.project_title)),
+    slug: 'sub-' + slugify(String(row.project_title)) + '-' + String(row.id).substring(0, 8),
     title: String(row.project_title || ''),
     eyebrow: domains.slice(0, 2).join(' | ') || String(row.stage || 'Project'),
     shortDescription: String(row.one_sentence || '').substring(0, 150) || String(row.vision || '').substring(0, 150),
@@ -48,11 +48,11 @@ function mapProfileRow(row: Record<string, unknown>): Profile {
 
   return {
     id: String(row.id),
-    slug: 'collab-' + slugify(String(row.name)),
+    slug: 'collab-' + slugify(String(row.name)) + '-' + String(row.id).substring(0, 8),
     name: String(row.name || ''),
     title: skillsStr.split(',')[0]?.trim() || 'Collaborator',
     type: 'collaborator',
-    photo: typeof row.headshot_data === 'string' && row.headshot_data ? row.headshot_data : (typeof row.photo_url === 'string' && row.photo_url ? row.photo_url : ''),
+    photo: typeof row.headshot_data === 'string' && row.headshot_data ? row.headshot_data : (typeof row.photo_url === 'string' && row.photo_url ? row.photo_url : '/assets/images/team/placeholder.svg'),
     bio: typeof row.bio === 'string' && row.bio ? row.bio : skillsStr,
     shortBio: (typeof row.bio === 'string' && row.bio ? row.bio : skillsStr).substring(0, 100),
     location: typeof row.location === 'string' ? row.location : undefined,
@@ -100,7 +100,8 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
 
       if (error || !data) return null
       const match = data.find(
-        (row: Record<string, unknown>) => 'sub-' + slugify(String(row.project_title)) === slug
+        (row: Record<string, unknown>) =>
+          'sub-' + slugify(String(row.project_title)) + '-' + String(row.id).substring(0, 8) === slug
       )
       return match ? mapSubmissionToProject(match) : null
     } catch {
@@ -145,7 +146,8 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
 
       if (error || !data) return null
       const match = data.find(
-        (row: Record<string, unknown>) => 'collab-' + slugify(String(row.name)) === slug
+        (row: Record<string, unknown>) =>
+          'collab-' + slugify(String(row.name)) + '-' + String(row.id).substring(0, 8) === slug
       )
       return match ? mapProfileRow(match) : null
     } catch {

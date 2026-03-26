@@ -45,15 +45,6 @@ const breadcrumbJsonLd = {
   ],
 }
 
-const SAMPLE_COLLABORATORS = [
-  { name: "Maya Chen", photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face", skills: ["Structural Engineering", "Parametric Design"], availability: "Project-based" },
-  { name: "James Okonkwo", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face", skills: ["Lighting Design", "Interactive Electronics"], availability: "Part-time" },
-  { name: "Sofia Reyes", photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face", skills: ["Landscape Architecture", "Ecological Design"], availability: "Full-time" },
-  { name: "Kai Tanaka", photo: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&h=200&fit=crop&crop=face", skills: ["Fabrication", "Bamboo Construction"], availability: "Project-based" },
-  { name: "Amara Osei", photo: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=200&h=200&fit=crop&crop=face", skills: ["Grant Writing", "Arts Administration"], availability: "Flexible" },
-  { name: "Luca Romano", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face", skills: ["Sound Design", "Acoustic Engineering"], availability: "Part-time" },
-]
-
 export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
   const [activeTab, setActiveTab] = useState<'needs' | 'people'>('needs')
   const formRef = useRef<HTMLDivElement>(null)

@@ -58,7 +58,7 @@ export default function JoinPage() {
                 <li>Visibility to funders and curators</li>
               </ul>
               <Link
-                href={user ? '/submit#submission-form' : '/login?redirect=/submit&tab=signup'}
+                href="/submit#submission-form"
                 className="btn btn--primary btn--large join-card__cta"
               >
                 Submit a Project &rarr;
