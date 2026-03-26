@@ -601,7 +601,7 @@ export default function WelcomePage() {
             <button
               className="btn btn--primary"
               onClick={handleNext}
-              disabled={saving || (step === 5 && hasProject && (!projectTitle || !oneSentence || !vision)) || (step === 7 && hasProject && !heroImageFile)}
+              disabled={saving || (step === 5 && hasProject === true && (!projectTitle || !oneSentence || !vision)) || (step === 7 && hasProject === true && !heroImageFile)}
             >
               {saving ? 'Saving...' : step === 7 ? 'Submit Project' : 'Next'}
             </button>
