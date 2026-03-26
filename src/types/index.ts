@@ -132,6 +132,7 @@ export interface UserProfile {
   role: 'collaborator' | 'creator' | 'admin'
   collaborator_profile_id: string | null
   onboarding_complete: boolean
+  profile_visibility?: 'draft' | 'pending' | 'published'
 }
 
 export interface UserFollow {
@@ -168,4 +169,46 @@ export interface CollaborationTask {
   rewardDescription?: string | null
   contactEmail: string
   contactEmailSubject?: string
+}
+
+export interface ProjectSubmission {
+  id: string
+  created_at: string
+  updated_at: string
+  user_id: string | null
+  artist_name: string
+  artist_email: string
+  artist_bio: string | null
+  artist_website: string | null
+  project_title: string
+  one_sentence: string | null
+  vision: string | null
+  experience: string | null
+  story: string | null
+  goals: string | null
+  domains: string[] | null
+  pathways: string[] | null
+  stage: string | null
+  scale: string | null
+  location: string | null
+  materials: string | null
+  special_needs: string | null
+  collaboration_needs: string | null
+  collaboration_role_count: number | null
+  hero_image_data: string | null
+  gallery_images_data: string | null
+  status: string
+}
+
+export interface CollaborationInterest {
+  id: string
+  created_at: string
+  user_id: string | null
+  name: string
+  email: string
+  phone: string | null
+  experience: string
+  task_title: string | null
+  project_title: string | null
+  status: string
 }
