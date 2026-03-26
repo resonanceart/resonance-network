@@ -68,20 +68,27 @@ export function FollowButton({ projectId, compact = false }: FollowButtonProps) 
   )
 
   return (
-    <button
-      onClick={handleClick}
-      disabled={loading}
-      className={`btn ${following ? 'btn--outline' : 'btn--primary'}`}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '6px',
-        ...(compact ? { padding: '6px 12px', fontSize: 'var(--text-sm)' } : {}),
-      }}
-      aria-label={following ? 'Unfollow this project' : 'Follow this project'}
-    >
-      {heartIcon}
-      {!compact && (following ? 'Following' : 'Follow')}
-    </button>
+    <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+      <button
+        onClick={handleClick}
+        disabled={loading}
+        className={`btn ${following ? 'btn--outline' : 'btn--primary'}`}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          ...(compact ? { padding: '6px 12px', fontSize: 'var(--text-sm)' } : {}),
+        }}
+        aria-label={following ? 'Unfollow this project' : 'Follow this project'}
+      >
+        {heartIcon}
+        {!compact && (following ? 'Following' : 'Follow')}
+      </button>
+      {!user && !compact && (
+        <span style={{ fontSize: 'var(--text-xs, 0.75rem)', color: 'var(--color-text-muted)', textAlign: 'center' }}>
+          Sign in to follow this project and get updates
+        </span>
+      )}
+    </div>
   )
 }

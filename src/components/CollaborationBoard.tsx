@@ -159,9 +159,9 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
             <Link href="/">Home</Link> <span aria-hidden="true">/</span> <span>Collaborate</span>
           </nav>
           <p className="section-label">Collaborate</p>
-          <h1>The Work Is Better Together</h1>
+          <h1>Open Roles on Curated Projects</h1>
           <p className="lead">
-            Every project here has a real team and a clear vision — they just need people like you. Find a role that fits, or share what you do and let projects find you.
+            Collaboration opportunities across curated projects — from structural engineering to grant writing to spatial audio design. Every role is tied to a real team with a clear vision.
           </p>
         </div>
       </section>

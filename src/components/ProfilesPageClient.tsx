@@ -45,6 +45,9 @@ export function ProfilesPageClient({ profiles }: { profiles: Profile[] }) {
           <p className="lead">
             Artists, architects, engineers, and makers building extraordinary things — together.
           </p>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-3)' }}>
+            Resonance Network is a growing community. The people you see here are the first — more profiles are added as new creators and collaborators join.
+          </p>
         </div>
       </section>
 
@@ -170,10 +173,10 @@ export function ProfilesPageClient({ profiles }: { profiles: Profile[] }) {
       {/* CTA */}
       <section className="profiles-cta">
         <div className="container" style={{ textAlign: 'center', padding: 'var(--space-12) 0' }}>
-          <h2>Join the Network</h2>
-          <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)' }}>Bring a project or bring your skills — either way, there&apos;s a place for you here.</p>
+          <h2>Add Your Name to This List</h2>
+          <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)' }}>Create your free profile and join the network.</p>
           <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/join" className="btn btn--primary btn--large">Join the Network</Link>
+            <Link href="/join" className="btn btn--primary btn--large">Create Your Profile</Link>
             <Link href="/collaborate" className="btn btn--outline btn--large">Browse Open Roles</Link>
           </div>
         </div>

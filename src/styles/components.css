@@ -820,6 +820,17 @@ main {
   line-height: 1.2;
 }
 
+.project-card__desc {
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: var(--space-1) 0 0;
+}
+
 /* Mobile: always show title, no hover effects */
 @media (max-width: 639px) {
   .project-card {
