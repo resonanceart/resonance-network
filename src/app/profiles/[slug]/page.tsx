@@ -137,8 +137,8 @@ export default async function ProfilePage({ params }: { params: { slug: string }
               <Image
                 src={profile.photo}
                 alt={`Photo of ${profile.name}`}
-                width={120}
-                height={120}
+                width={200}
+                height={200}
                 priority
                 style={{ objectFit: 'cover' }}
               />
