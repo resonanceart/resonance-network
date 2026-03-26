@@ -36,6 +36,13 @@ export async function GET(request: Request) {
       )
     }
 
+    // Fetch extended profile data
+    const { data: extendedProfile } = await supabaseAdmin
+      .from('profile_extended')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+
     // Fetch linked submissions by email
     const [projResult, profResult, interestResult] = await Promise.all([
       supabaseAdmin.from('project_submissions')
@@ -89,7 +96,7 @@ export async function GET(request: Request) {
       }
     }
 
-    return NextResponse.json({ profile, submissions })
+    return NextResponse.json({ profile, extendedProfile: extendedProfile || null, submissions })
   } catch {
     return NextResponse.json(
       { error: 'Something went wrong.' },
@@ -188,29 +195,77 @@ export async function PUT(request: Request) {
     }
     if (body.onboarding_complete !== undefined) updates.onboarding_complete = Boolean(body.onboarding_complete)
 
-    if (Object.keys(updates).length === 0) {
+    // Handle profile_extended fields
+    const extendedFields: Record<string, unknown> = {}
+    if (body.media_gallery !== undefined) extendedFields.media_gallery = body.media_gallery
+    if (body.extended_projects !== undefined) extendedFields.projects = body.extended_projects
+    if (body.extended_links !== undefined) extendedFields.links = body.extended_links
+    if (body.timeline !== undefined) extendedFields.timeline = body.timeline
+    if (body.testimonials !== undefined) extendedFields.testimonials = body.testimonials
+    if (body.extended_achievements !== undefined) extendedFields.achievements = body.extended_achievements
+    if (body.extended_philosophy !== undefined) extendedFields.philosophy = sanitizeText(body.extended_philosophy, 5000)
+    if (body.cover_image_url !== undefined) extendedFields.cover_image_url = sanitizeText(body.cover_image_url, 1000)
+    if (body.tools_and_materials !== undefined && Array.isArray(body.tools_and_materials)) {
+      extendedFields.tools_and_materials = body.tools_and_materials.map((s: unknown) => sanitizeText(s, 200)).filter(Boolean)
+    }
+    if (body.availability_status !== undefined) {
+      const validStatuses = ['open', 'busy', 'unavailable']
+      if (validStatuses.includes(body.availability_status)) {
+        extendedFields.availability_status = body.availability_status
+      }
+    }
+    if (body.availability_note !== undefined) extendedFields.availability_note = sanitizeText(body.availability_note, 500)
+
+    if (Object.keys(updates).length === 0 && Object.keys(extendedFields).length === 0) {
       return NextResponse.json(
         { error: 'No valid fields to update.' },
         { status: 400 }
       )
     }
 
-    const { data: profile, error } = await supabaseAdmin
-      .from('user_profiles')
-      .update(updates)
-      .eq('id', user.id)
-      .select()
-      .single()
+    let profile = null
+    if (Object.keys(updates).length > 0) {
+      const { data, error } = await supabaseAdmin
+        .from('user_profiles')
+        .update(updates)
+        .eq('id', user.id)
+        .select()
+        .single()
 
-    if (error) {
-      console.error('Profile update error:', error.message)
-      return NextResponse.json(
-        { error: 'Failed to update profile.' },
-        { status: 500 }
-      )
+      if (error) {
+        console.error('Profile update error:', error.message)
+        return NextResponse.json(
+          { error: 'Failed to update profile.' },
+          { status: 500 }
+        )
+      }
+      profile = data
+    } else {
+      // Fetch current profile if no base updates
+      const { data } = await supabaseAdmin
+        .from('user_profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+      profile = data
     }
 
-    return NextResponse.json({ profile })
+    let extendedProfile = null
+    if (Object.keys(extendedFields).length > 0) {
+      const { data, error: extError } = await supabaseAdmin
+        .from('profile_extended')
+        .upsert({ id: user.id, ...extendedFields }, { onConflict: 'id' })
+        .select()
+        .single()
+
+      if (extError) {
+        console.error('Extended profile upsert error:', extError.message)
+      } else {
+        extendedProfile = data
+      }
+    }
+
+    return NextResponse.json({ profile, extendedProfile })
   } catch {
     return NextResponse.json(
       { error: 'Something went wrong.' },

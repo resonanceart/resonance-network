@@ -149,11 +149,126 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
         (row: Record<string, unknown>) =>
           'collab-' + slugify(String(row.name)) + '-' + String(row.id).substring(0, 8) === slug
       )
-      return match ? mapProfileRow(match) : null
+      if (match) {
+        const mapped = mapProfileRow(match)
+        try {
+          // Look up user account linked to this collaborator profile
+          const { data: userProfile } = await supabaseAdmin
+            .from('user_profiles')
+            .select('id')
+            .eq('collaborator_profile_id', String(match.id))
+            .single()
+
+          if (userProfile) {
+            const { data: extended } = await supabaseAdmin
+              .from('profile_extended')
+              .select('*')
+              .eq('id', userProfile.id)
+              .single()
+
+            if (extended) {
+              return {
+                ...mapped,
+                mediaGallery: extended.media_gallery || undefined,
+                timeline: extended.timeline || undefined,
+                toolsAndMaterials: extended.tools_and_materials || undefined,
+                availabilityStatus: extended.availability_status || undefined,
+                availabilityNote: extended.availability_note || undefined,
+              } as Profile
+            }
+          }
+        } catch {
+          // Extended data not available, continue with base profile
+        }
+        return mapped
+      }
+      return null
     } catch {
       return null
     }
   }
 
   return null
+}
+
+export async function getProfileByUserId(userId: string): Promise<Profile | null> {
+  try {
+    const { data: userProfile, error } = await supabaseAdmin
+      .from('user_profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+
+    if (error || !userProfile) return null
+
+    // Check if user has a linked collaborator profile
+    if (userProfile.collaborator_profile_id) {
+      const { data: collabProfile } = await supabaseAdmin
+        .from('collaborator_profiles')
+        .select('*')
+        .eq('id', userProfile.collaborator_profile_id)
+        .single()
+
+      if (collabProfile) {
+        const base = mapProfileRow(collabProfile)
+
+        // Merge extended data
+        const { data: extended } = await supabaseAdmin
+          .from('profile_extended')
+          .select('*')
+          .eq('id', userId)
+          .single()
+
+        if (extended) {
+          return {
+            ...base,
+            mediaGallery: extended.media_gallery || undefined,
+            timeline: extended.timeline || undefined,
+            toolsAndMaterials: extended.tools_and_materials || undefined,
+            availabilityStatus: extended.availability_status || undefined,
+            availabilityNote: extended.availability_note || undefined,
+          } as Profile
+        }
+        return base
+      }
+    }
+
+    // Build a minimal profile from user_profiles
+    const slug = 'user-' + slugify(userProfile.display_name) + '-' + userId.substring(0, 8)
+
+    // Fetch extended data
+    const { data: extended } = await supabaseAdmin
+      .from('profile_extended')
+      .select('*')
+      .eq('id', userId)
+      .single()
+
+    return {
+      id: userId,
+      slug,
+      name: userProfile.display_name,
+      title: userProfile.role || 'Collaborator',
+      type: 'collaborator',
+      photo: userProfile.avatar_url || '/assets/images/team/placeholder.svg',
+      bio: userProfile.bio || '',
+      shortBio: (userProfile.bio || '').substring(0, 100),
+      location: userProfile.location || undefined,
+      email: userProfile.email,
+      specialties: userProfile.skills || [],
+      projects: [],
+      links: userProfile.website ? [{ label: 'Website', url: userProfile.website, type: 'website' as const }] : [],
+      status: 'published',
+      source: 'supabase',
+      supabaseId: userId,
+      ...(extended ? {
+        mediaGallery: extended.media_gallery || undefined,
+        timeline: extended.timeline || undefined,
+        toolsAndMaterials: extended.tools_and_materials || undefined,
+        availabilityStatus: extended.availability_status || undefined,
+        availabilityNote: extended.availability_note || undefined,
+      } : {}),
+    } as Profile
+  } catch {
+    return null
+  }
 }
