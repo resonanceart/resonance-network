@@ -59,7 +59,7 @@ export default function JoinPage() {
           <p className="section-label">Get Involved</p>
           <h1>Join Resonance Network</h1>
           <p className="join-hero__sub">
-            Create your free profile and become part of a community where ambitious creative projects find their people.
+            Create your free profile — and submit a project if you have one. It only takes a few minutes.
           </p>
           <Link
             href="/login?tab=signup&redirect=/dashboard/welcome"
