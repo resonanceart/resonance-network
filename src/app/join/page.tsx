@@ -50,7 +50,7 @@ export default function JoinPage() {
               </div>
               <h2>Submit a Project</h2>
               <p className="join-card__desc">You have an ambitious creative project — and you need collaborators, expertise, or pathways to make it real.</p>
-              <p className="join-card__outcome">We&apos;ll create your project page and artist profile on the network.</p>
+              <p className="join-card__outcome">Create your free account, build your profile, then submit your project — all in one flow.</p>
               <ul className="join-card__benefits">
                 <li>Project page with gallery and overview</li>
                 <li>Artist profile on the network</li>
@@ -58,7 +58,7 @@ export default function JoinPage() {
                 <li>Visibility to funders and curators</li>
               </ul>
               <Link
-                href="/submit#submission-form"
+                href={user ? '/dashboard/projects/new' : '/login?tab=signup&redirect=/dashboard/welcome?intent=project'}
                 className="btn btn--primary btn--large join-card__cta"
               >
                 Submit a Project &rarr;
@@ -84,7 +84,7 @@ export default function JoinPage() {
               <p className="join-card__outcome">
                 {user
                   ? 'Keep your profile current with your latest skills and availability.'
-                  : 'We\u2019ll create your collaborator profile so project teams can find you.'}
+                  : 'Create your free account and build your collaborator profile so project teams can find you.'}
               </p>
               <ul className="join-card__benefits">
                 <li>Collaborator profile on the network</li>
@@ -93,7 +93,7 @@ export default function JoinPage() {
                 <li>Skill-matched project alerts</li>
               </ul>
               <Link
-                href={user ? '/dashboard/profile' : '/login?redirect=/collaborate%3Ftab%3Dskills%23join-form&tab=signup'}
+                href={user ? '/dashboard/profile' : '/login?tab=signup&redirect=/dashboard/welcome'}
                 className="btn btn--primary btn--large join-card__cta"
               >
                 {user ? 'Edit Your Profile' : 'Create Your Profile'} &rarr;

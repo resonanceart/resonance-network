@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ProjectSubmissionForm } from '@/components/ProjectSubmissionForm'
+import { SubmitPageContent } from './SubmitPageContent'
 
 export const metadata: Metadata = {
   title: 'Submit a Project',
@@ -96,14 +96,8 @@ export default function SubmitPage() {
         </div>
       </section>
 
-      {/* Submission Form */}
-      <section className="submit-form-section" id="submission-form">
-        <div className="container">
-          <h2>Submit Your Project</h2>
-          <p>It takes about 15 minutes. Every project is reviewed by practicing artists and makers — people who understand the work.</p>
-          <ProjectSubmissionForm />
-        </div>
-      </section>
+      {/* Submission Form / Auth CTA */}
+      <SubmitPageContent />
 
       {/* What Makes a Strong Submission */}
       <section className="submit-section">
