@@ -112,10 +112,48 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
   return null
 }
 
+function mapUserProfileRow(row: Record<string, unknown>, extended?: Record<string, unknown> | null): Profile {
+  const skills = Array.isArray(row.skills) ? row.skills as string[] : []
+  const role = typeof row.role === 'string' ? row.role : 'collaborator'
+  const profileType = role === 'creator' || role === 'admin' ? 'artist' : 'collaborator'
+
+  return {
+    id: String(row.id),
+    slug: slugify(String(row.display_name)),
+    name: String(row.display_name || ''),
+    title: skills[0] || (profileType === 'artist' ? 'Creator' : 'Collaborator'),
+    type: profileType,
+    photo: typeof row.avatar_url === 'string' && row.avatar_url ? row.avatar_url : '/assets/images/team/placeholder.svg',
+    bio: typeof row.bio === 'string' ? row.bio : '',
+    shortBio: (typeof row.bio === 'string' ? row.bio : '').substring(0, 100),
+    location: typeof row.location === 'string' ? row.location : undefined,
+    email: typeof row.email === 'string' ? row.email : undefined,
+    specialties: skills,
+    projects: [],
+    links: typeof row.website === 'string' && row.website ? [{ label: 'Website', url: row.website, type: 'website' as const }] : [],
+    status: 'published',
+    source: 'supabase-user' as const,
+    supabaseId: String(row.id),
+    ...(extended ? {
+      mediaGallery: extended.media_gallery || undefined,
+      timeline: extended.timeline || undefined,
+      toolsAndMaterials: extended.tools_and_materials || undefined,
+      availabilityStatus: extended.availability_status || undefined,
+      availabilityNote: extended.availability_note || undefined,
+      coverImageUrl: extended.cover_image_url || undefined,
+      achievements: extended.achievements || undefined,
+      philosophy: extended.philosophy || undefined,
+    } : {}),
+  } as Profile
+}
+
 export async function getProfiles(): Promise<Profile[]> {
   const jsonProfiles = (profilesData as Profile[])
     .filter(p => p.status === 'published')
     .map(p => ({ ...p, source: 'json' as const }))
+
+  let supabaseProfiles: Profile[] = []
+  let userProfiles: Profile[] = []
 
   try {
     const { data, error } = await supabaseAdmin
@@ -123,12 +161,46 @@ export async function getProfiles(): Promise<Profile[]> {
       .select('*')
       .eq('status', 'approved')
 
-    if (error || !data) return jsonProfiles
-    const supabaseProfiles = data.map(mapProfileRow)
-    return [...jsonProfiles, ...supabaseProfiles]
+    if (!error && data) {
+      supabaseProfiles = data.map(mapProfileRow)
+    }
   } catch {
-    return jsonProfiles
+    // continue without collaborator profiles
   }
+
+  try {
+    const { data: publishedUsers, error: upError } = await supabaseAdmin
+      .from('user_profiles')
+      .select('*')
+      .eq('profile_visibility', 'published')
+
+    if (!upError && publishedUsers) {
+      // Fetch extended profiles for all published users
+      const userIds = publishedUsers.map((u: Record<string, unknown>) => String(u.id))
+      let extendedMap: Record<string, Record<string, unknown>> = {}
+
+      if (userIds.length > 0) {
+        const { data: extendedData } = await supabaseAdmin
+          .from('profile_extended')
+          .select('*')
+          .in('id', userIds)
+
+        if (extendedData) {
+          extendedMap = Object.fromEntries(
+            extendedData.map((e: Record<string, unknown>) => [String(e.id), e])
+          )
+        }
+      }
+
+      userProfiles = publishedUsers.map((u: Record<string, unknown>) =>
+        mapUserProfileRow(u, extendedMap[String(u.id)] || null)
+      )
+    }
+  } catch {
+    // continue without user profiles
+  }
+
+  return [...jsonProfiles, ...supabaseProfiles, ...userProfiles]
 }
 
 export async function getProfileBySlug(slug: string): Promise<Profile | null> {
@@ -186,6 +258,31 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
     } catch {
       return null
     }
+  }
+
+  // Check for user profile by slugified display_name
+  try {
+    const { data: publishedUsers, error: upError } = await supabaseAdmin
+      .from('user_profiles')
+      .select('*')
+      .eq('profile_visibility', 'published')
+
+    if (!upError && publishedUsers) {
+      const match = publishedUsers.find(
+        (row: Record<string, unknown>) => slugify(String(row.display_name)) === slug
+      )
+      if (match) {
+        const { data: extended } = await supabaseAdmin
+          .from('profile_extended')
+          .select('*')
+          .eq('id', String(match.id))
+          .single()
+
+        return mapUserProfileRow(match as Record<string, unknown>, extended as Record<string, unknown> | null)
+      }
+    }
+  } catch {
+    // continue
   }
 
   return null

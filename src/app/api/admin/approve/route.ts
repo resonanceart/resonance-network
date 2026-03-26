@@ -32,12 +32,47 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Missing required fields.' }, { status: 400 })
     }
 
-    if (!['project', 'profile'].includes(type)) {
+    if (!['project', 'profile', 'user_profile'].includes(type)) {
       return NextResponse.json({ success: false, message: 'Invalid type.' }, { status: 400 })
     }
 
     if (!['approve', 'reject'].includes(action)) {
       return NextResponse.json({ success: false, message: 'Invalid action.' }, { status: 400 })
+    }
+
+    // Handle user_profile approval separately
+    if (type === 'user_profile') {
+      const newVisibility = action === 'approve' ? 'published' : 'draft'
+      const { error: upError } = await supabaseAdmin
+        .from('user_profiles')
+        .update({ profile_visibility: newVisibility })
+        .eq('id', id)
+
+      if (upError) {
+        console.error('Admin user profile action error:', upError)
+        return NextResponse.json({ success: false, message: 'Failed to update profile visibility.' }, { status: 500 })
+      }
+
+      // Send in-app notification
+      try {
+        const isApproved = action === 'approve'
+        await supabaseAdmin.from('user_messages').insert({
+          recipient_id: id,
+          sender_name: 'Resonance Network',
+          subject: isApproved
+            ? 'Your profile has been approved!'
+            : 'Update on your profile submission',
+          body: isApproved
+            ? 'Great news! Your profile has been approved and is now live on Resonance Network. Visit the profiles page to see it.'
+            : 'Your profile has been reviewed. Unfortunately, it wasn\'t approved at this time. Please review and update your profile, then resubmit for review.',
+          message_type: 'submission_status',
+        })
+      } catch (err) { console.error('In-app notification error:', (err as Error).message) }
+
+      revalidatePath('/')
+      revalidatePath('/profiles')
+
+      return NextResponse.json({ success: true, message: `Profile ${newVisibility}.` })
     }
 
     const table = type === 'project' ? 'project_submissions' : 'collaborator_profiles'

@@ -26,6 +26,31 @@ export async function POST(request: Request) {
 
     const body = await request.json()
 
+    // Optional auth: link submission to user account if logged in
+    let userId: string | null = null
+    try {
+      const { createSupabaseServerClient } = await import('@/lib/supabase-server')
+      const supabase = await createSupabaseServerClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        userId = user.id
+        // Fetch user profile for defaults
+        const { data: userProfile } = await supabaseAdmin
+          .from('user_profiles')
+          .select('display_name, email, website')
+          .eq('id', user.id)
+          .single()
+        if (userProfile) {
+          // Use profile data as fallback if form fields are empty
+          if (!body.artistName && userProfile.display_name) body.artistName = userProfile.display_name
+          if (!body.artistEmail && userProfile.email) body.artistEmail = userProfile.email
+          if (!body.artistWebsite && userProfile.website) body.artistWebsite = userProfile.website
+        }
+      }
+    } catch {
+      // Not authenticated, continue anonymously
+    }
+
     const artistName = sanitizeText(body.artistName, 200)
     const artistBio = sanitizeText(body.artistBio, 5000)
     const artistEmail = validateEmail(body.artistEmail)
@@ -81,6 +106,7 @@ export async function POST(request: Request) {
         collaboration_needs: collaborationNeeds || null,
         collaboration_role_count: collaborationRoleCount,
         artist_headshot_data: artistHeadshotData || null,
+        user_id: userId,
         status: 'new',
       })
       .select('id')

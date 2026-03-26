@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react'
 import { supabase } from '@/lib/supabase-client'
 
-type Tab = 'projects' | 'profiles' | 'users' | 'interests'
+type Tab = 'projects' | 'profiles' | 'user_profiles' | 'users' | 'interests'
 
 interface ProjectSubmission {
   id: string
@@ -32,6 +32,17 @@ interface UserAccount {
   avatar_url: string | null
 }
 
+interface UserProfileEntry {
+  id: string
+  created_at: string
+  display_name: string
+  email: string
+  bio: string | null
+  avatar_url: string | null
+  skills: string[] | null
+  profile_visibility: string
+}
+
 interface InterestEntry {
   id: string
   created_at: string
@@ -53,6 +64,7 @@ export default function AdminPage() {
   const [profiles, setProfiles] = useState<ProfileSubmission[]>([])
   const [users, setUsers] = useState<UserAccount[]>([])
   const [interests, setInterests] = useState<InterestEntry[]>([])
+  const [userProfiles, setUserProfiles] = useState<UserProfileEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [actionMsg, setActionMsg] = useState('')
 
@@ -86,14 +98,16 @@ export default function AdminPage() {
 
   async function fetchData() {
     setLoading(true)
-    const [projRes, profRes, intRes] = await Promise.all([
+    const [projRes, profRes, intRes, upRes] = await Promise.all([
       supabase.from('project_submissions').select('id, created_at, project_title, artist_name, artist_email, status').order('created_at', { ascending: false }),
       supabase.from('collaborator_profiles').select('id, created_at, name, email, skills, status').order('created_at', { ascending: false }),
       supabase.from('collaboration_interest').select('id, created_at, name, email, task_title, project_title, experience, status').order('created_at', { ascending: false }),
+      supabase.from('user_profiles').select('id, created_at, display_name, email, bio, avatar_url, skills, profile_visibility').order('created_at', { ascending: false }),
     ])
     setProjects((projRes.data || []) as ProjectSubmission[])
     setProfiles((profRes.data || []) as ProfileSubmission[])
     setInterests((intRes.data || []) as InterestEntry[])
+    setUserProfiles((upRes.data || []) as UserProfileEntry[])
 
     // Fetch users via admin API
     try {
@@ -109,6 +123,26 @@ export default function AdminPage() {
     }
 
     setLoading(false)
+  }
+
+  async function handleUserProfileAction(id: string, action: 'approve' | 'reject') {
+    setActionMsg('')
+    try {
+      const res = await fetch('/api/admin/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'user_profile', id, action, adminPassword: password }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setActionMsg(`Profile ${action === 'approve' ? 'approved' : 'rejected'} successfully.`)
+        fetchData()
+      } else {
+        setActionMsg(data.message || 'Action failed.')
+      }
+    } catch {
+      setActionMsg('Network error.')
+    }
   }
 
   async function handleAction(type: 'project' | 'profile', id: string, action: 'approve' | 'reject') {
@@ -177,6 +211,12 @@ export default function AdminPage() {
     return matchSearch
   }), [users, q])
 
+  const filteredUserProfiles = useMemo(() => userProfiles.filter(up => {
+    const matchSearch = !q || up.display_name.toLowerCase().includes(q) || up.email.toLowerCase().includes(q)
+    const matchStatus = statusFilter === 'all' || up.profile_visibility === statusFilter
+    return matchSearch && matchStatus
+  }), [userProfiles, q, statusFilter])
+
   const filteredInterests = useMemo(() => interests.filter(i => {
     const matchSearch = !q || i.name.toLowerCase().includes(q) || i.email.toLowerCase().includes(q) || (i.project_title || '').toLowerCase().includes(q)
     const matchStatus = statusFilter === 'all' || i.status === statusFilter
@@ -212,6 +252,7 @@ export default function AdminPage() {
   const tabs: { key: Tab; label: string; count: number }[] = [
     { key: 'projects', label: 'Projects', count: projects.length },
     { key: 'profiles', label: 'Profiles', count: profiles.length },
+    { key: 'user_profiles', label: 'User Profiles', count: userProfiles.length },
     { key: 'users', label: 'Users', count: users.length },
     { key: 'interests', label: 'Interests', count: interests.length },
   ]
@@ -238,6 +279,7 @@ export default function AdminPage() {
             {[
               { label: 'Projects', value: projects.length, color: 'var(--color-primary)' },
               { label: 'Profiles', value: profiles.length, color: '#6366f1' },
+              { label: 'User Profiles', value: userProfiles.length, color: '#8b5cf6' },
               { label: 'Users', value: users.length, color: '#f59e0b' },
               { label: 'Interests', value: interests.length, color: '#ec4899' },
             ].map(stat => (
@@ -295,9 +337,19 @@ export default function AdminPage() {
                 style={{ width: 'auto', minWidth: '120px' }}
               >
                 <option value="all">All Status</option>
-                <option value="new">New</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
+                {activeTab === 'user_profiles' ? (
+                  <>
+                    <option value="draft">Draft</option>
+                    <option value="pending">Pending</option>
+                    <option value="published">Published</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="new">New</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                  </>
+                )}
               </select>
             )}
           </div>
@@ -363,6 +415,57 @@ export default function AdminPage() {
                           <>
                             <button className="btn btn--primary btn--sm" onClick={() => handleAction('profile', p.id, 'approve')}>Approve</button>
                             <button className="btn btn--ghost btn--sm" onClick={() => handleAction('profile', p.id, 'reject')}>Reject</button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* User Profiles Tab */}
+          {activeTab === 'user_profiles' && (
+            <section>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>
+                User Profiles ({filteredUserProfiles.length})
+              </h2>
+              {filteredUserProfiles.length === 0 ? (
+                <p style={{ color: 'var(--color-text-muted)' }}>No matching user profiles.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                  {filteredUserProfiles.map(up => (
+                    <div key={up.id} className="admin-item">
+                      <div className="admin-item__info">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                          {up.avatar_url ? (
+                            <img src={up.avatar_url} alt="" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                              {up.display_name?.[0]?.toUpperCase() || '?'}
+                            </div>
+                          )}
+                          <strong>{up.display_name}</strong>
+                        </div>
+                        <span>{up.email}</span>
+                        {up.bio && (
+                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', maxWidth: '400px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                            {up.bio}
+                          </span>
+                        )}
+                        {up.skills && up.skills.length > 0 && (
+                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Skills: {up.skills.join(', ')}</span>
+                        )}
+                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+                          {new Date(up.created_at).toLocaleDateString()} · <span style={{ color: up.profile_visibility === 'published' ? 'var(--color-primary)' : up.profile_visibility === 'pending' ? '#d97706' : 'var(--color-text-muted)' }}>{up.profile_visibility}</span>
+                        </span>
+                      </div>
+                      <div className="admin-item__actions">
+                        {up.profile_visibility === 'pending' && (
+                          <>
+                            <button className="btn btn--primary btn--sm" onClick={() => handleUserProfileAction(up.id, 'approve')}>Approve</button>
+                            <button className="btn btn--ghost btn--sm" onClick={() => handleUserProfileAction(up.id, 'reject')}>Reject</button>
                           </>
                         )}
                       </div>

@@ -49,6 +49,9 @@ export default function ProfileEditPage() {
   // Tab 4 fields
   const [links, setLinks] = useState<any[]>([])
 
+  // Profile visibility
+  const [profileVisibility, setProfileVisibility] = useState<string>('draft')
+
   // Track unsaved changes per tab
   const [dirtyTabs, setDirtyTabs] = useState<Set<string>>(new Set())
 
@@ -69,6 +72,7 @@ export default function ProfileEditPage() {
           setWebsite(data.profile.website || '')
           setSkills(data.profile.skills || [])
           setAvatarUrl(data.profile.avatar_url || null)
+          setProfileVisibility(data.profile.profile_visibility || 'draft')
         }
         const ext = data.extendedProfile
         if (ext) {
@@ -178,6 +182,35 @@ export default function ProfileEditPage() {
     }
   }
 
+  const canSubmitForReview = !!(displayName && bio && avatarUrl)
+
+  async function handleSubmitForReview() {
+    setSaving(true)
+    setMessage(null)
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile_visibility: 'pending' }),
+      })
+      if (res.ok) {
+        setProfileVisibility('pending')
+        setMessage({ type: 'success', text: 'Profile submitted for review!' })
+      } else {
+        const data = await res.json()
+        setMessage({ type: 'error', text: data.message || 'Failed to submit for review.' })
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Network error. Please try again.' })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function slugifyName(text: string) {
+    return text.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+  }
+
   async function saveTab(tab: string) {
     setSaving(true)
     setMessage(null)
@@ -264,6 +297,35 @@ export default function ProfileEditPage() {
       <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)' }}>
         Update your public profile information.
       </p>
+
+      {/* Profile Status Banner */}
+      <div className="profile-status-banner">
+        {profileVisibility === 'draft' && (
+          <>
+            <span className="profile-status-badge profile-status-badge--draft">Draft</span>
+            <p style={{ margin: 0, fontSize: 'var(--text-sm)' }}>Your profile is only visible to you.</p>
+            {canSubmitForReview ? (
+              <button className="btn btn--primary btn--sm" onClick={handleSubmitForReview} disabled={saving}>
+                Submit Profile for Review
+              </button>
+            ) : (
+              <p className="text-muted" style={{ margin: 0, fontSize: 'var(--text-xs)' }}>Complete your name, bio, and avatar to submit for review.</p>
+            )}
+          </>
+        )}
+        {profileVisibility === 'pending' && (
+          <>
+            <span className="profile-status-badge profile-status-badge--pending">Pending Review</span>
+            <p style={{ margin: 0, fontSize: 'var(--text-sm)' }}>Your profile is being reviewed by our team. You&apos;ll be notified when it&apos;s approved.</p>
+          </>
+        )}
+        {profileVisibility === 'published' && (
+          <>
+            <span className="profile-status-badge profile-status-badge--published">Published</span>
+            <p style={{ margin: 0, fontSize: 'var(--text-sm)' }}>Your profile is live on the network. <a href={`/profiles/${slugifyName(displayName)}`} style={{ color: 'var(--color-accent)' }}>View your public profile &rarr;</a></p>
+          </>
+        )}
+      </div>
 
       {message && (
         <div

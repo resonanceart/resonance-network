@@ -6468,3 +6468,45 @@ main {
     text-align: center;
   }
 }
+
+/* =========================
+   PROFILE STATUS BANNER
+   ========================= */
+.profile-status-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.profile-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: 9999px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.profile-status-badge--draft {
+  background: rgba(156, 163, 175, 0.15);
+  color: #6b7280;
+}
+
+.profile-status-badge--pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+}
+
+.profile-status-badge--published {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+}

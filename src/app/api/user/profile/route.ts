@@ -194,6 +194,13 @@ export async function PUT(request: Request) {
       updates.skills = body.skills.map((s: unknown) => sanitizeText(s, 100)).filter(Boolean)
     }
     if (body.onboarding_complete !== undefined) updates.onboarding_complete = Boolean(body.onboarding_complete)
+    if (body.profile_visibility !== undefined) {
+      const validVisibilities = ['draft', 'pending']
+      // Users can only set draft or pending (not published — that requires admin)
+      if (validVisibilities.includes(body.profile_visibility)) {
+        updates.profile_visibility = body.profile_visibility
+      }
+    }
 
     // Handle profile_extended fields
     const extendedFields: Record<string, unknown> = {}

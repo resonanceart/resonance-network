@@ -1,13 +1,15 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { CollaborationTask, Project, Profile } from '@/types'
 import { Badge } from './ui/Badge'
+import { useAuth } from '@/components/AuthProvider'
 import projectsData from '../../data/projects.json'
 import profilesData from '../../data/profiles.json'
 
 export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
+  const { user } = useAuth()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -15,6 +17,7 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [experience, setExperience] = useState('')
+  const [profileLoaded, setProfileLoaded] = useState(false)
 
   const project = (projectsData as Project[]).find(p => p.slug === task.projectId || p.id === task.projectId)
   const leadName = project?.leadArtistName
@@ -22,6 +25,22 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
   const heroImage = project?.heroImage?.url
 
   const categoryVariant = task.category.toLowerCase()
+
+  // Auto-fill from profile when authenticated
+  useEffect(() => {
+    if (user && isFormOpen && !profileLoaded) {
+      fetch('/api/user/profile')
+        .then(res => res.json())
+        .then(data => {
+          if (data.profile) {
+            if (data.profile.display_name) setName(data.profile.display_name)
+            if (data.profile.email) setEmail(data.profile.email)
+          }
+          setProfileLoaded(true)
+        })
+        .catch(() => setProfileLoaded(true))
+    }
+  }, [user, isFormOpen, profileLoaded])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -119,7 +138,28 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
           <div className="form-success" style={{ padding: 'var(--space-3) 0' }}>
             <span className="form-success__icon" aria-hidden="true">✓</span>
             <p style={{ fontSize: 'var(--text-sm)' }}>Sent! The team will reach out soon.</p>
+            {!user && (
+              <p style={{ marginTop: 'var(--space-3)', fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+                <a href="/login?redirect=/dashboard" style={{ color: 'var(--color-primary)' }}>Create an account</a> to track your interests and manage your profile.
+              </p>
+            )}
           </div>
+        ) : user && profileLoaded ? (
+          <form className="task-card__form" onSubmit={handleSubmit}>
+            {error && <p className="form-error" style={{ fontSize: 'var(--text-xs)' }}>{error}</p>}
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)' }}>
+              Submitting as: {name} ({email})
+            </p>
+            <textarea required value={experience} onChange={e => setExperience(e.target.value)} placeholder="Brief relevant experience" rows={2} className="form-textarea" style={{ fontSize: 'var(--text-sm)', padding: 'var(--space-2) var(--space-3)' }} />
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <button type="submit" className="btn btn--primary btn--sm" style={{ flex: 1 }} disabled={isSubmitting}>
+                {isSubmitting ? 'Sending...' : 'Send'}
+              </button>
+              <button type="button" className="btn btn--ghost btn--sm" onClick={() => setIsFormOpen(false)}>
+                Cancel
+              </button>
+            </div>
+          </form>
         ) : (
           <form className="task-card__form" onSubmit={handleSubmit}>
             {error && <p className="form-error" style={{ fontSize: 'var(--text-xs)' }}>{error}</p>}
