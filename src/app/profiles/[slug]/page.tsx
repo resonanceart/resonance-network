@@ -2,6 +2,12 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
+import { ProfileMediaGallery } from '@/components/profile/ProfileMediaGallery'
+import { ProfileTimeline } from '@/components/profile/ProfileTimeline'
+import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabilityBadge'
+import { ProfileToolsMaterials } from '@/components/profile/ProfileToolsMaterials'
+import { ProfileFeaturedWork } from '@/components/profile/ProfileFeaturedWork'
+import { ProfileProjectCardEnhanced } from '@/components/profile/ProfileProjectCardEnhanced'
 import { getProfiles, getProfileBySlug } from '@/lib/data'
 import type { Profile } from '@/types'
 import type { Metadata } from 'next'
@@ -149,6 +155,9 @@ export default async function ProfilePage({ params }: { params: { slug: string }
                   {profile.location}
                 </p>
               )}
+              {profile.availabilityStatus && (
+                <ProfileAvailabilityBadge status={profile.availabilityStatus} note={profile.availabilityNote} />
+              )}
             </div>
             <div className="profile-header__actions">
               {profile.email && (
@@ -185,6 +194,35 @@ export default async function ProfilePage({ params }: { params: { slug: string }
         </div>
       </section>
 
+      {/* Tools & Materials */}
+      {profile.toolsAndMaterials && profile.toolsAndMaterials.length > 0 && (
+        <section className="profile-tools-section">
+          <div className="container">
+            <ProfileToolsMaterials tools={profile.toolsAndMaterials} />
+          </div>
+        </section>
+      )}
+
+      {/* Featured Work */}
+      {profile.projects.some(p => p.isFeatured) && (
+        <section className="profile-featured-section">
+          <div className="container">
+            <p className="section-label">Featured Work</p>
+            <ProfileFeaturedWork projects={profile.projects.filter(p => p.isFeatured)} />
+          </div>
+        </section>
+      )}
+
+      {/* Media Gallery */}
+      {profile.mediaGallery && profile.mediaGallery.length > 0 && (
+        <section className="profile-gallery-section">
+          <div className="container">
+            <p className="section-label">Gallery</p>
+            <ProfileMediaGallery items={profile.mediaGallery} />
+          </div>
+        </section>
+      )}
+
       {/* About / Bio */}
       <section className="profile-about">
         <div className="container">
@@ -209,47 +247,26 @@ export default async function ProfilePage({ params }: { params: { slug: string }
         </section>
       )}
 
-      {/* Portfolio / Projects */}
-      {profile.projects.length > 0 && (
+      {/* Timeline */}
+      {profile.timeline && profile.timeline.length > 0 && (
+        <section className="profile-timeline-section">
+          <div className="container">
+            <p className="section-label">Timeline</p>
+            <h2>Career &amp; Milestones</h2>
+            <ProfileTimeline entries={profile.timeline} />
+          </div>
+        </section>
+      )}
+
+      {/* All Projects (non-featured) */}
+      {profile.projects.filter(p => !p.isFeatured).length > 0 && (
         <section className="profile-work">
           <div className="container">
             <p className="section-label">Work</p>
-            <h2>Selected Projects</h2>
+            <h2>All Projects</h2>
             <div className="profile-work__grid">
-              {profile.projects.map((project, i) => (
-                <div key={i} className="profile-project-card">
-                  {project.image && (
-                    <div className="profile-project-card__image">
-                      <Image
-                        src={project.image}
-                        alt={`Project image for ${project.title}`}
-                        width={600}
-                        height={400}
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                        loading="lazy"
-                        style={{ objectFit: 'cover', width: '100%', height: 'auto' }}
-                      />
-                    </div>
-                  )}
-                  <div className="profile-project-card__body">
-                    <div className="profile-project-card__meta">
-                      {project.year && <span className="profile-project-card__year">{project.year}</span>}
-                      {project.role && <span className="profile-project-card__role">{project.role}</span>}
-                    </div>
-                    <h3 className="profile-project-card__title">
-                      {project.url ? (
-                        project.url.startsWith('http') ? (
-                          <a href={project.url} target="_blank" rel="noopener noreferrer">{project.title}</a>
-                        ) : (
-                          <Link href={project.url}>{project.title}</Link>
-                        )
-                      ) : (
-                        project.title
-                      )}
-                    </h3>
-                    <p className="profile-project-card__desc">{project.description}</p>
-                  </div>
-                </div>
+              {profile.projects.filter(p => !p.isFeatured).map((project, i) => (
+                <ProfileProjectCardEnhanced key={i} project={project} />
               ))}
             </div>
           </div>
