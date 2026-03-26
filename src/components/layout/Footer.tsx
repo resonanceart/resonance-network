@@ -81,7 +81,7 @@ export function Footer() {
           </div>
 
           <div className="footer-bottom">
-            <span className="footer-copyright">&copy; 2026 Resonance Network. All rights reserved.</span>
+            <span className="footer-copyright">&copy; {new Date().getFullYear()} Resonance Network. All rights reserved.</span>
             <nav className="footer-legal" aria-label="Legal">
               <Link href="/privacy">Privacy Policy</Link>
               <Link href="/terms">Terms of Service</Link>

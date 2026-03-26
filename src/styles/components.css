@@ -4980,7 +4980,7 @@ main {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 9999;
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
