@@ -6697,3 +6697,102 @@ main {
     height: 120px;
   }
 }
+
+/* =========================
+   EVALUATION FRAMEWORK
+   ========================= */
+.eval-domains-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+}
+
+.eval-domain {
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-text-muted);
+}
+
+.eval-domain--accent-1 { border-left-color: #14b8a6; }
+.eval-domain--accent-2 { border-left-color: #f59e0b; }
+.eval-domain--accent-3 { border-left-color: #8b5cf6; }
+.eval-domain--accent-4 { border-left-color: #3b82f6; }
+.eval-domain--accent-5 { border-left-color: #22c55e; }
+.eval-domain--accent-6 { border-left-color: #ec4899; }
+.eval-domain--accent-7 { border-left-color: #f97316; }
+.eval-domain--accent-8 { border-left-color: #06b6d4; }
+
+.eval-domain strong {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+}
+
+.eval-domain p {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.eval-fit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+}
+
+.eval-fit-card {
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.eval-fit-card__icon {
+  display: block;
+  font-size: 20px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+  letter-spacing: 2px;
+}
+
+.eval-fit-card__icon--petal {
+  color: var(--color-primary);
+}
+
+.eval-fit-card__icon--full {
+  color: #f59e0b;
+}
+
+.eval-fit-card strong {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-family: var(--font-display);
+}
+
+.eval-fit-card p {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
+
+@media (max-width: 1024px) {
+  .eval-domains-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .eval-domains-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .eval-fit-grid {
+    grid-template-columns: 1fr;
+  }
+}

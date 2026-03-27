@@ -213,6 +213,77 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* How We Evaluate Projects */}
+      <section className="about-section" id="evaluation">
+        <div className="container">
+          <p className="section-label">Evaluation</p>
+          <h2>How We Evaluate Projects</h2>
+          <p className="about-section__intro">Every submission is assessed across eight value domains that reflect our mission. This isn&apos;t a checklist — it&apos;s a lens for understanding how a project resonates with the network&apos;s purpose.</p>
+
+          <h3 style={{ marginTop: 'var(--space-6)', marginBottom: 'var(--space-4)' }}>The Eight Value Domains</h3>
+          <div className="eval-domains-grid">
+            <div className="eval-domain eval-domain--accent-1">
+              <strong>Resonance</strong>
+              <p>Does the project evoke harmony between people, place, and planet?</p>
+            </div>
+            <div className="eval-domain eval-domain--accent-2">
+              <strong>Inspiration</strong>
+              <p>Does it awaken curiosity, beauty, or a sense of wonder?</p>
+            </div>
+            <div className="eval-domain eval-domain--accent-3">
+              <strong>Participation</strong>
+              <p>Does it invite the public into co-creation or shared experience?</p>
+            </div>
+            <div className="eval-domain eval-domain--accent-4">
+              <strong>Transparency</strong>
+              <p>Are goals, needs, and constraints communicated honestly?</p>
+            </div>
+            <div className="eval-domain eval-domain--accent-5">
+              <strong>Regeneration</strong>
+              <p>Does it design for ecological balance and reciprocity?</p>
+            </div>
+            <div className="eval-domain eval-domain--accent-6">
+              <strong>Inclusivity</strong>
+              <p>Does it uplift diverse voices and create open access?</p>
+            </div>
+            <div className="eval-domain eval-domain--accent-7">
+              <strong>Originality</strong>
+              <p>Does it push boundaries in form, material, or concept?</p>
+            </div>
+            <div className="eval-domain eval-domain--accent-8">
+              <strong>Stewardship</strong>
+              <p>Does it demonstrate long-term care for its environment and community?</p>
+            </div>
+          </div>
+
+          <h3 style={{ marginTop: 'var(--space-8)', marginBottom: 'var(--space-4)' }}>Fit Levels</h3>
+          <p className="about-section__intro">Projects don&apos;t need to score perfectly across all domains. We look for meaningful alignment in the areas most relevant to the work.</p>
+          <div className="eval-fit-grid">
+            <div className="eval-fit-card">
+              <span className="eval-fit-card__icon" aria-hidden="true">&#9673;</span>
+              <strong>Core-Fit</strong>
+              <p>Strong alignment in 2&ndash;3 domains. The project has a clear center of gravity and genuine potential. Accepted with guidance on strengthening weaker areas.</p>
+            </div>
+            <div className="eval-fit-card">
+              <span className="eval-fit-card__icon eval-fit-card__icon--petal" aria-hidden="true">&#9673;&#9673;</span>
+              <strong>Petal-Fit</strong>
+              <p>Strong alignment in 4&ndash;5 domains. The project demonstrates breadth and depth — a solid candidate for featured placement and active collaboration matching.</p>
+            </div>
+            <div className="eval-fit-card">
+              <span className="eval-fit-card__icon eval-fit-card__icon--full" aria-hidden="true">&#9673;&#9673;&#9673;</span>
+              <strong>Full-Fit</strong>
+              <p>Strong alignment across 6+ domains. Exceptional projects that embody the network&apos;s values. Prioritized for spotlight features, partnerships, and funding introductions.</p>
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: 'var(--space-8)' }}>
+            <a href="/assets/resonance-evaluation-framework.pdf" target="_blank" className="btn btn--outline">
+              Download Full Evaluation Framework (PDF)
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* By Artists, For Artists */}
       <section className="about-section">
         <div className="container">
