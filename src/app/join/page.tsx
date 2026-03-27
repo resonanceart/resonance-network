@@ -175,6 +175,61 @@ export default function JoinPage() {
           </div>
         </div>
       </section>
+
+      {/* Who Can Submit */}
+      <section className="submit-section">
+        <div className="container">
+          <h2>Who Can Submit</h2>
+          <p>Resonance Network is for creators working on ambitious, values-aligned projects at the intersection of art, architecture, and ecology. You are a good fit if:</p>
+          <ul className="prepare-list">
+            <li>
+              <strong>Large-scale or immersive</strong>
+              <span>Your project is spatial, experiential, or regenerative in nature</span>
+            </li>
+            <li>
+              <strong>Ecologically or socially engaged</strong>
+              <span>Your work engages with ecological or social systems in a meaningful way</span>
+            </li>
+            <li>
+              <strong>Collaboration-ready</strong>
+              <span>You need collaborators, technical expertise, or funding pathways to move forward</span>
+            </li>
+            <li>
+              <strong>Open to curation</strong>
+              <span>You welcome honest feedback and a curatorial process</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      {/* What Happens Next */}
+      <section className="submit-section">
+        <div className="container">
+          <h2>What Happens Next</h2>
+          <ol className="prepare-list">
+            <li>
+              <strong>Create your profile</strong>
+              <span>Name, photo, bio, skills</span>
+            </li>
+            <li>
+              <strong>Submit your project</strong>
+              <span>Vision, images, collaboration needs</span>
+            </li>
+            <li>
+              <strong>Our team reviews</strong>
+              <span>Every project is reviewed personally within two weeks</span>
+            </li>
+            <li>
+              <strong>Accepted projects</strong>
+              <span>Get a public page, collaboration board listing, and visibility to the network</span>
+            </li>
+            <li>
+              <strong>Even if redirected</strong>
+              <span>You receive constructive feedback and an open invitation to resubmit</span>
+            </li>
+          </ol>
+        </div>
+      </section>
     </>
   )
 }
