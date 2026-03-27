@@ -75,7 +75,7 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
           <p className="section-label">Community</p>
           <h1>The People Behind the Work</h1>
           <p className="lead">
-            Artists, architects, engineers, and makers building extraordinary things — together.
+            A curated community of creators, engineers, fabricators, and specialists building immersive and regenerative spatial projects — together.
           </p>
         </div>
       </section>

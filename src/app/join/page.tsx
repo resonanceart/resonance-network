@@ -44,7 +44,7 @@ export default function JoinPage() {
                 </svg>
               </div>
               <h2>Submit a Project</h2>
-              <p className="join-card__desc">You have an ambitious creative project — and you need collaborators, expertise, or pathways to make it real.</p>
+              <p className="join-card__desc">You have a concept-ready spatial project — an installation, pavilion, environment, or public work — and you need the right people to help build it.</p>
               <p className="join-card__outcome">
                 {user
                   ? 'Submit your project from your dashboard and start finding collaborators.'
@@ -78,7 +78,7 @@ export default function JoinPage() {
               <p className="join-card__desc">
                 {user
                   ? 'Update your collaborator profile so project teams can find you.'
-                  : 'You\u2019re an engineer, fabricator, designer, grant writer, or specialist looking for meaningful projects that match your skills and values.'}
+                  : 'You\u2019re an engineer, fabricator, designer, producer, or specialist who wants to work on projects that actually matter \u2014 regenerative, values-aligned, and concept-ready.'}
               </p>
               <p className="join-card__outcome">
                 {user
@@ -86,10 +86,10 @@ export default function JoinPage() {
                   : 'Create your free profile so project teams can discover you and reach out.'}
               </p>
               <ul className="join-card__benefits">
-                <li>Collaborator profile on the network</li>
-                <li>Access to open roles on curated projects</li>
-                <li>Direct connection to project teams</li>
-                <li>Skill-matched project alerts</li>
+                <li>Access a curated pipeline of serious projects ready for your expertise</li>
+                <li>Work on regenerative, values-aligned installations — not commercial campaigns</li>
+                <li>Build long-term relationships with visionary creators, not one-off transactions</li>
+                <li>Your skills are treated as central to the work, not accessory</li>
               </ul>
               <Link
                 href={user ? '/dashboard/profile' : '/login?tab=signup&redirect=/dashboard/welcome'}
@@ -183,7 +183,7 @@ export default function JoinPage() {
           <p>Resonance Network is for creators working on ambitious, values-aligned projects at the intersection of art, architecture, and ecology. You are a good fit if:</p>
           <ul className="prepare-list">
             <li>
-              <strong>Large-scale or immersive</strong>
+              <strong>Immersive or ambitious</strong>
               <span>Your project is spatial, experiential, or regenerative in nature</span>
             </li>
             <li>

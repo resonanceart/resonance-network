@@ -120,7 +120,7 @@ export default function AboutPage() {
             <p className="section-label">Purpose</p>
             <h2>The Gap We Close</h2>
             <p className="about-gap__text">
-              Resonance Network helps ambitious creative projects cross the gap from concept to buildable reality. We curate aligned projects, offer transparent feedback, and connect creators with the expertise, collaborators, and funding pathways they need — so the work gets built without creators sacrificing their financial or emotional well-being.
+              Visionary spatial projects — immersive installations, regenerative pavilions, ecological environments — rarely fail because the vision isn&apos;t strong enough. They stall because creators are isolated from the collaborators, technical expertise, and funding pathways they need. Resonance Network exists to close that gap. We curate for values alignment and readiness, not size.
             </p>
             <blockquote className="about-pullquote about-pullquote--centered">
               <p>Resonance Network should feel like a deep exhale. Creators who arrive here have already done enormous work. What they need isn&apos;t validation — it&apos;s knowing they don&apos;t have to do it alone.</p>
@@ -140,7 +140,7 @@ export default function AboutPage() {
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-4 3.5-7 7-7s7 3 7 7"/></svg>
               </div>
               <h3>Creators</h3>
-              <p>Artists, architects, designers, and interdisciplinary creators with substantive projects beyond the idea stage — large-scale installations, public art, interactive environments, and regenerative buildings.</p>
+              <p>Artists, architects, designers, and interdisciplinary creators with substantive projects beyond the idea stage — immersive installations, public art, interactive environments, and regenerative buildings.</p>
             </div>
             <div className="audience-card">
               <div className="audience-card__icon">
@@ -291,7 +291,7 @@ export default function AboutPage() {
             <p className="section-label">Governance</p>
             <h2>By Artists, For Artists</h2>
             <p className="about-gap__text">
-              This isn&apos;t just a tagline — it&apos;s how we&apos;re built. Resonance Network is created and stewarded by practicing artists and makers who know firsthand how hard it is to carry a large, interdisciplinary project.
+              This isn&apos;t just a tagline — it&apos;s how we&apos;re built. Resonance Network is created and stewarded by practicing artists and makers who know firsthand how hard it is to carry an ambitious, interdisciplinary project.
             </p>
             <p className="about-gap__text">
               The founding team has lived the challenges — budget overruns, isolation, the search for expertise that&apos;s hard to find. That experience shapes every decision we make, from curation criteria to how we give feedback.

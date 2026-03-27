@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     'immersive art',
     'regenerative architecture',
     'ecological design',
-    'large-scale installation',
+    'immersive installation',
     'public art',
     'art collaboration platform',
     'bamboo architecture',
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Resonance Network — Art, Architecture & Ecology at Ambitious Scale',
     description:
-      'An artist-led platform where large-scale art and architecture projects find the collaborators and expertise to get built.',
+      'An artist-led platform where ambitious art and architecture projects find the collaborators and expertise to get built.',
     url: 'https://resonance.network',
     siteName: 'Resonance Network',
     locale: 'en_US',
@@ -108,7 +108,7 @@ const organizationJsonLd = {
     'Regenerative Architecture',
     'Ecological Design',
     'Public Art Commissions',
-    'Large-Scale Installations',
+    'Immersive Installations',
     'Bamboo Architecture',
     'Biophilic Design',
     'Interactive Art',
