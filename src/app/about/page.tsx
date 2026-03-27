@@ -90,8 +90,8 @@ export default function AboutPage() {
               <p>We invite the public into co-creation — transforming art, architecture, and technology into shared rituals of discovery, play, and presence.</p>
             </div>
             <div className="value-card value-card--accent-4">
-              <h3>Integrity</h3>
-              <p>We act with honesty, humility, and coherence across every layer of our work — from material practice to digital systems, from creative process to collective governance.</p>
+              <h3>Transparency</h3>
+              <p>We are clear and honest about processes, constraints, and needs — making project realities visible so collaborators and supporters can engage with trust and informed choice.</p>
             </div>
             <div className="value-card value-card--accent-5">
               <h3>Regeneration</h3>
