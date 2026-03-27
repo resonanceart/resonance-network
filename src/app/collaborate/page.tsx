@@ -1,30 +1,37 @@
 import type { Metadata } from 'next'
+import { getProfiles } from '@/lib/data'
 import tasksData from '../../../data/tasks.json'
 import type { CollaborationTask } from '@/types'
-import { CollaborationBoard } from '@/components/CollaborationBoard'
+import { CommunityPage } from '@/components/CommunityPage'
+
+export const revalidate = 60
 
 export const metadata: Metadata = {
-  title: 'Open Roles — Art Jobs & Creative Collaboration Opportunities',
-  description: 'Find collaboration roles on curated immersive art, regenerative architecture, and ecological design projects — engineering, fabrication, grant writing, and more.',
+  title: 'Community & Open Roles — People, Projects, Collaboration',
+  description: 'Meet the creators and collaborators behind Resonance Network. Find open roles on curated immersive art, architecture, and ecological design projects.',
   alternates: {
     canonical: 'https://resonance.network/collaborate',
   },
   openGraph: {
-    title: 'Art Jobs & Creative Collaboration — Resonance Network',
-    description: 'Open roles on curated art, architecture, and ecology projects — engineering, fabrication, design, grant writing, and more.',
+    title: 'Community & Open Roles — Resonance Network',
+    description: 'Browse artists, engineers, and makers. Find collaboration opportunities on ambitious creative projects.',
     url: 'https://resonance.network/collaborate',
     type: 'website',
     images: [{ url: '/og-image.jpg' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Art Jobs & Creative Collaboration — Resonance Network',
-    description: 'Find meaningful roles on art and architecture projects. Engineering, fabrication, grant writing, and more.',
+    title: 'Community & Open Roles — Resonance Network',
+    description: 'People and projects building ambitious work at the intersection of art, architecture, and ecology.',
     images: [{ url: '/og-image.jpg' }],
   },
 }
 
-export default function CollaboratePage() {
-  const tasks = tasksData as CollaborationTask[]
-  return <CollaborationBoard tasks={tasks} />
+export default async function CollaboratePage() {
+  const [profiles, tasks] = await Promise.all([
+    getProfiles(),
+    Promise.resolve(tasksData as CollaborationTask[]),
+  ])
+
+  return <CommunityPage profiles={profiles} tasks={tasks} />
 }
