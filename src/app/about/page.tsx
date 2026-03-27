@@ -26,18 +26,8 @@ const breadcrumbJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    {
-      '@type': 'ListItem',
-      position: 1,
-      name: 'Home',
-      item: 'https://resonance.network',
-    },
-    {
-      '@type': 'ListItem',
-      position: 2,
-      name: 'About',
-      item: 'https://resonance.network/about',
-    },
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://resonance.network' },
+    { '@type': 'ListItem', position: 2, name: 'About', item: 'https://resonance.network/about' },
   ],
 }
 
@@ -57,69 +47,90 @@ export default function AboutPage() {
           </nav>
           <p className="section-label">About Resonance Network</p>
           <h1 className="about-hero__headline">Built by artists. For artists.</h1>
-          <p className="about-hero__sub">A curated platform where ambitious creative projects find the people and momentum to get built.</p>
+          <p className="about-hero__sub">Resonance Network connects artists, technologists, and cultural builders exploring how immersive architecture and regenerative design can transform collective awareness.</p>
         </div>
       </section>
 
-      {/* Mission */}
+      {/* Mission & Vision */}
       <section className="about-section about-section--alt">
         <div className="container">
-          <div className="about-two-col">
-            <div className="about-two-col__label">
-              <p className="section-label">Mission</p>
-              <h2>The Gap We Close</h2>
+          <div className="mission-vision-grid">
+            <div>
+              <p className="mission-vision__label">Mission</p>
+              <p className="mission-vision__text">
+                Resonance Network connects artists, technologists, and cultural builders exploring how immersive architecture and regenerative design can transform collective awareness. We cultivate collaboration across disciplines to develop works that deepen our relationship to nature, community, and the living systems we inhabit.
+              </p>
             </div>
-            <div className="about-two-col__body">
-              <p className="about-lead-text">Resonance Network helps ambitious creative projects cross the gap from concept to buildable reality.</p>
-              <p>We curate aligned projects, offer transparent feedback, and connect creators with the expertise, collaborators, and funding pathways they need — so the work gets built without creators sacrificing their financial or emotional well-being.</p>
-              <blockquote className="about-pullquote">
-                <p>Resonance Network should feel like a deep exhale. Creators who arrive here have already done enormous work. What they need isn&apos;t validation — it&apos;s knowing they don&apos;t have to do it alone.</p>
-              </blockquote>
+            <div>
+              <p className="mission-vision__label">Vision</p>
+              <p className="mission-vision__text">
+                We envision a world where immersive public art and regenerative design form the cultural infrastructure of the future — fostering shared ritual, ecological stewardship, and creative solidarity across borders.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Core Values */}
-      <section className="about-section">
+      <section className="about-section" id="values">
         <div className="container">
-          <p className="section-label">Values</p>
+          <p className="section-label">Core Values</p>
           <h2>What Guides Us</h2>
           <div className="values-grid">
             <div className="value-card value-card--accent-1">
-              <h3>Inspiration</h3>
-              <p>Every project we feature and story we tell should remind creators why this work matters — and make others want to be part of it.</p>
+              <h3>Resonance</h3>
+              <p>We create experiences that evoke harmony between people, place, and planet — cultivating emotional, spatial, and ecological coherence.</p>
             </div>
             <div className="value-card value-card--accent-2">
-              <h3>Participation</h3>
-              <p>We treat everyone as active participants, not spectators. The network is shaped by the needs, ideas, and contributions of its members.</p>
+              <h3>Inspiration</h3>
+              <p>We pursue beauty, wonder, and transformation as essential forces for cultural renewal. Our works aim to awaken curiosity and reconnect people to the sacred vitality of life.</p>
             </div>
             <div className="value-card value-card--accent-3">
-              <h3>Inclusivity</h3>
-              <p>We uplift diverse voices across disciplines, cultures, and backgrounds — actively seeking perspectives underrepresented in mainstream art and architecture.</p>
+              <h3>Participation</h3>
+              <p>We invite the public into co-creation — transforming art, architecture, and technology into shared rituals of discovery, play, and presence.</p>
             </div>
             <div className="value-card value-card--accent-4">
-              <h3>Originality</h3>
-              <p>We protect space for experimentation over trends. The projects that thrive here are too ambitious, too interdisciplinary, or too unconventional for traditional pathways.</p>
+              <h3>Integrity</h3>
+              <p>We act with honesty, humility, and coherence across every layer of our work — from material practice to digital systems, from creative process to collective governance.</p>
             </div>
             <div className="value-card value-card--accent-5">
               <h3>Regeneration</h3>
-              <p>We favor projects that work in long-term relationship with ecological and social systems — using renewable materials, emphasizing stewardship, and considering the full lifecycle of what we build.</p>
+              <p>We design for ecological balance and reciprocity, ensuring each structure, system, and collaboration contributes back to the living world.</p>
             </div>
             <div className="value-card value-card--accent-6">
-              <h3>Transparency</h3>
-              <p>We&apos;re clear about our processes, criteria, and limitations. Creators always know where they stand and what to do next.</p>
+              <h3>Inclusivity</h3>
+              <p>We uplift diverse voices, cultures, and perspectives — creating open frameworks where creativity thrives through shared access and mutual respect.</p>
             </div>
             <div className="value-card value-card--accent-7">
-              <h3>Integrity</h3>
-              <p>We respect the labor behind each project. Every creator who engages with us — whether accepted or redirected — should feel they were treated with genuine care.</p>
+              <h3>Originality</h3>
+              <p>We embrace innovation, curiosity, and risk-taking to expand the forms and languages of immersive art, architecture, and intelligent design.</p>
+            </div>
+            <div className="value-card value-card--accent-8">
+              <h3>Stewardship</h3>
+              <p>We nurture long-term care for the environments, relationships, and technologies we cultivate — recognizing creation as an ongoing act of responsibility and love.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Who It's For */}
+      {/* The Gap We Close */}
       <section className="about-section about-section--alt">
+        <div className="container">
+          <div className="about-gap">
+            <p className="section-label">Purpose</p>
+            <h2>The Gap We Close</h2>
+            <p className="about-gap__text">
+              Resonance Network helps ambitious creative projects cross the gap from concept to buildable reality. We curate aligned projects, offer transparent feedback, and connect creators with the expertise, collaborators, and funding pathways they need — so the work gets built without creators sacrificing their financial or emotional well-being.
+            </p>
+            <blockquote className="about-pullquote about-pullquote--centered">
+              <p>Resonance Network should feel like a deep exhale. Creators who arrive here have already done enormous work. What they need isn&apos;t validation — it&apos;s knowing they don&apos;t have to do it alone.</p>
+            </blockquote>
+          </div>
+        </div>
+      </section>
+
+      {/* Who It's For */}
+      <section className="about-section">
         <div className="container">
           <p className="section-label">Community</p>
           <h2>Who This Is For</h2>
@@ -150,11 +161,11 @@ export default function AboutPage() {
       </section>
 
       {/* How Curation Works */}
-      <section className="about-section">
+      <section className="about-section about-section--alt" id="process">
         <div className="container">
           <p className="section-label">Process</p>
           <h2>How Curation Works</h2>
-          <p className="about-section__intro">Every project is reviewed for values alignment and readiness to engage. Here&apos;s how it works:</p>
+          <p className="about-section__intro">Every project is reviewed for values alignment and readiness to engage.</p>
           <div className="curation-timeline">
             <div className="curation-timeline__step">
               <div className="curation-timeline__marker">
@@ -203,18 +214,20 @@ export default function AboutPage() {
       </section>
 
       {/* By Artists, For Artists */}
-      <section className="about-section about-section--alt">
+      <section className="about-section">
         <div className="container">
-          <div className="about-two-col">
-            <div className="about-two-col__label">
-              <p className="section-label">Governance</p>
-              <h2>By Artists, For Artists</h2>
-            </div>
-            <div className="about-two-col__body">
-              <p>This isn&apos;t just a tagline — it&apos;s how we&apos;re built. Resonance Network is created and stewarded by practicing artists and makers who know firsthand how hard it is to carry a large, interdisciplinary project.</p>
-              <p>The founding team has lived the challenges — budget overruns, isolation, the search for expertise that&apos;s hard to find. That experience shapes every decision we make, from curation criteria to how we give feedback.</p>
-              <p>The strongest projects grow from love, intention, and collaboration — not from chasing trends. The people running this network are peers, not platform operators. That&apos;s how trust gets built.</p>
-            </div>
+          <div className="about-gap">
+            <p className="section-label">Governance</p>
+            <h2>By Artists, For Artists</h2>
+            <p className="about-gap__text">
+              This isn&apos;t just a tagline — it&apos;s how we&apos;re built. Resonance Network is created and stewarded by practicing artists and makers who know firsthand how hard it is to carry a large, interdisciplinary project.
+            </p>
+            <p className="about-gap__text">
+              The founding team has lived the challenges — budget overruns, isolation, the search for expertise that&apos;s hard to find. That experience shapes every decision we make, from curation criteria to how we give feedback.
+            </p>
+            <p className="about-gap__text">
+              The strongest projects grow from love, intention, and collaboration — not from chasing trends. The people running this network are peers, not platform operators. That&apos;s how trust gets built.
+            </p>
           </div>
         </div>
       </section>
@@ -223,7 +236,7 @@ export default function AboutPage() {
       <section className="about-cta">
         <div className="container">
           <h2>Carrying something ambitious?</h2>
-          <p>You don&apos;t have to build it alone. Tell us what you&apos;re working on.</p>
+          <p>You don&apos;t have to build it alone.</p>
           <Link href="/join" className="btn btn--primary btn--large">
             Join the Network
           </Link>
