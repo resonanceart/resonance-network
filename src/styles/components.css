@@ -1973,59 +1973,6 @@ main {
   line-height: 1.6;
 }
 
-/* "Not" grid */
-.not-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-4);
-  max-width: var(--content-width);
-}
-
-@media (max-width: 768px) {
-  .not-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.not-grid__item {
-  display: flex;
-  gap: var(--space-4);
-  align-items: flex-start;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: var(--space-5);
-}
-
-.not-grid__item .not-icon {
-  flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--color-surface-alt);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-muted);
-}
-
-.not-grid__item strong {
-  display: block;
-  color: var(--color-text);
-  margin-bottom: var(--space-1);
-}
-
-.not-grid__item p {
-  font-size: var(--text-sm);
-  line-height: 1.6;
-  color: var(--color-text-muted);
-}
-
-[data-theme="dark"] .not-grid__item {
-  background: var(--color-card-bg);
-  border-color: var(--color-card-border);
-}
-
 /* Curation timeline */
 .curation-timeline {
   display: grid;
@@ -6669,36 +6616,6 @@ main {
 
 .social-proof__divider {
   opacity: 0.4;
-}
-
-/* =========================
-   "WHAT WE'RE NOT" GRID
-   ========================= */
-.not-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--space-5);
-  margin-top: var(--space-6);
-}
-
-.not-item {
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-}
-
-.not-item strong {
-  display: block;
-  margin-bottom: var(--space-2);
-  font-family: var(--font-display);
-}
-
-.not-item p {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  margin: 0;
-  line-height: 1.6;
 }
 
 @media (max-width: 640px) {
