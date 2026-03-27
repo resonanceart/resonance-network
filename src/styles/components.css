@@ -6942,3 +6942,46 @@ main {
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================
+   JOIN PAGE — BENEFIT CARDS
+   ========================= */
+.join-benefits__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.join-benefit-card {
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-left: 3px solid var(--color-primary);
+}
+
+.join-benefit-card h3 {
+  font-size: var(--text-base);
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+
+.join-benefit-card p {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .join-benefits__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .join-benefits__grid {
+    grid-template-columns: 1fr;
+  }
+}

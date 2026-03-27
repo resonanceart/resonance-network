@@ -398,7 +398,7 @@ export default async function ProjectPage({ params }: { params: { slug: string }
         <div className="container" style={{ display: 'flex', gap: 'var(--space-4)', paddingBottom: 'var(--space-8)', flexWrap: 'wrap' }}>
           <Link href="/" className="btn btn--outline">All Projects</Link>
           <Link href="/collaborate" className="btn btn--outline">All Open Roles</Link>
-          <Link href="/join" className="btn btn--outline">Submit Your Project</Link>
+          <Link href="/join" className="btn btn--outline">Share Your Project</Link>
         </div>
       </nav>
     </article>

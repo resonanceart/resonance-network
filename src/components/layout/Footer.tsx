@@ -71,7 +71,7 @@ export function Footer() {
             <div className="footer-col">
               <p className="footer-col-title">For Creators</p>
               <div className="footer-links">
-                <Link href="/join">Submit a Project</Link>
+                <Link href="/join">Share a Project</Link>
                 <Link href="/about#process">How Curation Works</Link>
                 <Link href="/resources">Resources & Guides</Link>
                 <a href="https://fundrazr.com/72glEe" target="_blank" rel="noopener noreferrer">Support / Donate</a>

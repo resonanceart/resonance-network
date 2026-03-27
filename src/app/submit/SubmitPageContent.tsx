@@ -28,7 +28,7 @@ export function SubmitPageContent() {
   return (
     <section className="submit-form-section" id="submission-form">
       <div className="container">
-        <h2>Submit Your Project</h2>
+        <h2>Share Your Project</h2>
         <div style={{
           padding: 'var(--space-6)',
           borderRadius: 'var(--radius-lg)',

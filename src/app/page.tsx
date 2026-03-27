@@ -50,9 +50,9 @@ export default async function HomePage() {
           <div className="site-hero__actions">
             <AuthAwareCTA
               loggedOutHref="/login?tab=signup&redirect=/dashboard/projects/new"
-              loggedOutLabel="Submit Your Project"
+              loggedOutLabel="Share Your Project"
               loggedInHref="/dashboard/projects/new"
-              loggedInLabel="Submit Your Project"
+              loggedInLabel="Share Your Project"
               className="btn btn--hero"
             />
             <AuthAwareCTA
@@ -111,9 +111,9 @@ export default async function HomePage() {
             <a href="/collaborate" className="btn btn--primary btn--large">Find Your Role</a>
             <AuthAwareCTA
               loggedOutHref="/join"
-              loggedOutLabel="Submit Your Project"
+              loggedOutLabel="Share Your Project"
               loggedInHref="/dashboard/projects/new"
-              loggedInLabel="Submit Your Project"
+              loggedInLabel="Share Your Project"
               className="btn btn--outline btn--large"
             />
           </div>

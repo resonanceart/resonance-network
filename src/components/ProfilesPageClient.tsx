@@ -56,7 +56,7 @@ export function ProfilesPageClient({ profiles }: { profiles: Profile[] }) {
         <div className="container">
           <div className="profiles-dual-cta__grid">
             <Link href="/join" className="profiles-dual-cta__card">
-              <h3>Submit a Project</h3>
+              <h3>Share a Project</h3>
               <p>Have an ambitious project? Share it with the network and find the right people.</p>
               <span className="btn btn--primary">Get Started</span>
             </Link>

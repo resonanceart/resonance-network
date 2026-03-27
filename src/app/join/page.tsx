@@ -33,7 +33,7 @@ export default function JoinPage() {
       <section className="join-paths">
         <div className="container">
           <div className="join-cards">
-            {/* Card 1: Submit a Project */}
+            {/* Card 1: Share a Project */}
             <div className="join-card join-card--project">
               <div className="join-card__icon">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -43,12 +43,12 @@ export default function JoinPage() {
                   <rect x="14" y="14" width="7" height="7" rx="1"/>
                 </svg>
               </div>
-              <h2>Submit a Project</h2>
+              <h2>Share a Project</h2>
               <p className="join-card__desc">You have a concept-ready spatial project — an installation, pavilion, environment, or public work — and you need the right people to help build it.</p>
               <p className="join-card__outcome">
                 {user
-                  ? 'Submit your project from your dashboard and start finding collaborators.'
-                  : 'Create your free profile, then submit your project — all in one flow.'}
+                  ? 'Share your project from your dashboard and start finding collaborators.'
+                  : 'Create your free profile, then share your project — all in one flow.'}
               </p>
               <ul className="join-card__benefits">
                 <li>Project page with gallery and overview</li>
@@ -60,7 +60,7 @@ export default function JoinPage() {
                 href={user ? '/dashboard/projects/new' : '/login?tab=signup&redirect=/dashboard/welcome'}
                 className="btn btn--primary btn--large join-card__cta"
               >
-                {user ? 'Submit a Project' : 'Get Started'} &rarr;
+                {user ? 'Share a Project' : 'Get Started'} &rarr;
               </Link>
             </div>
 
@@ -122,10 +122,43 @@ export default function JoinPage() {
         </div>
       </section>
 
+      {/* What You Get */}
+      <section className="submit-section">
+        <div className="container">
+          <h2>What You Get</h2>
+          <div className="join-benefits__grid">
+            <div className="join-benefit-card">
+              <h3>Curated Project Page</h3>
+              <p>A professional, visual home for your work — gallery, team, collaboration board — that you can share with funders, venues, and partners.</p>
+            </div>
+            <div className="join-benefit-card">
+              <h3>Collaboration Matching</h3>
+              <p>Your project is visible to a curated community of engineers, fabricators, producers, and specialists actively seeking meaningful work.</p>
+            </div>
+            <div className="join-benefit-card">
+              <h3>Curator Feedback</h3>
+              <p>Every project receives a personal review from practicing artists and makers — honest, specific, and designed to help your work succeed.</p>
+            </div>
+            <div className="join-benefit-card">
+              <h3>Community &amp; Resources</h3>
+              <p>Access a growing network of creators, experts, and cultural builders working at the intersection of art, architecture, and ecology.</p>
+            </div>
+            <div className="join-benefit-card">
+              <h3>Credibility Signal</h3>
+              <p>Being on Resonance Network tells funders and venues that your project has been reviewed and meets a standard of rigor and values alignment.</p>
+            </div>
+            <div className="join-benefit-card">
+              <h3>No Algorithms</h3>
+              <p>No feeds, no follower counts, no engagement metrics. This is a working space where projects are discovered on merit, not popularity.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Submission Info — visible to everyone */}
       <section className="submit-section">
         <div className="container">
-          <h2>Before You Submit a Project</h2>
+          <h2>Before You Share a Project</h2>
           <p className="submit-section__intro">Gather these materials so your project can shine:</p>
           <ul className="prepare-list">
             <li>
@@ -157,7 +190,7 @@ export default function JoinPage() {
           <h2>Frequently Asked Questions</h2>
           <div className="faq-list">
             <div className="faq-item">
-              <h3>What happens after I submit?</h3>
+              <h3>What happens after I share my project?</h3>
               <p>Our curation team reviews every project personally within two weeks. You&apos;ll hear from us either way.</p>
             </div>
             <div className="faq-item">
@@ -212,7 +245,7 @@ export default function JoinPage() {
               <span>Name, photo, bio, skills</span>
             </li>
             <li>
-              <strong>Submit your project</strong>
+              <strong>Share your project</strong>
               <span>Vision, images, collaboration needs</span>
             </li>
             <li>

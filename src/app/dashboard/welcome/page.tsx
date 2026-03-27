@@ -282,7 +282,7 @@ export default function WelcomePage() {
               <div className="onboarding__feature">
                 <span className="onboarding__feature-icon" aria-hidden="true">&#9679;</span>
                 <div>
-                  <strong>Submit Projects</strong>
+                  <strong>Share Projects</strong>
                   <p>Bring your ambitious ideas to the network.</p>
                 </div>
               </div>
@@ -381,7 +381,7 @@ export default function WelcomePage() {
         {step === 4 && (
           <div className="onboarding__panel">
             <h1 className="onboarding__title">Do You Have a Project?</h1>
-            <p className="onboarding__subtitle">You can always submit a project later from your dashboard.</p>
+            <p className="onboarding__subtitle">You can always share a project later from your dashboard.</p>
             <div className="onboarding__decision-cards">
               <button
                 className={`onboarding__decision-card${hasProject === true ? ' onboarding__decision-card--selected' : ''}`}
@@ -392,7 +392,7 @@ export default function WelcomePage() {
                   <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
                 </svg>
                 <h3>Yes, I have a project</h3>
-                <p>I want to submit my project and find collaborators.</p>
+                <p>I want to share my project and find collaborators.</p>
               </button>
               <button
                 className={`onboarding__decision-card${hasProject === false ? ' onboarding__decision-card--selected' : ''}`}
@@ -565,7 +565,7 @@ export default function WelcomePage() {
             <h1 className="onboarding__title">You&apos;re All Set!</h1>
             <p className="onboarding__subtitle">
               {projectSubmitted
-                ? 'Your profile is live and your project has been submitted for review. We\u2019ll notify you when it\u2019s approved.'
+                ? 'Your profile is live and your project has been shared for review. We\u2019ll notify you when it\u2019s approved.'
                 : 'Your profile is ready. Here\u2019s where to go from here:'}
             </p>
             {projectSubmitted && previewUrl && (
@@ -576,7 +576,7 @@ export default function WelcomePage() {
             <div className="onboarding__links">
               <Link href="/dashboard" className="btn btn--primary" style={{ width: '100%' }}>Go to Dashboard</Link>
               {!projectSubmitted && (
-                <Link href="/dashboard/projects/new" className="btn btn--outline" style={{ width: '100%' }}>Submit a Project</Link>
+                <Link href="/dashboard/projects/new" className="btn btn--outline" style={{ width: '100%' }}>Share a Project</Link>
               )}
               <Link href="/collaborate" className="btn btn--outline" style={{ width: '100%' }}>Browse Open Roles</Link>
             </div>
@@ -603,7 +603,7 @@ export default function WelcomePage() {
               onClick={handleNext}
               disabled={saving || (step === 5 && hasProject === true && (!projectTitle || !oneSentence || !vision)) || (step === 7 && hasProject === true && !heroImageFile)}
             >
-              {saving ? 'Saving...' : step === 7 ? 'Submit Project' : 'Next'}
+              {saving ? 'Saving...' : step === 7 ? 'Share Project' : 'Next'}
             </button>
           ) : (
             <button className="btn btn--primary" onClick={completeOnboarding} disabled={saving}>
