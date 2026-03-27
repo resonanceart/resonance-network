@@ -2087,31 +2087,43 @@ main {
 /* Collaboration Tabs */
 .collab-tabs-section {
   padding: var(--space-4) 0;
+  text-align: center;
+}
+
+.collab-tabs-section__intro {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
 }
 
 .collab-tabs {
   display: inline-flex;
-  gap: var(--space-1);
+  gap: 0;
   background: var(--color-surface-raised);
-  border-radius: 999px;
+  border-radius: 9999px;
   padding: 4px;
-  border: 1px solid var(--color-border);
+  border: 2px solid var(--color-border);
+  max-width: 420px;
+  width: 100%;
 }
 
 .collab-tab {
-  padding: var(--space-2) var(--space-5);
-  min-height: 40px;
+  flex: 1;
+  padding: var(--space-2) var(--space-4);
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
-  border-radius: 999px;
+  justify-content: center;
+  gap: var(--space-2);
+  border-radius: 9999px;
   border: none;
   background: transparent;
   font-family: var(--font-body);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text-muted);
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all 0.2s ease;
 }
 
 .collab-tab:hover {
@@ -2119,13 +2131,24 @@ main {
 }
 
 .collab-tab--active {
-  background: var(--color-bg);
-  color: var(--color-text);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.collab-tab--active:hover {
+  color: #fff;
+}
+
+.collab-tab__count {
+  font-size: 0.7rem;
+  opacity: 0.7;
+  font-weight: 500;
 }
 
 [data-theme="dark"] .collab-tab--active {
-  background: var(--color-surface-raised);
+  background: var(--color-primary);
+  color: #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
@@ -2883,7 +2906,7 @@ main {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: var(--space-6) var(--space-5);
+  padding: var(--space-3) var(--space-3);
   border-radius: var(--radius-lg);
   background: var(--color-card-bg);
   border: 1px solid var(--color-card-border);
@@ -2891,7 +2914,7 @@ main {
               box-shadow var(--duration-normal) var(--ease-out);
   text-decoration: none;
   color: inherit;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 
 .profile-card:hover {
@@ -2900,11 +2923,11 @@ main {
 }
 
 .profile-card__avatar {
-  width: 120px;
-  height: 120px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   overflow: hidden;
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-2);
   border: 3px solid var(--color-border);
 }
 
@@ -2912,7 +2935,7 @@ main {
   display: flex;
   gap: var(--space-2);
   justify-content: center;
-  margin-top: var(--space-3);
+  margin-top: var(--space-2);
 }
 
 .profile-card__avatar img {
@@ -2923,23 +2946,23 @@ main {
 
 .profile-card__name {
   font-family: var(--font-display);
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   font-weight: 600;
   margin: 0;
 }
 
 .profile-card__title {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: var(--color-text-secondary);
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
 .profile-card__location {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
-  font-size: var(--text-xs);
+  gap: 4px;
+  font-size: 0.7rem;
   color: var(--color-text-muted);
   margin: 0;
 }
@@ -2947,22 +2970,23 @@ main {
 .profile-card__specialties {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1);
+  gap: 4px;
   justify-content: center;
-  margin-top: var(--space-1);
+  margin-top: 2px;
   max-height: 2rem;
   overflow: hidden;
 }
 
 .profile-card__specialties .badge {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
+  padding: 2px 6px;
 }
 
 .profile-card__projects {
   font-size: var(--text-xs);
   color: var(--color-primary);
   font-weight: 500;
-  margin: var(--space-1) 0 0;
+  margin: 0;
 }
 
 /* Profiles CTA */
@@ -6620,7 +6644,7 @@ main {
 
 @media (max-width: 640px) {
   .profile-card__avatar {
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
   }
 }

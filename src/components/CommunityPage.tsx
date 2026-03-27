@@ -13,7 +13,7 @@ const CATEGORIES = ['Engineering', 'Architecture', 'Fabrication', 'Production', 
 export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks: CollaborationTask[] }) {
   const { user } = useAuth()
   const projects = projectsData as Project[]
-  const [activeTab, setActiveTab] = useState<'people' | 'roles'>('people')
+  const [activeTab, setActiveTab] = useState<'people' | 'roles'>('roles')
 
   // People tab state
   const [search, setSearch] = useState('')
@@ -101,22 +101,25 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
       {/* Tab Toggle */}
       <section className="collab-tabs-section">
         <div className="container">
+          <p className="collab-tabs-section__intro">
+            Browse available collaboration roles or discover the people behind the projects.
+          </p>
           <div className="collab-tabs" role="tablist" aria-label="Community view">
-            <button
-              role="tab"
-              aria-selected={activeTab === 'people'}
-              className={`collab-tab${activeTab === 'people' ? ' collab-tab--active' : ''}`}
-              onClick={() => setActiveTab('people')}
-            >
-              People
-            </button>
             <button
               role="tab"
               aria-selected={activeTab === 'roles'}
               className={`collab-tab${activeTab === 'roles' ? ' collab-tab--active' : ''}`}
               onClick={() => setActiveTab('roles')}
             >
-              Open Roles
+              Available Roles <span className="collab-tab__count">({tasks.length})</span>
+            </button>
+            <button
+              role="tab"
+              aria-selected={activeTab === 'people'}
+              className={`collab-tab${activeTab === 'people' ? ' collab-tab--active' : ''}`}
+              onClick={() => setActiveTab('people')}
+            >
+              People <span className="collab-tab__count">({profiles.length})</span>
             </button>
           </div>
         </div>
@@ -180,9 +183,9 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
                         <Image
                           src={profile.photo}
                           alt={`Photo of ${profile.name}`}
-                          width={120}
-                          height={120}
-                          sizes="120px"
+                          width={150}
+                          height={150}
+                          sizes="150px"
                           loading="lazy"
                           style={{ objectFit: 'cover' }}
                         />
