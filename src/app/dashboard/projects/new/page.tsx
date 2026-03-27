@@ -51,7 +51,6 @@ export default function NewProjectPage() {
       </Link>
       <h1 style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>Submit New Project</h1>
       <ProjectSubmissionForm
-        mode="authenticated"
         userProfile={{ name: profile.display_name, email: profile.email, website: profile.website }}
         onSuccess={() => router.push('/dashboard/projects')}
       />

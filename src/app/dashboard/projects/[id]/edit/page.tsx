@@ -111,7 +111,6 @@ export default function EditProjectPage() {
 
       {projectData && (
         <ProjectSubmissionForm
-          mode="authenticated"
           submissionId={projectId}
           initialData={projectData}
           userProfile={{ name: profile.display_name, email: profile.email, website: profile.website }}
