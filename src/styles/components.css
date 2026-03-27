@@ -582,7 +582,7 @@ main {
 }
 
 .hero-intro__inner {
-  max-width: 52ch;
+  max-width: 960px;
   margin: 0 auto;
   padding: 0 var(--gutter);
 }
@@ -615,6 +615,41 @@ main {
 
 .hero-intro__link:hover {
   color: var(--color-primary-hover);
+}
+
+.hero-promises {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  text-align: left;
+}
+
+.hero-promises__card {
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hero-promises__card h3 {
+  font-size: var(--text-base);
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+  color: var(--color-text);
+}
+
+.hero-promises__card p {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .hero-promises {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* =========================

@@ -5,22 +5,22 @@ import { getProjects } from '@/lib/data'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Resonance Network — Where Ambitious Creative Projects Find Their People',
-  description: 'Resonance Network connects artists, architects, and makers with collaborators, expertise, and funding to build large-scale immersive and regenerative projects.',
+  title: 'Resonance Network — A Curated Guild for Immersive and Regenerative Projects',
+  description: 'Resonance Network connects creators of concept-ready immersive and regenerative spatial projects with aligned collaborators, honest feedback, and the momentum to get built.',
   alternates: {
     canonical: 'https://resonance.network',
   },
   openGraph: {
-    title: 'Resonance Network — Where Ambitious Creative Projects Find Their People',
-    description: 'Large-scale art and architecture projects, curated and connected with the collaborators to get built.',
+    title: 'Resonance Network — A Curated Guild for Immersive and Regenerative Projects',
+    description: 'Between proposal and build — we surround serious spatial projects with aligned collaborators and the momentum to get built.',
     url: 'https://resonance.network',
     type: 'website',
     images: [{ url: '/og-image.jpg' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Resonance Network — Where Ambitious Creative Projects Find Their People',
-    description: 'An artist-led platform connecting creators with collaborators to build ambitious work at the intersection of art and ecology.',
+    title: 'Resonance Network — A Curated Guild for Immersive and Regenerative Projects',
+    description: 'A curated platform connecting creators of immersive and regenerative spatial projects with collaborators at the intersection of art and ecology.',
     images: [{ url: '/og-image.jpg' }],
   },
 }
@@ -45,42 +45,56 @@ export default async function HomePage() {
         />
         <div className="site-hero__overlay"></div>
         <div className="site-hero__content">
-          <h1 className="site-hero__tagline">Where ambitious creative projects find the people to get built.</h1>
+          <h1 className="site-hero__tagline">A curated guild for concept-ready immersive and regenerative projects.</h1>
+          <p className="site-hero__sub">Between proposal and build — we surround serious spatial projects with aligned collaborators, honest feedback, and the momentum to get built.</p>
           <div className="site-hero__actions">
             <AuthAwareCTA
               loggedOutHref="/login?tab=signup&redirect=/dashboard/projects/new"
-              loggedOutLabel="Submit a Project"
+              loggedOutLabel="Submit Your Project"
               loggedInHref="/dashboard/projects/new"
-              loggedInLabel="Submit a Project"
+              loggedInLabel="Submit Your Project"
               className="btn btn--hero"
             />
             <AuthAwareCTA
               loggedOutHref="/collaborate"
-              loggedOutLabel="Find a Role"
+              loggedOutLabel="Find Your Role"
               loggedInHref="/collaborate"
-              loggedInLabel="Find a Role"
+              loggedInLabel="Find Your Role"
               className="btn btn--hero btn--hero-outline"
             />
           </div>
         </div>
       </section>
 
-      {/* Intro section — below the hero */}
+      {/* Why bring your project here? */}
       <section className="hero-intro">
         <div className="hero-intro__inner">
-          <h2 className="hero-intro__heading">The gap between vision and reality is not a lack of talent. It&apos;s a lack of connection.</h2>
-          <p className="hero-intro__body">Across art, architecture, and regenerative design, extraordinary spatial projects rarely make it past the proposal stage — not because the vision isn&apos;t strong, but because creators are isolated from the technical expertise, production partners, and funding pathways they need. Resonance Network closes that gap.</p>
+          <h2 className="hero-intro__heading">Why bring your project here?</h2>
+          <div className="hero-promises">
+            <div className="hero-promises__card">
+              <h3>You don&apos;t have to carry this alone</h3>
+              <p>We surround serious projects with aligned collaborators — engineers, fabricators, producers, grant writers — and honest feedback at every stage.</p>
+            </div>
+            <div className="hero-promises__card">
+              <h3>A professional project page you can share</h3>
+              <p>Your project gets a curated page with gallery, team, and collaboration board — a living document you can send to funders, venues, and partners.</p>
+            </div>
+            <div className="hero-promises__card">
+              <h3>&quot;Not yet&quot; isn&apos;t a no</h3>
+              <p>If your project isn&apos;t ready, you get specific guidance on what to strengthen — not a silent rejection. We want to see your work succeed.</p>
+            </div>
+          </div>
           <a href="/about" className="hero-intro__link">Learn how it works →</a>
         </div>
       </section>
 
       {/* Social proof */}
       <div className="social-proof">
-        <span className="social-proof__stat">9 curated projects</span>
+        <span className="social-proof__stat">9 curated spatial projects</span>
         <span className="social-proof__divider" aria-hidden="true">&middot;</span>
-        <span className="social-proof__stat">30+ open roles</span>
+        <span className="social-proof__stat">30+ collaboration roles</span>
         <span className="social-proof__divider" aria-hidden="true">&middot;</span>
-        <span className="social-proof__stat">3 countries represented</span>
+        <span className="social-proof__stat">Immersive art, regenerative architecture, ecological design</span>
       </div>
 
       {/* Project Gallery with filtering */}
@@ -92,14 +106,14 @@ export default async function HomePage() {
       <section className="cta-bottom">
         <div className="cta-bottom__inner">
           <h2 className="cta-bottom__heading">Your expertise belongs on work that matters.</h2>
-          <p className="cta-bottom__body">Whether you&apos;re a structural engineer, grant writer, fabricator, lighting designer, or production specialist — there are projects here that need exactly what you do.</p>
+          <p className="cta-bottom__body">Whether you&apos;re a structural engineer, lighting designer, fabricator, grant writer, or spatial audio specialist — there are concept-ready projects here that need exactly what you do. This isn&apos;t a job board. It&apos;s a guild.</p>
           <div className="cta-bottom__actions">
-            <a href="/collaborate" className="btn btn--primary btn--large">Find Open Roles</a>
+            <a href="/collaborate" className="btn btn--primary btn--large">Find Your Role</a>
             <AuthAwareCTA
               loggedOutHref="/join"
-              loggedOutLabel="Submit a Project"
+              loggedOutLabel="Submit Your Project"
               loggedInHref="/dashboard/projects/new"
-              loggedInLabel="Submit a Project"
+              loggedInLabel="Submit Your Project"
               className="btn btn--outline btn--large"
             />
           </div>
