@@ -10,7 +10,6 @@ const navLinks = [
   { href: '/#projects', label: 'Projects' },
   { href: '/collaborate', label: 'Community' },
   { href: '/about', label: 'About' },
-  { href: '/submit', label: 'Submit' },
 ]
 
 export function Header() {

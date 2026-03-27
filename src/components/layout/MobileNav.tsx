@@ -67,7 +67,6 @@ export function MobileNav({ isOpen, onClose }: Props) {
         <Link href="/#projects" onClick={onClose}>Projects</Link>
         <Link href="/collaborate" onClick={onClose}>Community</Link>
         <Link href="/about" onClick={onClose}>About</Link>
-        <Link href="/submit" onClick={onClose}>Submit</Link>
         <Link href="/join" onClick={onClose}>Join the Network</Link>
         {!authLoading && (
           user ? (

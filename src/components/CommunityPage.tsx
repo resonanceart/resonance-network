@@ -175,14 +175,14 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
                 {filteredProfiles.map(profile => {
                   const projectCount = getProjectCount(profile)
                   return (
-                    <Link key={profile.id} href={`/profiles/${profile.slug}`} className="profile-card">
+                    <div key={profile.id} className="profile-card">
                       <div className="profile-card__avatar">
                         <Image
                           src={profile.photo}
                           alt={`Photo of ${profile.name}`}
-                          width={80}
-                          height={80}
-                          sizes="80px"
+                          width={120}
+                          height={120}
+                          sizes="120px"
                           loading="lazy"
                           style={{ objectFit: 'cover' }}
                         />
@@ -208,7 +208,15 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
                           {projectCount} project{projectCount !== 1 ? 's' : ''} on Resonance
                         </p>
                       )}
-                    </Link>
+                      <div className="profile-card__actions">
+                        <Link href={`/profiles/${profile.slug}`} className="btn btn--outline btn--sm">View Profile</Link>
+                        {profile.email ? (
+                          <a href={`mailto:${profile.email}?subject=Collaboration%20Inquiry%20via%20Resonance%20Network`} className="btn btn--primary btn--sm">Connect</a>
+                        ) : (
+                          <Link href={`/profiles/${profile.slug}`} className="btn btn--primary btn--sm">Connect</Link>
+                        )}
+                      </div>
+                    </div>
                   )
                 })}
                 {filteredProfiles.length === 0 && (

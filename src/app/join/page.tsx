@@ -121,6 +121,60 @@ export default function JoinPage() {
           )}
         </div>
       </section>
+
+      {/* Submission Info — visible to everyone */}
+      <section className="submit-section">
+        <div className="container">
+          <h2>Before You Submit a Project</h2>
+          <p className="submit-section__intro">Gather these materials so your project can shine:</p>
+          <ul className="prepare-list">
+            <li>
+              <strong>Lead artist information</strong>
+              <span>Name, bio, portfolio or website link</span>
+            </li>
+            <li>
+              <strong>Project details</strong>
+              <span>Title, short description (2&ndash;3 sentences), and full project story/narrative</span>
+            </li>
+            <li>
+              <strong>Classification</strong>
+              <span>Project domains (what it is), pathways (how it may be realized), and current stage</span>
+            </li>
+            <li>
+              <strong>Images and renders</strong>
+              <span>Hero image plus 3&ndash;5 gallery images showing the project concept, materials, or models</span>
+            </li>
+            <li>
+              <strong>Collaboration needs</strong>
+              <span>Specific roles or expertise your project is seeking</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section className="submit-section" id="faq">
+        <div className="container">
+          <h2>Frequently Asked Questions</h2>
+          <div className="faq-list">
+            <div className="faq-item">
+              <h3>What happens after I submit?</h3>
+              <p>Our curation team reviews every project personally within two weeks. You&apos;ll hear from us either way.</p>
+            </div>
+            <div className="faq-item">
+              <h3>What if my project gets rejected?</h3>
+              <p>You&apos;ll get personal feedback and an open invitation to resubmit. The answer is never &quot;no&quot; — it&apos;s &quot;not yet.&quot;</p>
+            </div>
+            <div className="faq-item">
+              <h3>Is there a fee?</h3>
+              <p>No. Resonance Network is free for creators and collaborators.</p>
+            </div>
+            <div className="faq-item">
+              <h3>What happens after approval?</h3>
+              <p>We&apos;ll build your project page — a curated, visual home for your work — and list your collaboration needs on the network.</p>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   )
 }

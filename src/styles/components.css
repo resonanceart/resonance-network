@@ -2953,12 +2953,19 @@ main {
 }
 
 .profile-card__avatar {
-  width: 80px;
-  height: 80px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   overflow: hidden;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
   border: 3px solid var(--color-border);
+}
+
+.profile-card__actions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  margin-top: var(--space-3);
 }
 
 .profile-card__avatar img {
@@ -6692,4 +6699,11 @@ main {
   color: var(--color-text-secondary);
   margin: 0;
   line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .profile-card__avatar {
+    width: 100px;
+    height: 100px;
+  }
 }
