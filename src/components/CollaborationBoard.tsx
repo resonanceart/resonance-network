@@ -9,22 +9,6 @@ import type { CollaborationTask, Profile, Project } from '@/types'
 import { CollaborationTaskCard } from './CollaborationTaskCard'
 import { Badge } from './ui/Badge'
 
-async function compressImage(file: File, maxWidth = 1200, quality = 0.7): Promise<string> {
-  return new Promise((resolve) => {
-    const img = new window.Image()
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      const ratio = Math.min(maxWidth / img.width, 1)
-      canvas.width = img.width * ratio
-      canvas.height = img.height * ratio
-      const ctx = canvas.getContext('2d')!
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-      resolve(canvas.toDataURL('image/jpeg', quality))
-    }
-    img.src = URL.createObjectURL(file)
-  })
-}
-
 const CATEGORIES = ['Engineering', 'Architecture', 'Fabrication', 'Production', 'Funding', 'Admin', 'Other']
 
 const breadcrumbJsonLd = {
@@ -59,20 +43,6 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
 
   const profiles = (profilesData as Profile[]).filter(p => p.status === 'published')
   const allProjects = projectsData as Project[]
-
-  // Profile form state
-  const [profileName, setProfileName] = useState('')
-  const [profileEmail, setProfileEmail] = useState('')
-  const [profileBio, setProfileBio] = useState('')
-  const [profileLocation, setProfileLocation] = useState('')
-  const [profileHeadshot, setProfileHeadshot] = useState<File | null>(null)
-  const [profileSkills, setProfileSkills] = useState('')
-  const [profileWebsite, setProfileWebsite] = useState('')
-  const [profileAvailability, setProfileAvailability] = useState('')
-  const [isProfileSubmitting, setIsProfileSubmitting] = useState(false)
-  const [isProfileSubmitted, setIsProfileSubmitted] = useState(false)
-  const [profilePreviewUrl, setProfilePreviewUrl] = useState('')
-  const [profileError, setProfileError] = useState('')
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -110,41 +80,6 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
       return typeMatch && textMatch
     })
   }, [profiles, peopleSearch, peopleTypeFilter])
-
-  async function handleProfileSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setIsProfileSubmitting(true)
-    setProfileError('')
-    try {
-      const headshotBase64 = profileHeadshot ? await compressImage(profileHeadshot, 400, 0.8) : null
-
-      const res = await fetch('/api/availability', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: profileName,
-          email: profileEmail,
-          bio: profileBio || undefined,
-          location: profileLocation || undefined,
-          headshotData: headshotBase64,
-          skills: profileSkills,
-          website: profileWebsite || undefined,
-          availability: profileAvailability || undefined,
-        }),
-      })
-      const data = await res.json()
-      if (data.success) {
-        setIsProfileSubmitted(true)
-        if (data.previewUrl) setProfilePreviewUrl(data.previewUrl)
-      } else {
-        setProfileError(data.message || 'Something went wrong.')
-      }
-    } catch {
-      setProfileError('Network error. Please try again.')
-    } finally {
-      setIsProfileSubmitting(false)
-    }
-  }
 
   return (
     <>

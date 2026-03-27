@@ -132,7 +132,7 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
             <button className="btn btn--primary btn--full btn--sm" onClick={() => setIsFormOpen(true)}>
               I&apos;m Interested
             </button>
-            <p className="text-muted" style={{ fontSize: 'var(--text-xs)', marginTop: 'var(--space-1)', textAlign: 'center' }}>Opens a short interest form — no account needed</p>
+            <p className="text-muted" style={{ fontSize: 'var(--text-xs)', marginTop: 'var(--space-1)', textAlign: 'center' }}>Opens a short interest form</p>
           </div>
         ) : isSubmitted ? (
           <div className="form-success" style={{ padding: 'var(--space-3) 0' }}>
