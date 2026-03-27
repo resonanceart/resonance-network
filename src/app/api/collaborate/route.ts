@@ -33,28 +33,29 @@ export async function POST(request: Request) {
 
     const data = await request.json()
 
-    // Optional auth: link interest to user account if logged in
-    let userId: string | null = null
-    try {
-      const { createSupabaseServerClient } = await import('@/lib/supabase-server')
-      const supabase = await createSupabaseServerClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        userId = user.id
-        // Fetch user profile for defaults
-        const { data: userProfile } = await supabaseAdmin
-          .from('user_profiles')
-          .select('display_name, email')
-          .eq('id', user.id)
-          .single()
-        if (userProfile) {
-          if (!data.name && userProfile.display_name) data.name = userProfile.display_name
-          if (!data.email && userProfile.email) data.email = userProfile.email
-        }
-      }
-    } catch {
-      // Not authenticated, continue anonymously
+    // Require authentication
+    const { createSupabaseServerClient } = await import('@/lib/supabase-server')
+    const supabase = await createSupabaseServerClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { success: false, message: 'Authentication required. Please sign in to express interest.' },
+        { status: 401 }
+      )
     }
+
+    // Get profile data — use as authoritative source
+    const { data: userProfile } = await supabaseAdmin
+      .from('user_profiles')
+      .select('display_name, email')
+      .eq('id', user.id)
+      .single()
+
+    // Override with profile data
+    data.name = userProfile?.display_name || data.name
+    data.email = userProfile?.email || data.email
+    const userId = user.id
 
     const name = sanitizeText(data.name, 200)
     const email = validateEmail(data.email)
