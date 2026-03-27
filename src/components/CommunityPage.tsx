@@ -98,9 +98,65 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
         </div>
       </section>
 
-      {/* Tab Toggle */}
+      {/* How Collaboration Works */}
       <section className="collab-tabs-section">
         <div className="container">
+          <div className="collab-how-it-works">
+            <h3>How Collaboration Works</h3>
+            <div className="collab-steps">
+              <div className="collab-step">
+                <span className="collab-step__number">1</span>
+                <strong>Browse projects that inspire you</strong>
+                <p>Explore curated projects across immersive art, regenerative design, and spatial practice.</p>
+              </div>
+              <div className="collab-step">
+                <span className="collab-step__number">2</span>
+                <strong>Express interest in a role</strong>
+                <p>Found something that fits your skills? Let the team know — share your relevant experience.</p>
+              </div>
+              <div className="collab-step">
+                <span className="collab-step__number">3</span>
+                <strong>Connect with the project team</strong>
+                <p>Project leads review interest and reach out directly to discuss the collaboration.</p>
+              </div>
+              <div className="collab-step">
+                <span className="collab-step__number">4</span>
+                <strong>Define scope together</strong>
+                <p>Agree on contribution scope, timeline, and credit — from micro-contributions to ongoing roles.</p>
+              </div>
+              <div className="collab-step">
+                <span className="collab-step__number">5</span>
+                <strong>Build something extraordinary</strong>
+                <p>Your work is credited on the project page and your profile. You&apos;re part of the story.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="collab-benefits">
+            <h3>What You Gain</h3>
+            <div className="collab-benefits__grid">
+              <div className="collab-benefit-card">
+                <strong>Portfolio-worthy work</strong>
+                <p>Contribute to ambitious projects you can proudly showcase — not commercial campaigns, but values-aligned creative work.</p>
+              </div>
+              <div className="collab-benefit-card">
+                <strong>Credited contributions</strong>
+                <p>Your role is publicly documented on the project page and linked to your profile.</p>
+              </div>
+              <div className="collab-benefit-card">
+                <strong>Flexible commitment</strong>
+                <p>From a 2-hour plan review to an ongoing team role — contribute at the level that works for you.</p>
+              </div>
+              <div className="collab-benefit-card">
+                <strong>Meaningful relationships</strong>
+                <p>Build long-term connections with visionary creators and fellow specialists — a guild, not a gig.</p>
+              </div>
+            </div>
+            <p style={{ textAlign: 'center', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-4)', maxWidth: '640px', marginLeft: 'auto', marginRight: 'auto' }}>
+              Not everyone can commit 60 hours. We welcome micro-contributions (2–4 hours: review a plan, give feedback on a grant draft, advise on materials) alongside deep engagements (ongoing team roles). Specify your availability when you express interest.
+            </p>
+          </div>
+
           <p className="collab-tabs-section__intro">
             Browse available collaboration roles or discover the people behind the projects.
           </p>
