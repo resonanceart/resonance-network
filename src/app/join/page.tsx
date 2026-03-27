@@ -180,23 +180,23 @@ export default function JoinPage() {
       <section className="submit-section">
         <div className="container">
           <h2>Who Can Submit</h2>
-          <p>Resonance Network is for creators working on ambitious, values-aligned projects at the intersection of art, architecture, and ecology. You are a good fit if:</p>
+          <p>Resonance Network is for creators working on concept-ready spatial projects — immersive installations, regenerative architecture, public works, and experiential environments. We evaluate on scope and stewardship, not size. You are a good fit if:</p>
           <ul className="prepare-list">
             <li>
-              <strong>Immersive or ambitious</strong>
-              <span>Your project is spatial, experiential, or regenerative in nature</span>
+              <strong>Concept-ready spatial project</strong>
+              <span>Your work is an installation, pavilion, environment, or public work with a clear vision and direction</span>
             </li>
             <li>
-              <strong>Ecologically or socially engaged</strong>
-              <span>Your work engages with ecological or social systems in a meaningful way</span>
+              <strong>Immersive or regenerative</strong>
+              <span>Your project engages with ecological systems, material innovation, or experiential design</span>
             </li>
             <li>
               <strong>Collaboration-ready</strong>
-              <span>You need collaborators, technical expertise, or funding pathways to move forward</span>
+              <span>You need aligned collaborators, technical expertise, or funding pathways to move forward</span>
             </li>
             <li>
               <strong>Open to curation</strong>
-              <span>You welcome honest feedback and a curatorial process</span>
+              <span>You welcome honest feedback and a curatorial process — &quot;not yet&quot; isn&apos;t a no</span>
             </li>
           </ul>
         </div>

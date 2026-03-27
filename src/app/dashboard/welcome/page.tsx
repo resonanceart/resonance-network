@@ -269,7 +269,7 @@ export default function WelcomePage() {
           <div className="onboarding__panel">
             <h1 className="onboarding__title">Welcome to Resonance Network</h1>
             <p className="onboarding__subtitle">
-              You&apos;re joining a community where ambitious creative projects in art, architecture, and ecology find the collaborators and momentum to get built.
+              You&apos;re joining a curated guild where concept-ready immersive and regenerative spatial projects find aligned collaborators, honest feedback, and the momentum to get built.
             </p>
             <div className="onboarding__features">
               <div className="onboarding__feature">

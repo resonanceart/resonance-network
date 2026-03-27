@@ -10,11 +10,11 @@ import { CookieConsent } from '@/components/CookieConsent'
 export const metadata: Metadata = {
   metadataBase: new URL('https://resonance.network'),
   title: {
-    default: 'Resonance Network — Art, Architecture & Ecology at Ambitious Scale',
+    default: 'Resonance Network — A Curated Guild for Immersive and Regenerative Projects',
     template: '%s — Resonance Network',
   },
   description:
-    'An artist-led platform where ambitious creative projects in art, architecture, and ecology find the collaborators, expertise, and momentum to get built.',
+    'A curated guild where concept-ready immersive and regenerative spatial projects find aligned collaborators, honest feedback, and the momentum to get built.',
   keywords: [
     'immersive art',
     'regenerative architecture',
@@ -42,9 +42,9 @@ export const metadata: Metadata = {
   publisher: 'Resonance Network',
   formatDetection: { telephone: false },
   openGraph: {
-    title: 'Resonance Network — Art, Architecture & Ecology at Ambitious Scale',
+    title: 'Resonance Network — A Curated Guild for Immersive and Regenerative Projects',
     description:
-      'An artist-led platform where ambitious art and architecture projects find the collaborators and expertise to get built.',
+      'Between proposal and build — we surround serious spatial projects with aligned collaborators and the momentum to get built.',
     url: 'https://resonance.network',
     siteName: 'Resonance Network',
     locale: 'en_US',
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Resonance Network',
     description:
-      'Where ambitious creative projects find the collaborators, expertise, and momentum to cross from vision to built reality.',
+      'A curated guild connecting creators of immersive and regenerative spatial projects with the collaborators to cross from vision to built reality.',
   },
   robots: {
     index: true,
