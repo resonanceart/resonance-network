@@ -1,0 +1,819 @@
+'use client'
+
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { useAuth } from '@/components/AuthProvider'
+import { Badge } from '@/components/ui/Badge'
+
+type EditSection = 'hero' | 'overview' | 'gallery' | 'experience' | 'story' | 'goals' | 'classification' | 'team' | 'roles' | null
+
+const DOMAINS = [
+  'Architecture', 'Immersive Art', 'Ecological Design', 'Material Innovation',
+  'Public Space', 'Community Infrastructure', 'Experimental Technology', 'Social Impact',
+]
+const PATHWAYS = [
+  'Public Art', 'Exhibition/Cultural', 'Festival Installation', 'R&D',
+  'Development/Commercial', 'Social Impact/Humanitarian',
+]
+const STAGES = ['Concept', 'Design Development', 'Engineering', 'Fundraising', 'Production']
+
+function LiveProjectEditorInner() {
+  const { user, loading: authLoading } = useAuth()
+  const searchParams = useSearchParams()
+  const existingId = searchParams.get('id')
+
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [hasChanges, setHasChanges] = useState(false)
+  const [savedMessage, setSavedMessage] = useState(false)
+  const [activePanel, setActivePanel] = useState<EditSection>(null)
+  const [submissionId, setSubmissionId] = useState<string | null>(existingId)
+
+  // Project fields — drive the live preview
+  const [title, setTitle] = useState('')
+  const [shortDescription, setShortDescription] = useState('')
+  const [heroImageUrl, setHeroImageUrl] = useState<string | null>(null)
+  const [overviewLead, setOverviewLead] = useState('')
+  const [overviewBody, setOverviewBody] = useState('')
+  const [experience, setExperience] = useState('')
+  const [story, setStory] = useState('')
+  const [goals, setGoals] = useState<string[]>([])
+  const [domains, setDomains] = useState<string[]>([])
+  const [pathways, setPathways] = useState<string[]>([])
+  const [stage, setStage] = useState('Concept')
+  const [scale, setScale] = useState('')
+  const [location, setLocation] = useState('')
+  const [materials, setMaterials] = useState('')
+  const [specialNeeds, setSpecialNeeds] = useState('')
+  const [galleryImages, setGalleryImages] = useState<Array<{ url: string; alt: string }>>([])
+  const [collaborators, setCollaborators] = useState<Array<{ name: string; role: string; photo?: string }>>([])
+  const [collaborationNeeds, setCollaborationNeeds] = useState('')
+  const [contactEmail, setContactEmail] = useState('')
+  const [leadArtistName, setLeadArtistName] = useState('')
+
+  const lastChangeTime = useRef(0)
+  const markDirty = useCallback(() => { setHasChanges(true); lastChangeTime.current = Date.now() }, [])
+
+  // Fetch existing project if editing
+  useEffect(() => {
+    if (authLoading) return
+    if (!user) { window.location.href = '/login'; return }
+
+    // Get user profile for defaults
+    fetch('/api/user/profile', { credentials: 'same-origin' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.profile) {
+          setLeadArtistName(data.profile.display_name || '')
+          setContactEmail(data.profile.email || '')
+        }
+      })
+      .catch(() => {})
+
+    if (existingId) {
+      // Fetch existing submission
+      fetch(`/api/user/projects?id=${existingId}`, { credentials: 'same-origin' })
+        .then(r => r.json())
+        .then(data => {
+          if (data.project) {
+            const p = data.project
+            setTitle(p.project_title || '')
+            setShortDescription(p.one_sentence || '')
+            setOverviewLead(p.vision || '')
+            setOverviewBody(p.vision || '')
+            setExperience(p.experience || '')
+            setStory(p.story || '')
+            setGoals(p.goals ? p.goals.split('\n').filter(Boolean) : [])
+            setDomains(p.domains || [])
+            setPathways(p.pathways || [])
+            setStage(p.stage || 'Concept')
+            setScale(p.scale || '')
+            setLocation(p.location || '')
+            setMaterials(p.materials || '')
+            setSpecialNeeds(p.special_needs || '')
+            setCollaborationNeeds(p.collaboration_needs || '')
+            setLeadArtistName(p.artist_name || '')
+            setContactEmail(p.artist_email || '')
+            if (p.hero_image_data) setHeroImageUrl(p.hero_image_data)
+          }
+        })
+        .catch(() => {})
+    }
+
+    setLoading(false)
+  }, [user, authLoading, existingId])
+
+  // Autosave every 15s with 2s debounce
+  useEffect(() => {
+    if (!hasChanges) return
+    const timer = setInterval(() => {
+      if (Date.now() - lastChangeTime.current < 2000) return
+      saveDraft(true)
+    }, 15000)
+    return () => clearInterval(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasChanges])
+
+  async function saveDraft(silent = false) {
+    if (!title.trim()) {
+      if (!silent) alert('Please enter a project title.')
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await fetch('/api/submit-project', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          artistName: leadArtistName,
+          artistEmail: contactEmail,
+          artistBio: '',
+          artistWebsite: '',
+          projectTitle: title.trim(),
+          oneSentence: shortDescription.trim(),
+          vision: overviewLead.trim(),
+          experience: experience.trim(),
+          story: story.trim(),
+          goals: goals.join('\n'),
+          domains,
+          pathways,
+          stage,
+          scale: scale.trim(),
+          location: location.trim(),
+          materials: materials.trim(),
+          specialNeeds: specialNeeds.trim(),
+          heroImageData: heroImageUrl,
+          galleryImagesData: galleryImages.length > 0 ? JSON.stringify(galleryImages) : null,
+          collaborationNeeds: collaborationNeeds.trim(),
+          collaborationRoleCount: collaborators.length || null,
+          status: 'draft',
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.id && !submissionId) setSubmissionId(data.id)
+        setHasChanges(false)
+        if (!silent) {
+          setSavedMessage(true)
+          setTimeout(() => setSavedMessage(false), 3000)
+        }
+      }
+    } catch {
+      // silent fail
+    }
+    setSaving(false)
+  }
+
+  async function submitForReview() {
+    await saveDraft(false)
+    setSavedMessage(true)
+  }
+
+  function handleHeroUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || file.size > 10 * 1024 * 1024) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const img = new window.Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const maxW = 1600
+        const ratio = Math.min(maxW / img.width, 1)
+        canvas.width = img.width * ratio
+        canvas.height = img.height * ratio
+        const ctx = canvas.getContext('2d')!
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+        setHeroImageUrl(canvas.toDataURL('image/jpeg', 0.85))
+        markDirty()
+      }
+      img.src = reader.result as string
+    }
+    reader.readAsDataURL(file)
+  }
+
+  function handleGalleryUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files
+    if (!files) return
+    Array.from(files).forEach(file => {
+      if (file.size > 10 * 1024 * 1024) return
+      const reader = new FileReader()
+      reader.onload = () => {
+        const img = new window.Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          const maxW = 1200
+          const ratio = Math.min(maxW / img.width, 1)
+          canvas.width = img.width * ratio
+          canvas.height = img.height * ratio
+          const ctx = canvas.getContext('2d')!
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+          setGalleryImages(prev => [...prev, { url: canvas.toDataURL('image/jpeg', 0.85), alt: file.name }])
+          markDirty()
+        }
+        img.src = reader.result as string
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
+  function openPanel(section: EditSection) { setActivePanel(section) }
+  function closePanel() { setActivePanel(null) }
+
+  if (authLoading || loading) {
+    return (
+      <div className="container" style={{ padding: 'var(--space-16) 0', textAlign: 'center' }}>
+        <p style={{ color: 'var(--color-text-muted)' }}>Loading...</p>
+      </div>
+    )
+  }
+  if (!user) return null
+
+  return (
+    <div className="live-editor">
+      {/* Toolbar */}
+      <div className="live-editor__toolbar">
+        <div className="live-editor__toolbar-inner container">
+          <span className="live-editor__toolbar-title">Building Your Project</span>
+          <div className="live-editor__toolbar-actions">
+            {hasChanges && <span className="live-editor__unsaved">Unsaved changes</span>}
+            {savedMessage && <span className="live-editor__saved">Saved!</span>}
+            <button onClick={() => saveDraft(false)} className="btn btn--primary btn--sm" disabled={saving || !hasChanges}>
+              {saving ? 'Saving...' : 'Save Draft'}
+            </button>
+            <button onClick={submitForReview} className="btn btn--outline btn--sm" disabled={saving || !title.trim()}>
+              Submit for Review
+            </button>
+            <Link href="/dashboard" className="btn btn--ghost btn--sm">Back</Link>
+          </div>
+        </div>
+      </div>
+
+      <article style={{ marginTop: '53px' }}>
+        {/* Breadcrumb */}
+        <nav className="breadcrumb container" style={{ paddingTop: 'var(--space-4)' }}>
+          <Link href="/dashboard">Dashboard</Link> <span>/</span> <span>{title || 'New Project'}</span>
+        </nav>
+
+        {/* Hero */}
+        <div className="editable-section" onClick={() => openPanel('hero')}>
+          <section
+            className="project-hero"
+            style={heroImageUrl
+              ? undefined
+              : { background: 'linear-gradient(135deg, #01696F 0%, #01696Fcc 50%, #01696F88 100%)', position: 'relative', minHeight: 400 }
+            }
+          >
+            {heroImageUrl && (
+              <img
+                src={heroImageUrl}
+                alt="Hero"
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            )}
+            <div className="project-hero__overlay" />
+            <div className="project-hero__content">
+              <Badge variant="stage">{stage}</Badge>
+              <h1 className="project-hero__title">
+                {title || <span style={{ opacity: 0.5, fontStyle: 'italic' }}>Your Project Title</span>}
+              </h1>
+              <p className="project-hero__desc">
+                {shortDescription || <span style={{ opacity: 0.5, fontStyle: 'italic' }}>A one-sentence description of your project</span>}
+              </p>
+            </div>
+          </section>
+          <div className="editable-section__overlay"><span>Edit hero</span></div>
+        </div>
+
+        {/* Overview */}
+        <div className="editable-section" onClick={() => openPanel('overview')}>
+          <section className="project-overview">
+            <div className="container">
+              <p className="section-label">The Vision</p>
+              <div className="overview-grid">
+                <div>
+                  {overviewLead
+                    ? <p className="overview-lead">{overviewLead}</p>
+                    : <p className="overview-lead" style={{ opacity: 0.4, fontStyle: 'italic' }}>Describe your vision...</p>
+                  }
+                  {overviewBody && <p className="overview-body">{overviewBody}</p>}
+                </div>
+                <aside className="overview-stats">
+                  <div className="overview-stat">
+                    <p className="overview-stat__label">Lead Creator</p>
+                    <p className="overview-stat__value">{leadArtistName || 'You'}</p>
+                  </div>
+                  <div className="overview-stat">
+                    <p className="overview-stat__label">Stage</p>
+                    <p className="overview-stat__value">{stage}</p>
+                  </div>
+                  {scale && (
+                    <div className="overview-stat">
+                      <p className="overview-stat__label">Scale</p>
+                      <p className="overview-stat__value">{scale}</p>
+                    </div>
+                  )}
+                  {location && (
+                    <div className="overview-stat">
+                      <p className="overview-stat__label">Location</p>
+                      <p className="overview-stat__value">{location}</p>
+                    </div>
+                  )}
+                  {pathways.length > 0 && (
+                    <div className="overview-stat">
+                      <p className="overview-stat__label">Pathways</p>
+                      <p className="overview-stat__value">{pathways.join(' \u00b7 ')}</p>
+                    </div>
+                  )}
+                </aside>
+              </div>
+            </div>
+          </section>
+          <div className="editable-section__overlay"><span>Edit overview</span></div>
+        </div>
+
+        {/* Gallery */}
+        <div className="editable-section" onClick={() => openPanel('gallery')}>
+          {galleryImages.length > 0 ? (
+            <section style={{ padding: 'var(--space-8) 0' }}>
+              <div className="container">
+                <p className="section-label">Gallery</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-3)' }}>
+                  {galleryImages.map((img, i) => (
+                    <div key={i} style={{ borderRadius: 8, overflow: 'hidden', aspectRatio: '4/3' }}>
+                      <img src={img.url} alt={img.alt} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          ) : (
+            <section style={{ padding: 'var(--space-8) 0' }}>
+              <div className="container">
+                <div className="live-editor__empty-placeholder"><span>Add gallery images</span></div>
+              </div>
+            </section>
+          )}
+          <div className="editable-section__overlay"><span>Edit gallery</span></div>
+        </div>
+
+        {/* Experience */}
+        <div className="editable-section" onClick={() => openPanel('experience')}>
+          <section className="project-experience">
+            <div className="container">
+              <p className="section-label">The Experience</p>
+              <h2>What It Feels Like</h2>
+              {experience
+                ? <p className="overview-body">{experience}</p>
+                : <p style={{ opacity: 0.4, fontStyle: 'italic' }}>Describe what it feels like to experience your project...</p>
+              }
+            </div>
+          </section>
+          <div className="editable-section__overlay"><span>Edit experience</span></div>
+        </div>
+
+        {/* Story */}
+        <div className="editable-section" onClick={() => openPanel('story')}>
+          <section className="project-story">
+            <div className="container">
+              <p className="section-label">Origin</p>
+              <h2>The Story Behind It</h2>
+              {story
+                ? <p className="overview-body">{story}</p>
+                : <p style={{ opacity: 0.4, fontStyle: 'italic' }}>Tell the story behind your project...</p>
+              }
+            </div>
+          </section>
+          <div className="editable-section__overlay"><span>Edit story</span></div>
+        </div>
+
+        {/* Goals */}
+        <div className="editable-section" onClick={() => openPanel('goals')}>
+          <section className="project-goals">
+            <div className="container">
+              <p className="section-label">Ambition</p>
+              <h2>What We&apos;re Working Toward</h2>
+              {goals.length > 0 ? (
+                <ul className="goals-list">
+                  {goals.map((g, i) => <li key={i} className="goals-list__item">{g}</li>)}
+                </ul>
+              ) : (
+                <p style={{ opacity: 0.4, fontStyle: 'italic' }}>Add your project goals...</p>
+              )}
+            </div>
+          </section>
+          <div className="editable-section__overlay"><span>Edit goals</span></div>
+        </div>
+
+        {/* Classification */}
+        <div className="editable-section" onClick={() => openPanel('classification')}>
+          <section className="project-classification">
+            <div className="container">
+              <p className="section-label">DNA</p>
+              <div className="classification-grid">
+                <div className="classification-item">
+                  <h3>Domains</h3>
+                  <div className="badges-group">
+                    {domains.length > 0
+                      ? domains.map(d => <Badge key={d} variant="domain">{d}</Badge>)
+                      : <span style={{ opacity: 0.4, fontSize: 'var(--text-sm)' }}>Select domains</span>
+                    }
+                  </div>
+                </div>
+                <div className="classification-item">
+                  <h3>Pathways</h3>
+                  <div className="badges-group">
+                    {pathways.length > 0
+                      ? pathways.map(p => <Badge key={p} variant="pathway">{p}</Badge>)
+                      : <span style={{ opacity: 0.4, fontSize: 'var(--text-sm)' }}>Select pathways</span>
+                    }
+                  </div>
+                </div>
+                <div className="classification-item">
+                  <h3>Stage</h3>
+                  <Badge variant="stage">{stage}</Badge>
+                </div>
+              </div>
+            </div>
+          </section>
+          <div className="editable-section__overlay"><span>Edit classification</span></div>
+        </div>
+
+        {/* Team */}
+        <div className="editable-section" onClick={() => openPanel('team')}>
+          <section className="project-artist">
+            <div className="container">
+              <p className="section-label">The People Behind It</p>
+              <div className="team-grid">
+                <div style={{ padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
+                  <strong>{leadArtistName || 'You'}</strong>
+                  <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>Lead Creator</p>
+                </div>
+                {collaborators.map((c, i) => (
+                  <div key={i} style={{ padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
+                    <strong>{c.name}</strong>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>{c.role}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+          <div className="editable-section__overlay"><span>Edit team</span></div>
+        </div>
+
+        {/* Collaboration Roles */}
+        <div className="editable-section" onClick={() => openPanel('roles')}>
+          <section className="project-collab">
+            <div className="container">
+              <p className="section-label">Join This Project</p>
+              <h2>Open Roles</h2>
+              {collaborationNeeds ? (
+                <p className="overview-body">{collaborationNeeds}</p>
+              ) : (
+                <p style={{ opacity: 0.4, fontStyle: 'italic' }}>Describe what collaborators you&apos;re looking for...</p>
+              )}
+            </div>
+          </section>
+          <div className="editable-section__overlay"><span>Edit roles</span></div>
+        </div>
+      </article>
+
+      {/* Slide-in Panel */}
+      {activePanel && (
+        <>
+          <div className="live-editor__panel-backdrop" onClick={closePanel} />
+          <div className="live-editor__panel">
+            <div className="live-editor__panel-header">
+              <h3 className="live-editor__panel-title">
+                {activePanel === 'hero' && 'Hero Image & Title'}
+                {activePanel === 'overview' && 'Project Overview'}
+                {activePanel === 'gallery' && 'Gallery Images'}
+                {activePanel === 'experience' && 'The Experience'}
+                {activePanel === 'story' && 'The Story'}
+                {activePanel === 'goals' && 'Goals'}
+                {activePanel === 'classification' && 'Classification'}
+                {activePanel === 'team' && 'Team'}
+                {activePanel === 'roles' && 'Collaboration'}
+              </h3>
+              <button className="live-editor__panel-close" onClick={closePanel}>&times;</button>
+            </div>
+            <div className="live-editor__panel-body">
+
+              {/* HERO PANEL */}
+              {activePanel === 'hero' && (
+                <div className="live-editor__panel-section">
+                  <div className="form-group">
+                    <label className="form-label">Project Title *</label>
+                    <input
+                      className="form-input"
+                      value={title}
+                      onChange={e => { setTitle(e.target.value); markDirty() }}
+                      placeholder="Your project title"
+                      maxLength={200}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">One-Sentence Description</label>
+                    <input
+                      className="form-input"
+                      value={shortDescription}
+                      onChange={e => { setShortDescription(e.target.value); markDirty() }}
+                      placeholder="What is this project in one sentence?"
+                      maxLength={300}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Hero Image</label>
+                    {heroImageUrl && (
+                      <img
+                        src={heroImageUrl}
+                        alt="Hero preview"
+                        style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 8, marginBottom: 'var(--space-3)' }}
+                      />
+                    )}
+                    <label className="live-editor__upload-zone">
+                      <input type="file" accept="image/*" onChange={handleHeroUpload} style={{ display: 'none' }} />
+                      <span>{heroImageUrl ? 'Replace Hero Image' : 'Upload Hero Image'}</span>
+                      <small>Recommended: 1600x900px</small>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {/* OVERVIEW PANEL */}
+              {activePanel === 'overview' && (
+                <div className="live-editor__panel-section">
+                  <div className="form-group">
+                    <label className="form-label">Vision (lead text)</label>
+                    <textarea
+                      className="form-textarea"
+                      value={overviewLead}
+                      onChange={e => { setOverviewLead(e.target.value); markDirty() }}
+                      rows={4}
+                      placeholder="What is your vision for this project?"
+                      maxLength={2000}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Detailed Description</label>
+                    <textarea
+                      className="form-textarea"
+                      value={overviewBody}
+                      onChange={e => { setOverviewBody(e.target.value); markDirty() }}
+                      rows={6}
+                      placeholder="Describe your project in detail..."
+                      maxLength={5000}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Stage</label>
+                    <select className="form-input" value={stage} onChange={e => { setStage(e.target.value); markDirty() }}>
+                      {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+                    <div className="form-group">
+                      <label className="form-label">Scale</label>
+                      <input
+                        className="form-input"
+                        value={scale}
+                        onChange={e => { setScale(e.target.value); markDirty() }}
+                        placeholder="e.g. Large outdoor installation"
+                        maxLength={200}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Location</label>
+                      <input
+                        className="form-input"
+                        value={location}
+                        onChange={e => { setLocation(e.target.value); markDirty() }}
+                        placeholder="City, region, or TBD"
+                        maxLength={200}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* GALLERY PANEL */}
+              {activePanel === 'gallery' && (
+                <div className="live-editor__panel-section">
+                  {galleryImages.length > 0 && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
+                      {galleryImages.map((img, i) => (
+                        <div key={i} style={{ position: 'relative', borderRadius: 8, overflow: 'hidden' }}>
+                          <img src={img.url} alt={img.alt} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover' }} />
+                          <button
+                            onClick={() => { setGalleryImages(prev => prev.filter((_, j) => j !== i)); markDirty() }}
+                            style={{
+                              position: 'absolute', top: 4, right: 4, width: 24, height: 24, borderRadius: 4,
+                              background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
+                            }}
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <label className="live-editor__upload-zone">
+                    <input type="file" accept="image/*" multiple onChange={handleGalleryUpload} style={{ display: 'none' }} />
+                    <span>Upload Gallery Images</span>
+                    <small>Select multiple images</small>
+                  </label>
+                </div>
+              )}
+
+              {/* EXPERIENCE PANEL */}
+              {activePanel === 'experience' && (
+                <div className="live-editor__panel-section">
+                  <div className="form-group">
+                    <label className="form-label">What It Feels Like</label>
+                    <textarea
+                      className="form-textarea"
+                      value={experience}
+                      onChange={e => { setExperience(e.target.value); markDirty() }}
+                      rows={8}
+                      placeholder="Describe the sensory and emotional experience of your project..."
+                      maxLength={5000}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* STORY PANEL */}
+              {activePanel === 'story' && (
+                <div className="live-editor__panel-section">
+                  <div className="form-group">
+                    <label className="form-label">The Story Behind It</label>
+                    <textarea
+                      className="form-textarea"
+                      value={story}
+                      onChange={e => { setStory(e.target.value); markDirty() }}
+                      rows={8}
+                      placeholder="What inspired this project? What's the origin story?"
+                      maxLength={5000}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* GOALS PANEL */}
+              {activePanel === 'goals' && (
+                <div className="live-editor__panel-section">
+                  <div className="form-group">
+                    <label className="form-label">Project Goals</label>
+                    {goals.map((g, i) => (
+                      <div key={i} style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                        <input
+                          className="form-input"
+                          value={g}
+                          onChange={e => { const updated = [...goals]; updated[i] = e.target.value; setGoals(updated); markDirty() }}
+                          style={{ flex: 1 }}
+                        />
+                        <button className="btn btn--ghost btn--sm" onClick={() => { setGoals(goals.filter((_, j) => j !== i)); markDirty() }}>&times;</button>
+                      </div>
+                    ))}
+                    <button className="btn btn--outline btn--sm" onClick={() => { setGoals([...goals, '']); markDirty() }}>+ Add Goal</button>
+                  </div>
+                </div>
+              )}
+
+              {/* CLASSIFICATION PANEL */}
+              {activePanel === 'classification' && (
+                <div className="live-editor__panel-section">
+                  <div className="form-group">
+                    <label className="form-label">Domains</label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+                      {DOMAINS.map(d => (
+                        <button
+                          key={d}
+                          className={`inline-editor__type-option${domains.includes(d) ? ' inline-editor__type-option--active' : ''}`}
+                          onClick={() => { setDomains(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]); markDirty() }}
+                          style={{ fontSize: 'var(--text-xs)', padding: 'var(--space-1) var(--space-3)' }}
+                        >
+                          {d}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Pathways</label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+                      {PATHWAYS.map(p => (
+                        <button
+                          key={p}
+                          className={`inline-editor__type-option${pathways.includes(p) ? ' inline-editor__type-option--active' : ''}`}
+                          onClick={() => { setPathways(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]); markDirty() }}
+                          style={{ fontSize: 'var(--text-xs)', padding: 'var(--space-1) var(--space-3)' }}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Stage</label>
+                    <select className="form-input" value={stage} onChange={e => { setStage(e.target.value); markDirty() }}>
+                      {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* TEAM PANEL */}
+              {activePanel === 'team' && (
+                <div className="live-editor__panel-section">
+                  <div className="form-group">
+                    <label className="form-label">Lead Creator</label>
+                    <input
+                      className="form-input"
+                      value={leadArtistName}
+                      onChange={e => { setLeadArtistName(e.target.value); markDirty() }}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Team Members</label>
+                    {collaborators.map((c, i) => (
+                      <div key={i} style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                        <input
+                          className="form-input"
+                          placeholder="Name"
+                          value={c.name}
+                          onChange={e => { const u = [...collaborators]; u[i] = { ...u[i], name: e.target.value }; setCollaborators(u); markDirty() }}
+                          style={{ flex: 1 }}
+                        />
+                        <input
+                          className="form-input"
+                          placeholder="Role"
+                          value={c.role}
+                          onChange={e => { const u = [...collaborators]; u[i] = { ...u[i], role: e.target.value }; setCollaborators(u); markDirty() }}
+                          style={{ flex: 1 }}
+                        />
+                        <button className="btn btn--ghost btn--sm" onClick={() => { setCollaborators(collaborators.filter((_, j) => j !== i)); markDirty() }}>&times;</button>
+                      </div>
+                    ))}
+                    <button className="btn btn--outline btn--sm" onClick={() => { setCollaborators([...collaborators, { name: '', role: '' }]); markDirty() }}>+ Add Team Member</button>
+                  </div>
+                </div>
+              )}
+
+              {/* ROLES PANEL */}
+              {activePanel === 'roles' && (
+                <div className="live-editor__panel-section">
+                  <div className="form-group">
+                    <label className="form-label">Collaboration Needs</label>
+                    <textarea
+                      className="form-textarea"
+                      value={collaborationNeeds}
+                      onChange={e => { setCollaborationNeeds(e.target.value); markDirty() }}
+                      rows={6}
+                      placeholder="What kind of collaborators are you looking for? Describe the roles, skills needed, etc."
+                      maxLength={5000}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Contact Email</label>
+                    <input
+                      className="form-input"
+                      type="email"
+                      value={contactEmail}
+                      onChange={e => { setContactEmail(e.target.value); markDirty() }}
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Materials & Technical Needs</label>
+                    <textarea
+                      className="form-textarea"
+                      value={materials}
+                      onChange={e => { setMaterials(e.target.value); markDirty() }}
+                      rows={3}
+                      placeholder="Any specific materials, equipment, or technical requirements?"
+                      maxLength={5000}
+                    />
+                  </div>
+                </div>
+              )}
+
+            </div>
+            <div className="live-editor__panel-footer">
+              <button className="btn btn--primary btn--sm" onClick={closePanel}>Done</button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+export default function LiveProjectEditorPage() {
+  return (
+    <Suspense fallback={<div className="container" style={{ padding: 'var(--space-16) 0', textAlign: 'center' }}><p>Loading...</p></div>}>
+      <LiveProjectEditorInner />
+    </Suspense>
+  )
+}
