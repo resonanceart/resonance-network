@@ -12963,53 +12963,51 @@ main {
   justify-content: center;
   gap: var(--space-2);
   height: 200px;
-  background: var(--color-card-bg);
-  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   cursor: pointer;
   text-decoration: none;
-  color: var(--color-text);
+  color: rgba(255, 255, 255, 0.9);
   transition: border-color var(--duration-fast), box-shadow var(--duration-fast), transform var(--duration-fast);
   overflow: hidden;
 }
 
 .media-card:hover {
   border-color: var(--color-primary);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   transform: translateY(-2px);
 }
 
 .media-card--add {
   border-style: dashed;
-  border-color: var(--color-border);
+  border-color: rgba(255, 255, 255, 0.12);
   background: transparent;
 }
 .media-card--add:hover {
   border-color: var(--color-primary);
-  background: var(--color-primary-light);
+  background: rgba(1, 105, 111, 0.06);
 }
 
 .media-card__icon {
-  color: var(--color-text-muted);
-  opacity: 0.6;
-  transition: opacity var(--duration-fast);
+  color: rgba(255, 255, 255, 0.4);
+  transition: color var(--duration-fast);
 }
 .media-card:hover .media-card__icon {
-  opacity: 0.9;
   color: var(--color-primary);
 }
 
 .media-card__label {
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--color-text);
+  color: rgba(255, 255, 255, 0.9);
   margin: 0;
   text-align: center;
 }
 
 .media-card__hint {
   font-size: var(--text-xs);
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.45);
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
@@ -13017,13 +13015,13 @@ main {
   text-align: center;
 }
 
-.media-card--pdf .media-card__icon { color: #e74c3c; opacity: 0.7; }
-.media-card--pdf:hover .media-card__icon { opacity: 1; color: #e74c3c; }
+.media-card--pdf .media-card__icon { color: #e74c3c; }
+.media-card--pdf:hover .media-card__icon { color: #ff6b6b; }
 
-.media-card--website .media-card__icon { color: var(--color-accent); opacity: 0.6; }
+.media-card--website .media-card__icon { color: var(--color-accent); }
 
-.media-card--fundraiser .media-card__icon { color: #e91e63; opacity: 0.7; }
-.media-card--fundraiser:hover .media-card__icon { opacity: 1; }
+.media-card--fundraiser .media-card__icon { color: #e91e63; }
+.media-card--fundraiser:hover .media-card__icon { color: #ff4081; }
 
 .media-card--social-group {
   padding: var(--space-4);
@@ -13034,7 +13032,7 @@ main {
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .media-card__social-icons {
@@ -13042,6 +13040,7 @@ main {
   flex-wrap: wrap;
   gap: var(--space-2);
   justify-content: center;
+  padding: 0 var(--space-2);
 }
 
 .media-card__social-link {
@@ -13051,14 +13050,15 @@ main {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--color-surface-alt);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
   transition: all var(--duration-fast);
+  flex-shrink: 0;
 }
 .media-card__social-link:hover {
-  background: var(--color-primary-light);
+  background: rgba(255, 255, 255, 0.12);
   color: var(--color-primary);
   border-color: var(--color-primary);
 }
@@ -13067,13 +13067,21 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: var(--color-surface-alt);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+  transition: all var(--duration-fast);
+}
+.media-card__social-dot:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .media-card__preview--grid {
@@ -13081,7 +13089,7 @@ main {
   grid-template-columns: 1fr 1fr;
   gap: 2px;
   width: 100%;
-  padding: 0 var(--space-2);
+  padding: var(--space-2);
   flex: 1;
   overflow: hidden;
 }

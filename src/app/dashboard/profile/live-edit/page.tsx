@@ -965,52 +965,92 @@ export default function LiveProfileEditor() {
             <p className="section-label">Media &amp; Links</p>
             <div className="media-card-grid">
               {/* Portfolio PDF */}
-              <div className="media-card media-card--pdf" onClick={() => openPanel('gallery')}>
-                <div className="media-card__icon">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6M9 17h4"/></svg>
+              {portfolioPdfUrl ? (
+                <a href={portfolioPdfUrl} target="_blank" rel="noopener noreferrer" className="media-card media-card--pdf" onClick={e => e.stopPropagation()}>
+                  <div className="media-card__icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6M9 17h4"/></svg>
+                  </div>
+                  <p className="media-card__label">Portfolio</p>
+                  <span className="media-card__hint">PDF &middot; Click to view</span>
+                </a>
+              ) : (
+                <div className="media-card media-card--pdf media-card--add" onClick={() => openPanel('gallery')}>
+                  <div className="media-card__icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+                  </div>
+                  <p className="media-card__label">Add Portfolio</p>
+                  <span className="media-card__hint">Upload PDF</span>
                 </div>
-                <p className="media-card__label">{portfolioPdfUrl ? 'Portfolio' : 'Add Portfolio'}</p>
-                {portfolioPdfUrl && <span className="media-card__hint">PDF</span>}
-              </div>
+              )}
 
               {/* Resume PDF */}
-              <div className="media-card media-card--pdf" onClick={() => openPanel('gallery')}>
-                <div className="media-card__icon">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6M9 15l3 3 3-3"/></svg>
+              {resumeUrl ? (
+                <a href={resumeUrl} target="_blank" rel="noopener noreferrer" className="media-card media-card--pdf" onClick={e => e.stopPropagation()}>
+                  <div className="media-card__icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6M9 15l3 3 3-3"/></svg>
+                  </div>
+                  <p className="media-card__label">Resume</p>
+                  <span className="media-card__hint">PDF &middot; Click to view</span>
+                </a>
+              ) : (
+                <div className="media-card media-card--pdf media-card--add" onClick={() => openPanel('gallery')}>
+                  <div className="media-card__icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+                  </div>
+                  <p className="media-card__label">Add Resume</p>
+                  <span className="media-card__hint">Upload PDF</span>
                 </div>
-                <p className="media-card__label">{resumeUrl ? 'Resume' : 'Add Resume'}</p>
-                {resumeUrl && <span className="media-card__hint">PDF</span>}
-              </div>
+              )}
 
               {/* Website Links */}
               {mediaLinks.filter(l => l.type !== 'fundraiser').map((link, i) => (
-                <div key={`wl-${i}`} className="media-card media-card--website" onClick={() => openPanel('gallery')}>
-                  <div className="media-card__icon">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c2.5 2.5 4 6 4 10s-1.5 7.5-4 10c-2.5-2.5-4-6-4-10s1.5-7.5 4-10z"/></svg>
+                link.url ? (
+                  <a key={`wl-${i}`} href={link.url} target="_blank" rel="noopener noreferrer" className="media-card media-card--website" onClick={e => e.stopPropagation()}>
+                    <div className="media-card__icon">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c2.5 2.5 4 6 4 10s-1.5 7.5-4 10c-2.5-2.5-4-6-4-10s1.5-7.5 4-10z"/></svg>
+                    </div>
+                    <p className="media-card__label">{link.label || 'Website'}</p>
+                    <span className="media-card__hint">{link.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}</span>
+                  </a>
+                ) : (
+                  <div key={`wl-${i}`} className="media-card media-card--website" onClick={() => openPanel('gallery')}>
+                    <div className="media-card__icon">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c2.5 2.5 4 6 4 10s-1.5 7.5-4 10c-2.5-2.5-4-6-4-10s1.5-7.5 4-10z"/></svg>
+                    </div>
+                    <p className="media-card__label">{link.label || 'Website'}</p>
+                    <span className="media-card__hint">Add URL</span>
                   </div>
-                  <p className="media-card__label">{link.label || 'Website'}</p>
-                  {link.url && <span className="media-card__hint">{link.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}</span>}
-                </div>
+                )
               ))}
 
               {/* Fundraiser Links */}
               {mediaLinks.filter(l => l.type === 'fundraiser').map((link, i) => (
-                <div key={`fl-${i}`} className="media-card media-card--fundraiser" onClick={() => openPanel('gallery')}>
-                  <div className="media-card__icon">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                link.url ? (
+                  <a key={`fl-${i}`} href={link.url} target="_blank" rel="noopener noreferrer" className="media-card media-card--fundraiser" onClick={e => e.stopPropagation()}>
+                    <div className="media-card__icon">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                    </div>
+                    <p className="media-card__label">{link.label || 'Support'}</p>
+                    <span className="media-card__hint">{link.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}</span>
+                  </a>
+                ) : (
+                  <div key={`fl-${i}`} className="media-card media-card--fundraiser" onClick={() => openPanel('gallery')}>
+                    <div className="media-card__icon">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                    </div>
+                    <p className="media-card__label">{link.label || 'Support'}</p>
+                    <span className="media-card__hint">Add URL</span>
                   </div>
-                  <p className="media-card__label">{link.label || 'Support'}</p>
-                  {link.url && <span className="media-card__hint">{link.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}</span>}
-                </div>
+                )
               ))}
 
-              {/* Social Links */}
+              {/* Social Links — icon row */}
               {socialLinks.length > 0 && (
                 <div className="media-card media-card--social-group" onClick={() => openPanel('social')}>
                   <p className="media-card__label">Social ({socialLinks.length})</p>
                   <div className="media-card__social-icons">
-                    {socialLinks.slice(0, 6).map((link, i) => (
-                      <span key={i} className="media-card__social-dot" title={link.platform}>
+                    {[...socialLinks].sort((a, b) => a.display_order - b.display_order).slice(0, 8).map((link, i) => (
+                      <span key={i} className="media-card__social-dot" title={link.platform.charAt(0).toUpperCase() + link.platform.slice(1)}>
                         {link.platform.charAt(0).toUpperCase()}
                       </span>
                     ))}
@@ -1023,7 +1063,7 @@ export default function LiveProfileEditor() {
                 <div className="media-card" onClick={() => openPanel('gallery')}>
                   <div className="media-card__preview--grid">
                     {mediaGallery.slice(0, 4).map((item, i) => (
-                      <img key={i} src={item.url} alt={item.alt || ''} className="profile-media-card__thumb" />
+                      <img key={i} src={item.url} alt={item.alt || ''} style={{ width: '100%', height: 60, objectFit: 'cover', borderRadius: 4 }} />
                     ))}
                   </div>
                   <p className="media-card__label">Gallery ({mediaGallery.length})</p>
