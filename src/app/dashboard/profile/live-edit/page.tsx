@@ -760,7 +760,10 @@ export default function LiveProfileEditor() {
                 if (hasChanges) await saveAll(true)
                 const previewSlug = displayName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
                 if (previewSlug) {
-                  window.open(`/profiles/${previewSlug}`, '_blank')
+                  // Add timestamp to bust cache since profile pages are ISR-cached
+                  setTimeout(() => {
+                    window.open(`/profiles/${previewSlug}?preview=${Date.now()}`, '_blank')
+                  }, 1500)
                 }
               }}
               className="btn btn--outline btn--sm"

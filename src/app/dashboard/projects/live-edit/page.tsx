@@ -59,6 +59,7 @@ function LiveProjectEditorInner() {
   const [hasChanges, setHasChanges] = useState(false)
   const [savedMessage, setSavedMessage] = useState(false)
   const [activePanel, setActivePanel] = useState<EditSection>(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [submissionId, setSubmissionId] = useState<string | null>(existingId)
 
   // Project fields — drive the live preview
@@ -365,6 +366,10 @@ function LiveProjectEditorInner() {
                 Preview
               </a>
             )}
+            <button onClick={() => setSettingsOpen(true)} className="btn btn--ghost btn--sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Settings
+            </button>
             <Link href="/dashboard" className="btn btn--ghost btn--sm">Back</Link>
           </div>
         </div>
@@ -990,6 +995,111 @@ function LiveProjectEditorInner() {
             </div>
             <div className="live-editor__panel-footer">
               <button className="btn btn--primary btn--sm" onClick={closePanel}>Done</button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Project Settings Panel */}
+      {settingsOpen && (
+        <>
+          <div className="live-editor__panel-backdrop" onClick={() => setSettingsOpen(false)} />
+          <div className="live-editor__panel" style={{ width: 'min(560px, 90vw)' }}>
+            <div className="live-editor__panel-header">
+              <h3 className="live-editor__panel-title">Project Settings</h3>
+              <button className="live-editor__panel-close" onClick={() => setSettingsOpen(false)}>&times;</button>
+            </div>
+            <div className="live-editor__panel-body">
+              {/* Basic Info */}
+              <div style={{ marginBottom: 'var(--space-6)' }}>
+                <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 'var(--space-4)' }}>Basic Info</h4>
+                <div className="form-group">
+                  <label className="form-label">Project Title *</label>
+                  <input className="form-input" value={title} onChange={e => { setTitle(e.target.value); markDirty() }} maxLength={200} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">One-Sentence Description</label>
+                  <input className="form-input" value={shortDescription} onChange={e => { setShortDescription(e.target.value); markDirty() }} maxLength={300} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Vision</label>
+                  <textarea className="form-textarea" value={overviewLead} onChange={e => { setOverviewLead(e.target.value); markDirty() }} rows={4} maxLength={5000} />
+                </div>
+              </div>
+
+              {/* Details */}
+              <div style={{ marginBottom: 'var(--space-6)' }}>
+                <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 'var(--space-4)' }}>Details</h4>
+                <div className="form-group">
+                  <label className="form-label">Experience (What It Feels Like)</label>
+                  <textarea className="form-textarea" value={experience} onChange={e => { setExperience(e.target.value); markDirty() }} rows={4} maxLength={5000} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Story (The Story Behind It)</label>
+                  <textarea className="form-textarea" value={story} onChange={e => { setStory(e.target.value); markDirty() }} rows={4} maxLength={5000} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Goals (one per line)</label>
+                  <textarea className="form-textarea" value={goals.join('\n')} onChange={e => { setGoals(e.target.value.split('\n').filter(Boolean)); markDirty() }} rows={4} />
+                </div>
+              </div>
+
+              {/* Classification */}
+              <div style={{ marginBottom: 'var(--space-6)' }}>
+                <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 'var(--space-4)' }}>Classification</h4>
+                <div className="form-group">
+                  <label className="form-label">Domains</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+                    {DOMAINS.map(d => (
+                      <button key={d} type="button" className={`inline-editor__type-option${domains.includes(d) ? ' inline-editor__type-option--active' : ''}`} style={{ fontSize: 'var(--text-xs)', padding: '4px 12px' }} onClick={() => { setDomains(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]); markDirty() }}>{d}</button>
+                    ))}
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Pathways</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+                    {PATHWAYS.map(p => (
+                      <button key={p} type="button" className={`inline-editor__type-option${pathways.includes(p) ? ' inline-editor__type-option--active' : ''}`} style={{ fontSize: 'var(--text-xs)', padding: '4px 12px' }} onClick={() => { setPathways(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]); markDirty() }}>{p}</button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-3)' }}>
+                  <div className="form-group">
+                    <label className="form-label">Stage</label>
+                    <select className="form-input" value={stage} onChange={e => { setStage(e.target.value); markDirty() }}>
+                      {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Scale</label>
+                    <input className="form-input" value={scale} onChange={e => { setScale(e.target.value); markDirty() }} maxLength={200} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Location</label>
+                    <input className="form-input" value={location} onChange={e => { setLocation(e.target.value); markDirty() }} maxLength={200} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Collaboration */}
+              <div style={{ marginBottom: 'var(--space-6)' }}>
+                <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 'var(--space-4)' }}>Collaboration</h4>
+                <div className="form-group">
+                  <label className="form-label">Materials &amp; Technical Needs</label>
+                  <textarea className="form-textarea" value={materials} onChange={e => { setMaterials(e.target.value); markDirty() }} rows={3} maxLength={5000} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Special Needs</label>
+                  <textarea className="form-textarea" value={specialNeeds} onChange={e => { setSpecialNeeds(e.target.value); markDirty() }} rows={3} maxLength={5000} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Contact Email</label>
+                  <input className="form-input" type="email" value={contactEmail} onChange={e => { setContactEmail(e.target.value); markDirty() }} />
+                </div>
+              </div>
+            </div>
+            <div className="live-editor__panel-footer">
+              <button className="btn btn--primary btn--sm" onClick={() => setSettingsOpen(false)}>Done</button>
             </div>
           </div>
         </>
