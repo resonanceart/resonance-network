@@ -2756,6 +2756,147 @@ main {
   line-height: 1.6;
 }
 
+.submission-form__spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-right: var(--space-2);
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* =========================
+   SUBMISSION SUCCESS STATE
+   ========================= */
+.submission-success {
+  text-align: center;
+  padding: var(--space-12) var(--space-4);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.submission-success__icon {
+  color: var(--color-primary);
+  margin-bottom: var(--space-5);
+}
+
+.submission-success__heading {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  margin-bottom: var(--space-3);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.submission-success__desc {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-6);
+  font-size: var(--text-base);
+}
+
+.submission-success__actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* =========================
+   COLLABORATION ROLE CARDS
+   ========================= */
+.collab-role-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-card-bg);
+  margin-bottom: var(--space-4);
+  overflow: hidden;
+}
+
+.collab-role-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.collab-role-card__number {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.collab-role-card__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.collab-role-card__delete:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.collab-role-card__body {
+  padding: var(--space-4);
+}
+
+.collab-role-card__body .form-group {
+  margin-bottom: var(--space-4);
+}
+
+.collab-role-card__body .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.collab-role-card__preview {
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin-top: var(--space-2);
+  border: 1px solid var(--color-border);
+}
+
+.add-role-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-4);
+  border: 2px dashed rgba(1, 105, 111, 0.4);
+  border-radius: var(--radius-lg);
+  background: rgba(1, 105, 111, 0.04);
+  color: var(--color-accent);
+  font-weight: 500;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.add-role-btn:hover {
+  border-color: var(--color-accent);
+  background: rgba(1, 105, 111, 0.08);
+}
+
 /* Form hints */
 .form-hint {
   font-size: var(--text-xs);
