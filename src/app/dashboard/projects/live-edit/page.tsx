@@ -565,15 +565,25 @@ function LiveProjectEditorInner() {
           <section className="project-artist">
             <div className="container">
               <p className="section-label">The People Behind It</p>
-              <div className="team-grid">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 'var(--space-4)' }}>
                 <div style={{ padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
-                  <strong>{leadArtistName || 'You'}</strong>
-                  <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>Lead Creator</p>
+                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--color-primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto var(--space-2)', fontWeight: 700 }}>
+                    {(leadArtistName || 'Y').charAt(0).toUpperCase()}
+                  </div>
+                  <strong style={{ fontSize: 'var(--text-sm)' }}>{leadArtistName || 'You'}</strong>
+                  <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)', margin: 'var(--space-1) 0 0' }}>Lead Creator</p>
                 </div>
                 {collaborators.map((c, i) => (
                   <div key={i} style={{ padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
-                    <strong>{c.name}</strong>
-                    <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>{c.role}</p>
+                    {c.photo ? (
+                      <img src={c.photo} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', margin: '0 auto var(--space-2)' }} />
+                    ) : (
+                      <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--color-surface)', border: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto var(--space-2)', fontWeight: 700, color: 'var(--color-text-muted)' }}>
+                        {(c.name || '?').charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <strong style={{ fontSize: 'var(--text-sm)' }}>{c.name || 'Team Member'}</strong>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)', margin: 'var(--space-1) 0 0' }}>{c.role}</p>
                   </div>
                 ))}
               </div>
@@ -872,25 +882,37 @@ function LiveProjectEditorInner() {
                   <div className="form-group">
                     <label className="form-label">Team Members</label>
                     {collaborators.map((c, i) => (
-                      <div key={i} style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
-                        <input
-                          className="form-input"
-                          placeholder="Name"
-                          value={c.name}
-                          onChange={e => { const u = [...collaborators]; u[i] = { ...u[i], name: e.target.value }; setCollaborators(u); markDirty() }}
-                          style={{ flex: 1 }}
-                        />
-                        <input
-                          className="form-input"
-                          placeholder="Role"
-                          value={c.role}
-                          onChange={e => { const u = [...collaborators]; u[i] = { ...u[i], role: e.target.value }; setCollaborators(u); markDirty() }}
-                          style={{ flex: 1 }}
-                        />
-                        <button className="btn btn--ghost btn--sm" onClick={() => { setCollaborators(collaborators.filter((_, j) => j !== i)); markDirty() }}>&times;</button>
+                      <div key={i} className="collab-role-card" style={{ marginBottom: 'var(--space-3)' }}>
+                        <div className="collab-role-card__header">
+                          <span className="collab-role-card__number">{c.name || 'Team Member'}</span>
+                          <button className="collab-role-card__delete" onClick={() => { setCollaborators(collaborators.filter((_, j) => j !== i)); markDirty() }}>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                          </button>
+                        </div>
+                        <div className="collab-role-card__body">
+                          <div className="form-group">
+                            <label className="form-label">Name</label>
+                            <input className="form-input" placeholder="Name" value={c.name}
+                              onChange={e => { const u = [...collaborators]; u[i] = { ...u[i], name: e.target.value }; setCollaborators(u); markDirty() }} />
+                          </div>
+                          <div className="form-group">
+                            <label className="form-label">Role</label>
+                            <input className="form-input" placeholder="Role" value={c.role}
+                              onChange={e => { const u = [...collaborators]; u[i] = { ...u[i], role: e.target.value }; setCollaborators(u); markDirty() }} />
+                          </div>
+                          <div className="form-group">
+                            <label className="form-label">Photo (optional)</label>
+                            {c.photo && <img src={c.photo} alt="" style={{ width: 60, height: 60, borderRadius: '50%', objectFit: 'cover', marginBottom: 'var(--space-2)' }} />}
+                            <input type="file" accept="image/*" className="form-input"
+                              onChange={handlePhotoUpload(url => { const u = [...collaborators]; u[i] = { ...u[i], photo: url }; setCollaborators(u) })} />
+                          </div>
+                        </div>
                       </div>
                     ))}
-                    <button className="btn btn--outline btn--sm" onClick={() => { setCollaborators([...collaborators, { name: '', role: '' }]); markDirty() }}>+ Add Team Member</button>
+                    <button className="add-role-btn" onClick={() => { setCollaborators([...collaborators, { name: '', role: '', photo: null }]); markDirty() }}>
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5"/><path d="M10 6v8M6 10h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                      Add Team Member
+                    </button>
                   </div>
                 </div>
               )}
@@ -898,37 +920,69 @@ function LiveProjectEditorInner() {
               {/* ROLES PANEL */}
               {activePanel === 'roles' && (
                 <div className="live-editor__panel-section">
-                  <div className="form-group">
-                    <label className="form-label">Collaboration Needs</label>
-                    <textarea
-                      className="form-textarea"
-                      value={collaborationNeeds}
-                      onChange={e => { setCollaborationNeeds(e.target.value); markDirty() }}
-                      rows={6}
-                      placeholder="What kind of collaborators are you looking for? Describe the roles, skills needed, etc."
-                      maxLength={5000}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Contact Email</label>
-                    <input
-                      className="form-input"
-                      type="email"
-                      value={contactEmail}
-                      onChange={e => { setContactEmail(e.target.value); markDirty() }}
-                      placeholder="your@email.com"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Materials & Technical Needs</label>
-                    <textarea
-                      className="form-textarea"
-                      value={materials}
-                      onChange={e => { setMaterials(e.target.value); markDirty() }}
-                      rows={3}
-                      placeholder="Any specific materials, equipment, or technical requirements?"
-                      maxLength={5000}
-                    />
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>
+                    Define the roles you need filled. Each role will appear as a card on your project page.
+                  </p>
+
+                  {collabRoles.map((role, i) => (
+                    <div key={i} className="collab-role-card" style={{ marginBottom: 'var(--space-3)' }}>
+                      <div className="collab-role-card__header">
+                        <span className="collab-role-card__number">{getRoleDisplayTitle(role)}</span>
+                        <button className="collab-role-card__delete" onClick={() => {
+                          if (collabRoles.length <= 1) { setCollabRoles([emptyRole()]); markDirty() }
+                          else { setCollabRoles(collabRoles.filter((_, j) => j !== i)); markDirty() }
+                        }}>
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                        </button>
+                      </div>
+                      <div className="collab-role-card__body">
+                        <div className="form-group">
+                          <label className="form-label">Role</label>
+                          <select className="form-select" value={role.title}
+                            onChange={e => { const u = [...collabRoles]; u[i] = { ...u[i], title: e.target.value }; setCollabRoles(u); markDirty() }}>
+                            <option value="">Select a role...</option>
+                            {ROLE_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
+                          </select>
+                        </div>
+                        {role.title === 'Other' && (
+                          <div className="form-group">
+                            <label className="form-label">Custom role title</label>
+                            <input className="form-input" value={role.customTitle} placeholder="e.g. Kinetic Sculptor"
+                              onChange={e => { const u = [...collabRoles]; u[i] = { ...u[i], customTitle: e.target.value }; setCollabRoles(u); markDirty() }} />
+                          </div>
+                        )}
+                        <div className="form-group">
+                          <label className="form-label">Description</label>
+                          <textarea className="form-textarea" rows={3} value={role.description} placeholder="What will this collaborator do?"
+                            onChange={e => { const u = [...collabRoles]; u[i] = { ...u[i], description: e.target.value }; setCollabRoles(u); markDirty() }} />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Reference image (optional)</label>
+                          {role.imageUrl && <img src={role.imageUrl} alt="" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 8, marginBottom: 'var(--space-2)' }} />}
+                          <input type="file" accept="image/*" className="form-input"
+                            onChange={handlePhotoUpload(url => { const u = [...collabRoles]; u[i] = { ...u[i], imageUrl: url }; setCollabRoles(u) })} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  <button className="add-role-btn" onClick={() => { setCollabRoles([...collabRoles, emptyRole()]); markDirty() }}>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5"/><path d="M10 6v8M6 10h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    Add Collaboration Role
+                  </button>
+
+                  <div style={{ borderTop: '1px solid var(--color-border)', marginTop: 'var(--space-5)', paddingTop: 'var(--space-4)' }}>
+                    <div className="form-group">
+                      <label className="form-label">Contact Email</label>
+                      <input className="form-input" type="email" value={contactEmail}
+                        onChange={e => { setContactEmail(e.target.value); markDirty() }} placeholder="your@email.com" />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Materials &amp; Technical Needs</label>
+                      <textarea className="form-textarea" value={materials} rows={3}
+                        onChange={e => { setMaterials(e.target.value); markDirty() }}
+                        placeholder="Any specific materials, equipment, or technical requirements?" maxLength={5000} />
+                    </div>
                   </div>
                 </div>
               )}
