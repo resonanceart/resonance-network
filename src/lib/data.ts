@@ -1,7 +1,7 @@
 import { supabaseAdmin } from './supabase'
 import projectsData from '../../data/projects.json'
 import profilesData from '../../data/profiles.json'
-import type { Project, Profile } from '@/types'
+import type { Project, Profile, PortfolioProject, ProjectContentBlock } from '@/types'
 
 function slugify(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -112,7 +112,16 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
   return null
 }
 
-function mapUserProfileRow(row: Record<string, unknown>, extended?: Record<string, unknown> | null): Profile {
+function mapUserProfileRow(
+  row: Record<string, unknown>,
+  extended?: Record<string, unknown> | null,
+  relatedData?: {
+    social_links?: Record<string, unknown>[]
+    skills?: Record<string, unknown>[]
+    tools?: Record<string, unknown>[]
+    portfolio_projects?: Record<string, unknown>[]
+  }
+): Profile {
   const skills = Array.isArray(row.skills) ? row.skills as string[] : []
   const role = typeof row.role === 'string' ? row.role : 'collaborator'
   const profileType = role === 'creator' || role === 'admin' ? 'artist' : 'collaborator'
@@ -140,10 +149,34 @@ function mapUserProfileRow(row: Record<string, unknown>, extended?: Record<strin
       toolsAndMaterials: extended.tools_and_materials || undefined,
       availabilityStatus: extended.availability_status || undefined,
       availabilityNote: extended.availability_note || undefined,
-      coverImageUrl: extended.cover_image_url || undefined,
+      coverImage: extended.cover_image_url ? String(extended.cover_image_url) : undefined,
       achievements: extended.achievements || undefined,
       philosophy: extended.philosophy || undefined,
       contentBlocks: extended.content_blocks || undefined,
+      // Enhanced profile fields
+      pronouns: extended.pronouns ? String(extended.pronouns) : undefined,
+      location_secondary: extended.location_secondary ? String(extended.location_secondary) : undefined,
+      artist_statement: extended.artist_statement ? String(extended.artist_statement) : undefined,
+      accent_color: extended.accent_color ? String(extended.accent_color) : undefined,
+      cover_position: extended.cover_position as { x: number; y: number; scale: number } | undefined,
+      availability_types: Array.isArray(extended.availability_types) ? extended.availability_types as string[] : undefined,
+      primary_website_url: extended.primary_website_url ? String(extended.primary_website_url) : undefined,
+      primary_website_label: extended.primary_website_label ? String(extended.primary_website_label) : undefined,
+      cta_primary_label: extended.cta_primary_label ? String(extended.cta_primary_label) : undefined,
+      cta_primary_action: extended.cta_primary_action as 'contact' | 'url' | 'booking' | undefined,
+      cta_primary_url: extended.cta_primary_url ? String(extended.cta_primary_url) : undefined,
+      cta_secondary_label: extended.cta_secondary_label ? String(extended.cta_secondary_label) : undefined,
+      cta_secondary_action: extended.cta_secondary_action ? String(extended.cta_secondary_action) : undefined,
+      cta_secondary_url: extended.cta_secondary_url ? String(extended.cta_secondary_url) : undefined,
+      section_order: Array.isArray(extended.section_order) ? extended.section_order as string[] : undefined,
+      section_visibility: extended.section_visibility as Record<string, boolean> | undefined,
+    } : {}),
+    // Related data from separate tables
+    ...(relatedData ? {
+      social_links: relatedData.social_links || undefined,
+      profile_skills: relatedData.skills || undefined,
+      profile_tools: relatedData.tools || undefined,
+      portfolio_projects: relatedData.portfolio_projects || undefined,
     } : {}),
   } as Profile
 }
@@ -288,6 +321,103 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
   }
 
   return null
+}
+
+export async function getProfileBySlugEnhanced(slug: string): Promise<Profile | null> {
+  // Check JSON profiles first
+  const jsonProfile = (profilesData as Profile[]).find(
+    p => p.slug === slug && p.status === 'published'
+  )
+  if (jsonProfile) return { ...jsonProfile, source: 'json' }
+
+  // Collaborator profiles
+  if (slug.startsWith('collab-')) {
+    return getProfileBySlug(slug)
+  }
+
+  // User profile with full enhanced data
+  try {
+    const { data: publishedUsers, error: upError } = await supabaseAdmin
+      .from('user_profiles')
+      .select('*')
+      .eq('profile_visibility', 'published')
+
+    if (upError || !publishedUsers) return null
+
+    const match = publishedUsers.find(
+      (row: Record<string, unknown>) => slugify(String(row.display_name)) === slug
+    )
+    if (!match) return null
+
+    const profileId = String(match.id)
+
+    // Fetch all related data in parallel
+    const [extResult, socialResult, skillsResult, toolsResult, projectsResult] = await Promise.all([
+      supabaseAdmin.from('profile_extended').select('*').eq('id', profileId).single(),
+      supabaseAdmin.from('profile_social_links').select('*').eq('profile_id', profileId).order('display_order'),
+      supabaseAdmin.from('profile_skills').select('*').eq('profile_id', profileId).order('display_order'),
+      supabaseAdmin.from('profile_tools').select('*').eq('profile_id', profileId).order('display_order'),
+      supabaseAdmin.from('portfolio_projects').select('*').eq('profile_id', profileId).eq('status', 'published').order('display_order'),
+    ])
+
+    return mapUserProfileRow(
+      match as Record<string, unknown>,
+      extResult.data as Record<string, unknown> | null,
+      {
+        social_links: (socialResult.data as Record<string, unknown>[]) || undefined,
+        skills: (skillsResult.data as Record<string, unknown>[]) || undefined,
+        tools: (toolsResult.data as Record<string, unknown>[]) || undefined,
+        portfolio_projects: (projectsResult.data as Record<string, unknown>[]) || undefined,
+      }
+    )
+  } catch {
+    return null
+  }
+}
+
+export async function getPortfolioProject(
+  profileSlug: string,
+  projectSlug: string
+): Promise<(PortfolioProject & { content_blocks: ProjectContentBlock[] }) | null> {
+  try {
+    // Find profile
+    const { data: users } = await supabaseAdmin
+      .from('user_profiles')
+      .select('id, display_name')
+      .eq('profile_visibility', 'published')
+
+    if (!users) return null
+
+    const match = users.find(
+      (u: Record<string, unknown>) => slugify(String(u.display_name)) === profileSlug
+    )
+    if (!match) return null
+
+    const profileId = String(match.id)
+
+    const { data: project, error } = await supabaseAdmin
+      .from('portfolio_projects')
+      .select('*')
+      .eq('profile_id', profileId)
+      .eq('slug', projectSlug)
+      .eq('status', 'published')
+      .single()
+
+    if (error || !project) return null
+
+    const { data: blocks } = await supabaseAdmin
+      .from('portfolio_content_blocks')
+      .select('*')
+      .eq('project_id', project.id)
+      .order('display_order')
+
+    return {
+      ...(project as unknown as PortfolioProject),
+      content_blocks: (blocks as unknown as ProjectContentBlock[]) || [],
+    }
+  } catch {
+    return null
+  }
 }
 
 export async function getProfileByUserId(userId: string): Promise<Profile | null> {

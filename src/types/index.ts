@@ -173,6 +173,88 @@ export interface AudioBlockContent {
   title?: string
 }
 
+// ─── Profile Social Links ──────────────────────────────────────
+
+export interface ProfileSocialLink {
+  id: string
+  profile_id: string
+  platform: 'instagram' | 'linkedin' | 'behance' | 'artstation' | 'dribbble' | 'github' | 'vimeo' | 'soundcloud' | 'spotify' | 'youtube' | 'x' | 'tiktok' | 'custom'
+  url: string
+  display_order: number
+}
+
+// ─── Profile Skills ────────────────────────────────────────────
+
+export interface ProfileSkill {
+  id: string
+  profile_id: string
+  skill_name: string
+  category: 'design' | 'architecture' | 'fabrication' | 'sound' | 'technology' | 'production' | 'strategy' | 'community'
+  display_order: number
+}
+
+// ─── Profile Tools ─────────────────────────────────────────────
+
+export interface ProfileTool {
+  id: string
+  profile_id: string
+  tool_name: string
+  category: 'software' | 'hardware' | 'materials' | 'processes'
+  icon_url?: string
+  display_order: number
+}
+
+// ─── Portfolio Projects ────────────────────────────────────────
+
+export interface PortfolioProject {
+  id: string
+  profile_id: string
+  title: string
+  slug: string
+  tagline?: string
+  description?: string
+  cover_image_url: string
+  category: string
+  tags: string[]
+  role?: string
+  start_date: string
+  end_date?: string
+  external_links: { label: string; url: string }[]
+  tools_used: string[]
+  display_order: number
+  is_featured: boolean
+  status: 'draft' | 'published' | 'archived'
+  view_count: number
+  appreciation_count: number
+  created_at: string
+  updated_at: string
+}
+
+// ─── Project Content Blocks ────────────────────────────────────
+
+export interface ProjectContentBlock {
+  id: string
+  project_id: string
+  block_type: 'image' | 'image_grid' | 'side_by_side' | 'video' | 'rich_text' | 'quote' | 'embed' | 'file' | 'divider' | 'audio' | 'carousel'
+  content: Record<string, unknown>
+  display_order: number
+}
+
+// ─── Profile Messages ──────────────────────────────────────────
+
+export interface ProfileMessage {
+  id: string
+  to_profile_id: string
+  from_name: string
+  from_email: string
+  subject_type: 'collaboration' | 'commission' | 'hiring' | 'general'
+  message: string
+  is_read: boolean
+  created_at: string
+}
+
+// ─── Profile ───────────────────────────────────────────────────
+
 export interface Profile {
   id: string
   slug: string
@@ -199,6 +281,27 @@ export interface Profile {
   status: 'published' | 'draft'
   source?: 'json' | 'supabase'
   supabaseId?: string
+  // Enhanced profile fields
+  pronouns?: string
+  location_secondary?: string
+  availability_types?: string[]
+  primary_website_url?: string
+  primary_website_label?: string
+  cta_primary_label?: string
+  cta_primary_action?: 'contact' | 'url' | 'booking'
+  cta_primary_url?: string
+  cta_secondary_label?: string
+  cta_secondary_action?: string
+  cta_secondary_url?: string
+  section_order?: string[]
+  section_visibility?: Record<string, boolean>
+  artist_statement?: string
+  accent_color?: string
+  cover_position?: { x: number; y: number; scale: number }
+  social_links?: ProfileSocialLink[]
+  profile_skills?: ProfileSkill[]
+  profile_tools?: ProfileTool[]
+  portfolio_projects?: PortfolioProject[]
 }
 
 export interface UserProfile {
