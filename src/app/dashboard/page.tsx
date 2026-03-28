@@ -54,9 +54,9 @@ export default function DashboardPage() {
   const fetchData = useCallback(async () => {
     try {
       const [profileRes, followsRes, messagesRes] = await Promise.all([
-        fetch('/api/user/profile'),
-        fetch('/api/user/follows'),
-        fetch('/api/user/messages'),
+        fetch('/api/user/profile', { credentials: 'same-origin' }),
+        fetch('/api/user/follows', { credentials: 'same-origin' }),
+        fetch('/api/user/messages', { credentials: 'same-origin' }),
       ])
 
       if (profileRes.ok) {
@@ -96,6 +96,7 @@ export default function DashboardPage() {
     try {
       const res = await fetch('/api/user/follows', {
         method: 'DELETE',
+        credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ projectId }),
       })
@@ -125,36 +126,26 @@ export default function DashboardPage() {
   const avatarUrl = profile?.avatar_url
   const unreadCount = messages.filter(m => !m.read).length
 
-  // Profile completion calculation
-  const completionFields = [
-    !!profile?.display_name,
-    !!profile?.avatar_url,
-    !!profile?.bio,
-    !!profile?.location,
-    (profile?.specialties?.length ?? 0) > 0,
+  // Profile completion checklist
+  const checklistItems = [
+    { key: 'name', label: 'Add your name', done: !!profile?.display_name },
+    { key: 'avatar', label: 'Upload a profile photo', done: !!profile?.avatar_url },
+    { key: 'bio', label: 'Write your bio', done: !!profile?.bio },
+    { key: 'location', label: 'Set your location', done: !!profile?.location },
+    { key: 'skills', label: 'Add skills (1+)', done: (profile?.specialties?.length ?? 0) > 0 },
   ]
-  const profileCompletion = Math.round(
-    (completionFields.filter(Boolean).length / completionFields.length) * 100
-  )
+  const completedCount = checklistItems.filter(i => i.done).length
+  const profileCompletion = Math.round((completedCount / checklistItems.length) * 100)
 
   return (
     <section className="dashboard">
       <div className="container">
-        {/* Navigation */}
-        <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
-          <Link href="/dashboard/profile/live-edit" className="btn btn--outline btn--sm">Edit Profile</Link>
-          <Link href="/dashboard/settings" className="btn btn--outline btn--sm">Settings</Link>
-        </div>
 
         {/* Welcome Header */}
         <div className="dashboard-header">
           <div className="dashboard-header__user">
             {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt=""
-                className="dashboard-header__avatar"
-              />
+              <img src={avatarUrl} alt="" className="dashboard-header__avatar" />
             ) : (
               <div className="dashboard-header__avatar dashboard-header__avatar--placeholder">
                 {displayName.charAt(0).toUpperCase()}
@@ -167,12 +158,17 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Profile Completion CTA */}
+        {/* Profile Completion Banner — with inline checklist */}
         {profileCompletion < 100 && (
           <div className="dashboard-completion-banner">
-            <div className="dashboard-completion-banner__content">
-              <strong>Complete your profile</strong>
-              <p>Your profile is {profileCompletion}% complete. A full profile helps collaborators find you.</p>
+            <div className="dashboard-completion-banner__top">
+              <div className="dashboard-completion-banner__content">
+                <strong>Complete your profile — {profileCompletion}%</strong>
+                <p>A complete profile helps collaborators find and connect with you.</p>
+              </div>
+              <Link href="/dashboard/profile/live-edit" className="btn btn--primary btn--sm">
+                Complete Your Profile
+              </Link>
             </div>
             <div className="dashboard-completion-banner__bar">
               <div
@@ -180,9 +176,26 @@ export default function DashboardPage() {
                 style={{ width: `${profileCompletion}%` }}
               />
             </div>
-            <Link href="/dashboard/profile/live-edit" className="btn btn--primary btn--sm">
-              Edit Profile
-            </Link>
+            <ul className="dashboard-completion-checklist">
+              {checklistItems.map(item => (
+                <li
+                  key={item.key}
+                  className={`dashboard-completion-checklist__item${item.done ? ' dashboard-completion-checklist__item--done' : ''}`}
+                >
+                  {item.done ? (
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <circle cx="8" cy="8" r="7" fill="#22c55e"/>
+                      <path d="M5 8.5L7 10.5L11 6.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  ) : (
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2"/>
+                    </svg>
+                  )}
+                  <span>{item.label}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 
@@ -202,33 +215,49 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Edit Your Profile Card */}
-        <Link href="/dashboard/profile/live-edit" className="dashboard-live-edit-card" style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--space-5)',
-          padding: 'var(--space-5) var(--space-6)',
-          background: 'var(--color-primary-light)',
-          border: '1px solid var(--color-primary)',
-          borderRadius: 'var(--radius-lg)',
-          marginBottom: 'var(--space-8)',
-          textDecoration: 'none',
-          transition: 'box-shadow 0.2s, transform 0.2s',
-        }}>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-          <div>
-            <strong style={{ color: 'var(--color-primary)', fontSize: 'var(--text-lg)' }}>Edit Your Profile</strong>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', margin: 0 }}>
-              See your profile and edit it in real time
-            </p>
-          </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginLeft: 'auto', flexShrink: 0 }}>
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </Link>
+        {/* Action Cards — primary CTAs */}
+        <div className="dashboard-action-cards">
+          <Link href="/dashboard/profile/live-edit" className="dashboard-action-card dashboard-action-card--primary">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            <div>
+              <strong>Edit Your Profile</strong>
+              <span>See your profile and edit it in real time</span>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="dashboard-action-card__arrow">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </Link>
+          <Link href="/dashboard/projects/portfolio/new" className="dashboard-action-card">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="9" rx="1"/>
+              <rect x="14" y="3" width="7" height="5" rx="1"/>
+              <rect x="14" y="12" width="7" height="9" rx="1"/>
+              <rect x="3" y="16" width="7" height="5" rx="1"/>
+            </svg>
+            <div>
+              <strong>Add Portfolio Work</strong>
+              <span>Showcase a past or current project</span>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="dashboard-action-card__arrow">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </Link>
+          <Link href="/submit" className="dashboard-action-card">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            <div>
+              <strong>Submit a Project</strong>
+              <span>Propose a new project for the network</span>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="dashboard-action-card__arrow">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </Link>
+        </div>
 
         {/* Followed Projects */}
         <div className="dashboard-section">
@@ -363,6 +392,12 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+
+        {/* Secondary Links */}
+        <div className="dashboard-secondary-links">
+          <Link href="/dashboard/profile" className="dashboard-secondary-link">Profile Settings</Link>
+          <Link href="/dashboard/settings" className="dashboard-secondary-link">Account Settings</Link>
+        </div>
       </div>
     </section>
   )
