@@ -9,6 +9,7 @@ interface ProfileChecklistProps {
   hasAvailability: boolean
   hasCover: boolean
   hasProject: boolean
+  onEditSection?: (section: string) => void
 }
 
 const STORAGE_KEY = 'resonance-profile-checklist-dismissed'
@@ -20,6 +21,7 @@ export function ProfileChecklist({
   hasAvailability,
   hasCover,
   hasProject,
+  onItemClick,
 }: ProfileChecklistProps) {
   const [dismissed, setDismissed] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
@@ -38,7 +40,7 @@ export function ProfileChecklist({
     { key: 'skills', label: 'Add your skills (3+)', done: hasSkills },
     { key: 'availability', label: 'Set your availability', done: hasAvailability },
     { key: 'cover', label: 'Add a cover image', done: hasCover },
-    { key: 'project', label: 'Create your first project', done: hasProject },
+    { key: 'work', label: 'Add your first work', done: hasProject },
   ]
 
   const completedCount = items.filter((i) => i.done).length
@@ -106,6 +108,21 @@ export function ProfileChecklist({
               <li
                 key={item.key}
                 className={`profile-checklist__item${item.done ? ' profile-checklist__item--done' : ''}`}
+                onClick={() => {
+                  onItemClick?.(item.key)
+                  const target = document.querySelector(`[data-section="${item.key}"]`)
+                  target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    onItemClick?.(item.key)
+                    const target = document.querySelector(`[data-section="${item.key}"]`)
+                    target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  }
+                }}
               >
                 <span className="profile-checklist__check">
                   {item.done ? (
