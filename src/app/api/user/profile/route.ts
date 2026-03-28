@@ -318,6 +318,12 @@ export async function PUT(request: Request) {
       const cols = parseInt(body.gallery_columns, 10)
       if (cols >= 1 && cols <= 6) extendedFields.gallery_columns = cols
     }
+    if (body.past_work !== undefined) {
+      if (Array.isArray(body.past_work) && body.past_work.length <= 50) {
+        extendedFields.past_work = body.past_work
+      }
+    }
+
     // Check if we have related table arrays to update
     const hasRelatedUpdates =
       body.profile_skills !== undefined ||

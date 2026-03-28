@@ -11344,6 +11344,18 @@ main {
   animation: contactModalFadeIn 0.2s ease-out;
 }
 
+.live-editor__error {
+  font-size: var(--text-xs);
+  color: #ef4444;
+  font-weight: 500;
+  cursor: pointer;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  animation: contactModalFadeIn 0.2s ease-out;
+}
+
 /* Editable Section wrapper */
 .editable-section {
   position: relative;

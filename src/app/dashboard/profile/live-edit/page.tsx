@@ -394,6 +394,7 @@ export default function LiveProfileEditor() {
   const [saving, setSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
   const [savedMessage, setSavedMessage] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [activePanel, setActivePanel] = useState<EditSection>(null)
 
   // ALL profile fields as state — these drive the live preview
@@ -501,8 +502,9 @@ export default function LiveProfileEditor() {
 
   async function saveAll(silent = false) {
     setSaving(true)
+    setErrorMessage(null)
     try {
-      await fetch('/api/user/profile', {
+      const res = await fetch('/api/user/profile', {
         method: 'PUT',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
@@ -532,15 +534,29 @@ export default function LiveProfileEditor() {
           media_gallery: mediaGallery.length > 0 ? mediaGallery : null,
           past_work: pastWork.length > 0 ? pastWork : null,
           resume_url: resumeUrl,
+          links: links.length > 0 ? links : null,
+          section_order: sectionOrder,
         }),
       })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        console.error('Profile save failed:', res.status, data)
+        if (!silent) {
+          setErrorMessage(data.error || `Save failed (${res.status}). Please try again.`)
+        }
+        setSaving(false)
+        return
+      }
       setHasChanges(false)
       if (!silent) {
         setSavedMessage(true)
         setTimeout(() => setSavedMessage(false), 3000)
       }
-    } catch {
-      // Save failed silently
+    } catch (err) {
+      console.error('Profile save error:', err)
+      if (!silent) {
+        setErrorMessage('Network error. Please check your connection and try again.')
+      }
     }
     setSaving(false)
   }
@@ -711,7 +727,12 @@ export default function LiveProfileEditor() {
         <div className="live-editor__toolbar-inner container">
           <span className="live-editor__toolbar-title">Editing Your Profile</span>
           <div className="live-editor__toolbar-actions">
-            {hasChanges && <span className="live-editor__unsaved">Unsaved changes</span>}
+            {errorMessage && (
+              <span className="live-editor__error" onClick={() => setErrorMessage(null)} title="Click to dismiss">
+                {errorMessage}
+              </span>
+            )}
+            {hasChanges && !errorMessage && <span className="live-editor__unsaved">Unsaved changes</span>}
             {savedMessage && <span className="live-editor__saved">Saved!</span>}
             <button
               onClick={() => saveAll(false)}
