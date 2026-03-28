@@ -43,15 +43,20 @@ export async function GET(request: Request) {
       .eq('id', user.id)
       .single()
 
-    // Fetch work experience
-    const { data: workExperience } = await supabaseAdmin
-      .from('work_experience')
-      .select('*')
-      .eq('profile_id', user.id)
-      .order('display_order')
-
-    // Fetch linked submissions by email
-    const [projResult, profResult, interestResult] = await Promise.all([
+    // Fetch related profile data in parallel
+    const [
+      workExpResult,
+      skillsResult,
+      toolsResult,
+      socialLinksResult,
+      projResult,
+      profResult,
+      interestResult,
+    ] = await Promise.all([
+      supabaseAdmin.from('work_experience').select('*').eq('profile_id', user.id).order('display_order'),
+      supabaseAdmin.from('profile_skills').select('*').eq('profile_id', user.id).order('display_order'),
+      supabaseAdmin.from('profile_tools').select('*').eq('profile_id', user.id).order('display_order'),
+      supabaseAdmin.from('profile_social_links').select('*').eq('profile_id', user.id).order('display_order'),
       supabaseAdmin.from('project_submissions')
         .select('id, project_title, status, created_at')
         .or(`user_id.eq.${user.id},artist_email.eq.${profile.email}`),
@@ -103,7 +108,15 @@ export async function GET(request: Request) {
       }
     }
 
-    return NextResponse.json({ profile, extendedProfile: extendedProfile || null, submissions, workExperience: workExperience || [] })
+    return NextResponse.json({
+      profile,
+      extendedProfile: extendedProfile || null,
+      submissions,
+      workExperience: workExpResult.data || [],
+      profileSkills: skillsResult.data || [],
+      profileTools: toolsResult.data || [],
+      socialLinks: socialLinksResult.data || [],
+    })
   } catch {
     return NextResponse.json(
       { error: 'Something went wrong.' },
@@ -240,7 +253,52 @@ export async function PUT(request: Request) {
     if (body.achievements !== undefined && extendedFields.achievements === undefined) extendedFields.achievements = body.achievements
     if (body.philosophy !== undefined && extendedFields.philosophy === undefined) extendedFields.philosophy = sanitizeText(body.philosophy || '', 5000)
 
-    if (Object.keys(updates).length === 0 && Object.keys(extendedFields).length === 0) {
+    // Enhanced profile fields
+    if (body.professional_title !== undefined) extendedFields.professional_title = sanitizeText(body.professional_title, 200)
+    if (body.pronouns !== undefined) extendedFields.pronouns = sanitizeText(body.pronouns, 100)
+    if (body.location_secondary !== undefined) extendedFields.location_secondary = sanitizeText(body.location_secondary, 200)
+    if (body.artist_statement !== undefined) extendedFields.artist_statement = sanitizeText(body.artist_statement, 10000)
+    if (body.accent_color !== undefined) extendedFields.accent_color = sanitizeText(body.accent_color, 20)
+    if (body.bio_excerpt !== undefined) extendedFields.bio_excerpt = sanitizeText(body.bio_excerpt, 500)
+    if (body.primary_website_url !== undefined) extendedFields.primary_website_url = sanitizeText(body.primary_website_url, 500)
+    if (body.primary_website_label !== undefined) extendedFields.primary_website_label = sanitizeText(body.primary_website_label, 100)
+    if (body.cta_primary_label !== undefined) extendedFields.cta_primary_label = sanitizeText(body.cta_primary_label, 100)
+    if (body.cta_primary_action !== undefined) {
+      const validActions = ['contact', 'url', 'booking']
+      if (validActions.includes(body.cta_primary_action)) {
+        extendedFields.cta_primary_action = body.cta_primary_action
+      }
+    }
+    if (body.cta_primary_url !== undefined) extendedFields.cta_primary_url = sanitizeText(body.cta_primary_url, 500)
+    if (body.cta_secondary_label !== undefined) extendedFields.cta_secondary_label = sanitizeText(body.cta_secondary_label, 100)
+    if (body.cta_secondary_action !== undefined) extendedFields.cta_secondary_action = sanitizeText(body.cta_secondary_action, 100)
+    if (body.cta_secondary_url !== undefined) extendedFields.cta_secondary_url = sanitizeText(body.cta_secondary_url, 500)
+    if (body.cover_position !== undefined && typeof body.cover_position === 'object') {
+      extendedFields.cover_position = body.cover_position
+    }
+    if (body.availability_types !== undefined && Array.isArray(body.availability_types)) {
+      extendedFields.availability_types = body.availability_types.map((s: unknown) => sanitizeText(s, 100)).filter(Boolean)
+    }
+    if (body.section_order !== undefined && Array.isArray(body.section_order)) {
+      extendedFields.section_order = body.section_order.map((s: unknown) => sanitizeText(s, 50)).filter(Boolean)
+    }
+    if (body.section_visibility !== undefined && typeof body.section_visibility === 'object') {
+      extendedFields.section_visibility = body.section_visibility
+    }
+    if (body.gallery_layout !== undefined) extendedFields.gallery_layout = sanitizeText(body.gallery_layout, 20)
+    if (body.gallery_columns !== undefined) {
+      const cols = parseInt(body.gallery_columns, 10)
+      if (cols >= 1 && cols <= 6) extendedFields.gallery_columns = cols
+    }
+
+    // Check if we have related table arrays to update
+    const hasRelatedUpdates =
+      body.profile_skills !== undefined ||
+      body.profile_tools !== undefined ||
+      body.social_links !== undefined ||
+      body.work_experience !== undefined
+
+    if (Object.keys(updates).length === 0 && Object.keys(extendedFields).length === 0 && !hasRelatedUpdates) {
       return NextResponse.json(
         { error: 'No valid fields to update.' },
         { status: 400 }
@@ -289,7 +347,102 @@ export async function PUT(request: Request) {
       }
     }
 
-    return NextResponse.json({ profile, extendedProfile })
+    // Handle related table replacements (delete + insert pattern)
+    const relatedResults: Record<string, unknown> = {}
+
+    if (body.profile_skills !== undefined && Array.isArray(body.profile_skills)) {
+      await supabaseAdmin.from('profile_skills').delete().eq('profile_id', user.id)
+      const skills = body.profile_skills
+        .slice(0, 50)
+        .map((s: Record<string, unknown>, i: number) => ({
+          profile_id: user.id,
+          skill_name: sanitizeText(s.skill_name, 100),
+          category: sanitizeText(s.category, 50) || 'design',
+          display_order: i,
+        }))
+        .filter((s: { skill_name: string }) => s.skill_name.length > 0)
+      if (skills.length > 0) {
+        await supabaseAdmin.from('profile_skills').insert(skills)
+      }
+      const { data } = await supabaseAdmin.from('profile_skills').select('*').eq('profile_id', user.id).order('display_order')
+      relatedResults.profileSkills = data || []
+    }
+
+    if (body.profile_tools !== undefined && Array.isArray(body.profile_tools)) {
+      await supabaseAdmin.from('profile_tools').delete().eq('profile_id', user.id)
+      const tools = body.profile_tools
+        .slice(0, 50)
+        .map((t: Record<string, unknown>, i: number) => ({
+          profile_id: user.id,
+          tool_name: sanitizeText(t.tool_name, 100),
+          category: sanitizeText(t.category, 50) || 'software',
+          icon_url: t.icon_url ? sanitizeText(t.icon_url, 500) : null,
+          display_order: i,
+        }))
+        .filter((t: { tool_name: string }) => t.tool_name.length > 0)
+      if (tools.length > 0) {
+        await supabaseAdmin.from('profile_tools').insert(tools)
+      }
+      const { data } = await supabaseAdmin.from('profile_tools').select('*').eq('profile_id', user.id).order('display_order')
+      relatedResults.profileTools = data || []
+    }
+
+    if (body.social_links !== undefined && Array.isArray(body.social_links)) {
+      await supabaseAdmin.from('profile_social_links').delete().eq('profile_id', user.id)
+      const validPlatforms = [
+        'instagram', 'linkedin', 'behance', 'artstation', 'dribbble', 'github',
+        'vimeo', 'soundcloud', 'spotify', 'youtube', 'x', 'tiktok', 'custom',
+      ]
+      const links = body.social_links
+        .slice(0, 20)
+        .map((l: Record<string, unknown>, i: number) => {
+          const platform = String(l.platform || 'custom')
+          return {
+            profile_id: user.id,
+            platform: validPlatforms.includes(platform) ? platform : 'custom',
+            url: sanitizeText(l.url, 500),
+            display_order: i,
+          }
+        })
+        .filter((l: { url: string }) => l.url.length > 0)
+      if (links.length > 0) {
+        await supabaseAdmin.from('profile_social_links').insert(links)
+      }
+      const { data } = await supabaseAdmin.from('profile_social_links').select('*').eq('profile_id', user.id).order('display_order')
+      relatedResults.socialLinks = data || []
+    }
+
+    if (body.work_experience !== undefined && Array.isArray(body.work_experience)) {
+      await supabaseAdmin.from('work_experience').delete().eq('profile_id', user.id)
+      const validTypes = ['employment', 'education', 'freelance']
+      const entries = body.work_experience
+        .slice(0, 50)
+        .map((e: Record<string, unknown>, i: number) => {
+          const type = String(e.type || 'employment')
+          const title = sanitizeText(e.title, 200)
+          if (!title) return null
+          return {
+            profile_id: user.id,
+            type: validTypes.includes(type) ? type : 'employment',
+            title,
+            organization: e.organization ? sanitizeText(e.organization, 200) : null,
+            location: e.location ? sanitizeText(e.location, 200) : null,
+            start_date: e.start_date || null,
+            end_date: e.end_date || null,
+            is_current: Boolean(e.is_current),
+            description: e.description ? sanitizeText(e.description, 500) : null,
+            display_order: i,
+          }
+        })
+        .filter(Boolean)
+      if (entries.length > 0) {
+        await supabaseAdmin.from('work_experience').insert(entries)
+      }
+      const { data } = await supabaseAdmin.from('work_experience').select('*').eq('profile_id', user.id).order('display_order')
+      relatedResults.workExperience = data || []
+    }
+
+    return NextResponse.json({ profile, extendedProfile, ...relatedResults })
   } catch {
     return NextResponse.json(
       { error: 'Something went wrong.' },
