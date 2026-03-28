@@ -100,7 +100,7 @@ export interface ContentBlock {
   visible: boolean
   label?: string
   config?: Record<string, unknown>
-  content: TextBlockContent | GalleryBlockContent | VideoBlockContent | ProjectBlockContent | TimelineBlockContent | TestimonialsBlockContent | LinksBlockContent | EmbedBlockContent | PdfBlockContent | DividerBlockContent | SkillsBlockContent | AudioBlockContent
+  content: unknown
 }
 
 export interface TextBlockContent {
