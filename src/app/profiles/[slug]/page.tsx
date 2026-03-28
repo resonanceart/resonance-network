@@ -8,6 +8,7 @@ import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabili
 import { ProfileToolsMaterials } from '@/components/profile/ProfileToolsMaterials'
 import { ProfileFeaturedWork } from '@/components/profile/ProfileFeaturedWork'
 import { ProfileProjectCardEnhanced } from '@/components/profile/ProfileProjectCardEnhanced'
+import { ProfileBlockRenderer } from '@/components/profile/ProfileBlockRenderer'
 import { getProfiles, getProfileBySlug } from '@/lib/data'
 import type { Profile } from '@/types'
 import type { Metadata } from 'next'
@@ -194,126 +195,141 @@ export default async function ProfilePage({ params }: { params: { slug: string }
         </div>
       </section>
 
-      {/* Tools & Materials */}
-      {profile.toolsAndMaterials && profile.toolsAndMaterials.length > 0 && (
-        <section className="profile-tools-section">
-          <div className="container">
-            <ProfileToolsMaterials tools={profile.toolsAndMaterials} />
-          </div>
-        </section>
-      )}
-
-      {/* Featured Work */}
-      {profile.projects.some(p => p.isFeatured) && (
-        <section className="profile-featured-section">
-          <div className="container">
-            <p className="section-label">Featured Work</p>
-            <ProfileFeaturedWork projects={profile.projects.filter(p => p.isFeatured)} />
-          </div>
-        </section>
-      )}
-
-      {/* Media Gallery */}
-      {profile.mediaGallery && profile.mediaGallery.length > 0 && (
-        <section className="profile-gallery-section">
-          <div className="container">
-            <p className="section-label">Gallery</p>
-            <ProfileMediaGallery items={profile.mediaGallery} />
-          </div>
-        </section>
-      )}
-
-      {/* About / Bio */}
-      <section className="profile-about">
-        <div className="container">
-          <p className="section-label">About</p>
-          <div className="profile-about__text">
-            {profile.bio.split('\n\n').map((paragraph, i) => (
-              <p key={i}>{paragraph}</p>
-            ))}
-          </div>
+      {/* Content: Block-based or Legacy */}
+      {profile.contentBlocks && profile.contentBlocks.length > 0 ? (
+        <div className="profile-blocks">
+          {profile.contentBlocks
+            .filter(b => b.visible !== false)
+            .sort((a, b) => a.order - b.order)
+            .map(block => (
+              <ProfileBlockRenderer key={block.id} block={block} />
+            ))
+          }
         </div>
-      </section>
+      ) : (
+        <>
+          {/* Tools & Materials */}
+          {profile.toolsAndMaterials && profile.toolsAndMaterials.length > 0 && (
+            <section className="profile-tools-section">
+              <div className="container">
+                <ProfileToolsMaterials tools={profile.toolsAndMaterials} />
+              </div>
+            </section>
+          )}
 
-      {/* Philosophy */}
-      {profile.philosophy && (
-        <section className="profile-philosophy">
-          <div className="container">
-            <p className="section-label">Approach</p>
-            <blockquote className="profile-philosophy__quote">
-              <p>{profile.philosophy}</p>
-            </blockquote>
-          </div>
-        </section>
-      )}
+          {/* Featured Work */}
+          {profile.projects.some(p => p.isFeatured) && (
+            <section className="profile-featured-section">
+              <div className="container">
+                <p className="section-label">Featured Work</p>
+                <ProfileFeaturedWork projects={profile.projects.filter(p => p.isFeatured)} />
+              </div>
+            </section>
+          )}
 
-      {/* Timeline */}
-      {profile.timeline && profile.timeline.length > 0 && (
-        <section className="profile-timeline-section">
-          <div className="container">
-            <p className="section-label">Timeline</p>
-            <h2>Career &amp; Milestones</h2>
-            <ProfileTimeline entries={profile.timeline} />
-          </div>
-        </section>
-      )}
+          {/* Media Gallery */}
+          {profile.mediaGallery && profile.mediaGallery.length > 0 && (
+            <section className="profile-gallery-section">
+              <div className="container">
+                <p className="section-label">Gallery</p>
+                <ProfileMediaGallery items={profile.mediaGallery} />
+              </div>
+            </section>
+          )}
 
-      {/* All Projects (non-featured) */}
-      {profile.projects.filter(p => !p.isFeatured).length > 0 && (
-        <section className="profile-work">
-          <div className="container">
-            <p className="section-label">Work</p>
-            <h2>All Projects</h2>
-            <div className="profile-work__grid">
-              {profile.projects.filter(p => !p.isFeatured).map((project, i) => (
-                <ProfileProjectCardEnhanced key={i} project={project} />
-              ))}
+          {/* About / Bio */}
+          <section className="profile-about">
+            <div className="container">
+              <p className="section-label">About</p>
+              <div className="profile-about__text">
+                {profile.bio.split('\n\n').map((paragraph, i) => (
+                  <p key={i}>{paragraph}</p>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
 
-      {/* Achievements */}
-      {profile.achievements && profile.achievements.length > 0 && (
-        <section className="profile-achievements">
-          <div className="container">
-            <p className="section-label">Recognition</p>
-            <ul className="profile-achievements__list">
-              {profile.achievements.map((a, i) => (
-                <li key={i}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <path d="M8 1l1.8 3.6L14 5.3l-3 2.9.7 4.1L8 10.5l-3.7 1.8.7-4.1-3-2.9 4.2-.7L8 1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
-                  </svg>
-                  <span>{a}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      )}
+          {/* Philosophy */}
+          {profile.philosophy && (
+            <section className="profile-philosophy">
+              <div className="container">
+                <p className="section-label">Approach</p>
+                <blockquote className="profile-philosophy__quote">
+                  <p>{profile.philosophy}</p>
+                </blockquote>
+              </div>
+            </section>
+          )}
 
-      {/* Links */}
-      {profile.links.length > 0 && (
-        <section className="profile-links-section">
-          <div className="container">
-            <p className="section-label">Connect</p>
-            <div className="profile-links-row">
-              {profile.links.map(link => (
-                <a
-                  key={link.url}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="profile-link-btn"
-                  aria-label={link.label}
-                >
-                  {getLinkIcon(link.type)}
-                  <span>{link.label}</span>
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
+          {/* Timeline */}
+          {profile.timeline && profile.timeline.length > 0 && (
+            <section className="profile-timeline-section">
+              <div className="container">
+                <p className="section-label">Timeline</p>
+                <h2>Career &amp; Milestones</h2>
+                <ProfileTimeline entries={profile.timeline} />
+              </div>
+            </section>
+          )}
+
+          {/* All Projects (non-featured) */}
+          {profile.projects.filter(p => !p.isFeatured).length > 0 && (
+            <section className="profile-work">
+              <div className="container">
+                <p className="section-label">Work</p>
+                <h2>All Projects</h2>
+                <div className="profile-work__grid">
+                  {profile.projects.filter(p => !p.isFeatured).map((project, i) => (
+                    <ProfileProjectCardEnhanced key={i} project={project} />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Achievements */}
+          {profile.achievements && profile.achievements.length > 0 && (
+            <section className="profile-achievements">
+              <div className="container">
+                <p className="section-label">Recognition</p>
+                <ul className="profile-achievements__list">
+                  {profile.achievements.map((a, i) => (
+                    <li key={i}>
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M8 1l1.8 3.6L14 5.3l-3 2.9.7 4.1L8 10.5l-3.7 1.8.7-4.1-3-2.9 4.2-.7L8 1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                      </svg>
+                      <span>{a}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+          )}
+
+          {/* Links */}
+          {profile.links.length > 0 && (
+            <section className="profile-links-section">
+              <div className="container">
+                <p className="section-label">Connect</p>
+                <div className="profile-links-row">
+                  {profile.links.map(link => (
+                    <a
+                      key={link.url}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="profile-link-btn"
+                      aria-label={link.label}
+                    >
+                      {getLinkIcon(link.type)}
+                      <span>{link.label}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+        </>
       )}
 
       {/* CTA */}
