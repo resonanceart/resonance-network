@@ -142,7 +142,7 @@ export default function DashboardPage() {
       <div className="container">
         {/* Navigation */}
         <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
-          <Link href="/dashboard/profile" className="btn btn--outline btn--sm">Edit Profile</Link>
+          <Link href="/dashboard/profile/live-edit" className="btn btn--outline btn--sm">Edit Profile</Link>
           <Link href="/dashboard/settings" className="btn btn--outline btn--sm">Settings</Link>
         </div>
 
@@ -180,7 +180,7 @@ export default function DashboardPage() {
                 style={{ width: `${profileCompletion}%` }}
               />
             </div>
-            <Link href="/dashboard/profile" className="btn btn--primary btn--sm">
+            <Link href="/dashboard/profile/live-edit" className="btn btn--primary btn--sm">
               Edit Profile
             </Link>
           </div>
@@ -201,6 +201,34 @@ export default function DashboardPage() {
             <span className="dashboard-stat-card__label">Profile Complete</span>
           </div>
         </div>
+
+        {/* Edit Your Profile Card */}
+        <Link href="/dashboard/profile/live-edit" className="dashboard-live-edit-card" style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--space-5)',
+          padding: 'var(--space-5) var(--space-6)',
+          background: 'var(--color-primary-light)',
+          border: '1px solid var(--color-primary)',
+          borderRadius: 'var(--radius-lg)',
+          marginBottom: 'var(--space-8)',
+          textDecoration: 'none',
+          transition: 'box-shadow 0.2s, transform 0.2s',
+        }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          <div>
+            <strong style={{ color: 'var(--color-primary)', fontSize: 'var(--text-lg)' }}>Edit Your Profile</strong>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', margin: 0 }}>
+              See your profile and edit it in real time
+            </p>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginLeft: 'auto', flexShrink: 0 }}>
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </Link>
 
         {/* Followed Projects */}
         <div className="dashboard-section">
