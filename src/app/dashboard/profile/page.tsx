@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/components/AuthProvider'
 import BlockEditor from '@/components/dashboard/BlockEditor'
+import ProfileSettingsPanel from '@/components/dashboard/ProfileSettingsPanel'
 import type { UserProfile, ContentBlock } from '@/types'
 
 function generateBlocksFromLegacy(
@@ -102,6 +103,33 @@ export default function ProfileEditPage() {
   // Profile visibility
   const [profileVisibility, setProfileVisibility] = useState<string>('draft')
 
+  // New extended profile fields
+  const [professionalTitle, setProfessionalTitle] = useState('')
+  const [pronouns, setPronouns] = useState('')
+  const [locationSecondary, setLocationSecondary] = useState('')
+  const [availabilityTypes, setAvailabilityTypes] = useState<string[]>([])
+  const [ctaPrimaryLabel, setCtaPrimaryLabel] = useState('')
+  const [ctaPrimaryAction, setCtaPrimaryAction] = useState('contact')
+  const [ctaPrimaryUrl, setCtaPrimaryUrl] = useState('')
+  const [ctaSecondaryLabel, setCtaSecondaryLabel] = useState('')
+  const [ctaSecondaryAction, setCtaSecondaryAction] = useState('url')
+  const [ctaSecondaryUrl, setCtaSecondaryUrl] = useState('')
+  const [socialLinks, setSocialLinks] = useState<Array<{id: string; platform: string; url: string; display_order: number}>>([])
+  const [sectionOrder, setSectionOrder] = useState<string[]>(['skills', 'tools', 'portfolio', 'gallery', 'about', 'timeline', 'projects', 'achievements', 'links'])
+  const [sectionVisibility, setSectionVisibility] = useState<Record<string, boolean>>({})
+  const [bioExcerpt, setBioExcerpt] = useState('')
+
+  // Settings panel
+  const [settingsOpen, setSettingsOpen] = useState(false)
+
+  // Enhanced skills/tools
+  const [profileSkills, setProfileSkills] = useState<Array<{id: string; skill_name: string; category: string; display_order: number}>>([])
+  const [profileTools, setProfileTools] = useState<Array<{id: string; tool_name: string; category: string; display_order: number}>>([])
+  const [newSkillName, setNewSkillName] = useState('')
+  const [newSkillCategory, setNewSkillCategory] = useState('design')
+  const [newToolName, setNewToolName] = useState('')
+  const [newToolCategory, setNewToolCategory] = useState('software')
+
   // Content blocks
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([])
   const [blocksDirty, setBlocksDirty] = useState(false)
@@ -132,6 +160,22 @@ export default function ProfileEditPage() {
           setAvailabilityStatus((ext.availability_status as string) || 'open')
           setAvailabilityNote((ext.availability_note as string) || '')
           setCoverImageUrl((ext.cover_image_url as string) || null)
+          setProfessionalTitle((ext.professional_title as string) || '')
+          setPronouns((ext.pronouns as string) || '')
+          setLocationSecondary((ext.location_secondary as string) || '')
+          setAvailabilityTypes((ext.availability_types as string[]) || [])
+          setCtaPrimaryLabel((ext.cta_primary_label as string) || '')
+          setCtaPrimaryAction((ext.cta_primary_action as string) || 'contact')
+          setCtaPrimaryUrl((ext.cta_primary_url as string) || '')
+          setCtaSecondaryLabel((ext.cta_secondary_label as string) || '')
+          setCtaSecondaryAction((ext.cta_secondary_action as string) || 'url')
+          setCtaSecondaryUrl((ext.cta_secondary_url as string) || '')
+          setSocialLinks((ext.social_links as Array<{id: string; platform: string; url: string; display_order: number}>) || [])
+          setSectionOrder((ext.section_order as string[]) || ['skills', 'tools', 'portfolio', 'gallery', 'about', 'timeline', 'projects', 'achievements', 'links'])
+          setSectionVisibility((ext.section_visibility as Record<string, boolean>) || {})
+          setBioExcerpt((ext.bio_excerpt as string) || '')
+          setProfileSkills((ext.profile_skills as Array<{id: string; skill_name: string; category: string; display_order: number}>) || [])
+          setProfileTools((ext.profile_tools as Array<{id: string; tool_name: string; category: string; display_order: number}>) || [])
         }
 
         // Load content blocks or migrate from legacy data
@@ -282,6 +326,22 @@ export default function ProfileEditPage() {
           availability_status: availabilityStatus,
           availability_note: availabilityNote.trim() || null,
           cover_image_url: coverImageUrl,
+          professional_title: professionalTitle.trim() || null,
+          pronouns: pronouns.trim() || null,
+          location_secondary: locationSecondary.trim() || null,
+          availability_types: availabilityTypes,
+          cta_primary_label: ctaPrimaryLabel.trim() || null,
+          cta_primary_action: ctaPrimaryAction,
+          cta_primary_url: ctaPrimaryUrl.trim() || null,
+          cta_secondary_label: ctaSecondaryLabel.trim() || null,
+          cta_secondary_action: ctaSecondaryAction,
+          cta_secondary_url: ctaSecondaryUrl.trim() || null,
+          social_links: socialLinks,
+          section_order: sectionOrder,
+          section_visibility: sectionVisibility,
+          bio_excerpt: bioExcerpt.trim() || null,
+          profile_skills: profileSkills,
+          profile_tools: profileTools,
         }),
       })
       if (res.ok) {
@@ -629,6 +689,168 @@ export default function ProfileEditPage() {
           </div>
         </div>
 
+        {/* Enhanced Skills Editor */}
+        <div className="skill-tool-editor">
+          <h3>Enhanced Skills</h3>
+          <p className="skill-tool-editor__desc">
+            Add categorized skills to your profile for better discoverability.
+          </p>
+          {profileSkills.length > 0 && (
+            <div className="skill-tool-editor__list">
+              {profileSkills.map(skill => (
+                <span key={skill.id} className="skill-tool-editor__item">
+                  {skill.skill_name}
+                  <span className="skill-tool-editor__item-category">{skill.category}</span>
+                  <button
+                    type="button"
+                    className="skill-tool-editor__item-remove"
+                    onClick={() => setProfileSkills(prev => prev.filter(s => s.id !== skill.id))}
+                    aria-label={`Remove ${skill.skill_name}`}
+                  >
+                    &times;
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          <div className="skill-tool-editor__add-row">
+            <input
+              type="text"
+              className="form-input"
+              value={newSkillName}
+              onChange={e => setNewSkillName(e.target.value)}
+              placeholder="Skill name"
+              maxLength={100}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  if (newSkillName.trim()) {
+                    setProfileSkills(prev => [...prev, {
+                      id: crypto.randomUUID?.() ?? Math.random().toString(36).substr(2, 9),
+                      skill_name: newSkillName.trim(),
+                      category: newSkillCategory,
+                      display_order: prev.length,
+                    }])
+                    setNewSkillName('')
+                  }
+                }
+              }}
+            />
+            <select
+              className="form-input"
+              value={newSkillCategory}
+              onChange={e => setNewSkillCategory(e.target.value)}
+              style={{ width: '160px', flexShrink: 0 }}
+            >
+              <option value="design">Design</option>
+              <option value="architecture">Architecture</option>
+              <option value="fabrication">Fabrication</option>
+              <option value="sound">Sound</option>
+              <option value="technology">Technology</option>
+              <option value="production">Production</option>
+              <option value="strategy">Strategy</option>
+              <option value="community">Community</option>
+            </select>
+            <button
+              type="button"
+              className="btn btn--outline"
+              style={{ flexShrink: 0 }}
+              onClick={() => {
+                if (newSkillName.trim()) {
+                  setProfileSkills(prev => [...prev, {
+                    id: crypto.randomUUID?.() ?? Math.random().toString(36).substr(2, 9),
+                    skill_name: newSkillName.trim(),
+                    category: newSkillCategory,
+                    display_order: prev.length,
+                  }])
+                  setNewSkillName('')
+                }
+              }}
+            >
+              Add
+            </button>
+          </div>
+        </div>
+
+        {/* Enhanced Tools Editor */}
+        <div className="skill-tool-editor">
+          <h3>Enhanced Tools</h3>
+          <p className="skill-tool-editor__desc">
+            Add categorized tools and technologies to your profile.
+          </p>
+          {profileTools.length > 0 && (
+            <div className="skill-tool-editor__list">
+              {profileTools.map(tool => (
+                <span key={tool.id} className="skill-tool-editor__item">
+                  {tool.tool_name}
+                  <span className="skill-tool-editor__item-category">{tool.category}</span>
+                  <button
+                    type="button"
+                    className="skill-tool-editor__item-remove"
+                    onClick={() => setProfileTools(prev => prev.filter(t => t.id !== tool.id))}
+                    aria-label={`Remove ${tool.tool_name}`}
+                  >
+                    &times;
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          <div className="skill-tool-editor__add-row">
+            <input
+              type="text"
+              className="form-input"
+              value={newToolName}
+              onChange={e => setNewToolName(e.target.value)}
+              placeholder="Tool name"
+              maxLength={100}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  if (newToolName.trim()) {
+                    setProfileTools(prev => [...prev, {
+                      id: crypto.randomUUID?.() ?? Math.random().toString(36).substr(2, 9),
+                      tool_name: newToolName.trim(),
+                      category: newToolCategory,
+                      display_order: prev.length,
+                    }])
+                    setNewToolName('')
+                  }
+                }
+              }}
+            />
+            <select
+              className="form-input"
+              value={newToolCategory}
+              onChange={e => setNewToolCategory(e.target.value)}
+              style={{ width: '160px', flexShrink: 0 }}
+            >
+              <option value="software">Software</option>
+              <option value="hardware">Hardware</option>
+              <option value="materials">Materials</option>
+              <option value="processes">Processes</option>
+            </select>
+            <button
+              type="button"
+              className="btn btn--outline"
+              style={{ flexShrink: 0 }}
+              onClick={() => {
+                if (newToolName.trim()) {
+                  setProfileTools(prev => [...prev, {
+                    id: crypto.randomUUID?.() ?? Math.random().toString(36).substr(2, 9),
+                    tool_name: newToolName.trim(),
+                    category: newToolCategory,
+                    display_order: prev.length,
+                  }])
+                  setNewToolName('')
+                }
+              }}
+            >
+              Add
+            </button>
+          </div>
+        </div>
+
         {/* Availability Status */}
         <div className="form-group">
           <label htmlFor="availability-status" className="form-label">Availability Status</label>
@@ -740,6 +962,18 @@ export default function ProfileEditPage() {
           >
             {saving ? 'Saving...' : 'Save Profile'}
           </button>
+          <button
+            type="button"
+            className="btn btn--outline"
+            onClick={() => setSettingsOpen(true)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+            Settings
+          </button>
           <Link href="/dashboard" className="btn btn--outline">
             Cancel
           </Link>
@@ -777,6 +1011,57 @@ export default function ProfileEditPage() {
           )}
         </div>
       </div>
+
+      {/* Profile Settings Panel */}
+      <ProfileSettingsPanel
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        profileSlug={slugifyName(displayName)}
+        initialData={{
+          displayName,
+          title: professionalTitle,
+          pronouns,
+          location,
+          locationSecondary,
+          availabilityStatus,
+          availabilityNote,
+          availabilityTypes,
+          ctaPrimaryLabel,
+          ctaPrimaryAction,
+          ctaPrimaryUrl,
+          ctaSecondaryLabel,
+          ctaSecondaryAction,
+          ctaSecondaryUrl,
+          socialLinks,
+          sectionOrder,
+          sectionVisibility,
+          slug: slugifyName(displayName),
+          bioExcerpt,
+        }}
+        onSave={(data) => {
+          setDisplayName((data.displayName as string) || displayName)
+          setProfessionalTitle((data.title as string) || '')
+          setPronouns((data.pronouns as string) || '')
+          setLocation((data.location as string) || '')
+          setLocationSecondary((data.locationSecondary as string) || '')
+          setAvailabilityStatus((data.availabilityStatus as string) || 'open')
+          setAvailabilityNote((data.availabilityNote as string) || '')
+          setAvailabilityTypes((data.availabilityTypes as string[]) || [])
+          setCtaPrimaryLabel((data.ctaPrimaryLabel as string) || '')
+          setCtaPrimaryAction((data.ctaPrimaryAction as string) || 'contact')
+          setCtaPrimaryUrl((data.ctaPrimaryUrl as string) || '')
+          setCtaSecondaryLabel((data.ctaSecondaryLabel as string) || '')
+          setCtaSecondaryAction((data.ctaSecondaryAction as string) || 'url')
+          setCtaSecondaryUrl((data.ctaSecondaryUrl as string) || '')
+          setSocialLinks((data.socialLinks as Array<{id: string; platform: string; url: string; display_order: number}>) || [])
+          setSectionOrder((data.sectionOrder as string[]) || sectionOrder)
+          setSectionVisibility((data.sectionVisibility as Record<string, boolean>) || {})
+          setBioExcerpt((data.bioExcerpt as string) || '')
+          // Trigger save after updating state
+          setTimeout(() => saveProfile(), 100)
+          setSettingsOpen(false)
+        }}
+      />
     </div>
   )
 }
