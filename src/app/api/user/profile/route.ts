@@ -5,6 +5,11 @@ import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, getClientIp } from '@/lib/sanitize'
 import { validateCsrf } from '@/lib/csrf'
 
+// Increase body size limit to 10MB for base64 image uploads
+export const runtime = 'nodejs'
+export const maxDuration = 30
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: Request) {
   try {
     const ip = getClientIp(request)
@@ -206,7 +211,7 @@ export async function PUT(request: Request) {
     // Sanitize updatable fields
     const updates: Record<string, unknown> = {}
     if (body.display_name !== undefined) updates.display_name = sanitizeText(body.display_name, 200)
-    if (body.bio !== undefined) updates.bio = sanitizeText(body.bio, 2000)
+    if (body.bio !== undefined) updates.bio = sanitizeText(body.bio, 5000)
     if (body.location !== undefined) updates.location = sanitizeText(body.location, 200)
     if (body.website !== undefined) updates.website = sanitizeText(body.website, 500)
     if (body.avatar_url !== undefined) {
@@ -246,10 +251,13 @@ export async function PUT(request: Request) {
       }
     }
     if (body.resume_url !== undefined) {
-      if (typeof body.resume_url === 'string' && body.resume_url.startsWith('data:')) {
-        extendedFields.resume_url = body.resume_url
+      if (body.resume_url === null) {
+        extendedFields.resume_url = null
+      } else if (typeof body.resume_url === 'string' && body.resume_url.startsWith('data:')) {
+        // Allow base64 PDFs up to ~7MB encoded
+        extendedFields.resume_url = body.resume_url.length <= 10_000_000 ? body.resume_url : null
       } else {
-        extendedFields.resume_url = sanitizeText(body.resume_url, 1000)
+        extendedFields.resume_url = sanitizeText(body.resume_url, 2000)
       }
     }
     if (body.tools_and_materials !== undefined && Array.isArray(body.tools_and_materials)) {
@@ -310,15 +318,6 @@ export async function PUT(request: Request) {
       const cols = parseInt(body.gallery_columns, 10)
       if (cols >= 1 && cols <= 6) extendedFields.gallery_columns = cols
     }
-    if (body.resume_url !== undefined) {
-      if (body.resume_url === null) {
-        extendedFields.resume_url = null
-      } else if (typeof body.resume_url === 'string') {
-        // Allow base64 PDFs up to 5MB
-        extendedFields.resume_url = body.resume_url.length <= 7_000_000 ? body.resume_url : null
-      }
-    }
-
     // Check if we have related table arrays to update
     const hasRelatedUpdates =
       body.profile_skills !== undefined ||
