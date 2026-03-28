@@ -91,6 +91,88 @@ export interface ProfileTimelineEntry {
   category: 'exhibition' | 'education' | 'award' | 'residency' | 'career' | 'publication' | 'other'
 }
 
+// ─── Content Block System ───────────────────────────────────────
+
+export interface ContentBlock {
+  id: string
+  type: 'text' | 'gallery' | 'video' | 'project' | 'timeline' | 'testimonials' | 'links' | 'embed' | 'pdf' | 'divider' | 'skills' | 'audio'
+  order: number
+  visible: boolean
+  label?: string
+  config?: Record<string, unknown>
+  content: TextBlockContent | GalleryBlockContent | VideoBlockContent | ProjectBlockContent | TimelineBlockContent | TestimonialsBlockContent | LinksBlockContent | EmbedBlockContent | PdfBlockContent | DividerBlockContent | SkillsBlockContent | AudioBlockContent
+}
+
+export interface TextBlockContent {
+  markdown: string
+}
+
+export interface GalleryBlockContent {
+  items: { url: string; alt: string; caption?: string; isFeatured?: boolean }[]
+}
+
+export interface VideoBlockContent {
+  url: string
+  caption?: string
+}
+
+export interface ProjectBlockContent {
+  title: string
+  description: string
+  image?: string
+  url?: string
+  year?: string
+  role?: string
+  materials?: string[]
+  outcomes?: string
+  galleryImages?: { url: string; alt: string; caption?: string }[]
+  isFeatured?: boolean
+}
+
+export interface TimelineBlockContent {
+  entries: ProfileTimelineEntry[]
+}
+
+export interface TestimonialsBlockContent {
+  items: {
+    quote: string
+    authorName: string
+    authorTitle?: string
+    authorPhoto?: string
+    relationship?: string
+  }[]
+}
+
+export interface LinksBlockContent {
+  items: ProfileLink[]
+}
+
+export interface EmbedBlockContent {
+  url: string
+  height?: number
+}
+
+export interface PdfBlockContent {
+  url: string
+  title: string
+  description?: string
+}
+
+export interface DividerBlockContent {
+  variant: 'line' | 'dots' | 'space'
+  label?: string
+}
+
+export interface SkillsBlockContent {
+  tags: string[]
+  label?: string
+}
+
+export interface AudioBlockContent {
+  url: string
+  title?: string
+}
+
 export interface Profile {
   id: string
   slug: string
@@ -113,6 +195,7 @@ export interface Profile {
   toolsAndMaterials?: string[]
   availabilityStatus?: 'open' | 'busy' | 'unavailable'
   availabilityNote?: string
+  contentBlocks?: ContentBlock[]
   status: 'published' | 'draft'
   source?: 'json' | 'supabase'
   supabaseId?: string
@@ -212,3 +295,4 @@ export interface CollaborationInterest {
   project_title: string | null
   status: string
 }
+

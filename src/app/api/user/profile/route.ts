@@ -222,6 +222,16 @@ export async function PUT(request: Request) {
       }
     }
     if (body.availability_note !== undefined) extendedFields.availability_note = sanitizeText(body.availability_note, 500)
+    if (body.content_blocks !== undefined) {
+      if (Array.isArray(body.content_blocks) && body.content_blocks.length <= 50) {
+        extendedFields.content_blocks = body.content_blocks
+      }
+    }
+    // Accept non-prefixed field names as fallbacks for dashboard compatibility
+    if (body.projects !== undefined && extendedFields.projects === undefined) extendedFields.projects = body.projects
+    if (body.links !== undefined && extendedFields.links === undefined) extendedFields.links = body.links
+    if (body.achievements !== undefined && extendedFields.achievements === undefined) extendedFields.achievements = body.achievements
+    if (body.philosophy !== undefined && extendedFields.philosophy === undefined) extendedFields.philosophy = sanitizeText(body.philosophy || '', 5000)
 
     if (Object.keys(updates).length === 0 && Object.keys(extendedFields).length === 0) {
       return NextResponse.json(

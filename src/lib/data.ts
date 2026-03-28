@@ -143,6 +143,7 @@ function mapUserProfileRow(row: Record<string, unknown>, extended?: Record<strin
       coverImageUrl: extended.cover_image_url || undefined,
       achievements: extended.achievements || undefined,
       philosophy: extended.philosophy || undefined,
+      contentBlocks: extended.content_blocks || undefined,
     } : {}),
   } as Profile
 }
@@ -246,6 +247,7 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
                 toolsAndMaterials: extended.tools_and_materials || undefined,
                 availabilityStatus: extended.availability_status || undefined,
                 availabilityNote: extended.availability_note || undefined,
+                contentBlocks: extended.content_blocks || undefined,
               } as Profile
             }
           }
@@ -324,6 +326,7 @@ export async function getProfileByUserId(userId: string): Promise<Profile | null
             toolsAndMaterials: extended.tools_and_materials || undefined,
             availabilityStatus: extended.availability_status || undefined,
             availabilityNote: extended.availability_note || undefined,
+            contentBlocks: extended.content_blocks || undefined,
           } as Profile
         }
         return base
@@ -363,6 +366,7 @@ export async function getProfileByUserId(userId: string): Promise<Profile | null
         toolsAndMaterials: extended.tools_and_materials || undefined,
         availabilityStatus: extended.availability_status || undefined,
         availabilityNote: extended.availability_note || undefined,
+        contentBlocks: extended.content_blocks || undefined,
       } : {}),
     } as Profile
   } catch {
