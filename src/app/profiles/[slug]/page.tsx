@@ -223,7 +223,7 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
-const DEFAULT_SECTION_ORDER = ['portfolio_grid', 'skills', 'tools', 'portfolio', 'gallery', 'about', 'experience', 'timeline', 'projects', 'achievements', 'links']
+const DEFAULT_SECTION_ORDER = ['portfolio_grid', 'skills', 'tools', 'portfolio', 'gallery', 'past_work', 'about', 'experience', 'timeline', 'projects', 'achievements', 'links']
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -435,6 +435,39 @@ export default async function ProfilePage({ params }: { params: { slug: string }
                 <div className="container">
                   <p className="section-label">Gallery</p>
                   <ProfileMediaGallery items={profile.mediaGallery} />
+                </div>
+              </section>
+            </div>
+          )
+        }
+        return null
+
+      case 'past_work':
+        if (profile.past_work && profile.past_work.length > 0) {
+          return (
+            <div key={key} data-section={key}>
+              <section className="profile-past-work-section">
+                <div className="container">
+                  <p className="section-label">Past Work</p>
+                  <div className="past-work-grid">
+                    {profile.past_work.map((item, i) => (
+                      <div key={i} className="past-work-card">
+                        <div className="past-work-card__image-wrapper">
+                          <img
+                            src={item.url}
+                            alt={item.title}
+                            className="past-work-card__image"
+                          />
+                          <div className="past-work-card__overlay">
+                            <span className="past-work-card__title">{item.title}</span>
+                            {item.description && (
+                              <span className="past-work-card__desc">{item.description}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </section>
             </div>
@@ -755,7 +788,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
       ) : (
         <ProfileTabsClient
           tabs={[
-            { key: 'work', label: 'Work', sections: ['portfolio_grid', 'portfolio', 'projects', 'skills', 'tools'] },
+            { key: 'work', label: 'Work', sections: ['portfolio_grid', 'portfolio', 'past_work', 'projects', 'skills', 'tools'] },
             { key: 'about', label: 'About', sections: ['about', 'achievements', 'links'] },
             { key: 'timeline', label: 'Timeline', sections: ['experience', 'timeline'] },
             { key: 'gallery', label: 'Gallery', sections: ['gallery'] },
