@@ -40,7 +40,7 @@ export function ProfileChecklist({
     { key: 'skills', label: 'Add your skills (3+)', done: hasSkills },
     { key: 'availability', label: 'Set your availability', done: hasAvailability },
     { key: 'cover', label: 'Add a cover image', done: hasCover },
-    { key: 'project', label: 'Add your first work', done: hasProject },
+    { key: 'project', label: 'Add past work images', done: hasProject },
   ]
 
   const sectionMap: Record<string, string> = {
@@ -111,6 +111,14 @@ export function ProfileChecklist({
             <div className="profile-checklist__progress-bar" style={{ width: `${percentage}%` }} />
           </div>
           <span className="profile-checklist__progress-text">{percentage}% complete</span>
+
+          {percentage < 30 && !collapsed && (
+            <div style={{ padding: '0 var(--space-5) var(--space-3)', textAlign: 'center' }}>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', fontWeight: 600 }}>
+                Let&apos;s get started! Complete your profile to connect with the community.
+              </p>
+            </div>
+          )}
 
           <ul className="profile-checklist__items">
             {items.map((item) => {

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge'
 import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabilityBadge'
 import { ProfileSkillsDisplay } from '@/components/profile/ProfileSkillsDisplay'
 import { ProfileToolsDisplay } from '@/components/profile/ProfileToolsDisplay'
+import { ProfileChecklist } from '@/components/profile/ProfileChecklist'
 import type { ProfileSkill, ProfileTool, ProfileSocialLink } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -396,6 +397,7 @@ export default function LiveProfileEditor() {
   const [savedMessage, setSavedMessage] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [activePanel, setActivePanel] = useState<EditSection>(null)
+  const [showWelcome, setShowWelcome] = useState(false)
 
   // ALL profile fields as state — these drive the live preview
   const [displayName, setDisplayName] = useState('')
@@ -485,6 +487,11 @@ export default function LiveProfileEditor() {
         if (data.profileSkills) setProfileSkills(data.profileSkills as SkillEntry[])
         if (data.profileTools) setProfileTools(data.profileTools as ToolEntry[])
         if (data.socialLinks) setSocialLinks(data.socialLinks as SocialEntry[])
+
+        // Show welcome overlay for brand new profiles
+        if (!p?.avatar_url && !p?.bio) {
+          setShowWelcome(true)
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -1170,6 +1177,34 @@ export default function LiveProfileEditor() {
           </div>
         </section>
       </article>
+
+      {/* Profile Checklist */}
+      <ProfileChecklist
+        hasAvatar={!!avatarUrl}
+        hasBio={!!(bio && bio.length > 50)}
+        hasSkills={profileSkills.length >= 3}
+        hasAvailability={!!availabilityStatus}
+        hasCover={!!coverImageUrl}
+        hasProject={false}
+        onEditSection={(section) => openPanel(section as EditSection)}
+      />
+
+      {/* Welcome overlay for brand new profiles */}
+      {showWelcome && (
+        <div className="live-editor__welcome-overlay">
+          <div className="live-editor__welcome-card">
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-2xl)', fontWeight: 700, marginBottom: 'var(--space-3)' }}>
+              Welcome to your profile!
+            </h2>
+            <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)', lineHeight: 1.6 }}>
+              Click on any section to start building your profile. Add your photo, write your bio, and share your skills with the community.
+            </p>
+            <button className="btn btn--primary" onClick={() => setShowWelcome(false)}>
+              Got it, let&apos;s go!
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Slide-in Edit Panel ─────────────────────────────────── */}
       {activePanel && (
@@ -1899,6 +1934,31 @@ export default function LiveProfileEditor() {
         .live-editor__gallery-dropzone--drag {
           border-color: var(--color-accent, #01696F) !important;
           background: rgba(1, 105, 111, 0.08) !important;
+        }
+
+        /* Welcome overlay */
+        .live-editor__welcome-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 2000;
+          background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: var(--space-4);
+          animation: fadeIn 0.3s ease-out;
+        }
+        .live-editor__welcome-card {
+          background: var(--color-surface);
+          border: 1px solid var(--color-border);
+          border-radius: 16px;
+          padding: var(--space-8);
+          max-width: 440px;
+          width: 100%;
+          text-align: center;
+          box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+          animation: slideInRight 0.3s ease-out;
         }
       `}</style>
     </div>

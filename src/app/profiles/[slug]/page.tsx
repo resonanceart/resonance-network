@@ -6,14 +6,11 @@ import { ProfileMediaGallery } from '@/components/profile/ProfileMediaGallery'
 import { ProfileTimeline } from '@/components/profile/ProfileTimeline'
 import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabilityBadge'
 import { ProfileToolsMaterials } from '@/components/profile/ProfileToolsMaterials'
-import { ProfileFeaturedWork } from '@/components/profile/ProfileFeaturedWork'
-import { ProfileProjectCardEnhanced } from '@/components/profile/ProfileProjectCardEnhanced'
 import { ProfileBlockRenderer } from '@/components/profile/ProfileBlockRenderer'
 import { ProfileSkillsDisplay } from '@/components/profile/ProfileSkillsDisplay'
 import { ProfileToolsDisplay } from '@/components/profile/ProfileToolsDisplay'
 import { ProfileHeaderClient } from '@/components/profile/ProfileHeaderClient'
 import { ProfileTabsClient } from '@/components/profile/ProfileTabsClient'
-import { PortfolioGrid } from '@/components/profile/PortfolioGrid'
 import { ProfileEditOverlay } from '@/components/profile/ProfileEditOverlay'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { getProfiles, getProfileBySlug } from '@/lib/data'
@@ -223,7 +220,7 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
-const DEFAULT_SECTION_ORDER = ['portfolio_grid', 'skills', 'tools', 'portfolio', 'gallery', 'past_work', 'about', 'experience', 'timeline', 'projects', 'achievements', 'links']
+const DEFAULT_SECTION_ORDER = ['skills', 'past_work', 'gallery', 'about', 'experience', 'timeline', 'achievements', 'links']
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -362,19 +359,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
 
     switch (key) {
       case 'portfolio_grid':
-        if (profile.portfolio_projects && profile.portfolio_projects.length > 0) {
-          return (
-            <div key={key} data-section={key}>
-              <section className="profile-portfolio-section">
-                <div className="container">
-                  <p className="section-label">Work</p>
-                  <PortfolioGrid projects={profile.portfolio_projects} profileSlug={profile.slug} />
-                </div>
-              </section>
-            </div>
-          )
-        }
-        return null
+        return null  // Portfolio section removed
 
       case 'skills':
         const hasSkills = profile.profile_skills && profile.profile_skills.length > 0
@@ -413,19 +398,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
         return null  // Tools are now shown within the Skills section
 
       case 'portfolio':
-        if (profile.projects.some(p => p.isFeatured)) {
-          return (
-            <div key={key} data-section={key}>
-              <section className="profile-featured-section">
-                <div className="container">
-                  <p className="section-label">Featured Work</p>
-                  <ProfileFeaturedWork projects={profile.projects.filter(p => p.isFeatured)} />
-                </div>
-              </section>
-            </div>
-          )
-        }
-        return null
+        return null  // Featured work section removed
 
       case 'gallery':
         if (profile.mediaGallery && profile.mediaGallery.length > 0) {
@@ -538,24 +511,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
         return null
 
       case 'projects':
-        if (profile.projects.filter(p => !p.isFeatured).length > 0) {
-          return (
-            <div key={key} data-section={key}>
-              <section className="profile-work">
-                <div className="container">
-                  <p className="section-label">Work</p>
-                  <h2>All Work</h2>
-                  <div className="profile-work__grid">
-                    {profile.projects.filter(p => !p.isFeatured).map((project, i) => (
-                      <ProfileProjectCardEnhanced key={i} project={project} />
-                    ))}
-                  </div>
-                </div>
-              </section>
-            </div>
-          )
-        }
-        return null
+        return null  // Projects section removed
 
       case 'achievements':
         if (profile.achievements && profile.achievements.length > 0) {
@@ -625,7 +581,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
       hasSkills={!!(profile.profile_skills && profile.profile_skills.length >= 3) || profile.specialties.length >= 3}
       hasAvailability={!!profile.availabilityStatus}
       hasCover={!!profile.coverImage}
-      hasWork={!!(profile.portfolio_projects && profile.portfolio_projects.length > 0) || profile.projects.some(p => p.isFeatured)}
+      hasWork={!!(profile.past_work && profile.past_work.length > 0)}
     >
     <article className="profile-page">
       <script
@@ -788,7 +744,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
       ) : (
         <ProfileTabsClient
           tabs={[
-            { key: 'work', label: 'Work', sections: ['portfolio_grid', 'portfolio', 'past_work', 'projects', 'skills', 'tools'] },
+            { key: 'work', label: 'Work', sections: ['skills', 'past_work'] },
             { key: 'about', label: 'About', sections: ['about', 'achievements', 'links'] },
             { key: 'timeline', label: 'Timeline', sections: ['experience', 'timeline'] },
             { key: 'gallery', label: 'Gallery', sections: ['gallery'] },
