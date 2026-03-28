@@ -13655,3 +13655,147 @@ main {
     align-items: center;
   }
 }
+
+/* ============================================================
+   ABOUT PAGE — Compact & Visual Redesign
+   ============================================================ */
+
+/* Hero — immersive, no breadcrumb */
+.about-hero--immersive {
+  padding: var(--space-24) 0 var(--space-16);
+  text-align: center;
+}
+
+/* Mission/Vision — larger text */
+.mission-vision-grid--large .mission-vision__label {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-3);
+}
+
+.mission-vision-grid--large .mission-vision__text {
+  font-size: clamp(1.1rem, 1rem + 0.4vw, 1.4rem);
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+}
+
+/* Values — title only, compact */
+.values-grid--compact {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+.value-card--title-only {
+  text-align: center;
+  padding: var(--space-5) var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.value-card--title-only h3 {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  margin: 0;
+}
+
+.value-card--title-only p {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .values-grid--compact {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Curation — 3 steps horizontal */
+.curation-steps-compact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-8) 0;
+}
+
+.curation-step-compact {
+  text-align: center;
+  flex: 0 0 auto;
+}
+
+.curation-step-compact__number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-2);
+}
+
+.curation-step-compact h3 {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin: 0;
+}
+
+.curation-step-compact__arrow {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .curation-steps-compact {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .curation-step-compact__arrow {
+    transform: rotate(90deg);
+  }
+}
+
+/* Evaluation domains — compact, no questions */
+.eval-domains-grid--compact {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+.eval-domains-grid--compact .eval-domain {
+  text-align: center;
+  padding: var(--space-4) var(--space-3);
+}
+
+.eval-domains-grid--compact .eval-domain strong {
+  font-size: var(--text-lg);
+}
+
+.eval-domains-grid--compact .eval-domain p {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .eval-domains-grid--compact {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* CTA — centered */
+.about-cta--centered {
+  text-align: center;
+  padding: var(--space-16) 0;
+}
+
+.about-cta--centered h2 {
+  text-align: center;
+}
+
+.about-cta--centered p {
+  text-align: center;
+}
