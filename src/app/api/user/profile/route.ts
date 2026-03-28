@@ -245,6 +245,13 @@ export async function PUT(request: Request) {
         extendedFields.cover_image_url = sanitizeText(body.cover_image_url, 2000)
       }
     }
+    if (body.resume_url !== undefined) {
+      if (typeof body.resume_url === 'string' && body.resume_url.startsWith('data:')) {
+        extendedFields.resume_url = body.resume_url
+      } else {
+        extendedFields.resume_url = sanitizeText(body.resume_url, 1000)
+      }
+    }
     if (body.tools_and_materials !== undefined && Array.isArray(body.tools_and_materials)) {
       extendedFields.tools_and_materials = body.tools_and_materials.map((s: unknown) => sanitizeText(s, 200)).filter(Boolean)
     }
@@ -302,6 +309,14 @@ export async function PUT(request: Request) {
     if (body.gallery_columns !== undefined) {
       const cols = parseInt(body.gallery_columns, 10)
       if (cols >= 1 && cols <= 6) extendedFields.gallery_columns = cols
+    }
+    if (body.resume_url !== undefined) {
+      if (body.resume_url === null) {
+        extendedFields.resume_url = null
+      } else if (typeof body.resume_url === 'string') {
+        // Allow base64 PDFs up to 5MB
+        extendedFields.resume_url = body.resume_url.length <= 7_000_000 ? body.resume_url : null
+      }
     }
 
     // Check if we have related table arrays to update
@@ -404,7 +419,7 @@ export async function PUT(request: Request) {
       await supabaseAdmin.from('profile_social_links').delete().eq('profile_id', user.id)
       const validPlatforms = [
         'instagram', 'linkedin', 'behance', 'artstation', 'dribbble', 'github',
-        'vimeo', 'soundcloud', 'spotify', 'youtube', 'x', 'tiktok', 'custom',
+        'vimeo', 'soundcloud', 'spotify', 'youtube', 'x', 'tiktok', 'facebook', 'linktree', 'custom',
       ]
       const links = body.social_links
         .slice(0, 20)
