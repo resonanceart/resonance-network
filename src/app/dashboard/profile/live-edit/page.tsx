@@ -439,7 +439,7 @@ export default function LiveProfileEditor() {
     if (authLoading) return
     if (!user) { window.location.href = '/login'; return }
 
-    fetch('/api/user/profile')
+    fetch('/api/user/profile', { credentials: 'same-origin' })
       .then(r => r.json())
       .then(data => {
         const p = data.profile
@@ -504,6 +504,7 @@ export default function LiveProfileEditor() {
     try {
       await fetch('/api/user/profile', {
         method: 'PUT',
+        credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           display_name: displayName.trim(),

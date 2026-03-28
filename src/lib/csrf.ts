@@ -4,17 +4,37 @@ export function validateCsrf(request: Request): boolean {
 
   if (!origin) return true // Allow non-browser requests (curl, etc.)
 
+  // Exact-match origins
   const allowedOrigins = [
     'https://resonance.network',
+    'https://www.resonance.network',
     'https://resonance-network.vercel.app',
     'http://localhost:3000',
+    'http://localhost:3001',
   ]
 
-  // Also allow the current host
+  if (allowedOrigins.includes(origin)) return true
+
+  // Allow the current host (handles dynamic ports, custom domains)
   if (host) {
-    allowedOrigins.push(`https://${host}`)
-    allowedOrigins.push(`http://${host}`)
+    const hostWithoutPort = host.split(':')[0]
+    if (
+      origin === `https://${host}` ||
+      origin === `http://${host}` ||
+      origin === `https://${hostWithoutPort}` ||
+      origin === `http://${hostWithoutPort}`
+    ) {
+      return true
+    }
   }
 
-  return allowedOrigins.some(allowed => origin.startsWith(allowed))
+  // Allow Vercel preview deployments (*.vercel.app)
+  try {
+    const originUrl = new URL(origin)
+    if (originUrl.hostname.endsWith('.vercel.app')) return true
+  } catch {
+    // Invalid origin URL
+  }
+
+  return false
 }
