@@ -12963,12 +12963,12 @@ main {
   justify-content: center;
   gap: var(--space-2);
   height: 200px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   cursor: pointer;
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text);
   transition: border-color var(--duration-fast), box-shadow var(--duration-fast), transform var(--duration-fast);
   overflow: hidden;
 }
@@ -12981,7 +12981,7 @@ main {
 
 .media-card--add {
   border-style: dashed;
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--color-border);
   background: transparent;
 }
 .media-card--add:hover {
@@ -12990,7 +12990,7 @@ main {
 }
 
 .media-card__icon {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-faint);
   transition: color var(--duration-fast);
 }
 .media-card:hover .media-card__icon {
@@ -13000,14 +13000,14 @@ main {
 .media-card__label {
   font-size: var(--text-sm);
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text);
   margin: 0;
   text-align: center;
 }
 
 .media-card__hint {
   font-size: var(--text-xs);
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--color-text-muted);
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;

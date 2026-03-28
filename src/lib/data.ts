@@ -131,7 +131,7 @@ function mapUserProfileRow(
     id: String(row.id),
     slug: slugify(String(row.display_name)),
     name: String(row.display_name || ''),
-    title: skills[0] || (profileType === 'artist' ? 'Creator' : 'Collaborator'),
+    title: (extended?.professional_title ? String(extended.professional_title) : '') || skills[0] || (profileType === 'artist' ? 'Creator' : 'Collaborator'),
     type: profileType,
     photo: typeof row.avatar_url === 'string' && row.avatar_url ? row.avatar_url : '/assets/images/team/placeholder.svg',
     bio: typeof row.bio === 'string' ? row.bio : '',
@@ -171,6 +171,10 @@ function mapUserProfileRow(
       cta_secondary_url: extended.cta_secondary_url ? String(extended.cta_secondary_url) : undefined,
       section_order: Array.isArray(extended.section_order) ? extended.section_order as string[] : undefined,
       section_visibility: extended.section_visibility as Record<string, boolean> | undefined,
+      resume_url: extended.resume_url ? String(extended.resume_url) : undefined,
+      portfolio_pdf_url: extended.portfolio_pdf_url ? String(extended.portfolio_pdf_url) : undefined,
+      media_links: Array.isArray(extended.media_links) ? extended.media_links as { label: string; url: string; type: 'website' | 'fundraiser' | 'other' }[] : undefined,
+      past_work: Array.isArray(extended.past_work) ? extended.past_work as { url: string; title: string; description?: string }[] : undefined,
     } : {}),
     // Related data from separate tables
     ...(relatedData ? {

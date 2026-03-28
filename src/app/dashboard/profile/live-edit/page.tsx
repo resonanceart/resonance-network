@@ -389,17 +389,20 @@ function TimelinePanel({
 
 // ─── Upload Helper ───────────────────────────────────────────────
 
-async function uploadFile(file: File, type: string): Promise<string | null> {
+async function uploadFile(file: File, type: string): Promise<{ url: string | null; error: string | null }> {
   const formData = new FormData()
   formData.append('file', file)
   formData.append('type', type)
   try {
     const res = await fetch('/api/upload', { method: 'POST', credentials: 'same-origin', body: formData })
-    if (!res.ok) return null
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Upload failed' }))
+      return { url: null, error: err.error || `Upload failed (${res.status})` }
+    }
     const data = await res.json()
-    return data.url || null
+    return { url: data.url || null, error: null }
   } catch {
-    return null
+    return { url: null, error: 'Network error during upload. Please check your connection.' }
   }
 }
 
@@ -412,6 +415,7 @@ export default function LiveProfileEditor() {
   const [hasChanges, setHasChanges] = useState(false)
   const [savedMessage, setSavedMessage] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const [activePanel, setActivePanel] = useState<EditSection>(null)
   const [showWelcome, setShowWelcome] = useState(false)
 
@@ -613,6 +617,17 @@ export default function LiveProfileEditor() {
     return (el: HTMLDivElement | null) => { sectionRefs.current[key] = el }
   }
 
+  // File upload wrapper with error feedback
+  async function upload(file: File, type: string): Promise<string | null> {
+    setUploadError(null)
+    const result = await uploadFile(file, type)
+    if (result.error) {
+      setUploadError(result.error)
+      return null
+    }
+    return result.url
+  }
+
   // File upload helpers
   function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -629,7 +644,7 @@ export default function LiveProfileEditor() {
   async function handleResumeUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file || file.size > 5 * 1024 * 1024) return
-    const url = await uploadFile(file, 'resume')
+    const url = await upload(file, 'resume')
     if (url) {
       setResumeUrl(url)
       markDirty()
@@ -640,7 +655,7 @@ export default function LiveProfileEditor() {
     const file = e.target.files?.[0]
     if (!file || file.size > 10 * 1024 * 1024) return
     setSaving(true)
-    const url = await uploadFile(file, 'cover')
+    const url = await upload(file, 'cover')
     if (url) {
       setCoverImageUrl(url)
       markDirty()
@@ -651,7 +666,7 @@ export default function LiveProfileEditor() {
   async function handlePortfolioPdfUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file || file.size > 5 * 1024 * 1024) return
-    const url = await uploadFile(file, 'portfolio')
+    const url = await upload(file, 'portfolio')
     if (url) {
       setPortfolioPdfUrl(url)
       markDirty()
@@ -677,7 +692,7 @@ export default function LiveProfileEditor() {
     if (!files) return
     for (const file of Array.from(files)) {
       if (file.size > 10 * 1024 * 1024) continue
-      const url = await uploadFile(file, 'gallery')
+      const url = await upload(file, 'gallery')
       if (url) {
         setMediaGallery(prev => [...prev, {
           url,
@@ -697,7 +712,7 @@ export default function LiveProfileEditor() {
 
   async function handlePastWorkUpload(file: File, title: string) {
     if (file.size > 10 * 1024 * 1024) return
-    const url = await uploadFile(file, 'pastwork')
+    const url = await upload(file, 'pastwork')
     if (url) {
       setPastWork(prev => [...prev, { url, title: title || 'Untitled' }])
       markDirty()
@@ -1161,6 +1176,12 @@ export default function LiveProfileEditor() {
               </button>
             </div>
             <div className="live-editor__panel-body">
+              {uploadError && (
+                <div style={{ background: 'rgba(220,38,38,0.1)', color: '#dc2626', padding: '8px 12px', borderRadius: 8, marginBottom: 12, fontSize: 'var(--text-sm)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>{uploadError}</span>
+                  <button onClick={() => setUploadError(null)} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: 16, padding: '0 4px' }}>&times;</button>
+                </div>
+              )}
               {/* COVER PANEL */}
               {activePanel === 'cover' && (
                 <div className="live-editor__panel-section">
@@ -1266,7 +1287,7 @@ export default function LiveProfileEditor() {
                             canvas.toBlob(async (blob) => {
                               if (!blob) return
                               const croppedFile = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
-                              const url = await uploadFile(croppedFile, 'avatar')
+                              const url = await upload(croppedFile, 'avatar')
                               if (url) {
                                 setAvatarUrl(url)
                                 setAvatarRawSrc(null)
