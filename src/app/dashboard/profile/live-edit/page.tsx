@@ -430,12 +430,21 @@ export default function LiveProfileEditor() {
   const [links, setLinks] = useState<Array<{label: string; url: string; type?: string}>>([])
   const [sectionOrder, setSectionOrder] = useState<string[]>(['skills', 'tools', 'about', 'timeline', 'achievements', 'links'])
   const [resumeUrl, setResumeUrl] = useState<string | null>(null)
+  const [portfolioPdfUrl, setPortfolioPdfUrl] = useState<string | null>(null)
+  const [mediaLinks, setMediaLinks] = useState<Array<{label: string; url: string; type: 'website' | 'fundraiser' | 'other'}>>([])
+
+  // Avatar crop state
+  const [avatarRawSrc, setAvatarRawSrc] = useState<string | null>(null)
 
   // Refs for scroll-to-section
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const lastChangeTime = useRef(0)
 
   // Track changes
-  const markDirty = useCallback(() => setHasChanges(true), [])
+  const markDirty = useCallback(() => {
+    setHasChanges(true)
+    lastChangeTime.current = Date.now()
+  }, [])
 
   // Fetch profile on mount
   useEffect(() => {
@@ -481,6 +490,8 @@ export default function LiveProfileEditor() {
           if (ext.section_order) setSectionOrder(ext.section_order as string[])
           if (ext.media_gallery) setMediaGallery(ext.media_gallery as GalleryItem[])
           setResumeUrl((ext.resume_url as string) || null)
+          setPortfolioPdfUrl((ext.portfolio_pdf_url as string) || null)
+          if (ext.media_links) setMediaLinks(ext.media_links as Array<{label: string; url: string; type: 'website' | 'fundraiser' | 'other'}>)
           if (ext.past_work) setPastWork(ext.past_work as PastWorkItem[])
         }
         // Load related table data from top-level API response
@@ -497,12 +508,14 @@ export default function LiveProfileEditor() {
       .finally(() => setLoading(false))
   }, [user, authLoading])
 
-  // Auto-save draft every 30s
+  // Auto-save: 15s interval, debounced 2s after last change
   useEffect(() => {
     if (!hasChanges) return
     const timer = setInterval(() => {
+      // Don't autosave if user changed something in the last 2 seconds
+      if (Date.now() - lastChangeTime.current < 2000) return
       saveAll(true)
-    }, 30000)
+    }, 15000)
     return () => clearInterval(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasChanges])
@@ -585,24 +598,12 @@ export default function LiveProfileEditor() {
   // File upload helpers
   function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file) return
-    if (file.size > 5 * 1024 * 1024) return
+    if (!file || file.size > 5 * 1024 * 1024) return
     const reader = new FileReader()
     reader.onload = () => {
-      const img = new window.Image()
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        const s = Math.min(img.width, img.height, 400)
-        canvas.width = s
-        canvas.height = s
-        const ctx = canvas.getContext('2d')!
-        const sx = (img.width - s) / 2
-        const sy = (img.height - s) / 2
-        ctx.drawImage(img, sx, sy, s, s, 0, 0, s, s)
-        setAvatarUrl(canvas.toDataURL('image/jpeg', 0.85))
-        markDirty()
-      }
-      img.src = reader.result as string
+      setAvatarRawSrc(reader.result as string)
+      // Open the avatar panel to show crop UI
+      setActivePanel('avatar')
     }
     reader.readAsDataURL(file)
   }
@@ -739,7 +740,8 @@ export default function LiveProfileEditor() {
                 {errorMessage}
               </span>
             )}
-            {hasChanges && !errorMessage && <span className="live-editor__unsaved">Unsaved changes</span>}
+            {saving && hasChanges && <span className="live-editor__autosave">Auto-saving...</span>}
+            {hasChanges && !saving && !errorMessage && <span className="live-editor__unsaved">Unsaved changes</span>}
             {savedMessage && <span className="live-editor__saved">Saved!</span>}
             <button
               onClick={() => saveAll(false)}
@@ -747,6 +749,19 @@ export default function LiveProfileEditor() {
               disabled={saving || !hasChanges}
             >
               {saving ? 'Saving...' : 'Save All Changes'}
+            </button>
+            <button
+              onClick={async () => {
+                if (hasChanges) await saveAll(true)
+                const previewSlug = displayName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+                if (previewSlug) {
+                  window.open(`/profiles/${previewSlug}`, '_blank')
+                }
+              }}
+              className="btn btn--outline btn--sm"
+              disabled={saving || !displayName.trim()}
+            >
+              Preview
             </button>
             {slug && profileVisibility === 'published' && (
               <a
@@ -1187,6 +1202,31 @@ export default function LiveProfileEditor() {
                     <span>{avatarUrl ? 'Change Photo' : 'Upload Photo'}</span>
                     <small>JPG or PNG, max 5MB</small>
                   </label>
+                  {avatarRawSrc && (
+                    <div style={{ marginTop: 'var(--space-4)' }}>
+                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>Adjust &amp; Crop</p>
+                      <div style={{ position: 'relative', width: '100%', maxWidth: 300, margin: '0 auto', overflow: 'hidden', borderRadius: 8, border: '1px solid var(--color-border)' }}>
+                        <img src={avatarRawSrc} alt="Crop preview" style={{ width: '100%', display: 'block' }} />
+                      </div>
+                      <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center', marginTop: 'var(--space-4)' }}>
+                        <button className="btn btn--outline btn--sm" onClick={() => setAvatarRawSrc(null)}>Cancel</button>
+                        <button className="btn btn--primary btn--sm" onClick={() => {
+                          const img = new window.Image()
+                          img.onload = () => {
+                            const canvas = document.createElement('canvas')
+                            const s = Math.min(img.width, img.height)
+                            canvas.width = 400; canvas.height = 400
+                            const ctx = canvas.getContext('2d')!
+                            ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 400, 400)
+                            setAvatarUrl(canvas.toDataURL('image/jpeg', 0.85))
+                            setAvatarRawSrc(null)
+                            markDirty()
+                          }
+                          img.src = avatarRawSrc
+                        }}>Crop &amp; Save</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -11616,6 +11616,13 @@ main {
   animation: contactModalFadeIn 0.2s ease-out;
 }
 
+.live-editor__autosave {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  font-style: italic;
+}
+
 .live-editor__error {
   font-size: var(--text-xs);
   color: #ef4444;
@@ -12596,18 +12603,22 @@ main {
 .profile-link-btn--social-group {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-2) !important;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
 }
 
 .profile-social-icon-sm {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   color: var(--color-text-muted);
   transition: color var(--duration-fast) var(--ease-out);
+  flex-shrink: 0;
 }
 
 .profile-social-icon-sm:hover {
