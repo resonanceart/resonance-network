@@ -18,6 +18,37 @@ const PATHWAYS = [
 ]
 const STAGES = ['Concept', 'Design Development', 'Engineering', 'Fundraising', 'Production']
 
+const ROLE_OPTIONS = [
+  'Lighting Designer', 'Sound Designer', 'Fabricator', 'Architect', 'Engineer',
+  'Project Manager', 'Creative Director', 'Producer', 'Installation Artist',
+  'Software Developer', 'Visual Designer', 'Curator', 'Photographer/Videographer', 'Other',
+]
+
+interface CollabRole {
+  title: string
+  customTitle: string
+  description: string
+  imageUrl: string | null
+}
+
+function emptyRole(): CollabRole {
+  return { title: '', customTitle: '', description: '', imageUrl: null }
+}
+
+async function uploadFile(file: File, type: string): Promise<string | null> {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('type', type)
+  try {
+    const res = await fetch('/api/upload', { method: 'POST', credentials: 'same-origin', body: formData })
+    if (!res.ok) return null
+    const data = await res.json()
+    return data.url || null
+  } catch {
+    return null
+  }
+}
+
 function LiveProjectEditorInner() {
   const { user, loading: authLoading } = useAuth()
   const searchParams = useSearchParams()
@@ -47,8 +78,8 @@ function LiveProjectEditorInner() {
   const [materials, setMaterials] = useState('')
   const [specialNeeds, setSpecialNeeds] = useState('')
   const [galleryImages, setGalleryImages] = useState<Array<{ url: string; alt: string }>>([])
-  const [collaborators, setCollaborators] = useState<Array<{ name: string; role: string; photo?: string }>>([])
-  const [collaborationNeeds, setCollaborationNeeds] = useState('')
+  const [collaborators, setCollaborators] = useState<Array<{ name: string; role: string; photo: string | null }>>([])
+  const [collabRoles, setCollabRoles] = useState<CollabRole[]>([emptyRole()])
   const [contactEmail, setContactEmail] = useState('')
   const [leadArtistName, setLeadArtistName] = useState('')
 
@@ -92,7 +123,23 @@ function LiveProjectEditorInner() {
             setLocation(p.location || '')
             setMaterials(p.materials || '')
             setSpecialNeeds(p.special_needs || '')
-            setCollaborationNeeds(p.collaboration_needs || '')
+            // Parse collaboration_needs — could be JSON role array or plain text
+            try {
+              const parsed = JSON.parse(p.collaboration_needs || '[]')
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setCollabRoles(parsed.map((r: { title?: string; description?: string; image_url?: string }) => ({
+                  title: ROLE_OPTIONS.includes(r.title || '') ? r.title || '' : 'Other',
+                  customTitle: ROLE_OPTIONS.includes(r.title || '') ? '' : r.title || '',
+                  description: r.description || '',
+                  imageUrl: r.image_url || null,
+                })))
+              }
+            } catch {
+              // Legacy plain-text format — put it in first role's description
+              if (p.collaboration_needs) {
+                setCollabRoles([{ title: '', customTitle: '', description: p.collaboration_needs, imageUrl: null }])
+              }
+            }
             setLeadArtistName(p.artist_name || '')
             setContactEmail(p.artist_email || '')
             if (p.hero_image_data) setHeroImageUrl(p.hero_image_data)
@@ -146,8 +193,16 @@ function LiveProjectEditorInner() {
           specialNeeds: specialNeeds.trim(),
           heroImageData: heroImageUrl,
           galleryImagesData: galleryImages.length > 0 ? JSON.stringify(galleryImages) : null,
-          collaborationNeeds: collaborationNeeds.trim(),
-          collaborationRoleCount: collaborators.length || null,
+          collaborationNeeds: JSON.stringify(
+            collabRoles
+              .filter(r => (r.title === 'Other' ? r.customTitle.trim() : r.title) && r.description.trim())
+              .map(r => ({
+                title: r.title === 'Other' ? r.customTitle.trim() : r.title,
+                description: r.description.trim(),
+                image_url: r.imageUrl,
+              }))
+          ),
+          collaborationRoleCount: collabRoles.filter(r => r.title || r.customTitle).length || null,
           status: 'draft',
         }),
       })
@@ -167,55 +222,109 @@ function LiveProjectEditorInner() {
   }
 
   async function submitForReview() {
-    await saveDraft(false)
-    setSavedMessage(true)
+    if (!title.trim()) { alert('Please enter a project title.'); return }
+    setSaving(true)
+    try {
+      const rolesData = collabRoles
+        .filter(r => (r.title === 'Other' ? r.customTitle.trim() : r.title) && r.description.trim())
+        .map(r => ({
+          title: r.title === 'Other' ? r.customTitle.trim() : r.title,
+          description: r.description.trim(),
+          image_url: r.imageUrl,
+        }))
+      const res = await fetch('/api/submit-project', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: submissionId || undefined,
+          artistName: leadArtistName,
+          artistEmail: contactEmail,
+          artistBio: '',
+          artistWebsite: '',
+          projectTitle: title.trim(),
+          oneSentence: shortDescription.trim(),
+          vision: overviewLead.trim(),
+          experience: experience.trim(),
+          story: story.trim(),
+          goals: goals.join('\n'),
+          domains,
+          pathways,
+          stage,
+          scale: scale.trim(),
+          location: location.trim(),
+          materials: materials.trim(),
+          specialNeeds: specialNeeds.trim(),
+          heroImageData: heroImageUrl,
+          galleryImagesData: galleryImages.length > 0 ? JSON.stringify(galleryImages) : null,
+          collaborationNeeds: JSON.stringify(rolesData),
+          collaborationRoleCount: rolesData.length || null,
+          status: 'pending',
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.id && !submissionId) setSubmissionId(data.id)
+        setHasChanges(false)
+        setSavedMessage(true)
+        setTimeout(() => setSavedMessage(false), 3000)
+      }
+    } catch { /* */ }
+    setSaving(false)
   }
 
-  function handleHeroUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleHeroUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file || file.size > 10 * 1024 * 1024) return
-    const reader = new FileReader()
-    reader.onload = () => {
-      const img = new window.Image()
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        const maxW = 1600
-        const ratio = Math.min(maxW / img.width, 1)
-        canvas.width = img.width * ratio
-        canvas.height = img.height * ratio
-        const ctx = canvas.getContext('2d')!
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-        setHeroImageUrl(canvas.toDataURL('image/jpeg', 0.85))
-        markDirty()
-      }
-      img.src = reader.result as string
+    setSaving(true)
+    const url = await uploadFile(file, 'hero')
+    if (url) {
+      setHeroImageUrl(url)
+      markDirty()
     }
-    reader.readAsDataURL(file)
+    setSaving(false)
   }
 
-  function handleGalleryUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleGalleryUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files
     if (!files) return
-    Array.from(files).forEach(file => {
-      if (file.size > 10 * 1024 * 1024) return
+    for (const file of Array.from(files)) {
+      if (file.size > 10 * 1024 * 1024) continue
+      const url = await uploadFile(file, 'gallery')
+      if (url) {
+        setGalleryImages(prev => [...prev, { url, alt: file.name.replace(/\.[^.]+$/, '') }])
+        markDirty()
+      }
+    }
+  }
+
+  function handlePhotoUpload(callback: (dataUrl: string) => void) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (!file || file.size > 5 * 1024 * 1024) return
       const reader = new FileReader()
       reader.onload = () => {
         const img = new window.Image()
         img.onload = () => {
           const canvas = document.createElement('canvas')
-          const maxW = 1200
+          const maxW = 400
           const ratio = Math.min(maxW / img.width, 1)
           canvas.width = img.width * ratio
           canvas.height = img.height * ratio
           const ctx = canvas.getContext('2d')!
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-          setGalleryImages(prev => [...prev, { url: canvas.toDataURL('image/jpeg', 0.85), alt: file.name }])
+          callback(canvas.toDataURL('image/jpeg', 0.8))
           markDirty()
         }
         img.src = reader.result as string
       }
       reader.readAsDataURL(file)
-    })
+    }
+  }
+
+  function getRoleDisplayTitle(role: CollabRole): string {
+    if (role.title === 'Other' && role.customTitle) return role.customTitle
+    return role.title || 'New Role'
   }
 
   function openPanel(section: EditSection) { setActivePanel(section) }
@@ -245,6 +354,17 @@ function LiveProjectEditorInner() {
             <button onClick={submitForReview} className="btn btn--outline btn--sm" disabled={saving || !title.trim()}>
               Submit for Review
             </button>
+            {submissionId && (
+              <a
+                href={`/preview/project/${submissionId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn--ghost btn--sm"
+                onClick={async (e) => { if (hasChanges) { e.preventDefault(); await saveDraft(true); window.open(`/preview/project/${submissionId}`, '_blank') } }}
+              >
+                Preview
+              </a>
+            )}
             <Link href="/dashboard" className="btn btn--ghost btn--sm">Back</Link>
           </div>
         </div>
@@ -468,10 +588,24 @@ function LiveProjectEditorInner() {
             <div className="container">
               <p className="section-label">Join This Project</p>
               <h2>Open Roles</h2>
-              {collaborationNeeds ? (
-                <p className="overview-body">{collaborationNeeds}</p>
+              {collabRoles.some(r => r.title || r.customTitle) ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
+                  {collabRoles.filter(r => r.title || r.customTitle).map((role, i) => (
+                    <div key={i} className="collab-role-card" style={{ cursor: 'default' }}>
+                      <div className="collab-role-card__header">
+                        <span className="collab-role-card__number">{getRoleDisplayTitle(role)}</span>
+                      </div>
+                      <div className="collab-role-card__body">
+                        {role.description && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', margin: 0 }}>{role.description}</p>}
+                        {role.imageUrl && (
+                          <img src={role.imageUrl} alt="" style={{ width: '100%', height: 100, objectFit: 'cover', borderRadius: 8, marginTop: 'var(--space-2)' }} />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <p style={{ opacity: 0.4, fontStyle: 'italic' }}>Describe what collaborators you&apos;re looking for...</p>
+                <p style={{ opacity: 0.4, fontStyle: 'italic' }}>Add collaboration roles you&apos;re looking to fill...</p>
               )}
             </div>
           </section>

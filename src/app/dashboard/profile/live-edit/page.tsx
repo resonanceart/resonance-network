@@ -387,6 +387,22 @@ function TimelinePanel({
   )
 }
 
+// ─── Upload Helper ───────────────────────────────────────────────
+
+async function uploadFile(file: File, type: string): Promise<string | null> {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('type', type)
+  try {
+    const res = await fetch('/api/upload', { method: 'POST', credentials: 'same-origin', body: formData })
+    if (!res.ok) return null
+    const data = await res.json()
+    return data.url || null
+  } catch {
+    return null
+  }
+}
+
 // ─── Main Page Component ──────────────────────────────────────────
 
 export default function LiveProfileEditor() {
@@ -610,50 +626,36 @@ export default function LiveProfileEditor() {
     reader.readAsDataURL(file)
   }
 
-  function handleResumeUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleResumeUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file || file.size > 5 * 1024 * 1024) return
-    const reader = new FileReader()
-    reader.onload = () => {
-      setResumeUrl(reader.result as string)
+    const url = await uploadFile(file, 'resume')
+    if (url) {
+      setResumeUrl(url)
       markDirty()
     }
-    reader.readAsDataURL(file)
   }
 
-  function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file) return
-    if (file.size > 10 * 1024 * 1024) return
-    const reader = new FileReader()
-    reader.onload = () => {
-      const img = new window.Image()
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        const maxW = 1600
-        const ratio = Math.min(maxW / img.width, 1)
-        canvas.width = img.width * ratio
-        canvas.height = img.height * ratio
-        const ctx = canvas.getContext('2d')!
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-        setCoverImageUrl(canvas.toDataURL('image/jpeg', 0.85))
-        markDirty()
-      }
-      img.src = reader.result as string
-    }
-    reader.readAsDataURL(file)
-  }
-
-  function handlePortfolioPdfUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    if (file.size > 5 * 1024 * 1024) return
-    const reader = new FileReader()
-    reader.onload = () => {
-      setPortfolioPdfUrl(reader.result as string)
+    if (!file || file.size > 10 * 1024 * 1024) return
+    setSaving(true)
+    const url = await uploadFile(file, 'cover')
+    if (url) {
+      setCoverImageUrl(url)
       markDirty()
     }
-    reader.readAsDataURL(file)
+    setSaving(false)
+  }
+
+  async function handlePortfolioPdfUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || file.size > 5 * 1024 * 1024) return
+    const url = await uploadFile(file, 'portfolio')
+    if (url) {
+      setPortfolioPdfUrl(url)
+      markDirty()
+    }
   }
 
   function addMediaLink() {
@@ -671,34 +673,21 @@ export default function LiveProfileEditor() {
     markDirty()
   }
 
-  function handleGalleryUpload(files: FileList | null) {
+  async function handleGalleryUpload(files: FileList | null) {
     if (!files) return
-    Array.from(files).forEach(file => {
-      if (file.size > 10 * 1024 * 1024) return
-      const reader = new FileReader()
-      reader.onload = () => {
-        const img = new window.Image()
-        img.onload = () => {
-          const canvas = document.createElement('canvas')
-          const maxW = 1600
-          const ratio = Math.min(maxW / img.width, 1)
-          canvas.width = img.width * ratio
-          canvas.height = img.height * ratio
-          const ctx = canvas.getContext('2d')!
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
-          setMediaGallery(prev => [...prev, {
-            url: dataUrl,
-            alt: file.name.replace(/\.[^.]+$/, ''),
-            type: 'image',
-            order: prev.length,
-          }])
-          markDirty()
-        }
-        img.src = reader.result as string
+    for (const file of Array.from(files)) {
+      if (file.size > 10 * 1024 * 1024) continue
+      const url = await uploadFile(file, 'gallery')
+      if (url) {
+        setMediaGallery(prev => [...prev, {
+          url,
+          alt: file.name.replace(/\.[^.]+$/, ''),
+          type: 'image' as const,
+          order: prev.length,
+        }])
+        markDirty()
       }
-      reader.readAsDataURL(file)
-    })
+    }
   }
 
   function removeGalleryItem(index: number) {
@@ -706,26 +695,13 @@ export default function LiveProfileEditor() {
     markDirty()
   }
 
-  function handlePastWorkUpload(file: File, title: string) {
+  async function handlePastWorkUpload(file: File, title: string) {
     if (file.size > 10 * 1024 * 1024) return
-    const reader = new FileReader()
-    reader.onload = () => {
-      const img = new window.Image()
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        const maxW = 1200
-        const ratio = Math.min(maxW / img.width, 1)
-        canvas.width = img.width * ratio
-        canvas.height = img.height * ratio
-        const ctx = canvas.getContext('2d')!
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
-        setPastWork(prev => [...prev, { url: dataUrl, title: title || 'Untitled' }])
-        markDirty()
-      }
-      img.src = reader.result as string
+    const url = await uploadFile(file, 'pastwork')
+    if (url) {
+      setPastWork(prev => [...prev, { url, title: title || 'Untitled' }])
+      markDirty()
     }
-    reader.readAsDataURL(file)
   }
 
   function removePastWorkItem(index: number) {
@@ -1244,9 +1220,16 @@ export default function LiveProfileEditor() {
                             canvas.width = 400; canvas.height = 400
                             const ctx = canvas.getContext('2d')!
                             ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 400, 400)
-                            setAvatarUrl(canvas.toDataURL('image/jpeg', 0.85))
-                            setAvatarRawSrc(null)
-                            markDirty()
+                            canvas.toBlob(async (blob) => {
+                              if (!blob) return
+                              const croppedFile = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
+                              const url = await uploadFile(croppedFile, 'avatar')
+                              if (url) {
+                                setAvatarUrl(url)
+                                setAvatarRawSrc(null)
+                                markDirty()
+                              }
+                            }, 'image/jpeg', 0.85)
                           }
                           img.src = avatarRawSrc
                         }}>Crop &amp; Save</button>
