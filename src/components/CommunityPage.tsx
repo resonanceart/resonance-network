@@ -73,27 +73,19 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
             <Link href="/">Home</Link> <span aria-hidden="true">/</span> <span>Community</span>
           </nav>
           <p className="section-label">Community</p>
-          <h1>The People Behind the Work</h1>
+          <h1>Connecting Community for Passion and Purpose</h1>
           <p className="lead">
             A curated community of creators, engineers, fabricators, and specialists building immersive and regenerative spatial projects — together.
           </p>
         </div>
       </section>
 
-      {/* Dual CTA */}
+      {/* Dual CTA — simplified */}
       <section className="profiles-dual-cta">
         <div className="container">
-          <div className="profiles-dual-cta__grid">
-            <Link href="/join" className="profiles-dual-cta__card">
-              <h3>Share a Project</h3>
-              <p>Have an ambitious project? Share it with the network and find the right people.</p>
-              <span className="btn btn--primary">Get Started</span>
-            </Link>
-            <Link href="/join" className="profiles-dual-cta__card">
-              <h3>Join as Collaborator</h3>
-              <p>Engineer, fabricator, or specialist? Find projects that need what you do.</p>
-              <span className="btn btn--outline">Get Started</span>
-            </Link>
+          <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap', padding: 'var(--space-6) 0' }}>
+            <Link href="/dashboard/projects/live-edit" className="btn btn--primary btn--large">Share a Project</Link>
+            <Link href="/login?tab=signup&redirect=/dashboard/welcome" className="btn btn--outline btn--large">Join as Collaborator</Link>
           </div>
         </div>
       </section>
@@ -103,79 +95,45 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
         <div className="container">
           <div className="collab-how-it-works">
             <h3>How Collaboration Works</h3>
-            <div className="collab-steps">
-              <div className="collab-step">
-                <span className="collab-step__number">1</span>
-                <strong>Browse projects that inspire you</strong>
-                <p>Explore curated projects across immersive art, regenerative design, and spatial practice.</p>
-              </div>
-              <div className="collab-step">
-                <span className="collab-step__number">2</span>
-                <strong>Express interest in a role</strong>
-                <p>Found something that fits your skills? Let the team know — share your relevant experience.</p>
-              </div>
-              <div className="collab-step">
-                <span className="collab-step__number">3</span>
-                <strong>Connect with the project team</strong>
-                <p>Project leads review interest and reach out directly to discuss the collaboration.</p>
-              </div>
-              <div className="collab-step">
-                <span className="collab-step__number">4</span>
-                <strong>Define scope together</strong>
-                <p>Agree on contribution scope, timeline, and credit — from micro-contributions to ongoing roles.</p>
-              </div>
-              <div className="collab-step">
-                <span className="collab-step__number">5</span>
-                <strong>Build something extraordinary</strong>
-                <p>Your work is credited on the project page and your profile. You&apos;re part of the story.</p>
-              </div>
+            <div className="collab-steps collab-steps--compact">
+              <div className="collab-step collab-step--pill"><span className="collab-step__number">1</span><strong>Browse projects that inspire you</strong></div>
+              <div className="collab-step collab-step--pill"><span className="collab-step__number">2</span><strong>Express interest in a role</strong></div>
+              <div className="collab-step collab-step--pill"><span className="collab-step__number">3</span><strong>Connect with the project team</strong></div>
+              <div className="collab-step collab-step--pill"><span className="collab-step__number">4</span><strong>Define scope together</strong></div>
+              <div className="collab-step collab-step--pill"><span className="collab-step__number">5</span><strong>Build something extraordinary</strong></div>
             </div>
           </div>
 
           <div className="collab-benefits">
             <h3>What You Gain</h3>
-            <div className="collab-benefits__grid">
-              <div className="collab-benefit-card">
-                <strong>Portfolio-worthy work</strong>
-                <p>Contribute to ambitious projects you can proudly showcase — not commercial campaigns, but values-aligned creative work.</p>
-              </div>
-              <div className="collab-benefit-card">
-                <strong>Credited contributions</strong>
-                <p>Your role is publicly documented on the project page and linked to your profile.</p>
-              </div>
-              <div className="collab-benefit-card">
-                <strong>Flexible commitment</strong>
-                <p>From a 2-hour plan review to an ongoing team role — contribute at the level that works for you.</p>
-              </div>
-              <div className="collab-benefit-card">
-                <strong>Meaningful relationships</strong>
-                <p>Build long-term connections with visionary creators and fellow specialists — a guild, not a gig.</p>
-              </div>
+            <div className="collab-benefits__grid collab-benefits__grid--compact">
+              <div className="collab-benefit-pill"><strong>Beautiful portfolio projects</strong></div>
+              <div className="collab-benefit-pill"><strong>Community connections</strong></div>
+              <div className="collab-benefit-pill"><strong>Credibility</strong></div>
+              <div className="collab-benefit-pill"><strong>Purpose through passion</strong></div>
             </div>
-            <p style={{ textAlign: 'center', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-4)', maxWidth: '640px', marginLeft: 'auto', marginRight: 'auto' }}>
-              Not everyone can commit 60 hours. We welcome micro-contributions (2–4 hours: review a plan, give feedback on a grant draft, advise on materials) alongside deep engagements (ongoing team roles). Specify your availability when you express interest.
-            </p>
           </div>
 
-          <p className="collab-tabs-section__intro">
-            Browse available collaboration roles or discover the people behind the projects.
-          </p>
-          <div className="collab-tabs" role="tablist" aria-label="Community view">
+          <div className="collab-tabs collab-tabs--large" role="tablist" aria-label="Community view">
             <button
               role="tab"
               aria-selected={activeTab === 'roles'}
-              className={`collab-tab${activeTab === 'roles' ? ' collab-tab--active' : ''}`}
+              className={`collab-tab collab-tab--card${activeTab === 'roles' ? ' collab-tab--active' : ''}`}
               onClick={() => setActiveTab('roles')}
             >
-              Available Roles <span className="collab-tab__count">({tasks.length})</span>
+              <span className="collab-tab__count">{tasks.length}</span>
+              <span className="collab-tab__label">Available Roles</span>
+              <span className="collab-tab__desc">Browse open collaboration positions on active projects</span>
             </button>
             <button
               role="tab"
               aria-selected={activeTab === 'people'}
-              className={`collab-tab${activeTab === 'people' ? ' collab-tab--active' : ''}`}
+              className={`collab-tab collab-tab--card${activeTab === 'people' ? ' collab-tab--active' : ''}`}
               onClick={() => setActiveTab('people')}
             >
-              People <span className="collab-tab__count">({profiles.length})</span>
+              <span className="collab-tab__count">{profiles.length}</span>
+              <span className="collab-tab__label">People</span>
+              <span className="collab-tab__desc">Discover creators, engineers, and specialists in the network</span>
             </button>
           </div>
         </div>
