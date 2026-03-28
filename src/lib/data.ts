@@ -1,7 +1,7 @@
 import { supabaseAdmin } from './supabase'
 import projectsData from '../../data/projects.json'
 import profilesData from '../../data/profiles.json'
-import type { Project, Profile, PortfolioProject, ProjectContentBlock } from '@/types'
+import type { Project, Profile, PortfolioProject, ProjectContentBlock, WorkExperience } from '@/types'
 
 function slugify(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -120,6 +120,7 @@ function mapUserProfileRow(
     skills?: Record<string, unknown>[]
     tools?: Record<string, unknown>[]
     portfolio_projects?: Record<string, unknown>[]
+    work_experience?: Record<string, unknown>[]
   }
 ): Profile {
   const skills = Array.isArray(row.skills) ? row.skills as string[] : []
@@ -177,6 +178,7 @@ function mapUserProfileRow(
       profile_skills: relatedData.skills || undefined,
       profile_tools: relatedData.tools || undefined,
       portfolio_projects: relatedData.portfolio_projects || undefined,
+      work_experience: (relatedData.work_experience as unknown as WorkExperience[]) || undefined,
     } : {}),
   } as Profile
 }
@@ -352,12 +354,13 @@ export async function getProfileBySlugEnhanced(slug: string): Promise<Profile | 
     const profileId = String(match.id)
 
     // Fetch all related data in parallel
-    const [extResult, socialResult, skillsResult, toolsResult, projectsResult] = await Promise.all([
+    const [extResult, socialResult, skillsResult, toolsResult, projectsResult, workExpResult] = await Promise.all([
       supabaseAdmin.from('profile_extended').select('*').eq('id', profileId).single(),
       supabaseAdmin.from('profile_social_links').select('*').eq('profile_id', profileId).order('display_order'),
       supabaseAdmin.from('profile_skills').select('*').eq('profile_id', profileId).order('display_order'),
       supabaseAdmin.from('profile_tools').select('*').eq('profile_id', profileId).order('display_order'),
       supabaseAdmin.from('portfolio_projects').select('*').eq('profile_id', profileId).eq('status', 'published').order('display_order'),
+      supabaseAdmin.from('work_experience').select('*').eq('profile_id', profileId).order('display_order'),
     ])
 
     return mapUserProfileRow(
@@ -368,6 +371,7 @@ export async function getProfileBySlugEnhanced(slug: string): Promise<Profile | 
         skills: (skillsResult.data as Record<string, unknown>[]) || undefined,
         tools: (toolsResult.data as Record<string, unknown>[]) || undefined,
         portfolio_projects: (projectsResult.data as Record<string, unknown>[]) || undefined,
+        work_experience: (workExpResult.data as Record<string, unknown>[]) || undefined,
       }
     )
   } catch {

@@ -12,8 +12,10 @@ import { ProfileBlockRenderer } from '@/components/profile/ProfileBlockRenderer'
 import { ProfileSkillsDisplay } from '@/components/profile/ProfileSkillsDisplay'
 import { ProfileToolsDisplay } from '@/components/profile/ProfileToolsDisplay'
 import { ProfileHeaderClient } from '@/components/profile/ProfileHeaderClient'
+import { ProfileTabsClient } from '@/components/profile/ProfileTabsClient'
+import { PortfolioGrid } from '@/components/profile/PortfolioGrid'
 import { getProfiles, getProfileBySlug } from '@/lib/data'
-import type { Profile } from '@/types'
+import type { Profile, WorkExperience } from '@/types'
 import type { Metadata } from 'next'
 
 export const revalidate = 60
@@ -207,7 +209,108 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
-const DEFAULT_SECTION_ORDER = ['skills', 'tools', 'portfolio', 'gallery', 'about', 'timeline', 'projects', 'achievements', 'links']
+const DEFAULT_SECTION_ORDER = ['portfolio_grid', 'skills', 'tools', 'portfolio', 'gallery', 'about', 'experience', 'timeline', 'projects', 'achievements', 'links']
+
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+function formatExpDate(dateStr?: string): string {
+  if (!dateStr) return ''
+  const d = new Date(dateStr + 'T00:00:00')
+  return `${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`
+}
+
+function formatExpRange(start?: string, end?: string, isCurrent?: boolean): string {
+  const s = start ? formatExpDate(start) : ''
+  const e = isCurrent ? 'Present' : end ? formatExpDate(end) : ''
+  if (s && e) return `${s} — ${e}`
+  if (s) return s
+  return ''
+}
+
+function getExpInitials(org?: string, title?: string): string {
+  const text = org || title || ''
+  return text
+    .split(' ')
+    .map(w => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+}
+
+function WorkExperienceSection({ entries }: { entries: WorkExperience[] }) {
+  const workEntries = entries
+    .filter(e => e.type === 'employment' || e.type === 'freelance')
+    .sort((a, b) => {
+      if (a.start_date && b.start_date) return b.start_date.localeCompare(a.start_date)
+      if (a.start_date) return -1
+      return 1
+    })
+
+  const eduEntries = entries
+    .filter(e => e.type === 'education')
+    .sort((a, b) => {
+      if (a.start_date && b.start_date) return b.start_date.localeCompare(a.start_date)
+      if (a.start_date) return -1
+      return 1
+    })
+
+  function renderEntries(items: WorkExperience[]) {
+    return (
+      <div className="we-public-list">
+        {items.map(entry => (
+          <div key={entry.id} className="we-public-entry">
+            <div className="we-public-entry__icon">
+              <span className="we-public-entry__initials">
+                {getExpInitials(entry.organization, entry.title)}
+              </span>
+            </div>
+            <div className="we-public-entry__content">
+              <div className="we-public-entry__title">
+                {entry.title}
+                {entry.is_current && (
+                  <span className="we-public-entry__current-badge">Current</span>
+                )}
+              </div>
+              {entry.organization && (
+                <div className="we-public-entry__org">{entry.organization}</div>
+              )}
+              <div className="we-public-entry__meta">
+                {formatExpRange(entry.start_date, entry.end_date, entry.is_current)}
+                {entry.location && (
+                  <>{entry.start_date ? ' · ' : ''}{entry.location}</>
+                )}
+              </div>
+              {entry.description && (
+                <div className="we-public-entry__desc">{entry.description}</div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <section className="profile-work-experience">
+      <div className="container">
+        <p className="section-label">Experience</p>
+        {workEntries.length > 0 && (
+          <div className="we-public-section">
+            <h3 className="we-public-section__title">Work Experience</h3>
+            {renderEntries(workEntries)}
+          </div>
+        )}
+        {eduEntries.length > 0 && (
+          <div className="we-public-section">
+            <h3 className="we-public-section__title">Education</h3>
+            {renderEntries(eduEntries)}
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
 
 export default async function ProfilePage({ params }: { params: { slug: string } }) {
   const profileData = await getProfileBySlug(params.slug)
@@ -234,6 +337,21 @@ export default async function ProfilePage({ params }: { params: { slug: string }
     if (sectionVisibility[key] === false) return null
 
     switch (key) {
+      case 'portfolio_grid':
+        if (profile.portfolio_projects && profile.portfolio_projects.length > 0) {
+          return (
+            <div key={key} data-section={key}>
+              <section className="profile-portfolio-section">
+                <div className="container">
+                  <p className="section-label">Portfolio</p>
+                  <PortfolioGrid projects={profile.portfolio_projects} profileSlug={profile.slug} />
+                </div>
+              </section>
+            </div>
+          )
+        }
+        return null
+
       case 'skills':
         if (profile.profile_skills && profile.profile_skills.length > 0) {
           return (
@@ -358,6 +476,16 @@ export default async function ProfilePage({ params }: { params: { slug: string }
             )}
           </div>
         )
+
+      case 'experience':
+        if (profile.work_experience && profile.work_experience.length > 0) {
+          return (
+            <div key={key} data-section={key}>
+              <WorkExperienceSection entries={profile.work_experience} />
+            </div>
+          )
+        }
+        return null
 
       case 'timeline':
         if (profile.timeline && profile.timeline.length > 0) {
@@ -592,9 +720,17 @@ export default async function ProfilePage({ params }: { params: { slug: string }
           }
         </div>
       ) : (
-        <>
+        <ProfileTabsClient
+          tabs={[
+            { key: 'work', label: 'Work', sections: ['portfolio_grid', 'portfolio', 'projects', 'skills', 'tools'] },
+            { key: 'about', label: 'About', sections: ['about', 'achievements', 'links'] },
+            { key: 'timeline', label: 'Timeline', sections: ['experience', 'timeline'] },
+            { key: 'gallery', label: 'Gallery', sections: ['gallery'] },
+          ]}
+          defaultTab="work"
+        >
           {sectionOrder.map(key => renderSection(key))}
-        </>
+        </ProfileTabsClient>
       )}
 
       {/* CTA — always at bottom */}

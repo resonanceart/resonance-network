@@ -43,6 +43,13 @@ export async function GET(request: Request) {
       .eq('id', user.id)
       .single()
 
+    // Fetch work experience
+    const { data: workExperience } = await supabaseAdmin
+      .from('work_experience')
+      .select('*')
+      .eq('profile_id', user.id)
+      .order('display_order')
+
     // Fetch linked submissions by email
     const [projResult, profResult, interestResult] = await Promise.all([
       supabaseAdmin.from('project_submissions')
@@ -96,7 +103,7 @@ export async function GET(request: Request) {
       }
     }
 
-    return NextResponse.json({ profile, extendedProfile: extendedProfile || null, submissions })
+    return NextResponse.json({ profile, extendedProfile: extendedProfile || null, submissions, workExperience: workExperience || [] })
   } catch {
     return NextResponse.json(
       { error: 'Something went wrong.' },

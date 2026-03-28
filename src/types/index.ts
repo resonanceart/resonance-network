@@ -253,6 +253,22 @@ export interface ProfileMessage {
   created_at: string
 }
 
+// ─── Work Experience ───────────────────────────────────────────
+
+export interface WorkExperience {
+  id: string
+  profile_id: string
+  type: 'employment' | 'education' | 'freelance'
+  title: string
+  organization?: string
+  location?: string
+  start_date?: string
+  end_date?: string
+  is_current: boolean
+  description?: string
+  display_order: number
+}
+
 // ─── Profile ───────────────────────────────────────────────────
 
 export interface Profile {
@@ -302,6 +318,7 @@ export interface Profile {
   profile_skills?: ProfileSkill[]
   profile_tools?: ProfileTool[]
   portfolio_projects?: PortfolioProject[]
+  work_experience?: WorkExperience[]
 }
 
 export interface UserProfile {

@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { useAuth } from '@/components/AuthProvider'
 import BlockEditor from '@/components/dashboard/BlockEditor'
 import ProfileSettingsPanel from '@/components/dashboard/ProfileSettingsPanel'
-import type { UserProfile, ContentBlock } from '@/types'
+import WorkExperienceEditor from '@/components/dashboard/WorkExperienceEditor'
+import type { UserProfile, ContentBlock, WorkExperience } from '@/types'
 
 function generateBlocksFromLegacy(
   ext: Record<string, unknown>,
@@ -130,6 +131,11 @@ export default function ProfileEditPage() {
   const [newToolName, setNewToolName] = useState('')
   const [newToolCategory, setNewToolCategory] = useState('software')
 
+  // Work experience
+  const [workExperience, setWorkExperience] = useState<WorkExperience[]>([])
+  const [workExpDirty, setWorkExpDirty] = useState(false)
+  const [workExpSaving, setWorkExpSaving] = useState(false)
+
   // Content blocks
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([])
   const [blocksDirty, setBlocksDirty] = useState(false)
@@ -144,7 +150,7 @@ export default function ProfileEditPage() {
 
     fetch('/api/user/profile')
       .then(res => res.json())
-      .then((data: { profile: UserProfile; extendedProfile?: Record<string, unknown> }) => {
+      .then((data: { profile: UserProfile; extendedProfile?: Record<string, unknown>; workExperience?: WorkExperience[] }) => {
         if (data.profile) {
           setDisplayName(data.profile.display_name || '')
           setBio(data.profile.bio || '')
@@ -188,6 +194,11 @@ export default function ProfileEditPage() {
           }
         } else {
           setContentBlocks(loadedBlocks)
+        }
+
+        // Load work experience
+        if (data.workExperience) {
+          setWorkExperience(data.workExperience)
         }
       })
       .catch(() => setMessage({ type: 'error', text: 'Failed to load profile.' }))
@@ -977,6 +988,61 @@ export default function ProfileEditPage() {
           <Link href="/dashboard" className="btn btn--outline">
             Cancel
           </Link>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 'var(--space-8) 0' }} />
+
+      {/* Work Experience */}
+      <div>
+        <h2 style={{ marginBottom: 'var(--space-2)' }}>Work Experience</h2>
+        <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)' }}>
+          Add your work history and education to your profile.
+        </p>
+
+        <WorkExperienceEditor
+          entries={workExperience}
+          onChange={(entries) => { setWorkExperience(entries); setWorkExpDirty(true) }}
+        />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
+          <button
+            type="button"
+            className="btn btn--primary"
+            disabled={workExpSaving || !workExpDirty}
+            onClick={async () => {
+              setWorkExpSaving(true)
+              setMessage(null)
+              try {
+                const res = await fetch('/api/user/work-experience', {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ entries: workExperience }),
+                })
+                if (res.ok) {
+                  const data = await res.json()
+                  setWorkExperience(data.entries)
+                  setWorkExpDirty(false)
+                  setMessage({ type: 'success', text: 'Work experience saved.' })
+                } else {
+                  const data = await res.json()
+                  setMessage({ type: 'error', text: data.error || 'Failed to save work experience.' })
+                }
+              } catch {
+                setMessage({ type: 'error', text: 'Network error. Please try again.' })
+              } finally {
+                setWorkExpSaving(false)
+              }
+            }}
+          >
+            {workExpSaving ? 'Saving...' : 'Save Experience'}
+          </button>
+          {workExpDirty && (
+            <span style={{ color: 'var(--color-warning, #f59e0b)', fontSize: 'var(--text-sm)', fontStyle: 'italic' }}>
+              Unsaved changes
+            </span>
+          )}
         </div>
       </div>
 
