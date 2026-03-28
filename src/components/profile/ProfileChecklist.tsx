@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 interface ProfileChecklistProps {
   hasAvatar: boolean
@@ -12,7 +12,14 @@ interface ProfileChecklistProps {
   onEditSection?: (section: string) => void
 }
 
-const STORAGE_KEY = 'resonance-profile-checklist-dismissed'
+const sectionMap: Record<string, string> = {
+  avatar: 'avatar',
+  bio: 'bio',
+  skills: 'skills',
+  availability: 'availability',
+  cover: 'cover',
+  project: 'pastWork',
+}
 
 export function ProfileChecklist({
   hasAvatar,
@@ -23,16 +30,7 @@ export function ProfileChecklist({
   hasProject,
   onEditSection,
 }: ProfileChecklistProps) {
-  const [dismissed, setDismissed] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
-  const [allCompleteHidden, setAllCompleteHidden] = useState(false)
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const val = localStorage.getItem(STORAGE_KEY)
-      if (val === 'true') setDismissed(true)
-    }
-  }, [])
 
   const items = [
     { key: 'avatar', label: 'Add your profile photo', done: hasAvatar },
@@ -43,123 +41,92 @@ export function ProfileChecklist({
     { key: 'project', label: 'Add past work images', done: hasProject },
   ]
 
-  const sectionMap: Record<string, string> = {
-    avatar: 'avatar',
-    bio: 'bio',
-    skills: 'skills',
-    availability: 'availability',
-    cover: 'cover',
-    project: 'work',
-  }
-
   const completedCount = items.filter((i) => i.done).length
   const total = items.length
   const percentage = Math.round((completedCount / total) * 100)
-  const allComplete = completedCount === total
 
-  useEffect(() => {
-    if (allComplete) {
-      const timer = setTimeout(() => setAllCompleteHidden(true), 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [allComplete])
-
-  function handleDismiss() {
-    localStorage.setItem(STORAGE_KEY, 'true')
-    setDismissed(true)
-  }
-
-  if (dismissed || allCompleteHidden) return null
-
-  return (
-    <div className={`profile-checklist${collapsed ? ' profile-checklist--collapsed' : ''}`}>
-      <div className="profile-checklist__header">
-        <span className="profile-checklist__title">
-          {allComplete ? 'Profile Complete! \u{1F389}' : 'Complete Your Profile'}
-        </span>
-        <div className="profile-checklist__header-actions">
-          <button
-            className="profile-checklist__toggle"
-            onClick={() => setCollapsed((c) => !c)}
-            aria-label={collapsed ? 'Expand checklist' : 'Collapse checklist'}
-          >
-            {collapsed ? (
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M5 11L9 7L13 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M5 7L9 11L13 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            )}
-          </button>
-          <button
-            className="profile-checklist__close"
-            onClick={handleDismiss}
-            aria-label="Close checklist"
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M5 5L13 13M13 5L5 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-          </button>
+  // Collapsed pill view
+  if (collapsed) {
+    return (
+      <div className="profile-checklist profile-checklist--collapsed" onClick={() => setCollapsed(false)}>
+        <div className="profile-checklist__pill">
+          <div className="profile-checklist__pill-bar">
+            <div className="profile-checklist__pill-fill" style={{ width: `${percentage}%` }} />
+          </div>
+          <span className="profile-checklist__pill-text">
+            Profile: {percentage}%
+          </span>
+          <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M5 11L9 7L13 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
         </div>
       </div>
+    )
+  }
 
-      {!collapsed && (
-        <>
-          <div className="profile-checklist__progress">
-            <div className="profile-checklist__progress-bar" style={{ width: `${percentage}%` }} />
-          </div>
-          <span className="profile-checklist__progress-text">{percentage}% complete</span>
+  // Expanded view — always visible
+  return (
+    <div className="profile-checklist">
+      {/* Header */}
+      <div className="profile-checklist__header">
+        <div className="profile-checklist__header-left">
+          <span className="profile-checklist__title">
+            {percentage === 100 ? 'Profile Complete!' : 'Complete Your Profile'}
+          </span>
+          <span className="profile-checklist__percentage">{percentage}%</span>
+        </div>
+        <button
+          className="profile-checklist__toggle"
+          onClick={() => setCollapsed(true)}
+          aria-label="Minimize checklist"
+        >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M5 7L9 11L13 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </button>
+      </div>
 
-          {percentage < 30 && !collapsed && (
-            <div style={{ padding: '0 var(--space-5) var(--space-3)', textAlign: 'center' }}>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', fontWeight: 600 }}>
-                Let&apos;s get started! Complete your profile to connect with the community.
-              </p>
-            </div>
-          )}
+      {/* Progress bar */}
+      <div className="profile-checklist__progress">
+        <div className="profile-checklist__progress-bar" style={{ width: `${percentage}%` }} />
+      </div>
 
-          <ul className="profile-checklist__items">
-            {items.map((item) => {
-              const isClickable = !item.done && onEditSection
-              return (
-                <li
-                  key={item.key}
-                  className={`profile-checklist__item${item.done ? ' profile-checklist__item--done' : ''}${isClickable ? ' profile-checklist__item--clickable' : ''}`}
-                  onClick={isClickable ? () => onEditSection!(sectionMap[item.key]) : undefined}
-                  role={isClickable ? 'button' : undefined}
-                  tabIndex={isClickable ? 0 : undefined}
-                  onKeyDown={isClickable ? (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      onEditSection!(sectionMap[item.key])
-                    }
-                  } : undefined}
-                >
-                  <span className="profile-checklist__check">
-                    {item.done ? (
-                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="9" cy="9" r="8" fill="#22c55e"/>
-                        <path d="M5.5 9.5L7.5 11.5L12.5 6.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    ) : (
-                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="9" cy="9" r="8" stroke="currentColor" strokeWidth="1.5"/>
-                      </svg>
-                    )}
-                  </span>
-                  <span className="profile-checklist__label">{item.label}</span>
-                </li>
-              )
-            })}
-          </ul>
-
-          <button className="profile-checklist__dismiss" onClick={handleDismiss}>
-            Don&apos;t show this again
-          </button>
-        </>
-      )}
+      {/* Items */}
+      <ul className="profile-checklist__items">
+        {items.map((item) => {
+          const isClickable = !item.done && onEditSection
+          return (
+            <li
+              key={item.key}
+              className={`profile-checklist__item${item.done ? ' profile-checklist__item--done' : ' profile-checklist__item--todo'}`}
+              onClick={isClickable ? () => onEditSection!(sectionMap[item.key]) : undefined}
+              role={isClickable ? 'button' : undefined}
+              tabIndex={isClickable ? 0 : undefined}
+              onKeyDown={isClickable ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onEditSection!(sectionMap[item.key])
+                }
+              } : undefined}
+            >
+              <span className="profile-checklist__check">
+                {item.done ? (
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <circle cx="10" cy="10" r="9" fill="#22c55e"/>
+                    <path d="M6 10.5L8.5 13L14 7" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <circle cx="10" cy="10" r="9" stroke="var(--color-border)" strokeWidth="1.5"/>
+                  </svg>
+                )}
+              </span>
+              <span className="profile-checklist__label">{item.label}</span>
+              {isClickable && (
+                <svg className="profile-checklist__arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </li>
+          )
+        })}
+      </ul>
     </div>
   )
 }
