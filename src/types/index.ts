@@ -314,6 +314,8 @@ export interface Profile {
   artist_statement?: string
   accent_color?: string
   resume_url?: string
+  portfolio_pdf_url?: string
+  media_links?: { label: string; url: string; type: 'website' | 'fundraiser' | 'other' }[]
   cover_position?: { x: number; y: number; scale: number }
   social_links?: ProfileSocialLink[]
   profile_skills?: ProfileSkill[]

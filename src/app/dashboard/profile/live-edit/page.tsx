@@ -554,6 +554,8 @@ export default function LiveProfileEditor() {
           media_gallery: mediaGallery.length > 0 ? mediaGallery : null,
           past_work: pastWork.length > 0 ? pastWork : null,
           resume_url: resumeUrl,
+          portfolio_pdf_url: portfolioPdfUrl,
+          media_links: mediaLinks.length > 0 ? mediaLinks : null,
           links: links.length > 0 ? links : null,
           section_order: sectionOrder,
         }),
@@ -640,6 +642,33 @@ export default function LiveProfileEditor() {
       img.src = reader.result as string
     }
     reader.readAsDataURL(file)
+  }
+
+  function handlePortfolioPdfUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 5 * 1024 * 1024) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      setPortfolioPdfUrl(reader.result as string)
+      markDirty()
+    }
+    reader.readAsDataURL(file)
+  }
+
+  function addMediaLink() {
+    setMediaLinks([...mediaLinks, { label: '', url: '', type: 'website' }])
+    markDirty()
+  }
+
+  function updateMediaLink(index: number, field: string, value: string) {
+    setMediaLinks(prev => prev.map((l, i) => i === index ? { ...l, [field]: value } : l))
+    markDirty()
+  }
+
+  function removeMediaLink(index: number) {
+    setMediaLinks(prev => prev.filter((_, i) => i !== index))
+    markDirty()
   }
 
   function handleGalleryUpload(files: FileList | null) {
@@ -951,86 +980,83 @@ export default function LiveProfileEditor() {
           <div className="editable-section__overlay"><span>Edit about</span></div>
         </div>
 
-        {/* Row 4: Media Grid (3x2) */}
-        <section className="profile-media-grid-section">
+        {/* Row 4: Media & Links */}
+        <section className="profile-media-grid-section" data-editable="gallery">
           <div className="container">
-            <div className="profile-media-grid">
-              {/* Media Card */}
-              <div className="profile-media-card" onClick={() => openPanel('gallery')}>
-                <p className="profile-media-card__label">Media</p>
-                <div className="profile-media-card__empty">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  <span>{mediaGallery.some(m => m.type === 'video') ? `${mediaGallery.filter(m => m.type === 'video').length} videos` : 'Add Media'}</span>
+            <p className="section-label">Media &amp; Links</p>
+            <div className="media-card-grid">
+              {/* Portfolio PDF */}
+              <div className="media-card media-card--pdf" onClick={() => openPanel('gallery')}>
+                <div className="media-card__icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6M9 17h4"/></svg>
                 </div>
+                <p className="media-card__label">{portfolioPdfUrl ? 'Portfolio' : 'Add Portfolio'}</p>
+                {portfolioPdfUrl && <span className="media-card__hint">PDF</span>}
               </div>
 
-              {/* Images Card */}
-              <div className="profile-media-card" onClick={() => openPanel('gallery')}>
-                <p className="profile-media-card__label">Images</p>
-                {mediaGallery.some(m => m.type === 'image') ? (
-                  <div className="profile-media-card__preview profile-media-card__preview--grid">
-                    {mediaGallery.filter(m => m.type === 'image').slice(0, 4).map((item, i) => (
-                      <img key={i} src={item.url} alt={item.alt || ''} className="profile-media-card__thumb" />
+              {/* Resume PDF */}
+              <div className="media-card media-card--pdf" onClick={() => openPanel('gallery')}>
+                <div className="media-card__icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6M9 15l3 3 3-3"/></svg>
+                </div>
+                <p className="media-card__label">{resumeUrl ? 'Resume' : 'Add Resume'}</p>
+                {resumeUrl && <span className="media-card__hint">PDF</span>}
+              </div>
+
+              {/* Website Links */}
+              {mediaLinks.filter(l => l.type !== 'fundraiser').map((link, i) => (
+                <div key={`wl-${i}`} className="media-card media-card--website" onClick={() => openPanel('gallery')}>
+                  <div className="media-card__icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c2.5 2.5 4 6 4 10s-1.5 7.5-4 10c-2.5-2.5-4-6-4-10s1.5-7.5 4-10z"/></svg>
+                  </div>
+                  <p className="media-card__label">{link.label || 'Website'}</p>
+                  {link.url && <span className="media-card__hint">{link.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}</span>}
+                </div>
+              ))}
+
+              {/* Fundraiser Links */}
+              {mediaLinks.filter(l => l.type === 'fundraiser').map((link, i) => (
+                <div key={`fl-${i}`} className="media-card media-card--fundraiser" onClick={() => openPanel('gallery')}>
+                  <div className="media-card__icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                  </div>
+                  <p className="media-card__label">{link.label || 'Support'}</p>
+                  {link.url && <span className="media-card__hint">{link.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}</span>}
+                </div>
+              ))}
+
+              {/* Social Links */}
+              {socialLinks.length > 0 && (
+                <div className="media-card media-card--social-group" onClick={() => openPanel('social')}>
+                  <p className="media-card__label">Social ({socialLinks.length})</p>
+                  <div className="media-card__social-icons">
+                    {socialLinks.slice(0, 6).map((link, i) => (
+                      <span key={i} className="media-card__social-dot" title={link.platform}>
+                        {link.platform.charAt(0).toUpperCase()}
+                      </span>
                     ))}
                   </div>
-                ) : (
-                  <div className="profile-media-card__empty">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                    <span>Add Images</span>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
 
-              {/* Past Work Card */}
-              <div className="profile-media-card" onClick={() => openPanel('pastWork')}>
-                <p className="profile-media-card__label">Past Work</p>
-                {pastWork.length > 0 ? (
-                  <div className="profile-media-card__preview profile-media-card__preview--grid">
-                    {pastWork.slice(0, 4).map((item, i) => (
-                      <img key={i} src={item.url} alt={item.title || ''} className="profile-media-card__thumb" />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="profile-media-card__empty">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
-                    <span>Add Past Work</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Gallery Card */}
-              <div className="profile-media-card" onClick={() => openPanel('gallery')}>
-                <p className="profile-media-card__label">Gallery</p>
-                {mediaGallery.length > 0 ? (
-                  <div className="profile-media-card__preview profile-media-card__preview--grid">
+              {/* Gallery Images */}
+              {mediaGallery.length > 0 && (
+                <div className="media-card" onClick={() => openPanel('gallery')}>
+                  <div className="media-card__preview--grid">
                     {mediaGallery.slice(0, 4).map((item, i) => (
                       <img key={i} src={item.url} alt={item.alt || ''} className="profile-media-card__thumb" />
                     ))}
                   </div>
-                ) : (
-                  <div className="profile-media-card__empty">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
-                    <span>Curate Gallery</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Match Card (placeholder) */}
-              <div className="profile-media-card profile-media-card--placeholder">
-                <p className="profile-media-card__label">Match</p>
-                <div className="profile-media-card__empty">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-                  <span>Coming Soon</span>
+                  <p className="media-card__label">Gallery ({mediaGallery.length})</p>
                 </div>
-              </div>
+              )}
 
-              {/* Gallery Page Card */}
-              <div className="profile-media-card" onClick={() => openPanel('gallery')}>
-                <p className="profile-media-card__label">Full Gallery</p>
-                <div className="profile-media-card__empty">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                  <span>View All</span>
+              {/* Add more card */}
+              <div className="media-card media-card--add" onClick={() => openPanel('gallery')}>
+                <div className="media-card__icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 </div>
+                <p className="media-card__label">Add Media</p>
               </div>
             </div>
           </div>
@@ -1448,6 +1474,51 @@ export default function LiveProfileEditor() {
               {/* GALLERY PANEL */}
               {activePanel === 'gallery' && (
                 <div className="live-editor__panel-section">
+                  {/* Documents */}
+                  <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, marginBottom: 'var(--space-3)', color: 'rgba(255,255,255,0.8)' }}>Documents</h4>
+                  <div className="form-group">
+                    <label className="form-label">Portfolio PDF</label>
+                    <input type="file" accept=".pdf" onChange={handlePortfolioPdfUpload} className="form-input" />
+                    {portfolioPdfUrl && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)' }}>Portfolio uploaded</span>
+                        <button type="button" onClick={() => { setPortfolioPdfUrl(null); markDirty() }} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: 'var(--text-xs)' }}>Remove</button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Resume PDF</label>
+                    <input type="file" accept=".pdf" onChange={handleResumeUpload} className="form-input" />
+                    {resumeUrl && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)' }}>Resume uploaded</span>
+                        <button type="button" onClick={() => { setResumeUrl(null); markDirty() }} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: 'var(--text-xs)' }}>Remove</button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Links */}
+                  <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, marginBottom: 'var(--space-3)', marginTop: 'var(--space-5)', color: 'rgba(255,255,255,0.8)' }}>Links</h4>
+                  {mediaLinks.map((link, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-3)', alignItems: 'flex-start' }}>
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                        <input type="text" className="form-input" placeholder="Label (e.g. Studio, Fundraiser)" value={link.label} onChange={e => updateMediaLink(i, 'label', e.target.value)} />
+                        <input type="url" className="form-input" placeholder="https://..." value={link.url} onChange={e => updateMediaLink(i, 'url', e.target.value)} />
+                        <select className="form-input" value={link.type} onChange={e => updateMediaLink(i, 'type', e.target.value)} style={{ width: '160px' }}>
+                          <option value="website">Website</option>
+                          <option value="fundraiser">Fundraiser</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+                      <button type="button" onClick={() => removeMediaLink(i)} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: '18px', padding: '8px' }}>&times;</button>
+                    </div>
+                  ))}
+                  <button type="button" onClick={addMediaLink} className="btn btn--outline btn--sm" style={{ marginBottom: 'var(--space-5)' }}>
+                    + Add Link
+                  </button>
+
+                  {/* Gallery Images */}
+                  <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, marginBottom: 'var(--space-3)', marginTop: 'var(--space-3)', color: 'rgba(255,255,255,0.8)' }}>Gallery Images</h4>
                   {/* Existing images */}
                   {mediaGallery.length > 0 && (
                     <div className="live-editor__gallery-grid">

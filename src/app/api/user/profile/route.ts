@@ -260,6 +260,20 @@ export async function PUT(request: Request) {
         extendedFields.resume_url = sanitizeText(body.resume_url, 2000)
       }
     }
+    if (body.portfolio_pdf_url !== undefined) {
+      if (body.portfolio_pdf_url === null) {
+        extendedFields.portfolio_pdf_url = null
+      } else if (typeof body.portfolio_pdf_url === 'string' && body.portfolio_pdf_url.startsWith('data:')) {
+        extendedFields.portfolio_pdf_url = body.portfolio_pdf_url.length <= 10_000_000 ? body.portfolio_pdf_url : null
+      } else {
+        extendedFields.portfolio_pdf_url = sanitizeText(body.portfolio_pdf_url, 2000)
+      }
+    }
+    if (body.media_links !== undefined) {
+      if (Array.isArray(body.media_links) && body.media_links.length <= 20) {
+        extendedFields.media_links = body.media_links
+      }
+    }
     if (body.tools_and_materials !== undefined && Array.isArray(body.tools_and_materials)) {
       extendedFields.tools_and_materials = body.tools_and_materials.map((s: unknown) => sanitizeText(s, 200)).filter(Boolean)
     }

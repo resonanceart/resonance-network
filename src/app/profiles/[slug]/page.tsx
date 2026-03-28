@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { ProfileTimeline } from '@/components/profile/ProfileTimeline'
 import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabilityBadge'
+import { ProfileMediaGrid } from '@/components/profile/ProfileMediaGrid'
 import { ProfileEditOverlay } from '@/components/profile/ProfileEditOverlay'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { getProfiles, getProfileBySlug } from '@/lib/data'
@@ -497,67 +498,8 @@ export default async function ProfilePage({ params }: { params: { slug: string }
         </section>
       )}
 
-      {/* Row 4: Media Grid (3x2) */}
-      <section className="profile-media-grid-section">
-        <div className="container">
-          <div className="profile-media-grid">
-            <div className="profile-media-card">
-              <p className="profile-media-card__label">Media</p>
-              {profile.mediaGallery && profile.mediaGallery.some(m => m.type === 'video') ? (
-                <div className="profile-media-card__preview">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                </div>
-              ) : (
-                <div className="profile-media-card__empty"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>No media yet</span></div>
-              )}
-            </div>
-            <div className="profile-media-card">
-              <p className="profile-media-card__label">Images</p>
-              {profile.mediaGallery && profile.mediaGallery.some(m => m.type === 'image') ? (
-                <div className="profile-media-card__preview profile-media-card__preview--grid">
-                  {profile.mediaGallery.filter(m => m.type === 'image').slice(0, 4).map((item, i) => (
-                    <img key={i} src={item.url} alt={item.alt || ''} className="profile-media-card__thumb" />
-                  ))}
-                </div>
-              ) : (
-                <div className="profile-media-card__empty"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>No images yet</span></div>
-              )}
-            </div>
-            <div className="profile-media-card">
-              <p className="profile-media-card__label">Past Work</p>
-              {profile.past_work && profile.past_work.length > 0 ? (
-                <div className="profile-media-card__preview profile-media-card__preview--grid">
-                  {profile.past_work.slice(0, 4).map((item, i) => (
-                    <img key={i} src={item.url} alt={item.title || ''} className="profile-media-card__thumb" />
-                  ))}
-                </div>
-              ) : (
-                <div className="profile-media-card__empty"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg><span>No past work yet</span></div>
-              )}
-            </div>
-            <div className="profile-media-card">
-              <p className="profile-media-card__label">Gallery</p>
-              {profile.mediaGallery && profile.mediaGallery.length > 0 ? (
-                <div className="profile-media-card__preview profile-media-card__preview--grid">
-                  {profile.mediaGallery.slice(0, 4).map((item, i) => (
-                    <img key={i} src={item.url} alt={item.alt || ''} className="profile-media-card__thumb" />
-                  ))}
-                </div>
-              ) : (
-                <div className="profile-media-card__empty"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/></svg><span>No gallery yet</span></div>
-              )}
-            </div>
-            <div className="profile-media-card profile-media-card--placeholder">
-              <p className="profile-media-card__label">Match</p>
-              <div className="profile-media-card__empty"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg><span>Coming Soon</span></div>
-            </div>
-            <div className="profile-media-card">
-              <p className="profile-media-card__label">Full Gallery</p>
-              <div className="profile-media-card__empty"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>View All</span></div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Row 4: Media & Links Grid */}
+      <ProfileMediaGrid profile={profile} />
 
       {/* Row 5: Milestones */}
       {((profile.work_experience && profile.work_experience.length > 0) || (profile.timeline && profile.timeline.length > 0)) && (
