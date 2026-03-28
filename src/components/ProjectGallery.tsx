@@ -7,6 +7,7 @@ import type { Project } from '@/types'
 export function ProjectGallery({ projects }: { projects: Project[] }) {
   const [activeDomains, setActiveDomains] = useState<Set<string>>(new Set())
   const [activeStages, setActiveStages] = useState<Set<string>>(new Set())
+  const [activeLocation, setActiveLocation] = useState('')
 
   const allDomains = useMemo(() => {
     const domains = new Set<string>()
@@ -18,6 +19,12 @@ export function ProjectGallery({ projects }: { projects: Project[] }) {
     const stages = new Set<string>()
     projects.forEach(p => stages.add(p.stage))
     return Array.from(stages)
+  }, [projects])
+
+  const allLocations = useMemo(() => {
+    const locs = new Set<string>()
+    projects.forEach(p => { if (p.location) locs.add(p.location) })
+    return Array.from(locs).sort()
   }, [projects])
 
   const handleDomainToggle = (domain: string) => {
@@ -46,9 +53,10 @@ export function ProjectGallery({ projects }: { projects: Project[] }) {
     return projects.filter(p => {
       const domainMatch = activeDomains.size === 0 || p.domains.some(d => activeDomains.has(d))
       const stageMatch = activeStages.size === 0 || activeStages.has(p.stage)
-      return domainMatch && stageMatch
+      const locationMatch = !activeLocation || p.location === activeLocation
+      return domainMatch && stageMatch && locationMatch
     })
-  }, [projects, activeDomains, activeStages])
+  }, [projects, activeDomains, activeStages, activeLocation])
 
   const [isTransitioning, setIsTransitioning] = useState(false)
   const filterChangeRef = useRef(false)
@@ -61,17 +69,20 @@ export function ProjectGallery({ projects }: { projects: Project[] }) {
     setIsTransitioning(true)
     const timer = setTimeout(() => setIsTransitioning(false), 50)
     return () => clearTimeout(timer)
-  }, [activeDomains, activeStages])
+  }, [activeDomains, activeStages, activeLocation])
 
   return (
     <>
       <FilterBar
         domains={allDomains}
         stages={allStages}
+        locations={allLocations}
         activeDomains={activeDomains}
         activeStages={activeStages}
+        activeLocation={activeLocation}
         onDomainToggle={handleDomainToggle}
         onStageToggle={handleStageToggle}
+        onLocationChange={setActiveLocation}
       />
       <section className="container container--wide">
         <div className={`project-grid${isTransitioning ? ' project-grid--transitioning' : ''}`}>

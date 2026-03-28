@@ -54,9 +54,6 @@ export function ProjectCard({ project, index = 0, transitionDelay = 0 }: Props) 
         <div className="project-card__body">
           <p className="project-card__eyebrow">{project.eyebrow}</p>
           <h2 className="project-card__title">{project.title}</h2>
-          {project.shortDescription && (
-            <p className="project-card__desc">{project.shortDescription}</p>
-          )}
         </div>
       </Link>
     </div>
