@@ -6985,3 +6985,308 @@ main {
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================
+   CONTENT BLOCKS — DISPLAY
+   ========================= */
+.profile-block {
+  padding: var(--space-6) 0;
+}
+
+.profile-block + .profile-block {
+  border-top: 1px solid var(--color-border);
+}
+
+/* Text Block (Markdown) */
+.text-block-display {
+  max-width: 720px;
+  line-height: 1.7;
+}
+
+.text-block-display h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: var(--space-6) 0 var(--space-3) 0;
+}
+
+.text-block-display h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: var(--space-5) 0 var(--space-2) 0;
+}
+
+.text-block-display p {
+  margin: 0 0 var(--space-3) 0;
+  color: var(--color-text-secondary);
+}
+
+.text-block-display ul,
+.text-block-display ol {
+  margin: 0 0 var(--space-3) 0;
+  padding-left: var(--space-5);
+  color: var(--color-text-secondary);
+}
+
+.text-block-display li {
+  margin-bottom: var(--space-1);
+}
+
+.text-block-display a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.text-block-display strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.text-block-display em {
+  font-style: italic;
+}
+
+.text-block-display blockquote {
+  margin: var(--space-4) 0;
+  padding: var(--space-3) var(--space-5);
+  border-left: 3px solid var(--color-primary);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* Video Block */
+.video-block-display {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}
+
+.video-block-display iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.video-block-display--unsupported {
+  position: static;
+  padding: var(--space-6);
+  height: auto;
+  text-align: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.video-block-display--unsupported a {
+  color: var(--color-primary);
+}
+
+/* Testimonials Block */
+.testimonials-block-display {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-5);
+}
+
+.testimonial-card {
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.testimonial-card__quote {
+  margin: 0 0 var(--space-4) 0;
+  padding: 0 0 0 var(--space-4);
+  border-left: 3px solid var(--color-primary);
+}
+
+.testimonial-card__quote p {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--text-base);
+  color: var(--color-text);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.testimonial-card__author {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.testimonial-card__photo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.testimonial-card__name {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.testimonial-card__title {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.testimonial-card__relationship {
+  margin-left: auto;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* Embed Block */
+.embed-block-display {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.embed-block-display--unsupported {
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+/* PDF Block */
+.pdf-block-display {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.pdf-block-display__icon {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.pdf-block-display__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pdf-block-display__info strong {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.pdf-block-display__info p {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* Divider Block */
+.divider-block-display--space {
+  height: var(--space-8);
+}
+
+.divider-block-display--dots {
+  text-align: center;
+  padding: var(--space-4) 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-lg);
+  letter-spacing: 0.5em;
+}
+
+.divider-block-display--line hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-4) 0;
+}
+
+.divider-block-display__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.divider-block-display__label::before,
+.divider-block-display__label::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Audio Block */
+.audio-block-display {
+  padding: var(--space-3) 0;
+}
+
+.audio-block-display__title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+
+.audio-block-display audio {
+  width: 100%;
+  border-radius: var(--radius-md);
+}
+
+/* Profile Links (in block context) */
+.profile-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  transition: border-color 0.2s;
+}
+
+.profile-link:hover {
+  border-color: var(--color-primary);
+}
+
+.profile-link__type {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* Blocks — Responsive */
+@media (max-width: 768px) {
+  .testimonials-block-display {
+    grid-template-columns: 1fr;
+  }
+
+  .pdf-block-display {
+    flex-direction: column;
+    text-align: center;
+  }
+}
