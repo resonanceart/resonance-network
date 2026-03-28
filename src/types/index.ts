@@ -178,7 +178,7 @@ export interface AudioBlockContent {
 export interface ProfileSocialLink {
   id: string
   profile_id: string
-  platform: 'instagram' | 'linkedin' | 'behance' | 'artstation' | 'dribbble' | 'github' | 'vimeo' | 'soundcloud' | 'spotify' | 'youtube' | 'x' | 'tiktok' | 'custom'
+  platform: 'instagram' | 'linkedin' | 'behance' | 'artstation' | 'dribbble' | 'github' | 'vimeo' | 'soundcloud' | 'spotify' | 'youtube' | 'x' | 'tiktok' | 'facebook' | 'linktree' | 'custom'
   url: string
   display_order: number
 }
@@ -313,12 +313,14 @@ export interface Profile {
   section_visibility?: Record<string, boolean>
   artist_statement?: string
   accent_color?: string
+  resume_url?: string
   cover_position?: { x: number; y: number; scale: number }
   social_links?: ProfileSocialLink[]
   profile_skills?: ProfileSkill[]
   profile_tools?: ProfileTool[]
   portfolio_projects?: PortfolioProject[]
   work_experience?: WorkExperience[]
+  past_work?: { url: string; title: string; description?: string }[]
 }
 
 export interface UserProfile {

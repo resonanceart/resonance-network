@@ -11,18 +11,19 @@ import type { ProfileSkill, ProfileTool, ProfileSocialLink } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────
 
-type EditSection = 'cover' | 'avatar' | 'identity' | 'bio' | 'skills' | 'tools' | 'availability' | 'social' | 'timeline' | 'gallery' | null
+type EditSection = 'cover' | 'avatar' | 'identity' | 'bio' | 'skills' | 'tools' | 'availability' | 'social' | 'timeline' | 'gallery' | 'pastWork' | null
 
 type GalleryItem = { url: string; alt: string; caption?: string; type: 'image' | 'video'; isFeatured?: boolean; order: number }
+type PastWorkItem = { url: string; title: string; description?: string }
 
 type SkillEntry = { id: string; skill_name: string; category: ProfileSkill['category']; display_order: number }
 type ToolEntry = { id: string; tool_name: string; category: ProfileTool['category']; display_order: number }
-type SocialEntry = { id: string; platform: ProfileSocialLink['platform']; url: string; display_order: number }
+type SocialEntry = { id: string; platform: ProfileSocialLink['platform']; url: string; display_order: number; label?: string }
 type TimelineEntry = { year: string; title: string; organization?: string; description?: string; category: string }
 
 const SKILL_CATEGORIES: ProfileSkill['category'][] = ['design', 'architecture', 'fabrication', 'sound', 'technology', 'production', 'strategy', 'community']
 const TOOL_CATEGORIES: ProfileTool['category'][] = ['software', 'hardware', 'materials', 'processes']
-const SOCIAL_PLATFORMS: ProfileSocialLink['platform'][] = ['instagram', 'linkedin', 'behance', 'artstation', 'dribbble', 'github', 'vimeo', 'soundcloud', 'spotify', 'youtube', 'x', 'tiktok', 'custom']
+const SOCIAL_PLATFORMS: ProfileSocialLink['platform'][] = ['instagram', 'linkedin', 'behance', 'artstation', 'dribbble', 'github', 'vimeo', 'soundcloud', 'spotify', 'youtube', 'x', 'tiktok', 'facebook', 'linktree', 'custom']
 const TIMELINE_CATEGORIES = ['exhibition', 'education', 'award', 'residency', 'career', 'publication', 'other']
 
 // ─── Helper Panel Components ──────────────────────────────────────
@@ -213,6 +214,9 @@ function SocialPanel({
   socialLinks: SocialEntry[]
   setSocialLinks: (v: SocialEntry[]) => void
 }) {
+  const platformLinks = socialLinks.filter(l => l.platform !== 'custom')
+  const customLinks = socialLinks.filter(l => l.platform === 'custom')
+
   function addLink() {
     const entry: SocialEntry = {
       id: `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -223,7 +227,18 @@ function SocialPanel({
     setSocialLinks([...socialLinks, entry])
   }
 
-  function updateLink(id: string, field: 'platform' | 'url', value: string) {
+  function addCustomLink() {
+    const entry: SocialEntry = {
+      id: `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      platform: 'custom' as ProfileSocialLink['platform'],
+      url: '',
+      label: '',
+      display_order: socialLinks.length,
+    }
+    setSocialLinks([...socialLinks, entry])
+  }
+
+  function updateLink(id: string, field: 'platform' | 'url' | 'label', value: string) {
     setSocialLinks(socialLinks.map(l => l.id === id ? { ...l, [field]: value } : l))
   }
 
@@ -233,7 +248,8 @@ function SocialPanel({
 
   return (
     <div className="live-editor__panel-section">
-      {socialLinks.map((link, i) => (
+      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Social Platforms</p>
+      {platformLinks.map((link) => (
         <div key={link.id} style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-start', marginBottom: 'var(--space-3)' }}>
           <select
             className="form-input"
@@ -241,7 +257,7 @@ function SocialPanel({
             onChange={e => updateLink(link.id, 'platform', e.target.value)}
             style={{ width: 'auto', minWidth: 120 }}
           >
-            {SOCIAL_PLATFORMS.map(p => (
+            {SOCIAL_PLATFORMS.filter(p => p !== 'custom').map(p => (
               <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
             ))}
           </select>
@@ -265,6 +281,40 @@ function SocialPanel({
       ))}
       <button type="button" className="btn btn--outline btn--sm" onClick={addLink}>
         + Add Social Link
+      </button>
+
+      <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 'var(--space-6) 0' }} />
+
+      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Custom Links</p>
+      {customLinks.map((link) => (
+        <div key={link.id} style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-start', marginBottom: 'var(--space-3)' }}>
+          <input
+            className="form-input"
+            value={link.label || ''}
+            onChange={e => updateLink(link.id, 'label', e.target.value)}
+            placeholder="Label (e.g. Portfolio)"
+            style={{ width: 140 }}
+          />
+          <input
+            className="form-input"
+            value={link.url}
+            onChange={e => updateLink(link.id, 'url', e.target.value)}
+            placeholder="https://..."
+            style={{ flex: 1 }}
+          />
+          <button
+            type="button"
+            className="btn btn--ghost btn--sm"
+            onClick={() => removeLink(link.id)}
+            aria-label="Remove custom link"
+            style={{ flexShrink: 0 }}
+          >
+            &times;
+          </button>
+        </div>
+      ))}
+      <button type="button" className="btn btn--outline btn--sm" onClick={addCustomLink}>
+        + Add Custom Link
       </button>
     </div>
   )
@@ -369,12 +419,14 @@ export default function LiveProfileEditor() {
   const [achievements, setAchievements] = useState<string[]>([])
   const [timeline, setTimeline] = useState<TimelineEntry[]>([])
   const [mediaGallery, setMediaGallery] = useState<GalleryItem[]>([])
+  const [pastWork, setPastWork] = useState<PastWorkItem[]>([])
   const [accentColor, setAccentColor] = useState('#01696F')
   const [slug, setSlug] = useState('')
   const [profileVisibility, setProfileVisibility] = useState('draft')
   const [specialties, setSpecialties] = useState<string[]>([])
   const [links, setLinks] = useState<Array<{label: string; url: string; type?: string}>>([])
   const [sectionOrder, setSectionOrder] = useState<string[]>(['skills', 'tools', 'about', 'timeline', 'achievements', 'links'])
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null)
 
   // Refs for scroll-to-section
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
@@ -425,6 +477,8 @@ export default function LiveProfileEditor() {
           setLinks((ext.links as Array<{label: string; url: string; type?: string}>) || [])
           if (ext.section_order) setSectionOrder(ext.section_order as string[])
           if (ext.media_gallery) setMediaGallery(ext.media_gallery as GalleryItem[])
+          setResumeUrl((ext.resume_url as string) || null)
+          if (ext.past_work) setPastWork(ext.past_work as PastWorkItem[])
         }
         // Load related table data from top-level API response
         if (data.profileSkills) setProfileSkills(data.profileSkills as SkillEntry[])
@@ -475,6 +529,8 @@ export default function LiveProfileEditor() {
           timeline: timeline.length > 0 ? timeline : null,
           accent_color: accentColor,
           media_gallery: mediaGallery.length > 0 ? mediaGallery : null,
+          past_work: pastWork.length > 0 ? pastWork : null,
+          resume_url: resumeUrl,
         }),
       })
       setHasChanges(false)
@@ -523,6 +579,17 @@ export default function LiveProfileEditor() {
         markDirty()
       }
       img.src = reader.result as string
+    }
+    reader.readAsDataURL(file)
+  }
+
+  function handleResumeUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || file.size > 5 * 1024 * 1024) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      setResumeUrl(reader.result as string)
+      markDirty()
     }
     reader.readAsDataURL(file)
   }
@@ -582,6 +649,38 @@ export default function LiveProfileEditor() {
 
   function removeGalleryItem(index: number) {
     setMediaGallery(prev => prev.filter((_, i) => i !== index).map((item, i) => ({ ...item, order: i })))
+    markDirty()
+  }
+
+  function handlePastWorkUpload(file: File, title: string) {
+    if (file.size > 10 * 1024 * 1024) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const img = new window.Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const maxW = 1200
+        const ratio = Math.min(maxW / img.width, 1)
+        canvas.width = img.width * ratio
+        canvas.height = img.height * ratio
+        const ctx = canvas.getContext('2d')!
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
+        setPastWork(prev => [...prev, { url: dataUrl, title: title || 'Untitled' }])
+        markDirty()
+      }
+      img.src = reader.result as string
+    }
+    reader.readAsDataURL(file)
+  }
+
+  function removePastWorkItem(index: number) {
+    setPastWork(prev => prev.filter((_, i) => i !== index))
+    markDirty()
+  }
+
+  function updatePastWorkItem(index: number, field: keyof PastWorkItem, value: string) {
+    setPastWork(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item))
     markDirty()
   }
 
@@ -686,7 +785,7 @@ export default function LiveProfileEditor() {
             <div className="profile-header__inner profile-header__inner--left">
               {/* Avatar */}
               <div ref={setSectionRef('avatar')} className={`editable-section editable-section--inline${activePanel === 'avatar' ? ' editable-section--active' : ''}`} onClick={() => openPanel('avatar')}>
-                <div className="profile-header__avatar profile-header__avatar--overlap">
+                <div className="profile-header__avatar profile-header__avatar--portrait">
                   {avatarUrl ? (
                     <img
                       src={avatarUrl}
@@ -790,13 +889,24 @@ export default function LiveProfileEditor() {
           </section>
         )}
 
-        {/* Skills Section */}
+        {/* Skills & Tools Section (merged) */}
         <div ref={setSectionRef('skills')} className={`editable-section${activePanel === 'skills' ? ' editable-section--active' : ''}`} onClick={() => openPanel('skills')}>
-          {profileSkills.length > 0 ? (
+          {(profileSkills.length > 0 || profileTools.length > 0) ? (
             <section className="profile-skills-section">
               <div className="container">
-                <p className="section-label">Skills</p>
-                <ProfileSkillsDisplay skills={profileSkills as ProfileSkill[]} />
+                {profileSkills.length > 0 && (
+                  <>
+                    <p className="section-label">Skills</p>
+                    <ProfileSkillsDisplay skills={profileSkills as ProfileSkill[]} />
+                  </>
+                )}
+                {profileTools.length > 0 && (
+                  <>
+                    {profileSkills.length > 0 && <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 'var(--space-6) 0' }} />}
+                    <p className="section-label">Tools &amp; Materials</p>
+                    <ProfileToolsDisplay tools={profileTools as ProfileTool[]} />
+                  </>
+                )}
               </div>
             </section>
           ) : (
@@ -806,36 +916,13 @@ export default function LiveProfileEditor() {
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                   </svg>
-                  <span>Add your skills</span>
+                  <span>Add your skills &amp; tools</span>
                 </div>
               </div>
             </section>
           )}
           <div className="editable-section__overlay">
-            <span>Edit skills</span>
-          </div>
-        </div>
-
-        {/* Tools Section */}
-        <div ref={setSectionRef('tools')} className={`editable-section${activePanel === 'tools' ? ' editable-section--active' : ''}`} onClick={() => openPanel('tools')}>
-          {profileTools.length > 0 ? (
-            <section className="profile-tools-section">
-              <div className="container">
-                <p className="section-label">Tools</p>
-                <ProfileToolsDisplay tools={profileTools as ProfileTool[]} />
-              </div>
-            </section>
-          ) : (
-            <section className="profile-tools-section">
-              <div className="container">
-                <div className="live-editor__empty-placeholder">
-                  <span>Add your tools &amp; materials</span>
-                </div>
-              </div>
-            </section>
-          )}
-          <div className="editable-section__overlay">
-            <span>Edit tools</span>
+            <span>Edit skills &amp; tools</span>
           </div>
         </div>
 
@@ -926,6 +1013,46 @@ export default function LiveProfileEditor() {
           )}
           <div className="editable-section__overlay">
             <span>Edit gallery</span>
+          </div>
+        </div>
+
+        {/* Past Work */}
+        <div ref={setSectionRef('pastWork')} className={`editable-section${activePanel === 'pastWork' ? ' editable-section--active' : ''}`} onClick={() => openPanel('pastWork')}>
+          {pastWork.length > 0 ? (
+            <section className="profile-past-work-section">
+              <div className="container">
+                <p className="section-label">Past Work</p>
+                <div className="past-work-grid">
+                  {pastWork.map((item, i) => (
+                    <div key={i} className="past-work-card">
+                      <div className="past-work-card__image-wrapper">
+                        <img src={item.url} alt={item.title} className="past-work-card__image" />
+                        <div className="past-work-card__overlay">
+                          <span className="past-work-card__title">{item.title}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          ) : (
+            <section className="profile-past-work-section">
+              <div className="container">
+                <div className="live-editor__empty-placeholder">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <rect x="3" y="3" width="7" height="9" rx="1"/>
+                    <rect x="14" y="3" width="7" height="5" rx="1"/>
+                    <rect x="14" y="12" width="7" height="9" rx="1"/>
+                    <rect x="3" y="16" width="7" height="5" rx="1"/>
+                  </svg>
+                  <span>Showcase your past work</span>
+                </div>
+              </div>
+            </section>
+          )}
+          <div className="editable-section__overlay">
+            <span>Edit past work</span>
           </div>
         </div>
 
@@ -1033,12 +1160,12 @@ export default function LiveProfileEditor() {
                 {activePanel === 'avatar' && 'Profile Photo'}
                 {activePanel === 'identity' && 'Profile Info'}
                 {activePanel === 'bio' && 'About You'}
-                {activePanel === 'skills' && 'Skills'}
-                {activePanel === 'tools' && 'Tools & Materials'}
+                {(activePanel === 'skills' || activePanel === 'tools') && 'Skills & Tools'}
                 {activePanel === 'availability' && 'Availability'}
                 {activePanel === 'social' && 'Social Links'}
                 {activePanel === 'timeline' && 'Timeline'}
                 {activePanel === 'gallery' && 'Gallery'}
+                {activePanel === 'pastWork' && 'Past Work'}
               </h3>
               <button className="live-editor__panel-close" onClick={closePanel}>
                 &times;
@@ -1195,6 +1322,20 @@ export default function LiveProfileEditor() {
                       />
                     </div>
                   </div>
+                  <div className="form-group">
+                    <label className="form-label">Resume / CV (PDF)</label>
+                    {resumeUrl ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-primary)' }}>Resume uploaded</span>
+                        <button className="btn btn--ghost btn--sm" onClick={() => { setResumeUrl(null); markDirty() }}>Remove</button>
+                      </div>
+                    ) : (
+                      <label className="live-editor__upload-zone" style={{ padding: 'var(--space-4)' }}>
+                        <input type="file" accept=".pdf" onChange={handleResumeUpload} style={{ display: 'none' }} />
+                        <span>Upload PDF (max 5MB)</span>
+                      </label>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -1249,20 +1390,21 @@ export default function LiveProfileEditor() {
                 </div>
               )}
 
-              {/* SKILLS PANEL */}
-              {activePanel === 'skills' && (
-                <SkillsPanel
-                  profileSkills={profileSkills}
-                  setProfileSkills={v => { setProfileSkills(v); markDirty() }}
-                />
-              )}
-
-              {/* TOOLS PANEL */}
-              {activePanel === 'tools' && (
-                <ToolsPanel
-                  profileTools={profileTools}
-                  setProfileTools={v => { setProfileTools(v); markDirty() }}
-                />
+              {/* SKILLS & TOOLS PANEL (merged) */}
+              {(activePanel === 'skills' || activePanel === 'tools') && (
+                <div>
+                  <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Skills</p>
+                  <SkillsPanel
+                    profileSkills={profileSkills}
+                    setProfileSkills={v => { setProfileSkills(v); markDirty() }}
+                  />
+                  <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 'var(--space-6) 0' }} />
+                  <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tools &amp; Materials</p>
+                  <ToolsPanel
+                    profileTools={profileTools}
+                    setProfileTools={v => { setProfileTools(v); markDirty() }}
+                  />
+                </div>
               )}
 
               {/* AVAILABILITY PANEL */}
@@ -1388,6 +1530,33 @@ export default function LiveProfileEditor() {
                       {mediaGallery.length} image{mediaGallery.length !== 1 ? 's' : ''} in gallery
                     </p>
                   )}
+                </div>
+              )}
+
+              {/* PAST WORK PANEL */}
+              {activePanel === 'pastWork' && (
+                <div className="live-editor__panel-section">
+                  {pastWork.map((item, i) => (
+                    <div key={i} style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', border: '1px solid var(--color-border)', borderRadius: 8 }}>
+                      <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                        {item.url && (
+                          <img src={item.url} alt={item.title} style={{ width: 80, height: 60, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }} />
+                        )}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <input className="form-input" value={item.title} onChange={e => updatePastWorkItem(i, 'title', e.target.value)} placeholder="Project title" maxLength={200} style={{ marginBottom: 'var(--space-2)' }} />
+                          <input className="form-input" value={item.description || ''} onChange={e => updatePastWorkItem(i, 'description', e.target.value)} placeholder="Brief description (optional)" maxLength={500} />
+                        </div>
+                        <button type="button" className="btn btn--ghost btn--sm" onClick={() => removePastWorkItem(i)} aria-label="Remove item" style={{ flexShrink: 0, alignSelf: 'flex-start' }}>&times;</button>
+                      </div>
+                    </div>
+                  ))}
+                  <label className="live-editor__upload-zone" onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('live-editor__gallery-dropzone--drag') }} onDragLeave={e => e.currentTarget.classList.remove('live-editor__gallery-dropzone--drag')} onDrop={e => { e.preventDefault(); e.currentTarget.classList.remove('live-editor__gallery-dropzone--drag'); if (e.dataTransfer.files) Array.from(e.dataTransfer.files).forEach(f => handlePastWorkUpload(f, f.name.replace(/\.[^.]+$/, ''))) }}>
+                    <input type="file" accept="image/*" multiple onChange={e => { if (e.target.files) Array.from(e.target.files).forEach(f => handlePastWorkUpload(f, f.name.replace(/\.[^.]+$/, ''))); e.target.value = '' }} style={{ display: 'none' }} />
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                    <span>Drop images here or click to add past work</span>
+                    <small>JPG or PNG, max 10MB each</small>
+                  </label>
+                  {pastWork.length > 0 && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-3)' }}>{pastWork.length} item{pastWork.length !== 1 ? 's' : ''}</p>}
                 </div>
               )}
             </div>

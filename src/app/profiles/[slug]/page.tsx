@@ -191,6 +191,18 @@ function getSocialIcon(platform: string) {
           <path d="M10 5c1 1 2.5 1.5 4 1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
         </svg>
       )
+    case 'facebook':
+      return (
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M16.5 9a7.5 7.5 0 10-8.67 7.41v-5.24H5.98V9h1.85V7.34c0-1.83 1.09-2.84 2.76-2.84.8 0 1.63.14 1.63.14v1.8h-.92c-.9 0-1.19.56-1.19 1.14V9h2.03l-.32 2.17h-1.71v5.24A7.5 7.5 0 0016.5 9z" stroke="currentColor" strokeWidth="1.1"/>
+        </svg>
+      )
+    case 'linktree':
+      return (
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M9 2v14M5 6l4-4 4 4M5 10h8M6.5 14h5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )
     default:
       return (
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -365,63 +377,40 @@ export default async function ProfilePage({ params }: { params: { slug: string }
         return null
 
       case 'skills':
-        if (profile.profile_skills && profile.profile_skills.length > 0) {
-          return (
-            <div key={key} data-section={key} data-editable="skills">
-              <section className="profile-skills-section">
-                <div className="container">
-                  <p className="section-label">Skills</p>
-                  <ProfileSkillsDisplay skills={profile.profile_skills} />
-                </div>
-              </section>
-            </div>
-          )
-        }
-        // Fallback: show specialties as skills if no profile_skills
-        if (profile.specialties.length > 0 && !profile.profile_skills) {
-          return (
-            <div key={key} data-section={key} data-editable="skills">
-              <section className="profile-specialties">
-                <div className="container">
-                  <p className="section-label">Specialties</p>
-                  <div className="profile-specialties__list">
+        const hasSkills = profile.profile_skills && profile.profile_skills.length > 0
+        const hasTools = profile.profile_tools && profile.profile_tools.length > 0
+        const hasSpecialties = profile.specialties.length > 0 && !profile.profile_skills
+        const hasLegacyTools = profile.toolsAndMaterials && profile.toolsAndMaterials.length > 0 && !profile.profile_tools
+
+        if (!hasSkills && !hasTools && !hasSpecialties && !hasLegacyTools) return null
+
+        return (
+          <div key={key} data-section={key} data-editable="skills">
+            <section className="profile-skills-section">
+              <div className="container">
+                <p className="section-label">Skills</p>
+                {hasSkills && <ProfileSkillsDisplay skills={profile.profile_skills!} />}
+                {hasSpecialties && (
+                  <div className="profile-specialties__list" style={{ marginBottom: hasTools || hasLegacyTools ? 'var(--space-6)' : 0 }}>
                     {profile.specialties.map(s => (
                       <Badge key={s} variant="domain">{s}</Badge>
                     ))}
                   </div>
-                </div>
-              </section>
-            </div>
-          )
-        }
-        return null
+                )}
+                {(hasTools || hasLegacyTools) && (
+                  <>
+                    <p className="section-label" style={{ marginTop: 'var(--space-6)' }}>Tools &amp; Materials</p>
+                    {hasTools && <ProfileToolsDisplay tools={profile.profile_tools!} />}
+                    {hasLegacyTools && <ProfileToolsMaterials tools={profile.toolsAndMaterials!} />}
+                  </>
+                )}
+              </div>
+            </section>
+          </div>
+        )
 
       case 'tools':
-        if (profile.profile_tools && profile.profile_tools.length > 0) {
-          return (
-            <div key={key} data-section={key}>
-              <section className="profile-tools-section">
-                <div className="container">
-                  <p className="section-label">Tools</p>
-                  <ProfileToolsDisplay tools={profile.profile_tools} />
-                </div>
-              </section>
-            </div>
-          )
-        }
-        // Fallback: show legacy toolsAndMaterials
-        if (profile.toolsAndMaterials && profile.toolsAndMaterials.length > 0) {
-          return (
-            <div key={key} data-section={key}>
-              <section className="profile-tools-section">
-                <div className="container">
-                  <ProfileToolsMaterials tools={profile.toolsAndMaterials} />
-                </div>
-              </section>
-            </div>
-          )
-        }
-        return null
+        return null  // Tools are now shown within the Skills section
 
       case 'portfolio':
         if (profile.projects.some(p => p.isFeatured)) {
@@ -650,13 +639,13 @@ export default async function ProfilePage({ params }: { params: { slug: string }
         <div className="container">
           <div className="profile-header__inner profile-header__inner--left">
             {/* Avatar */}
-            <div className="profile-header__avatar profile-header__avatar--overlap" data-editable="avatar">
+            <div className="profile-header__avatar profile-header__avatar--portrait" data-editable="avatar">
               {profile.photo ? (
                 <Image
                   src={profile.photo}
                   alt={`Photo of ${profile.name}`}
-                  width={120}
-                  height={120}
+                  width={300}
+                  height={400}
                   priority
                   style={{ objectFit: 'cover' }}
                 />
@@ -728,6 +717,24 @@ export default async function ProfilePage({ params }: { params: { slug: string }
                       </a>
                     ))}
                 </div>
+              )}
+
+              {/* Resume Download */}
+              {profile.resume_url && (
+                <a
+                  href={profile.resume_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="profile-resume-btn"
+                  download
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Download Resume
+                </a>
               )}
             </div>
           </div>
