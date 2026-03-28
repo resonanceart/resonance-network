@@ -1,16 +1,7 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
-import Link from 'next/link'
-import { Badge } from '@/components/ui/Badge'
-import { ProfileMediaGallery } from '@/components/profile/ProfileMediaGallery'
 import { ProfileTimeline } from '@/components/profile/ProfileTimeline'
 import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabilityBadge'
-import { ProfileToolsMaterials } from '@/components/profile/ProfileToolsMaterials'
-import { ProfileBlockRenderer } from '@/components/profile/ProfileBlockRenderer'
-import { ProfileSkillsDisplay } from '@/components/profile/ProfileSkillsDisplay'
-import { ProfileToolsDisplay } from '@/components/profile/ProfileToolsDisplay'
-import { ProfileTabsClient } from '@/components/profile/ProfileTabsClient'
-import { ProfileSocialDropdown } from '@/components/profile/ProfileSocialDropdown'
 import { ProfileEditOverlay } from '@/components/profile/ProfileEditOverlay'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { getProfiles, getProfileBySlug } from '@/lib/data'
@@ -337,8 +328,6 @@ export default async function ProfilePage({ params }: { params: { slug: string }
   }
 
   const accentColor = profile.accent_color || '#01696F'
-  const sectionOrder = profile.section_order || ['skills', 'tools', 'portfolio', 'gallery', 'about', 'experience', 'timeline', 'projects', 'achievements', 'links']
-  const sectionVisibility = profile.section_visibility || {}
 
   const coverPositionStyle = profile.cover_position
     ? `${profile.cover_position.x}% ${profile.cover_position.y}%`
@@ -349,225 +338,6 @@ export default async function ProfilePage({ params }: { params: { slug: string }
   const locationDisplay = [profile.location, profile.location_secondary]
     .filter(Boolean)
     .join(' / ')
-
-  // Build section renderers
-  function renderSection(key: string) {
-    // Skip if explicitly hidden
-    if (sectionVisibility[key] === false) return null
-
-    switch (key) {
-      case 'portfolio_grid':
-        return null  // Portfolio section removed
-
-      case 'skills':
-        const hasSkills = profile.profile_skills && profile.profile_skills.length > 0
-        const hasTools = profile.profile_tools && profile.profile_tools.length > 0
-        const hasSpecialties = profile.specialties.length > 0 && !profile.profile_skills
-        const hasLegacyTools = profile.toolsAndMaterials && profile.toolsAndMaterials.length > 0 && !profile.profile_tools
-
-        if (!hasSkills && !hasTools && !hasSpecialties && !hasLegacyTools) return null
-
-        return (
-          <div key={key} data-section={key} data-editable="skills">
-            <section className="profile-skills-section">
-              <div className="container">
-                <p className="section-label">Skills</p>
-                {hasSkills && <ProfileSkillsDisplay skills={profile.profile_skills!} />}
-                {hasSpecialties && (
-                  <div className="profile-specialties__list" style={{ marginBottom: hasTools || hasLegacyTools ? 'var(--space-6)' : 0 }}>
-                    {profile.specialties.map(s => (
-                      <Badge key={s} variant="domain">{s}</Badge>
-                    ))}
-                  </div>
-                )}
-                {(hasTools || hasLegacyTools) && (
-                  <>
-                    <p className="section-label" style={{ marginTop: 'var(--space-6)' }}>Tools &amp; Materials</p>
-                    {hasTools && <ProfileToolsDisplay tools={profile.profile_tools!} />}
-                    {hasLegacyTools && <ProfileToolsMaterials tools={profile.toolsAndMaterials!} />}
-                  </>
-                )}
-              </div>
-            </section>
-          </div>
-        )
-
-      case 'tools':
-        return null  // Tools are now shown within the Skills section
-
-      case 'portfolio':
-        return null  // Featured work section removed
-
-      case 'gallery':
-        if (profile.mediaGallery && profile.mediaGallery.length > 0) {
-          return (
-            <div key={key} data-section={key}>
-              <section className="profile-gallery-section">
-                <div className="container">
-                  <p className="section-label">Gallery</p>
-                  <ProfileMediaGallery items={profile.mediaGallery} />
-                </div>
-              </section>
-            </div>
-          )
-        }
-        return null
-
-      case 'past_work':
-        if (profile.past_work && profile.past_work.length > 0) {
-          return (
-            <div key={key} data-section={key}>
-              <section className="profile-past-work-section">
-                <div className="container">
-                  <p className="section-label">Past Work</p>
-                  <div className="past-work-grid">
-                    {profile.past_work.map((item, i) => (
-                      <div key={i} className="past-work-card">
-                        <div className="past-work-card__image-wrapper">
-                          <img
-                            src={item.url}
-                            alt={item.title}
-                            className="past-work-card__image"
-                          />
-                          <div className="past-work-card__overlay">
-                            <span className="past-work-card__title">{item.title}</span>
-                            {item.description && (
-                              <span className="past-work-card__desc">{item.description}</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            </div>
-          )
-        }
-        return null
-
-      case 'about':
-        return (
-          <div key={key} data-section={key} data-editable="bio">
-            {profile.artist_statement && (
-              <section className="profile-philosophy">
-                <div className="container">
-                  <p className="section-label">Artist Statement</p>
-                  <blockquote className="profile-philosophy__quote">
-                    <p>{profile.artist_statement}</p>
-                  </blockquote>
-                </div>
-              </section>
-            )}
-            <section className="profile-about">
-              <div className="container">
-                <p className="section-label">About</p>
-                <div className="profile-about__text">
-                  {profile.bio.split('\n\n').map((paragraph, i) => (
-                    <p key={i}>{paragraph}</p>
-                  ))}
-                </div>
-              </div>
-            </section>
-            {profile.philosophy && (
-              <section className="profile-philosophy">
-                <div className="container">
-                  <p className="section-label">Approach</p>
-                  <blockquote className="profile-philosophy__quote">
-                    <p>{profile.philosophy}</p>
-                  </blockquote>
-                </div>
-              </section>
-            )}
-          </div>
-        )
-
-      case 'experience':
-        if (profile.work_experience && profile.work_experience.length > 0) {
-          return (
-            <div key={key} data-section={key}>
-              <WorkExperienceSection entries={profile.work_experience} />
-            </div>
-          )
-        }
-        return null
-
-      case 'timeline':
-        if (profile.timeline && profile.timeline.length > 0) {
-          return (
-            <div key={key} data-section={key}>
-              <section className="profile-timeline-section">
-                <div className="container">
-                  <p className="section-label">Timeline</p>
-                  <h2>Career &amp; Milestones</h2>
-                  <ProfileTimeline entries={profile.timeline} />
-                </div>
-              </section>
-            </div>
-          )
-        }
-        return null
-
-      case 'projects':
-        return null  // Projects section removed
-
-      case 'achievements':
-        if (profile.achievements && profile.achievements.length > 0) {
-          return (
-            <div key={key} data-section={key}>
-              <section className="profile-achievements">
-                <div className="container">
-                  <p className="section-label">Recognition</p>
-                  <ul className="profile-achievements__list">
-                    {profile.achievements.map((a, i) => (
-                      <li key={i}>
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                          <path d="M8 1l1.8 3.6L14 5.3l-3 2.9.7 4.1L8 10.5l-3.7 1.8.7-4.1-3-2.9 4.2-.7L8 1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
-                        </svg>
-                        <span>{a}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </section>
-            </div>
-          )
-        }
-        return null
-
-      case 'links':
-        if (profile.links.length > 0) {
-          return (
-            <div key={key} data-section={key} data-editable="links">
-              <section className="profile-links-section">
-                <div className="container">
-                  <p className="section-label">Connect</p>
-                  <div className="profile-links-row">
-                    {profile.links.map(link => (
-                      <a
-                        key={link.url}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="profile-link-btn"
-                        aria-label={link.label}
-                      >
-                        {getLinkIcon(link.type)}
-                        <span>{link.label}</span>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            </div>
-          )
-        }
-        return null
-
-      default:
-        return null
-    }
-  }
 
   return (
     <ProfileEditOverlay
@@ -587,209 +357,222 @@ export default async function ProfilePage({ params }: { params: { slug: string }
         dangerouslySetInnerHTML={{ __html: JSON.stringify(getPersonJsonLd(profile)) }}
       />
 
-      {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="breadcrumb container" style={{ paddingTop: 'var(--space-4)' }}>
-        <Link href="/">Home</Link> <span aria-hidden="true">/</span> <Link href="/profiles">People</Link> <span aria-hidden="true">/</span> <span>{profile.name}</span>
-      </nav>
-
-      {/* Cover Banner */}
+      {/* Row 1: Banner */}
       <section
         className="profile-banner"
         data-editable="cover"
-        style={
-          profile.coverImage
-            ? undefined
-            : {
-                background: `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}cc 50%, ${accentColor}88 100%)`,
-              }
-        }
+        style={profile.coverImage ? undefined : { background: `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}cc 50%, ${accentColor}88 100%)` }}
       >
         {profile.coverImage && (
-          <Image
-            src={profile.coverImage}
-            alt={`Cover image for ${profile.name}`}
-            fill
-            priority
-            sizes="100vw"
-            style={{
-              objectFit: 'cover',
-              objectPosition: coverPositionStyle,
-              transform: coverScale !== 1 ? `scale(${coverScale})` : undefined,
-            }}
-          />
+          <Image src={profile.coverImage} alt={`Cover image for ${profile.name}`} fill priority sizes="100vw"
+            style={{ objectFit: 'cover', objectPosition: coverPositionStyle, transform: coverScale !== 1 ? `scale(${coverScale})` : undefined }} />
         )}
         <div className="profile-banner__overlay" />
       </section>
 
-      {/* Profile Header — left-aligned, avatar overlaps cover */}
-      <section className="profile-header profile-header--enhanced">
+      {/* Row 2: 3-Column Header Grid */}
+      <section className="profile-header-grid-section">
         <div className="container">
-          <div className="profile-header__inner profile-header__inner--left">
-            {/* Avatar */}
-            <div className="profile-header__avatar profile-header__avatar--portrait" data-editable="avatar">
+          <div className="profile-header-grid">
+            {/* Col 1: Photo */}
+            <div className="profile-header-grid__photo" data-editable="avatar">
               {profile.photo ? (
-                <Image
-                  src={profile.photo}
-                  alt={`Photo of ${profile.name}`}
-                  width={300}
-                  height={400}
-                  priority
-                  style={{ objectFit: 'cover' }}
-                />
+                <Image src={profile.photo} alt={`Photo of ${profile.name}`} width={250} height={330} priority style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
               ) : (
-                <div
-                  className="profile-header__initials"
-                  style={{ backgroundColor: accentColor }}
-                >
-                  {getInitials(profile.name)}
-                </div>
+                <div className="profile-header-grid__initials" style={{ backgroundColor: accentColor }}>{getInitials(profile.name)}</div>
               )}
             </div>
 
-            {/* Info + CTAs + Social */}
-            <div className="profile-header__content">
-              <div className="profile-header__info profile-header__info--left" data-editable="identity">
-                <h1 className="profile-header__name">
-                  {profile.name}
-                  {profile.pronouns && (
-                    <span className="profile-header__pronouns">({profile.pronouns})</span>
-                  )}
-                </h1>
-                <p className="profile-header__title">{profile.title}</p>
-                {locationDisplay && (
-                  <p className="profile-header__location">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                      <path d="M7 1C4.5 1 2.5 3 2.5 5.5C2.5 9 7 13 7 13s4.5-4 4.5-7.5C11.5 3 9.5 1 7 1z" stroke="currentColor" strokeWidth="1.2"/>
-                      <circle cx="7" cy="5.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/>
-                    </svg>
-                    {locationDisplay}
-                  </p>
+            {/* Col 2: Info + Links + Bio */}
+            <div className="profile-header-grid__info" data-editable="identity">
+              <h1 className="profile-header-grid__name">
+                {profile.name}
+                {profile.pronouns && <span className="profile-header-grid__pronouns">({profile.pronouns})</span>}
+              </h1>
+              <p className="profile-header-grid__title">{profile.title}</p>
+
+              <div className="profile-link-buttons">
+                {(profile.primary_website_url || profile.links.find(l => l.type === 'website')) && (
+                  <a href={profile.primary_website_url || profile.links.find(l => l.type === 'website')?.url} target="_blank" rel="noopener noreferrer" className="profile-link-btn--pill">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3"><circle cx="8" cy="8" r="6.5"/><path d="M1.5 8h13M8 1.5c1.5 1.5 2.5 3.5 2.5 6.5s-1 5-2.5 6.5c-1.5-1.5-2.5-3.5-2.5-6.5s1-5 2.5-6.5z"/></svg>
+                    Website
+                  </a>
                 )}
-                {profile.availabilityStatus && (
-                  <div data-editable="availability">
-                    <ProfileAvailabilityBadge status={profile.availabilityStatus} note={profile.availabilityNote} />
+                {profile.resume_url && (
+                  <a href={profile.resume_url} target="_blank" rel="noopener noreferrer" className="profile-link-btn--pill" download>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    Resume
+                  </a>
+                )}
+                {profile.social_links && profile.social_links.length > 0 && (
+                  <div className="profile-link-btn--pill profile-link-btn--social-group" data-editable="links">
+                    {[...profile.social_links].sort((a, b) => a.display_order - b.display_order).map(link => (
+                      <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="profile-social-icon-sm" title={link.platform.charAt(0).toUpperCase() + link.platform.slice(1)} aria-label={link.platform}>
+                        {getSocialIcon(link.platform)}
+                      </a>
+                    ))}
                   </div>
                 )}
               </div>
 
-              {/* Link Pill Buttons */}
-              <div className="profile-link-buttons">
-                {(profile.primary_website_url || profile.links?.[0]?.url) && (
-                  <a
-                    href={profile.primary_website_url || profile.links[0].url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="profile-link-btn--pill"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                      <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.2"/>
-                      <path d="M1.5 7h11M7 1.5c1.2 1.2 2 3 2 5.5s-.8 4.3-2 5.5c-1.2-1.2-2-3-2-5.5s.8-4.3 2-5.5z" stroke="currentColor" strokeWidth="1.2"/>
-                    </svg>
-                    {profile.primary_website_label || 'Website'}
-                  </a>
-                )}
+              {profile.bio && (
+                <div className="profile-header-grid__bio" data-editable="bio">
+                  {profile.bio.split('\n\n').map((paragraph, i) => <p key={i}>{paragraph}</p>)}
+                </div>
+              )}
+            </div>
 
-                {(() => {
-                  const portfolioLink = profile.links?.find(l => l.type === 'portfolio')
-                  if (!portfolioLink) return null
-                  return (
-                    <a href={portfolioLink.url} target="_blank" rel="noopener noreferrer" className="profile-link-btn--pill">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                        <rect x="1.5" y="1.5" width="4.5" height="5.5" rx="0.8" stroke="currentColor" strokeWidth="1.2"/>
-                        <rect x="8" y="1.5" width="4.5" height="3.5" rx="0.8" stroke="currentColor" strokeWidth="1.2"/>
-                        <rect x="8" y="7" width="4.5" height="5.5" rx="0.8" stroke="currentColor" strokeWidth="1.2"/>
-                        <rect x="1.5" y="9" width="4.5" height="3.5" rx="0.8" stroke="currentColor" strokeWidth="1.2"/>
-                      </svg>
-                      Portfolio
-                    </a>
-                  )
-                })()}
+            {/* Col 3: Skills + Location */}
+            <div className="profile-header-grid__sidebar" data-editable="skills">
+              {profile.profile_skills && profile.profile_skills.length > 0 ? (
+                <div className="profile-header-grid__skills">
+                  <p className="profile-header-grid__sidebar-label">Skills</p>
+                  <div className="profile-header-grid__skill-tags">
+                    {[...profile.profile_skills].sort((a, b) => a.display_order - b.display_order).map(skill => (
+                      <span key={skill.id} className="profile-skill-tag">{skill.skill_name}</span>
+                    ))}
+                  </div>
+                </div>
+              ) : profile.specialties.length > 0 ? (
+                <div className="profile-header-grid__skills">
+                  <p className="profile-header-grid__sidebar-label">Specialties</p>
+                  <div className="profile-header-grid__skill-tags">
+                    {profile.specialties.map(s => <span key={s} className="profile-skill-tag">{s}</span>)}
+                  </div>
+                </div>
+              ) : null}
 
-                {profile.resume_url && (
-                  <a
-                    href={profile.resume_url}
-                    {...(profile.resume_url.startsWith('data:')
-                      ? { download: `${profile.name.replace(/\s+/g, '_')}_Resume.pdf` }
-                      : { target: '_blank', rel: 'noopener noreferrer' }
-                    )}
-                    className="profile-link-btn--pill"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                      <path d="M8.5 1.5H4a1.5 1.5 0 00-1.5 1.5v9A1.5 1.5 0 004 13.5h6a1.5 1.5 0 001.5-1.5V4.5L8.5 1.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
-                      <path d="M8.5 1.5v3h3" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
-                      <path d="M5 8h4M5 10.5h2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-                    </svg>
-                    Resume
-                  </a>
-                )}
+              {profile.profile_tools && profile.profile_tools.length > 0 && (
+                <div className="profile-header-grid__skills" style={{ marginTop: 'var(--space-4)' }}>
+                  <p className="profile-header-grid__sidebar-label">Tools</p>
+                  <div className="profile-header-grid__skill-tags">
+                    {[...profile.profile_tools].sort((a, b) => a.display_order - b.display_order).map(tool => (
+                      <span key={tool.id} className="profile-skill-tag profile-skill-tag--tool">{tool.tool_name}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-                {profile.social_links && profile.social_links.length > 0 && (
-                  <ProfileSocialDropdown socialLinks={profile.social_links} />
-                )}
+              {locationDisplay && (
+                <div className="profile-header-grid__location">
+                  <p className="profile-header-grid__sidebar-label">Location</p>
+                  <p className="profile-header-grid__location-text">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1C4.5 1 2.5 3 2.5 5.5C2.5 9 7 13 7 13s4.5-4 4.5-7.5C11.5 3 9.5 1 7 1z" stroke="currentColor" strokeWidth="1.2"/><circle cx="7" cy="5.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/></svg>
+                    {locationDisplay}
+                  </p>
+                </div>
+              )}
 
-                {profile.email && (
-                  <a
-                    href={`mailto:${profile.email}?subject=Collaboration%20Inquiry%20via%20Resonance%20Network`}
-                    className="profile-link-btn--pill"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                      <rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-                      <path d="M1 4.5l6 4 6-4" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
-                    </svg>
-                    Contact
-                  </a>
-                )}
-              </div>
+              {profile.availabilityStatus && (
+                <div style={{ marginTop: 'var(--space-4)' }} data-editable="availability">
+                  <ProfileAvailabilityBadge status={profile.availabilityStatus} note={profile.availabilityNote} />
+                </div>
+              )}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Content: Block-based or Legacy with dynamic section ordering */}
-      {profile.contentBlocks && profile.contentBlocks.length > 0 ? (
-        <div className="profile-blocks">
-          {profile.contentBlocks
-            .filter(b => b.visible !== false)
-            .sort((a, b) => a.order - b.order)
-            .map(block => (
-              <ProfileBlockRenderer key={block.id} block={block} />
-            ))
-          }
-        </div>
-      ) : (
-        <ProfileTabsClient
-          tabs={[
-            { key: 'work', label: 'Work', sections: ['skills', 'past_work'] },
-            { key: 'about', label: 'About', sections: ['about', 'achievements', 'links'] },
-            { key: 'timeline', label: 'Timeline', sections: ['experience', 'timeline'] },
-            { key: 'gallery', label: 'Gallery', sections: ['gallery'] },
-          ]}
-          defaultTab="work"
-        >
-          {sectionOrder.map(key => renderSection(key))}
-        </ProfileTabsClient>
+      {/* Row 3: Artist Statement | Philosophy (2-column) */}
+      {(profile.artist_statement || profile.philosophy) && (
+        <section className="profile-two-col-section">
+          <div className="container">
+            <div className="profile-two-col">
+              {profile.artist_statement && (
+                <div className="profile-two-col__block" data-editable="bio">
+                  <p className="section-label">Artist Statement</p>
+                  <div className="profile-two-col__text">
+                    {profile.artist_statement.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
+                  </div>
+                </div>
+              )}
+              {profile.philosophy && (
+                <div className="profile-two-col__block">
+                  <p className="section-label">Philosophy</p>
+                  <blockquote className="profile-two-col__quote"><p>{profile.philosophy}</p></blockquote>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
       )}
 
-      {/* CTA — always at bottom */}
-      <section className="profile-cta">
+      {/* Row 4: Media Grid (3x2) */}
+      <section className="profile-media-grid-section">
         <div className="container">
-          <h2>Work with {profile.name.split(' ')[0]}</h2>
-          <p>Interested in collaborating or learning more about upcoming projects?</p>
-          <div className="profile-cta__actions">
-            {profile.email && (
-              <a
-                href={`mailto:${profile.email}?subject=Collaboration%20Inquiry%20via%20Resonance%20Network`}
-                className="btn btn--primary btn--large"
-              >
-                Get in Touch
-              </a>
-            )}
-            <Link href="/collaborate" className="btn btn--outline btn--large">
-              Browse Open Roles
-            </Link>
+          <div className="profile-media-grid">
+            <div className="profile-media-card">
+              <p className="profile-media-card__label">Media</p>
+              {profile.mediaGallery && profile.mediaGallery.some(m => m.type === 'video') ? (
+                <div className="profile-media-card__preview">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+              ) : (
+                <div className="profile-media-card__empty"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>No media yet</span></div>
+              )}
+            </div>
+            <div className="profile-media-card">
+              <p className="profile-media-card__label">Images</p>
+              {profile.mediaGallery && profile.mediaGallery.some(m => m.type === 'image') ? (
+                <div className="profile-media-card__preview profile-media-card__preview--grid">
+                  {profile.mediaGallery.filter(m => m.type === 'image').slice(0, 4).map((item, i) => (
+                    <img key={i} src={item.url} alt={item.alt || ''} className="profile-media-card__thumb" />
+                  ))}
+                </div>
+              ) : (
+                <div className="profile-media-card__empty"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>No images yet</span></div>
+              )}
+            </div>
+            <div className="profile-media-card">
+              <p className="profile-media-card__label">Past Work</p>
+              {profile.past_work && profile.past_work.length > 0 ? (
+                <div className="profile-media-card__preview profile-media-card__preview--grid">
+                  {profile.past_work.slice(0, 4).map((item, i) => (
+                    <img key={i} src={item.url} alt={item.title || ''} className="profile-media-card__thumb" />
+                  ))}
+                </div>
+              ) : (
+                <div className="profile-media-card__empty"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg><span>No past work yet</span></div>
+              )}
+            </div>
+            <div className="profile-media-card">
+              <p className="profile-media-card__label">Gallery</p>
+              {profile.mediaGallery && profile.mediaGallery.length > 0 ? (
+                <div className="profile-media-card__preview profile-media-card__preview--grid">
+                  {profile.mediaGallery.slice(0, 4).map((item, i) => (
+                    <img key={i} src={item.url} alt={item.alt || ''} className="profile-media-card__thumb" />
+                  ))}
+                </div>
+              ) : (
+                <div className="profile-media-card__empty"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/></svg><span>No gallery yet</span></div>
+              )}
+            </div>
+            <div className="profile-media-card profile-media-card--placeholder">
+              <p className="profile-media-card__label">Match</p>
+              <div className="profile-media-card__empty"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg><span>Coming Soon</span></div>
+            </div>
+            <div className="profile-media-card">
+              <p className="profile-media-card__label">Full Gallery</p>
+              <div className="profile-media-card__empty"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>View All</span></div>
+            </div>
           </div>
         </div>
       </section>
+
+      {/* Row 5: Milestones */}
+      {((profile.work_experience && profile.work_experience.length > 0) || (profile.timeline && profile.timeline.length > 0)) && (
+        <section className="profile-milestones-section">
+          <div className="container">
+            <p className="section-label">Milestones</p>
+            {profile.work_experience && profile.work_experience.length > 0 && (
+              <WorkExperienceSection entries={profile.work_experience} />
+            )}
+            {profile.timeline && profile.timeline.length > 0 && (
+              <ProfileTimeline entries={profile.timeline} />
+            )}
+          </div>
+        </section>
+      )}
     </article>
     </ProfileEditOverlay>
   )

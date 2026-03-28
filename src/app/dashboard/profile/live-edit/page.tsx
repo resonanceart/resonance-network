@@ -767,331 +767,266 @@ export default function LiveProfileEditor() {
 
       {/* ── Profile Preview — exact same structure as public page ── */}
       <article className="profile-page" style={{ marginTop: '53px' }}>
-
-        {/* Breadcrumb — matches public page structure */}
+        {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="breadcrumb container" style={{ paddingTop: 'var(--space-4)' }}>
-          <Link href="/dashboard">Dashboard</Link> <span aria-hidden="true">/</span> <span>Edit Profile</span> <span aria-hidden="true">/</span> <span>{displayName || 'Your Name'}</span>
+          <Link href="/dashboard">Dashboard</Link> <span aria-hidden="true">/</span>
+          <span>Edit Profile</span> <span aria-hidden="true">/</span>
+          <span>{displayName || 'Your Name'}</span>
         </nav>
 
-        {/* Cover Banner */}
+        {/* Row 1: Banner */}
         <div ref={setSectionRef('cover')} className={`editable-section${activePanel === 'cover' ? ' editable-section--active' : ''}`} onClick={() => openPanel('cover')}>
-          <section
-            className="profile-banner"
-            style={
-              coverImageUrl
-                ? undefined
-                : { background: `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}cc 50%, ${accentColor}88 100%)` }
-            }
-          >
-            {coverImageUrl && (
-              <img
-                src={coverImageUrl}
-                alt="Cover"
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            )}
+          <section className="profile-banner"
+            style={coverImageUrl ? undefined : { background: `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}cc 50%, ${accentColor}88 100%)` }}>
+            {coverImageUrl && <img src={coverImageUrl} alt="Cover" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
             <div className="profile-banner__overlay" />
             {!coverImageUrl && (
               <div className="live-editor__empty-placeholder">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                  <circle cx="8.5" cy="8.5" r="1.5" />
-                  <polyline points="21 15 16 10 5 21" />
-                </svg>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 <span>Add a Cover Image</span>
                 <small>Optimal: 1920 x 480px</small>
               </div>
             )}
           </section>
-          <div className="editable-section__overlay">
-            <span>Click to edit</span>
-          </div>
+          <div className="editable-section__overlay"><span>Click to edit</span></div>
         </div>
 
-        {/* Header */}
-        <section className="profile-header profile-header--enhanced">
+        {/* Row 2: 3-Column Header Grid */}
+        <section className="profile-header-grid-section">
           <div className="container">
-            <div className="profile-header__inner profile-header__inner--left">
-              {/* Avatar */}
-              <div ref={setSectionRef('avatar')} className={`editable-section editable-section--inline${activePanel === 'avatar' ? ' editable-section--active' : ''}`} onClick={() => openPanel('avatar')}>
-                <div className="profile-header__avatar profile-header__avatar--portrait">
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt="Avatar"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
+            <div className="profile-header-grid">
+              {/* Col 1: Photo */}
+              <div ref={setSectionRef('avatar')} className={`editable-section profile-header-grid__photo${activePanel === 'avatar' ? ' editable-section--active' : ''}`} onClick={() => openPanel('avatar')}>
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <div className="profile-header-grid__initials" style={{ backgroundColor: accentColor }}>
+                    {initials || '?'}
+                  </div>
+                )}
+                <div className="editable-section__overlay"><span>Edit photo</span></div>
+              </div>
+
+              {/* Col 2: Info */}
+              <div ref={setSectionRef('identity')} className={`editable-section profile-header-grid__info${activePanel === 'identity' ? ' editable-section--active' : ''}`} onClick={() => openPanel('identity')}>
+                <h1 className="profile-header-grid__name">
+                  {displayName || <span className="live-editor__placeholder-text">Your Name</span>}
+                  {pronouns && <span className="profile-header-grid__pronouns">({pronouns})</span>}
+                </h1>
+                <p className="profile-header-grid__title">
+                  {professionalTitle || <span className="live-editor__placeholder-text">Your professional title</span>}
+                </p>
+
+                {/* Link buttons */}
+                <div className="profile-link-buttons">
+                  {website && (
+                    <span className="profile-link-btn--pill">
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3"><circle cx="8" cy="8" r="6.5"/></svg>
+                      Website
+                    </span>
+                  )}
+                  {resumeUrl && (
+                    <span className="profile-link-btn--pill">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                      Resume
+                    </span>
+                  )}
+                  <div ref={setSectionRef('social')} className={`profile-link-btn--pill profile-link-btn--social-group${activePanel === 'social' ? ' editable-section--active' : ''}`} onClick={(e) => { e.stopPropagation(); openPanel('social') }}>
+                    {socialLinks.length > 0 ? (
+                      socialLinks.sort((a, b) => a.display_order - b.display_order).slice(0, 5).map(link => (
+                        <span key={link.id} className="profile-social-icon-sm" title={link.platform}>
+                          {link.platform.charAt(0).toUpperCase() + link.platform.slice(1).charAt(0)}
+                        </span>
+                      ))
+                    ) : (
+                      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>+ Social</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Bio */}
+                <div ref={setSectionRef('bio')} className={`profile-header-grid__bio${activePanel === 'bio' ? ' editable-section--active' : ''}`} onClick={(e) => { e.stopPropagation(); openPanel('bio') }} style={{ cursor: 'pointer' }}>
+                  {bio ? (
+                    bio.split('\n\n').map((p, i) => <p key={i}>{p}</p>)
                   ) : (
-                    <div className="profile-header__initials" style={{ backgroundColor: accentColor }}>
-                      {initials || '?'}
-                    </div>
+                    <p className="live-editor__placeholder-text">Click to write your bio...</p>
                   )}
                 </div>
-                <div className="editable-section__overlay">
-                  <span>Edit photo</span>
+
+                <div className="editable-section__overlay"><span>Edit info</span></div>
+              </div>
+
+              {/* Col 3: Skills + Location */}
+              <div ref={setSectionRef('skills')} className={`editable-section profile-header-grid__sidebar${activePanel === 'skills' ? ' editable-section--active' : ''}`} onClick={() => openPanel('skills')}>
+                {profileSkills.length > 0 ? (
+                  <div className="profile-header-grid__skills">
+                    <p className="profile-header-grid__sidebar-label">Skills</p>
+                    <div className="profile-header-grid__skill-tags">
+                      {profileSkills.map(s => (
+                        <span key={s.id} className="profile-skill-tag">{s.skill_name}</span>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="profile-header-grid__skills">
+                    <p className="profile-header-grid__sidebar-label">Skills</p>
+                    <p className="live-editor__placeholder-text" style={{ fontSize: 'var(--text-sm)' }}>Add your skills</p>
+                  </div>
+                )}
+
+                {profileTools.length > 0 && (
+                  <div className="profile-header-grid__skills" style={{ marginTop: 'var(--space-4)' }}>
+                    <p className="profile-header-grid__sidebar-label">Tools</p>
+                    <div className="profile-header-grid__skill-tags">
+                      {profileTools.map(t => (
+                        <span key={t.id} className="profile-skill-tag profile-skill-tag--tool">{t.tool_name}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {locationDisplay && (
+                  <div className="profile-header-grid__location">
+                    <p className="profile-header-grid__sidebar-label">Location</p>
+                    <p className="profile-header-grid__location-text">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.5 1 2.5 3 2.5 5.5C2.5 9 7 13 7 13s4.5-4 4.5-7.5C11.5 3 9.5 1 7 1z" stroke="currentColor" strokeWidth="1.2"/><circle cx="7" cy="5.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/></svg>
+                      {locationDisplay}
+                    </p>
+                  </div>
+                )}
+
+                {availabilityStatus && (
+                  <div ref={setSectionRef('availability')} style={{ marginTop: 'var(--space-4)' }} onClick={(e) => { e.stopPropagation(); openPanel('availability') }}>
+                    <ProfileAvailabilityBadge status={availabilityStatus as 'open' | 'busy' | 'unavailable'} note={availabilityNote} />
+                  </div>
+                )}
+
+                <div className="editable-section__overlay"><span>Edit skills</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Row 3: Artist Statement | Philosophy (2-column) */}
+        <div ref={setSectionRef('bio')} className={`editable-section${activePanel === 'bio' ? ' editable-section--active' : ''}`} onClick={() => openPanel('bio')}>
+          <section className="profile-two-col-section">
+            <div className="container">
+              <div className="profile-two-col">
+                <div className="profile-two-col__block">
+                  <p className="section-label">Artist Statement</p>
+                  {artistStatement ? (
+                    <div className="profile-two-col__text">
+                      {artistStatement.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
+                    </div>
+                  ) : (
+                    <p className="live-editor__placeholder-text">Write your artist statement...</p>
+                  )}
+                </div>
+                <div className="profile-two-col__block">
+                  <p className="section-label">Philosophy</p>
+                  {philosophy ? (
+                    <blockquote className="profile-two-col__quote"><p>{philosophy}</p></blockquote>
+                  ) : (
+                    <p className="live-editor__placeholder-text">Share your philosophy...</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+          <div className="editable-section__overlay"><span>Edit about</span></div>
+        </div>
+
+        {/* Row 4: Media Grid (3x2) */}
+        <section className="profile-media-grid-section">
+          <div className="container">
+            <div className="profile-media-grid">
+              {/* Media Card */}
+              <div className="profile-media-card" onClick={() => openPanel('gallery')}>
+                <p className="profile-media-card__label">Media</p>
+                <div className="profile-media-card__empty">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>{mediaGallery.some(m => m.type === 'video') ? `${mediaGallery.filter(m => m.type === 'video').length} videos` : 'Add Media'}</span>
                 </div>
               </div>
 
-              <div className="profile-header__content">
-                {/* Identity */}
-                <div ref={setSectionRef('identity')} className={`editable-section editable-section--inline${activePanel === 'identity' ? ' editable-section--active' : ''}`} onClick={() => openPanel('identity')}>
-                  <div className="profile-header__info profile-header__info--left">
-                    <h1 className="profile-header__name">
-                      {displayName || <span className="live-editor__placeholder-text">Your Name</span>}
-                      {pronouns && <span className="profile-header__pronouns">({pronouns})</span>}
-                    </h1>
-                    <p className="profile-header__title">
-                      {professionalTitle || <span className="live-editor__placeholder-text">Your professional title</span>}
-                    </p>
-                    {locationDisplay && (
-                      <p className="profile-header__location">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                          <path d="M7 1C4.5 1 2.5 3 2.5 5.5C2.5 9 7 13 7 13s4.5-4 4.5-7.5C11.5 3 9.5 1 7 1z" stroke="currentColor" strokeWidth="1.2" />
-                          <circle cx="7" cy="5.5" r="1.5" stroke="currentColor" strokeWidth="1.2" />
-                        </svg>
-                        {locationDisplay}
-                      </p>
-                    )}
+              {/* Images Card */}
+              <div className="profile-media-card" onClick={() => openPanel('gallery')}>
+                <p className="profile-media-card__label">Images</p>
+                {mediaGallery.some(m => m.type === 'image') ? (
+                  <div className="profile-media-card__preview profile-media-card__preview--grid">
+                    {mediaGallery.filter(m => m.type === 'image').slice(0, 4).map((item, i) => (
+                      <img key={i} src={item.url} alt={item.alt || ''} className="profile-media-card__thumb" />
+                    ))}
                   </div>
-                  <div className="editable-section__overlay">
-                    <span>Edit info</span>
+                ) : (
+                  <div className="profile-media-card__empty">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <span>Add Images</span>
                   </div>
-                </div>
+                )}
+              </div>
 
-                {/* Availability */}
-                <div ref={setSectionRef('availability')} className={`editable-section editable-section--inline${activePanel === 'availability' ? ' editable-section--active' : ''}`} onClick={() => openPanel('availability')}>
-                  {availabilityStatus ? (
-                    <ProfileAvailabilityBadge
-                      status={availabilityStatus as 'open' | 'busy' | 'unavailable'}
-                      note={availabilityNote}
-                    />
-                  ) : (
-                    <div className="live-editor__empty-placeholder live-editor__empty-placeholder--small">
-                      <span>Set your availability</span>
-                    </div>
-                  )}
-                  <div className="editable-section__overlay">
-                    <span>Edit availability</span>
+              {/* Past Work Card */}
+              <div className="profile-media-card" onClick={() => openPanel('pastWork')}>
+                <p className="profile-media-card__label">Past Work</p>
+                {pastWork.length > 0 ? (
+                  <div className="profile-media-card__preview profile-media-card__preview--grid">
+                    {pastWork.slice(0, 4).map((item, i) => (
+                      <img key={i} src={item.url} alt={item.title || ''} className="profile-media-card__thumb" />
+                    ))}
                   </div>
-                </div>
+                ) : (
+                  <div className="profile-media-card__empty">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+                    <span>Add Past Work</span>
+                  </div>
+                )}
+              </div>
 
-                {/* Social Links */}
-                <div ref={setSectionRef('social')} className={`editable-section editable-section--inline${activePanel === 'social' ? ' editable-section--active' : ''}`} onClick={() => openPanel('social')}>
-                  {socialLinks.length > 0 ? (
-                    <div className="profile-header__social">
-                      {[...socialLinks]
-                        .sort((a, b) => a.display_order - b.display_order)
-                        .map(link => (
-                          <span
-                            key={link.id}
-                            className="profile-header__social-btn"
-                            title={link.platform}
-                          >
-                            {link.platform.charAt(0).toUpperCase() + link.platform.slice(1)}
-                          </span>
-                        ))}
-                    </div>
-                  ) : (
-                    <div className="live-editor__empty-placeholder live-editor__empty-placeholder--small">
-                      <span>Add social links</span>
-                    </div>
-                  )}
-                  <div className="editable-section__overlay">
-                    <span>Edit social links</span>
+              {/* Gallery Card */}
+              <div className="profile-media-card" onClick={() => openPanel('gallery')}>
+                <p className="profile-media-card__label">Gallery</p>
+                {mediaGallery.length > 0 ? (
+                  <div className="profile-media-card__preview profile-media-card__preview--grid">
+                    {mediaGallery.slice(0, 4).map((item, i) => (
+                      <img key={i} src={item.url} alt={item.alt || ''} className="profile-media-card__thumb" />
+                    ))}
                   </div>
+                ) : (
+                  <div className="profile-media-card__empty">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                    <span>Curate Gallery</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Match Card (placeholder) */}
+              <div className="profile-media-card profile-media-card--placeholder">
+                <p className="profile-media-card__label">Match</p>
+                <div className="profile-media-card__empty">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                  <span>Coming Soon</span>
+                </div>
+              </div>
+
+              {/* Gallery Page Card */}
+              <div className="profile-media-card" onClick={() => openPanel('gallery')}>
+                <p className="profile-media-card__label">Full Gallery</p>
+                <div className="profile-media-card__empty">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                  <span>View All</span>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Specialties Badges — matches public page */}
-        {specialties.length > 0 && (
-          <section className="profile-specialties">
-            <div className="container">
-              <div className="profile-specialties__list">
-                {specialties.map(s => (
-                  <Badge key={s} variant="domain">{s}</Badge>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Skills & Tools Section (merged) */}
-        <div ref={setSectionRef('skills')} className={`editable-section${activePanel === 'skills' ? ' editable-section--active' : ''}`} onClick={() => openPanel('skills')}>
-          {(profileSkills.length > 0 || profileTools.length > 0) ? (
-            <section className="profile-skills-section">
-              <div className="container">
-                {profileSkills.length > 0 && (
-                  <>
-                    <p className="section-label">Skills</p>
-                    <ProfileSkillsDisplay skills={profileSkills as ProfileSkill[]} />
-                  </>
-                )}
-                {profileTools.length > 0 && (
-                  <>
-                    {profileSkills.length > 0 && <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 'var(--space-6) 0' }} />}
-                    <p className="section-label">Tools &amp; Materials</p>
-                    <ProfileToolsDisplay tools={profileTools as ProfileTool[]} />
-                  </>
-                )}
-              </div>
-            </section>
-          ) : (
-            <section className="profile-skills-section">
-              <div className="container">
-                <div className="live-editor__empty-placeholder">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                  </svg>
-                  <span>Add your skills &amp; tools</span>
-                </div>
-              </div>
-            </section>
-          )}
-          <div className="editable-section__overlay">
-            <span>Edit skills &amp; tools</span>
-          </div>
-        </div>
-
-        {/* About / Bio Section */}
-        <div ref={setSectionRef('bio')} className={`editable-section${activePanel === 'bio' ? ' editable-section--active' : ''}`} onClick={() => openPanel('bio')}>
-          <section className="profile-about">
-            <div className="container">
-              <p className="section-label">About</p>
-              {bio ? (
-                <div className="profile-about__text">
-                  {bio.split('\n\n').map((p, i) => (
-                    <p key={i}>{p}</p>
-                  ))}
-                </div>
-              ) : (
-                <div className="live-editor__empty-placeholder">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                  </svg>
-                  <span>Write your bio</span>
-                </div>
-              )}
-            </div>
-          </section>
-          <div className="editable-section__overlay">
-            <span>Edit about</span>
-          </div>
-        </div>
-
-        {/* Philosophy / Artist Statement */}
-        {(philosophy || artistStatement) && (
-          <div className="editable-section" onClick={() => openPanel('bio')}>
-            <section className="profile-philosophy">
-              <div className="container">
-                {artistStatement && (
-                  <>
-                    <p className="section-label">Artist Statement</p>
-                    <blockquote className="profile-philosophy__quote">
-                      <p>{artistStatement}</p>
-                    </blockquote>
-                  </>
-                )}
-                {philosophy && (
-                  <>
-                    <p className="section-label">Approach</p>
-                    <blockquote className="profile-philosophy__quote">
-                      <p>{philosophy}</p>
-                    </blockquote>
-                  </>
-                )}
-              </div>
-            </section>
-            <div className="editable-section__overlay">
-              <span>Edit about</span>
-            </div>
-          </div>
-        )}
-
-        {/* Gallery */}
-        <div ref={setSectionRef('gallery')} className={`editable-section${activePanel === 'gallery' ? ' editable-section--active' : ''}`} onClick={() => openPanel('gallery')}>
-          {mediaGallery.length > 0 ? (
-            <section className="profile-gallery-section">
-              <div className="container">
-                <p className="section-label">Gallery</p>
-                <div className="live-editor__gallery-preview">
-                  {mediaGallery.map((item, i) => (
-                    <div key={i} className="live-editor__gallery-preview-item">
-                      <img src={item.url} alt={item.alt || `Gallery image ${i + 1}`} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          ) : (
-            <section className="profile-gallery-section">
-              <div className="container">
-                <div className="live-editor__empty-placeholder">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <rect x="3" y="3" width="18" height="18" rx="2" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                    <polyline points="21 15 16 10 5 21" />
-                  </svg>
-                  <span>Add gallery images</span>
-                </div>
-              </div>
-            </section>
-          )}
-          <div className="editable-section__overlay">
-            <span>Edit gallery</span>
-          </div>
-        </div>
-
-        {/* Past Work */}
-        <div ref={setSectionRef('pastWork')} className={`editable-section${activePanel === 'pastWork' ? ' editable-section--active' : ''}`} onClick={() => openPanel('pastWork')}>
-          {pastWork.length > 0 ? (
-            <section className="profile-past-work-section">
-              <div className="container">
-                <p className="section-label">Past Work</p>
-                <div className="past-work-grid">
-                  {pastWork.map((item, i) => (
-                    <div key={i} className="past-work-card">
-                      <div className="past-work-card__image-wrapper">
-                        <img src={item.url} alt={item.title} className="past-work-card__image" />
-                        <div className="past-work-card__overlay">
-                          <span className="past-work-card__title">{item.title}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          ) : (
-            <section className="profile-past-work-section">
-              <div className="container">
-                <div className="live-editor__empty-placeholder">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <rect x="3" y="3" width="7" height="9" rx="1"/>
-                    <rect x="14" y="3" width="7" height="5" rx="1"/>
-                    <rect x="14" y="12" width="7" height="9" rx="1"/>
-                    <rect x="3" y="16" width="7" height="5" rx="1"/>
-                  </svg>
-                  <span>Showcase your past work</span>
-                </div>
-              </div>
-            </section>
-          )}
-          <div className="editable-section__overlay">
-            <span>Edit past work</span>
-          </div>
-        </div>
-
-        {/* Timeline */}
+        {/* Row 5: Milestones */}
         <div ref={setSectionRef('timeline')} className={`editable-section${activePanel === 'timeline' ? ' editable-section--active' : ''}`} onClick={() => openPanel('timeline')}>
-          {timeline.length > 0 ? (
-            <section className="profile-timeline-section">
-              <div className="container">
-                <p className="section-label">Timeline</p>
-                <h2>Career &amp; Milestones</h2>
+          <section className="profile-milestones-section">
+            <div className="container">
+              <p className="section-label">Milestones</p>
+              {timeline.length > 0 ? (
                 <div className="profile-timeline">
                   {timeline.map((entry, i) => (
                     <div key={i} className="profile-timeline__entry">
@@ -1099,83 +1034,20 @@ export default function LiveProfileEditor() {
                       <div className="profile-timeline__content">
                         <strong>{entry.title}</strong>
                         {entry.organization && <span> — {entry.organization}</span>}
-                        {entry.description && (
-                          <p
-                            style={{
-                              margin: 'var(--space-1) 0 0',
-                              fontSize: 'var(--text-sm)',
-                              color: 'var(--color-text-muted)',
-                            }}
-                          >
-                            {entry.description}
-                          </p>
-                        )}
+                        {entry.description && <p style={{ margin: 'var(--space-1) 0 0', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>{entry.description}</p>}
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
-            </section>
-          ) : (
-            <section className="profile-timeline-section">
-              <div className="container">
+              ) : (
                 <div className="live-editor__empty-placeholder">
                   <span>Add career milestones</span>
                 </div>
-              </div>
-            </section>
-          )}
-          <div className="editable-section__overlay">
-            <span>Edit timeline</span>
-          </div>
+              )}
+            </div>
+          </section>
+          <div className="editable-section__overlay"><span>Edit milestones</span></div>
         </div>
-
-        {/* Achievements — matches public page */}
-        {achievements.length > 0 && (
-          <section className="profile-achievements">
-            <div className="container">
-              <p className="section-label">Recognition</p>
-              <ul className="profile-achievements__list">
-                {achievements.map((a, i) => (
-                  <li key={i}>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                      <path d="M8 1l1.8 3.6L14 5.3l-3 2.9.7 4.1L8 10.5l-3.7 1.8.7-4.1-3-2.9 4.2-.7L8 1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
-                    </svg>
-                    <span>{a}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-        )}
-
-        {/* Links — matches public page */}
-        {links.length > 0 && (
-          <section className="profile-links-section">
-            <div className="container">
-              <p className="section-label">Connect</p>
-              <div className="profile-links-row">
-                {links.map((link, i) => (
-                  <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="profile-link-btn" aria-label={link.label}>
-                    <span>{link.label}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* CTA — matches public page */}
-        <section className="profile-cta">
-          <div className="container">
-            <h2>Work with {displayName.split(' ')[0] || 'You'}</h2>
-            <p>Interested in collaborating or learning more about upcoming projects?</p>
-            <div className="profile-cta__actions">
-              <span className="btn btn--primary btn--large" style={{ opacity: 0.6, cursor: 'default' }}>Get in Touch</span>
-              <Link href="/collaborate" className="btn btn--outline btn--large">Browse Open Roles</Link>
-            </div>
-          </div>
-        </section>
       </article>
 
       {/* Profile Checklist */}
