@@ -291,7 +291,7 @@ export default function EditPortfolioProjectPage({ params }: { params: Promise<{
     <div className="portfolio-editor">
       <div className="portfolio-editor__header">
         <div className="portfolio-editor__breadcrumb">
-          <Link href="/dashboard">Dashboard</Link> / <Link href="/dashboard/projects/portfolio">Portfolio</Link> / <span>Edit Project</span>
+          <Link href="/dashboard">Dashboard</Link> / <Link href="/dashboard/projects/portfolio">Work</Link> / <span>Edit Work</span>
         </div>
         <div className="portfolio-editor__actions">
           {hasUnsavedChanges && <span className="portfolio-editor__unsaved">Unsaved changes</span>}
@@ -304,7 +304,7 @@ export default function EditPortfolioProjectPage({ params }: { params: Promise<{
             disabled={saving}
             className="portfolio-editor__btn portfolio-editor__btn--primary"
           >
-            {saving ? 'Saving...' : 'Save Project'}
+            {saving ? 'Saving...' : 'Save Work'}
           </button>
         </div>
       </div>
@@ -322,7 +322,7 @@ export default function EditPortfolioProjectPage({ params }: { params: Promise<{
             onChange={(e) => setTitle(e.target.value)}
             maxLength={100}
             required
-            placeholder="Project title"
+            placeholder="Title"
           />
         </div>
 
@@ -335,7 +335,7 @@ export default function EditPortfolioProjectPage({ params }: { params: Promise<{
             value={tagline}
             onChange={(e) => setTagline(e.target.value)}
             maxLength={200}
-            placeholder="A short description of the project"
+            placeholder="A short description"
           />
         </div>
 
@@ -483,7 +483,7 @@ export default function EditPortfolioProjectPage({ params }: { params: Promise<{
       {/* Content Blocks Editor */}
       <div className="portfolio-editor__blocks">
         <div className="portfolio-editor__blocks-header">
-          <h2>Project Content</h2>
+          <h2>Content</h2>
           <div className="portfolio-editor__actions">
             {blocksSaved && <span className="portfolio-editor__saved">Blocks saved</span>}
             <button onClick={saveBlocks} disabled={savingBlocks} className="portfolio-editor__btn portfolio-editor__btn--primary">

@@ -38,7 +38,7 @@ export function PortfolioGrid({ projects, profileSlug }: PortfolioGridProps) {
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
         </div>
-        <p className="portfolio-empty__text">Add your first project</p>
+        <p className="portfolio-empty__text">No work to show yet</p>
       </div>
     )
   }

@@ -48,6 +48,11 @@ const SOCIAL_PLATFORMS = [
 ]
 const DEFAULT_SECTIONS = ['Skills', 'Tools', 'Portfolio', 'Gallery', 'About', 'Timeline', 'Projects', 'Achievements', 'Links']
 
+const SECTION_LABELS: Record<string, string> = {
+  portfolio: 'Work',
+  projects: 'Work (Legacy)',
+}
+
 function makeId() {
   return crypto.randomUUID?.() ?? Math.random().toString(36).substr(2, 9)
 }
@@ -477,7 +482,7 @@ export default function ProfileSettingsPanel({ isOpen, onClose, profileSlug, ini
                     className="form-input"
                     value={ctaSecondaryLabel}
                     onChange={e => setCtaSecondaryLabel(e.target.value)}
-                    placeholder="View Portfolio"
+                    placeholder="View Work"
                     maxLength={50}
                   />
                 </div>
@@ -611,7 +616,7 @@ export default function ProfileSettingsPanel({ isOpen, onClose, profileSlug, ini
                       <span className="settings-panel__switch-track" />
                     </label>
                     <span style={{ flex: 1, fontSize: 'var(--text-sm)', textTransform: 'capitalize' }}>
-                      {section}
+                      {SECTION_LABELS[section] || section}
                     </span>
                     <div style={{ display: 'flex', gap: '2px' }}>
                       <button

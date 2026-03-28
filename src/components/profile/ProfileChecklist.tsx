@@ -21,7 +21,7 @@ export function ProfileChecklist({
   hasAvailability,
   hasCover,
   hasProject,
-  onItemClick,
+  onEditSection,
 }: ProfileChecklistProps) {
   const [dismissed, setDismissed] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
@@ -40,8 +40,17 @@ export function ProfileChecklist({
     { key: 'skills', label: 'Add your skills (3+)', done: hasSkills },
     { key: 'availability', label: 'Set your availability', done: hasAvailability },
     { key: 'cover', label: 'Add a cover image', done: hasCover },
-    { key: 'work', label: 'Add your first work', done: hasProject },
+    { key: 'project', label: 'Add your first work', done: hasProject },
   ]
+
+  const sectionMap: Record<string, string> = {
+    avatar: 'avatar',
+    bio: 'bio',
+    skills: 'skills',
+    availability: 'availability',
+    cover: 'cover',
+    project: 'work',
+  }
 
   const completedCount = items.filter((i) => i.done).length
   const total = items.length
@@ -104,41 +113,38 @@ export function ProfileChecklist({
           <span className="profile-checklist__progress-text">{percentage}% complete</span>
 
           <ul className="profile-checklist__items">
-            {items.map((item) => (
-              <li
-                key={item.key}
-                className={`profile-checklist__item${item.done ? ' profile-checklist__item--done' : ''}`}
-                onClick={() => {
-                  onItemClick?.(item.key)
-                  const target = document.querySelector(`[data-section="${item.key}"]`)
-                  target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    onItemClick?.(item.key)
-                    const target = document.querySelector(`[data-section="${item.key}"]`)
-                    target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                  }
-                }}
-              >
-                <span className="profile-checklist__check">
-                  {item.done ? (
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="9" cy="9" r="8" fill="#22c55e"/>
-                      <path d="M5.5 9.5L7.5 11.5L12.5 6.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  ) : (
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="9" cy="9" r="8" stroke="currentColor" strokeWidth="1.5"/>
-                    </svg>
-                  )}
-                </span>
-                <span className="profile-checklist__label">{item.label}</span>
-              </li>
-            ))}
+            {items.map((item) => {
+              const isClickable = !item.done && onEditSection
+              return (
+                <li
+                  key={item.key}
+                  className={`profile-checklist__item${item.done ? ' profile-checklist__item--done' : ''}${isClickable ? ' profile-checklist__item--clickable' : ''}`}
+                  onClick={isClickable ? () => onEditSection!(sectionMap[item.key]) : undefined}
+                  role={isClickable ? 'button' : undefined}
+                  tabIndex={isClickable ? 0 : undefined}
+                  onKeyDown={isClickable ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      onEditSection!(sectionMap[item.key])
+                    }
+                  } : undefined}
+                >
+                  <span className="profile-checklist__check">
+                    {item.done ? (
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="9" cy="9" r="8" fill="#22c55e"/>
+                        <path d="M5.5 9.5L7.5 11.5L12.5 6.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    ) : (
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="9" cy="9" r="8" stroke="currentColor" strokeWidth="1.5"/>
+                      </svg>
+                    )}
+                  </span>
+                  <span className="profile-checklist__label">{item.label}</span>
+                </li>
+              )
+            })}
           </ul>
 
           <button className="profile-checklist__dismiss" onClick={handleDismiss}>

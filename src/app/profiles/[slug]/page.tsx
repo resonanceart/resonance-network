@@ -14,6 +14,8 @@ import { ProfileToolsDisplay } from '@/components/profile/ProfileToolsDisplay'
 import { ProfileHeaderClient } from '@/components/profile/ProfileHeaderClient'
 import { ProfileTabsClient } from '@/components/profile/ProfileTabsClient'
 import { PortfolioGrid } from '@/components/profile/PortfolioGrid'
+import { ProfileEditOverlay } from '@/components/profile/ProfileEditOverlay'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { getProfiles, getProfileBySlug } from '@/lib/data'
 import type { Profile, WorkExperience } from '@/types'
 import type { Metadata } from 'next'
@@ -317,6 +319,16 @@ export default async function ProfilePage({ params }: { params: { slug: string }
   if (!profileData) notFound()
   const profile: Profile = profileData
 
+  // Detect profile owner
+  let isOwner = false
+  try {
+    const supabase = await createSupabaseServerClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    isOwner = !!(user && profile.supabaseId === user.id)
+  } catch {
+    // Not logged in or error — not owner
+  }
+
   const accentColor = profile.accent_color || '#01696F'
   const sectionOrder = profile.section_order || DEFAULT_SECTION_ORDER
   const sectionVisibility = profile.section_visibility || {}
@@ -343,7 +355,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
             <div key={key} data-section={key}>
               <section className="profile-portfolio-section">
                 <div className="container">
-                  <p className="section-label">Portfolio</p>
+                  <p className="section-label">Work</p>
                   <PortfolioGrid projects={profile.portfolio_projects} profileSlug={profile.slug} />
                 </div>
               </section>
@@ -355,7 +367,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
       case 'skills':
         if (profile.profile_skills && profile.profile_skills.length > 0) {
           return (
-            <div key={key} data-section={key}>
+            <div key={key} data-section={key} data-editable="skills">
               <section className="profile-skills-section">
                 <div className="container">
                   <p className="section-label">Skills</p>
@@ -368,7 +380,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
         // Fallback: show specialties as skills if no profile_skills
         if (profile.specialties.length > 0 && !profile.profile_skills) {
           return (
-            <div key={key} data-section={key}>
+            <div key={key} data-section={key} data-editable="skills">
               <section className="profile-specialties">
                 <div className="container">
                   <p className="section-label">Specialties</p>
@@ -443,7 +455,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
 
       case 'about':
         return (
-          <div key={key} data-section={key}>
+          <div key={key} data-section={key} data-editable="bio">
             {profile.artist_statement && (
               <section className="profile-philosophy">
                 <div className="container">
@@ -510,7 +522,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
               <section className="profile-work">
                 <div className="container">
                   <p className="section-label">Work</p>
-                  <h2>All Projects</h2>
+                  <h2>All Work</h2>
                   <div className="profile-work__grid">
                     {profile.projects.filter(p => !p.isFeatured).map((project, i) => (
                       <ProfileProjectCardEnhanced key={i} project={project} />
@@ -550,7 +562,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
       case 'links':
         if (profile.links.length > 0) {
           return (
-            <div key={key} data-section={key}>
+            <div key={key} data-section={key} data-editable="links">
               <section className="profile-links-section">
                 <div className="container">
                   <p className="section-label">Connect</p>
@@ -582,6 +594,17 @@ export default async function ProfilePage({ params }: { params: { slug: string }
   }
 
   return (
+    <ProfileEditOverlay
+      profileId={profile.id}
+      profileSlug={profile.slug}
+      isOwner={isOwner}
+      hasAvatar={!!profile.photo}
+      hasBio={!!(profile.bio && profile.bio.length > 50)}
+      hasSkills={!!(profile.profile_skills && profile.profile_skills.length >= 3) || profile.specialties.length >= 3}
+      hasAvailability={!!profile.availabilityStatus}
+      hasCover={!!profile.coverImage}
+      hasWork={!!(profile.portfolio_projects && profile.portfolio_projects.length > 0) || profile.projects.some(p => p.isFeatured)}
+    >
     <article className="profile-page">
       <script
         type="application/ld+json"
@@ -596,6 +619,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
       {/* Cover Banner */}
       <section
         className="profile-banner"
+        data-editable="cover"
         style={
           profile.coverImage
             ? undefined
@@ -626,7 +650,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
         <div className="container">
           <div className="profile-header__inner profile-header__inner--left">
             {/* Avatar */}
-            <div className="profile-header__avatar profile-header__avatar--overlap">
+            <div className="profile-header__avatar profile-header__avatar--overlap" data-editable="avatar">
               {profile.photo ? (
                 <Image
                   src={profile.photo}
@@ -648,7 +672,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
 
             {/* Info + CTAs + Social */}
             <div className="profile-header__content">
-              <div className="profile-header__info profile-header__info--left">
+              <div className="profile-header__info profile-header__info--left" data-editable="identity">
                 <h1 className="profile-header__name">
                   {profile.name}
                   {profile.pronouns && (
@@ -666,7 +690,9 @@ export default async function ProfilePage({ params }: { params: { slug: string }
                   </p>
                 )}
                 {profile.availabilityStatus && (
-                  <ProfileAvailabilityBadge status={profile.availabilityStatus} note={profile.availabilityNote} />
+                  <div data-editable="availability">
+                    <ProfileAvailabilityBadge status={profile.availabilityStatus} note={profile.availabilityNote} />
+                  </div>
                 )}
               </div>
 
@@ -685,7 +711,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
 
               {/* Social Links */}
               {profile.social_links && profile.social_links.length > 0 && (
-                <div className="profile-header__social">
+                <div className="profile-header__social" data-editable="links">
                   {[...profile.social_links]
                     .sort((a, b) => a.display_order - b.display_order)
                     .map(link => (
@@ -754,5 +780,6 @@ export default async function ProfilePage({ params }: { params: { slug: string }
         </div>
       </section>
     </article>
+    </ProfileEditOverlay>
   )
 }

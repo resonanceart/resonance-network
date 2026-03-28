@@ -45,19 +45,19 @@ export default function PortfolioListPage() {
     <div className="portfolio-editor">
       <div className="portfolio-editor__header">
         <div className="portfolio-editor__breadcrumb">
-          <Link href="/dashboard">Dashboard</Link> / <span>Portfolio</span>
+          <Link href="/dashboard">Dashboard</Link> / <span>Work</span>
         </div>
         <Link href="/dashboard/projects/portfolio/new" className="portfolio-editor__btn portfolio-editor__btn--primary">
-          + New Project
+          + Add New Work
         </Link>
       </div>
 
       {projects.length === 0 ? (
         <div className="portfolio-editor__empty">
-          <h2>No portfolio projects yet</h2>
-          <p>Create your first portfolio project to showcase your work.</p>
+          <h2>No work added yet</h2>
+          <p>Add your first piece of work to showcase what you do.</p>
           <Link href="/dashboard/projects/portfolio/new" className="portfolio-editor__btn portfolio-editor__btn--primary">
-            Create Project
+            Add New Work
           </Link>
         </div>
       ) : (

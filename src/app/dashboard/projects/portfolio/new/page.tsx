@@ -143,7 +143,7 @@ export default function NewPortfolioProjectPage() {
     <div className="portfolio-editor">
       <div className="portfolio-editor__header">
         <div className="portfolio-editor__breadcrumb">
-          <Link href="/dashboard">Dashboard</Link> / <Link href="/dashboard/projects/portfolio">Portfolio</Link> / <span>New Project</span>
+          <Link href="/dashboard">Dashboard</Link> / <Link href="/dashboard/projects/portfolio">Work</Link> / <span>Add New Work</span>
         </div>
         <div className="portfolio-editor__actions">
           <Link href="/dashboard/projects/portfolio" className="portfolio-editor__btn portfolio-editor__btn--secondary">
@@ -154,7 +154,7 @@ export default function NewPortfolioProjectPage() {
             disabled={saving}
             className="portfolio-editor__btn portfolio-editor__btn--primary"
           >
-            {saving ? 'Saving...' : 'Save Project'}
+            {saving ? 'Saving...' : 'Save Work'}
           </button>
         </div>
       </div>
@@ -172,7 +172,7 @@ export default function NewPortfolioProjectPage() {
             onChange={(e) => setTitle(e.target.value)}
             maxLength={100}
             required
-            placeholder="Project title"
+            placeholder="Title"
           />
         </div>
 
@@ -185,7 +185,7 @@ export default function NewPortfolioProjectPage() {
             value={tagline}
             onChange={(e) => setTagline(e.target.value)}
             maxLength={200}
-            placeholder="A short description of the project"
+            placeholder="A short description"
           />
         </div>
 
