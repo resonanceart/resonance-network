@@ -82,73 +82,124 @@ export async function POST(request: Request) {
       )
     }
 
-    const { data: inserted, error } = await supabaseAdmin
-      .from('project_submissions')
-      .insert({
-        artist_name: artistName,
-        artist_bio: artistBio || null,
-        artist_email: artistEmail,
-        artist_website: artistWebsite || null,
-        project_title: projectTitle,
-        one_sentence: oneSentence || null,
-        vision: vision || null,
-        experience: experience || null,
-        story: story || null,
-        goals: goals || null,
-        domains: domains || null,
-        pathways: pathways || null,
-        stage: stage || null,
-        scale: scale || null,
-        location: location || null,
-        materials: materials || null,
-        special_needs: specialNeeds || null,
-        hero_image_data: heroImageData || null,
-        gallery_images_data: galleryImagesData || null,
-        collaboration_needs: collaborationNeeds || null,
-        collaboration_role_count: collaborationRoleCount,
-        artist_headshot_data: artistHeadshotData || null,
-        user_id: userId,
-        status: 'new',
-      })
-      .select('id')
-      .single()
+    // Determine status: 'draft' saves without notifying, anything else is a full submission
+    const isDraft = body.status === 'draft'
+    const submissionStatus = isDraft ? 'draft' : 'new'
 
-    if (error) {
-      console.error('Supabase insert error:', error.message)
-      return NextResponse.json(
-        { success: false, message: 'Failed to save submission. Please try again.' },
-        { status: 500 }
-      )
+    const submissionData = {
+      artist_name: artistName,
+      artist_bio: artistBio || null,
+      artist_email: artistEmail,
+      artist_website: artistWebsite || null,
+      project_title: projectTitle,
+      one_sentence: oneSentence || null,
+      vision: vision || null,
+      experience: experience || null,
+      story: story || null,
+      goals: goals || null,
+      domains: domains || null,
+      pathways: pathways || null,
+      stage: stage || null,
+      scale: scale || null,
+      location: location || null,
+      materials: materials || null,
+      special_needs: specialNeeds || null,
+      hero_image_data: heroImageData || null,
+      gallery_images_data: galleryImagesData || null,
+      collaboration_needs: collaborationNeeds || null,
+      collaboration_role_count: collaborationRoleCount,
+      artist_headshot_data: artistHeadshotData || null,
+      user_id: userId,
+      status: submissionStatus,
     }
 
-    // Send emails BEFORE responding (Vercel kills the function after response)
-    const previewUrl = `/preview/project/${inserted.id}`
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance-network.vercel.app'
+    // If an 'id' is provided, update the existing draft instead of inserting
+    const existingId = typeof body.id === 'string' ? body.id : null
+    let submissionId: string
 
-    try {
-      await sendSubmissionNotification('project', {
-        project_title: projectTitle,
-        artist_name: artistName,
-        artist_email: artistEmail,
-        stage,
-        location,
-        one_sentence: oneSentence,
-      }, previewUrl)
-    } catch (err) { console.error('Admin notification error:', (err as Error).message) }
+    if (existingId) {
+      // Verify user owns this submission
+      const { data: existing } = await supabaseAdmin
+        .from('project_submissions')
+        .select('id, user_id, status')
+        .eq('id', existingId)
+        .single()
 
-    try {
-      const confirmEmail = projectSubmissionConfirmation(artistName, projectTitle, previewUrl)
-      await sendEmail({
-        to: artistEmail,
-        subject: confirmEmail.subject,
-        html: confirmEmail.html,
-      })
-    } catch (err) { console.error('Applicant confirmation error:', (err as Error).message) }
+      if (!existing || existing.user_id !== userId) {
+        return NextResponse.json(
+          { success: false, message: 'Submission not found.' },
+          { status: 404 }
+        )
+      }
+
+      // Only allow updates to drafts and new submissions (not approved/rejected)
+      if (existing.status !== 'draft' && existing.status !== 'new') {
+        return NextResponse.json(
+          { success: false, message: 'This submission can no longer be edited.' },
+          { status: 400 }
+        )
+      }
+
+      const { error: updateError } = await supabaseAdmin
+        .from('project_submissions')
+        .update(submissionData)
+        .eq('id', existingId)
+
+      if (updateError) {
+        console.error('Supabase update error:', updateError.message)
+        return NextResponse.json(
+          { success: false, message: 'Failed to update submission. Please try again.' },
+          { status: 500 }
+        )
+      }
+      submissionId = existingId
+    } else {
+      const { data: inserted, error } = await supabaseAdmin
+        .from('project_submissions')
+        .insert(submissionData)
+        .select('id')
+        .single()
+
+      if (error) {
+        console.error('Supabase insert error:', error.message)
+        return NextResponse.json(
+          { success: false, message: 'Failed to save submission. Please try again.' },
+          { status: 500 }
+        )
+      }
+      submissionId = inserted.id
+    }
+
+    // Only send notification emails for full submissions (not drafts)
+    if (!isDraft) {
+      const previewUrl = `/preview/project/${submissionId}`
+
+      try {
+        await sendSubmissionNotification('project', {
+          project_title: projectTitle,
+          artist_name: artistName,
+          artist_email: artistEmail,
+          stage,
+          location,
+          one_sentence: oneSentence,
+        }, previewUrl)
+      } catch (err) { console.error('Admin notification error:', (err as Error).message) }
+
+      try {
+        const confirmEmail = projectSubmissionConfirmation(artistName, projectTitle, previewUrl)
+        await sendEmail({
+          to: artistEmail,
+          subject: confirmEmail.subject,
+          html: confirmEmail.html,
+        })
+      } catch (err) { console.error('Applicant confirmation error:', (err as Error).message) }
+    }
 
     return NextResponse.json({
       success: true,
-      message: 'Submission received successfully.',
-      previewUrl,
+      id: submissionId,
+      message: isDraft ? 'Draft saved.' : 'Submission received successfully.',
+      previewUrl: isDraft ? undefined : `/preview/project/${submissionId}`,
     })
   } catch {
     console.error('Submit project error: unexpected server error')

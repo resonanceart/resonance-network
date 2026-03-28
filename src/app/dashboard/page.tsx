@@ -245,7 +245,7 @@ export default function DashboardPage() {
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
           </Link>
-          <Link href="/submit" className="dashboard-action-card">
+          <Link href="/dashboard/projects/live-edit" className="dashboard-action-card">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M12 5v14M5 12h14"/>
             </svg>
