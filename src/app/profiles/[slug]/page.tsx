@@ -9,8 +9,8 @@ import { ProfileToolsMaterials } from '@/components/profile/ProfileToolsMaterial
 import { ProfileBlockRenderer } from '@/components/profile/ProfileBlockRenderer'
 import { ProfileSkillsDisplay } from '@/components/profile/ProfileSkillsDisplay'
 import { ProfileToolsDisplay } from '@/components/profile/ProfileToolsDisplay'
-import { ProfileHeaderClient } from '@/components/profile/ProfileHeaderClient'
 import { ProfileTabsClient } from '@/components/profile/ProfileTabsClient'
+import { ProfileSocialDropdown } from '@/components/profile/ProfileSocialDropdown'
 import { ProfileEditOverlay } from '@/components/profile/ProfileEditOverlay'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { getProfiles, getProfileBySlug } from '@/lib/data'
@@ -220,8 +220,6 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
-const DEFAULT_SECTION_ORDER = ['skills', 'past_work', 'gallery', 'about', 'experience', 'timeline', 'achievements', 'links']
-
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 function formatExpDate(dateStr?: string): string {
@@ -339,7 +337,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
   }
 
   const accentColor = profile.accent_color || '#01696F'
-  const sectionOrder = profile.section_order || DEFAULT_SECTION_ORDER
+  const sectionOrder = profile.section_order || ['skills', 'tools', 'portfolio', 'gallery', 'about', 'experience', 'timeline', 'projects', 'achievements', 'links']
   const sectionVisibility = profile.section_visibility || {}
 
   const coverPositionStyle = profile.cover_position
@@ -674,57 +672,74 @@ export default async function ProfilePage({ params }: { params: { slug: string }
                 )}
               </div>
 
-              {/* CTA Buttons */}
-              <ProfileHeaderClient
-                profileName={profile.name}
-                profileSlug={profile.slug}
-                ctaPrimaryLabel={profile.cta_primary_label || 'Get in Touch'}
-                ctaPrimaryAction={profile.cta_primary_action || 'contact'}
-                ctaPrimaryUrl={profile.cta_primary_url}
-                ctaSecondaryLabel={profile.cta_secondary_label || 'Visit Website'}
-                ctaSecondaryAction={profile.cta_secondary_action || 'url'}
-                ctaSecondaryUrl={profile.cta_secondary_url || profile.links?.[0]?.url}
-                profileEmail={profile.email}
-              />
+              {/* Link Pill Buttons */}
+              <div className="profile-link-buttons">
+                {(profile.primary_website_url || profile.links?.[0]?.url) && (
+                  <a
+                    href={profile.primary_website_url || profile.links[0].url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="profile-link-btn--pill"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                      <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.2"/>
+                      <path d="M1.5 7h11M7 1.5c1.2 1.2 2 3 2 5.5s-.8 4.3-2 5.5c-1.2-1.2-2-3-2-5.5s.8-4.3 2-5.5z" stroke="currentColor" strokeWidth="1.2"/>
+                    </svg>
+                    {profile.primary_website_label || 'Website'}
+                  </a>
+                )}
 
-              {/* Social Links */}
-              {profile.social_links && profile.social_links.length > 0 && (
-                <div className="profile-header__social" data-editable="links">
-                  {[...profile.social_links]
-                    .sort((a, b) => a.display_order - b.display_order)
-                    .map(link => (
-                      <a
-                        key={link.id}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="profile-header__social-btn"
-                        title={link.platform.charAt(0).toUpperCase() + link.platform.slice(1)}
-                        aria-label={link.platform}
-                      >
-                        {getSocialIcon(link.platform)}
-                      </a>
-                    ))}
-                </div>
-              )}
+                {(() => {
+                  const portfolioLink = profile.links?.find(l => l.type === 'portfolio')
+                  if (!portfolioLink) return null
+                  return (
+                    <a href={portfolioLink.url} target="_blank" rel="noopener noreferrer" className="profile-link-btn--pill">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                        <rect x="1.5" y="1.5" width="4.5" height="5.5" rx="0.8" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="8" y="1.5" width="4.5" height="3.5" rx="0.8" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="8" y="7" width="4.5" height="5.5" rx="0.8" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="1.5" y="9" width="4.5" height="3.5" rx="0.8" stroke="currentColor" strokeWidth="1.2"/>
+                      </svg>
+                      Portfolio
+                    </a>
+                  )
+                })()}
 
-              {/* Resume Download */}
-              {profile.resume_url && (
-                <a
-                  href={profile.resume_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="profile-resume-btn"
-                  download
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/>
-                    <line x1="12" y1="15" x2="12" y2="3"/>
-                  </svg>
-                  Download Resume
-                </a>
-              )}
+                {profile.resume_url && (
+                  <a
+                    href={profile.resume_url}
+                    {...(profile.resume_url.startsWith('data:')
+                      ? { download: `${profile.name.replace(/\s+/g, '_')}_Resume.pdf` }
+                      : { target: '_blank', rel: 'noopener noreferrer' }
+                    )}
+                    className="profile-link-btn--pill"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                      <path d="M8.5 1.5H4a1.5 1.5 0 00-1.5 1.5v9A1.5 1.5 0 004 13.5h6a1.5 1.5 0 001.5-1.5V4.5L8.5 1.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                      <path d="M8.5 1.5v3h3" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                      <path d="M5 8h4M5 10.5h2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                    </svg>
+                    Resume
+                  </a>
+                )}
+
+                {profile.social_links && profile.social_links.length > 0 && (
+                  <ProfileSocialDropdown socialLinks={profile.social_links} />
+                )}
+
+                {profile.email && (
+                  <a
+                    href={`mailto:${profile.email}?subject=Collaboration%20Inquiry%20via%20Resonance%20Network`}
+                    className="profile-link-btn--pill"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                      <rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                      <path d="M1 4.5l6 4 6-4" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                    </svg>
+                    Contact
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         </div>
