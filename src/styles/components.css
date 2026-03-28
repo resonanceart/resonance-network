@@ -13088,3 +13088,439 @@ main {
   padding: var(--space-10) 0;
   border-top: 1px solid var(--color-border);
 }
+
+/* ============================================================
+   PROJECT BUILDER
+   ============================================================ */
+
+/* ─── Builder Wrapper ───────────────────────────────────────── */
+
+.project-builder {
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+.project-builder .editable-section {
+  position: relative;
+  cursor: pointer;
+  transition: outline 0.15s;
+}
+
+.project-builder .editable-section:hover {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
+.project-builder .editable-section__overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+}
+
+.project-builder .editable-section:hover .editable-section__overlay {
+  display: flex;
+}
+
+/* ─── Empty State Placeholders ──────────────────────────────── */
+
+.builder-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-6);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              background var(--duration-fast) var(--ease-out);
+}
+
+.builder-empty:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.builder-empty__icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text-faint);
+  transition: color var(--duration-fast) var(--ease-out),
+              background var(--duration-fast) var(--ease-out);
+}
+
+.builder-empty:hover .builder-empty__icon {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.builder-empty__label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.builder-empty:hover .builder-empty__label {
+  color: var(--color-primary);
+}
+
+.builder-empty__hint {
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+}
+
+/* Compact variant for smaller sections */
+.builder-empty--compact {
+  padding: var(--space-6) var(--space-4);
+  gap: var(--space-2);
+}
+
+.builder-empty--compact .builder-empty__icon {
+  width: 32px;
+  height: 32px;
+}
+
+/* Hero empty state — taller, darker */
+.builder-empty--hero {
+  min-height: 300px;
+  background: var(--color-surface-alt);
+  border-style: dashed;
+}
+
+/* ─── Builder Section Labels ────────────────────────────────── */
+
+.builder-section-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-faint);
+  margin-bottom: var(--space-3);
+}
+
+/* ─── Project Settings Panel ────────────────────────────────── */
+
+.project-settings-panel__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.project-settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(500px, 92vw);
+  z-index: 1200;
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  animation: projectPanelSlideIn 0.25s var(--ease-out);
+}
+
+@keyframes projectPanelSlideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.project-settings-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.project-settings-panel__title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin: 0;
+}
+
+.project-settings-panel__close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  padding: 4px 8px;
+  line-height: 1;
+  border-radius: var(--radius-sm);
+}
+
+.project-settings-panel__close:hover {
+  color: var(--color-text);
+  background: var(--color-surface-alt);
+}
+
+.project-settings-panel__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
+}
+
+.project-settings-panel__footer {
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+/* Panel form sections */
+.project-settings-panel__section {
+  margin-bottom: var(--space-8);
+}
+
+.project-settings-panel__section-title {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Mobile: panel becomes bottom sheet */
+@media (max-width: 767px) {
+  .project-settings-panel {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 80vh;
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    animation: contactModalSlideUp 0.25s var(--ease-out);
+  }
+}
+
+/* ─── Collaboration Role Card ───────────────────────────────── */
+
+.collab-role-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-card-bg);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.collab-role-card:hover {
+  border-color: var(--color-primary);
+}
+
+.collab-role-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.collab-role-card__title {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.collab-role-card__number {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-faint);
+  background: var(--color-surface-alt);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.collab-role-card__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.collab-role-card__action {
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-fast), background var(--duration-fast);
+}
+
+.collab-role-card__action:hover {
+  color: var(--color-text);
+  background: var(--color-surface-alt);
+}
+
+.collab-role-card__action--delete:hover {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.06);
+}
+
+.collab-role-card__body {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Form fields inside role card */
+.collab-role-card__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.collab-role-card__field label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.collab-role-card__field input,
+.collab-role-card__field textarea,
+.collab-role-card__field select {
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  transition: border-color var(--duration-fast);
+}
+
+.collab-role-card__field input:focus,
+.collab-role-card__field textarea:focus,
+.collab-role-card__field select:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.collab-role-card__field textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* Two-column row inside card */
+.collab-role-card__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+@media (max-width: 480px) {
+  .collab-role-card__row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Image upload area inside role card */
+.collab-role-card__image-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--color-text-faint);
+  font-size: var(--text-sm);
+  transition: border-color var(--duration-fast), background var(--duration-fast);
+}
+
+.collab-role-card__image-upload:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.collab-role-card__image-upload img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+/* Skills tags inside role card */
+.collab-role-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.collab-role-card__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.collab-role-card__tag-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-faint);
+  font-size: 12px;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.collab-role-card__tag-remove:hover {
+  color: #dc2626;
+}
+
+/* Add role button */
+.collab-add-role {
+  width: 100%;
+  padding: var(--space-4);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  transition: border-color var(--duration-fast), color var(--duration-fast);
+}
+
+.collab-add-role:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
