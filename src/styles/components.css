@@ -11651,3 +11651,21 @@ main {
     display: none;
   }
 }
+
+/* ─── Gallery Section in Live Editor ────────────────────────── */
+
+.profile-gallery-section {
+  padding: var(--space-6) 0 var(--space-10);
+}
+
+.profile-gallery-section .live-editor__gallery-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+@media (max-width: 640px) {
+  .profile-gallery-section .live-editor__gallery-preview {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}

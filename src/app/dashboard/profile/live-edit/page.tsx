@@ -550,6 +550,41 @@ export default function LiveProfileEditor() {
     reader.readAsDataURL(file)
   }
 
+  function handleGalleryUpload(files: FileList | null) {
+    if (!files) return
+    Array.from(files).forEach(file => {
+      if (file.size > 10 * 1024 * 1024) return
+      const reader = new FileReader()
+      reader.onload = () => {
+        const img = new window.Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          const maxW = 1600
+          const ratio = Math.min(maxW / img.width, 1)
+          canvas.width = img.width * ratio
+          canvas.height = img.height * ratio
+          const ctx = canvas.getContext('2d')!
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
+          setMediaGallery(prev => [...prev, {
+            url: dataUrl,
+            alt: file.name.replace(/\.[^.]+$/, ''),
+            type: 'image',
+            order: prev.length,
+          }])
+          markDirty()
+        }
+        img.src = reader.result as string
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
+  function removeGalleryItem(index: number) {
+    setMediaGallery(prev => prev.filter((_, i) => i !== index).map((item, i) => ({ ...item, order: i })))
+    markDirty()
+  }
+
   // --- Loading ---
   if (authLoading || loading) {
     return (
@@ -860,6 +895,40 @@ export default function LiveProfileEditor() {
           </div>
         )}
 
+        {/* Gallery */}
+        <div ref={setSectionRef('gallery')} className={`editable-section${activePanel === 'gallery' ? ' editable-section--active' : ''}`} onClick={() => openPanel('gallery')}>
+          {mediaGallery.length > 0 ? (
+            <section className="profile-gallery-section">
+              <div className="container">
+                <p className="section-label">Gallery</p>
+                <div className="live-editor__gallery-preview">
+                  {mediaGallery.map((item, i) => (
+                    <div key={i} className="live-editor__gallery-preview-item">
+                      <img src={item.url} alt={item.alt || `Gallery image ${i + 1}`} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          ) : (
+            <section className="profile-gallery-section">
+              <div className="container">
+                <div className="live-editor__empty-placeholder">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
+                  <span>Add gallery images</span>
+                </div>
+              </div>
+            </section>
+          )}
+          <div className="editable-section__overlay">
+            <span>Edit gallery</span>
+          </div>
+        </div>
+
         {/* Timeline */}
         <div ref={setSectionRef('timeline')} className={`editable-section${activePanel === 'timeline' ? ' editable-section--active' : ''}`} onClick={() => openPanel('timeline')}>
           {timeline.length > 0 ? (
@@ -969,6 +1038,7 @@ export default function LiveProfileEditor() {
                 {activePanel === 'availability' && 'Availability'}
                 {activePanel === 'social' && 'Social Links'}
                 {activePanel === 'timeline' && 'Timeline'}
+                {activePanel === 'gallery' && 'Gallery'}
               </h3>
               <button className="live-editor__panel-close" onClick={closePanel}>
                 &times;
@@ -1263,6 +1333,63 @@ export default function LiveProfileEditor() {
                   setTimeline={v => { setTimeline(v); markDirty() }}
                 />
               )}
+
+              {/* GALLERY PANEL */}
+              {activePanel === 'gallery' && (
+                <div className="live-editor__panel-section">
+                  {/* Existing images */}
+                  {mediaGallery.length > 0 && (
+                    <div className="live-editor__gallery-grid">
+                      {mediaGallery.map((item, i) => (
+                        <div key={i} className="live-editor__gallery-item">
+                          <img src={item.url} alt={item.alt || `Image ${i + 1}`} />
+                          <button
+                            type="button"
+                            className="live-editor__gallery-remove"
+                            onClick={() => removeGalleryItem(i)}
+                            aria-label={`Remove image ${i + 1}`}
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Upload zone */}
+                  <label
+                    className="live-editor__upload-zone live-editor__gallery-dropzone"
+                    onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('live-editor__gallery-dropzone--drag') }}
+                    onDragLeave={e => { e.currentTarget.classList.remove('live-editor__gallery-dropzone--drag') }}
+                    onDrop={e => {
+                      e.preventDefault()
+                      e.currentTarget.classList.remove('live-editor__gallery-dropzone--drag')
+                      handleGalleryUpload(e.dataTransfer.files)
+                    }}
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={e => handleGalleryUpload(e.target.files)}
+                      style={{ display: 'none' }}
+                    />
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                    <span>Drop images here or click to upload</span>
+                    <small>JPG or PNG, max 10MB each</small>
+                  </label>
+
+                  {mediaGallery.length > 0 && (
+                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-3)' }}>
+                      {mediaGallery.length} image{mediaGallery.length !== 1 ? 's' : ''} in gallery
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
             <div className="live-editor__panel-footer">
               <button className="btn btn--primary btn--sm" onClick={closePanel}>
@@ -1514,6 +1641,73 @@ export default function LiveProfileEditor() {
         }
         .live-editor__tag-remove:hover {
           color: var(--color-danger, #dc2626);
+        }
+
+        /* Gallery preview in profile */
+        .live-editor__gallery-preview {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+          gap: var(--space-3);
+        }
+        .live-editor__gallery-preview-item {
+          border-radius: 8px;
+          overflow: hidden;
+          aspect-ratio: 4 / 3;
+        }
+        .live-editor__gallery-preview-item img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        /* Gallery editor in panel */
+        .live-editor__gallery-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+          gap: var(--space-2);
+          margin-bottom: var(--space-4);
+        }
+        .live-editor__gallery-item {
+          position: relative;
+          border-radius: 8px;
+          overflow: hidden;
+          aspect-ratio: 1;
+        }
+        .live-editor__gallery-item img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .live-editor__gallery-remove {
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: rgba(0, 0, 0, 0.6);
+          color: #fff;
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 16px;
+          line-height: 1;
+          opacity: 0;
+          transition: opacity 0.15s;
+        }
+        .live-editor__gallery-item:hover .live-editor__gallery-remove {
+          opacity: 1;
+        }
+        .live-editor__gallery-remove:hover {
+          background: rgba(220, 38, 38, 0.8);
+        }
+
+        /* Drag-over state for gallery dropzone */
+        .live-editor__gallery-dropzone--drag {
+          border-color: var(--color-accent, #01696F) !important;
+          background: rgba(1, 105, 111, 0.08) !important;
         }
       `}</style>
     </div>
