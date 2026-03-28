@@ -5,8 +5,10 @@ import Link from 'next/link'
 import { useAuth } from '@/components/AuthProvider'
 import BlockEditor from '@/components/dashboard/BlockEditor'
 import ProfileSettingsPanel from '@/components/dashboard/ProfileSettingsPanel'
-import WorkExperienceEditor from '@/components/dashboard/WorkExperienceEditor'
-import type { UserProfile, ContentBlock, WorkExperience } from '@/types'
+import { AvatarCropModal } from '@/components/dashboard/AvatarCropModal'
+import { CoverImageEditor } from '@/components/dashboard/CoverImageEditor'
+import { AvailabilityModal } from '@/components/dashboard/AvailabilityModal'
+import type { UserProfile, ContentBlock } from '@/types'
 
 function generateBlocksFromLegacy(
   ext: Record<string, unknown>,
@@ -19,55 +21,38 @@ function generateBlocksFromLegacy(
     return crypto.randomUUID?.() ?? Math.random().toString(36).substr(2, 9)
   }
 
-  // Bio -> text block
   if (profile.bio) {
     blocks.push({ id: makeId(), type: 'text', order: order++, visible: true, label: 'About', content: { markdown: profile.bio } })
   }
-
-  // Skills -> skills block
   if (profile.skills && profile.skills.length > 0) {
     blocks.push({ id: makeId(), type: 'skills', order: order++, visible: true, label: 'Specialties', content: { tags: profile.skills, variant: 'specialties' } })
   }
-
-  // Tools & Materials -> skills block
   const tools = ext.tools_and_materials as string[] | undefined
   if (tools && tools.length > 0) {
     blocks.push({ id: makeId(), type: 'skills', order: order++, visible: true, label: 'Tools & Materials', content: { tags: tools, variant: 'tools' } })
   }
-
-  // Media gallery -> gallery block
   const gallery = ext.media_gallery as unknown[] | undefined
   if (gallery && gallery.length > 0) {
     blocks.push({ id: makeId(), type: 'gallery', order: order++, visible: true, label: 'Gallery', content: { images: gallery, columns: 3, layout: 'grid' } })
   }
-
-  // Projects -> project blocks
   const projects = ext.projects as Array<Record<string, unknown>> | undefined
   if (projects && projects.length > 0) {
     for (const p of projects) {
       blocks.push({ id: makeId(), type: 'project', order: order++, visible: true, content: p })
     }
   }
-
-  // Timeline -> timeline block
   const timeline = ext.timeline as unknown[] | undefined
   if (timeline && timeline.length > 0) {
     blocks.push({ id: makeId(), type: 'timeline', order: order++, visible: true, label: 'Timeline', content: { entries: timeline } })
   }
-
-  // Philosophy -> text block
   const philosophy = ext.philosophy as string | undefined
   if (philosophy) {
     blocks.push({ id: makeId(), type: 'text', order: order++, visible: true, label: 'Approach', content: { markdown: philosophy } })
   }
-
-  // Links -> links block
   const links = ext.links as unknown[] | undefined
   if (links && links.length > 0) {
     blocks.push({ id: makeId(), type: 'links', order: order++, visible: true, label: 'Links', content: { links } })
   }
-
-  // Achievements -> text block with bullets
   const achievements = ext.achievements as string[] | undefined
   if (achievements && achievements.length > 0) {
     const md = achievements.map(a => `- ${a}`).join('\n')
@@ -77,11 +62,25 @@ function generateBlocksFromLegacy(
   return blocks
 }
 
+const EDITOR_SECTIONS = [
+  { key: 'basic', label: 'Basic Information', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
+  { key: 'experience', label: 'Work Experience', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg> },
+  { key: 'skills', label: 'Skills & Tools', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
+  { key: 'about', label: 'About Me', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> },
+  { key: 'social', label: 'On The Web', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg> },
+  { key: 'links', label: 'Links', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg> },
+  { key: 'gallery', label: 'Gallery & Media', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> },
+  { key: 'blocks', label: 'Content Blocks', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> },
+]
+
 export default function ProfileEditPage() {
   const { user, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  // Sidebar nav
+  const [activeSection, setActiveSection] = useState('basic')
 
   // Header form fields
   const [displayName, setDisplayName] = useState('')
@@ -101,10 +100,9 @@ export default function ProfileEditPage() {
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null)
   const coverInputRef = useRef<HTMLInputElement>(null)
 
-  // Profile visibility
   const [profileVisibility, setProfileVisibility] = useState<string>('draft')
 
-  // New extended profile fields
+  // Extended profile fields
   const [professionalTitle, setProfessionalTitle] = useState('')
   const [pronouns, setPronouns] = useState('')
   const [locationSecondary, setLocationSecondary] = useState('')
@@ -131,15 +129,23 @@ export default function ProfileEditPage() {
   const [newToolName, setNewToolName] = useState('')
   const [newToolCategory, setNewToolCategory] = useState('software')
 
-  // Work experience
-  const [workExperience, setWorkExperience] = useState<WorkExperience[]>([])
-  const [workExpDirty, setWorkExpDirty] = useState(false)
-  const [workExpSaving, setWorkExpSaving] = useState(false)
-
   // Content blocks
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([])
   const [blocksDirty, setBlocksDirty] = useState(false)
   const [blocksSaving, setBlocksSaving] = useState(false)
+
+  // Avatar crop modal
+  const [avatarCropSrc, setAvatarCropSrc] = useState<string | null>(null)
+
+  // Availability modal
+  const [availabilityModalOpen, setAvailabilityModalOpen] = useState(false)
+
+  // Artist statement / philosophy
+  const [artistStatement, setArtistStatement] = useState('')
+  const [philosophy, setPhilosophy] = useState('')
+
+  // Cover position
+  const [coverPosition, setCoverPosition] = useState<{x: number; y: number; scale: number}>({x: 50, y: 50, scale: 1})
 
   useEffect(() => {
     if (authLoading) return
@@ -150,7 +156,7 @@ export default function ProfileEditPage() {
 
     fetch('/api/user/profile')
       .then(res => res.json())
-      .then((data: { profile: UserProfile; extendedProfile?: Record<string, unknown>; workExperience?: WorkExperience[] }) => {
+      .then((data: { profile: UserProfile; extendedProfile?: Record<string, unknown> }) => {
         if (data.profile) {
           setDisplayName(data.profile.display_name || '')
           setBio(data.profile.bio || '')
@@ -182,9 +188,11 @@ export default function ProfileEditPage() {
           setBioExcerpt((ext.bio_excerpt as string) || '')
           setProfileSkills((ext.profile_skills as Array<{id: string; skill_name: string; category: string; display_order: number}>) || [])
           setProfileTools((ext.profile_tools as Array<{id: string; tool_name: string; category: string; display_order: number}>) || [])
+          setArtistStatement((ext.artist_statement as string) || '')
+          setPhilosophy((ext.philosophy as string) || '')
+          if (ext.cover_position) setCoverPosition(ext.cover_position as {x: number; y: number; scale: number})
         }
 
-        // Load content blocks or migrate from legacy data
         const loadedBlocks = (ext?.content_blocks as ContentBlock[]) || []
         if (loadedBlocks.length === 0 && ext) {
           const generated = generateBlocksFromLegacy(ext, { bio: data.profile?.bio, skills: data.profile?.skills })
@@ -194,11 +202,6 @@ export default function ProfileEditPage() {
           }
         } else {
           setContentBlocks(loadedBlocks)
-        }
-
-        // Load work experience
-        if (data.workExperience) {
-          setWorkExperience(data.workExperience)
         }
       })
       .catch(() => setMessage({ type: 'error', text: 'Failed to load profile.' }))
@@ -212,18 +215,11 @@ export default function ProfileEditPage() {
       setMessage({ type: 'error', text: 'Image must be under 5MB.' })
       return
     }
-    const img = new window.Image()
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      const maxW = 400
-      const ratio = Math.min(maxW / img.width, 1)
-      canvas.width = img.width * ratio
-      canvas.height = img.height * ratio
-      const ctx = canvas.getContext('2d')!
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-      setAvatarUrl(canvas.toDataURL('image/jpeg', 0.8))
+    const reader = new FileReader()
+    reader.onload = () => {
+      setAvatarCropSrc(reader.result as string)
     }
-    img.src = URL.createObjectURL(file)
+    reader.readAsDataURL(file)
   }
 
   function handleCoverImageChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -249,40 +245,21 @@ export default function ProfileEditPage() {
 
   function addSkill() {
     const trimmed = skillInput.trim()
-    if (trimmed && !skills.includes(trimmed)) {
-      setSkills([...skills, trimmed])
-    }
+    if (trimmed && !skills.includes(trimmed)) setSkills([...skills, trimmed])
     setSkillInput('')
   }
-
-  function removeSkill(skill: string) {
-    setSkills(skills.filter(s => s !== skill))
-  }
-
+  function removeSkill(skill: string) { setSkills(skills.filter(s => s !== skill)) }
   function handleSkillKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault()
-      addSkill()
-    }
+    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addSkill() }
   }
-
   function addTool() {
     const trimmed = toolInput.trim()
-    if (trimmed && !toolsAndMaterials.includes(trimmed)) {
-      setToolsAndMaterials([...toolsAndMaterials, trimmed])
-    }
+    if (trimmed && !toolsAndMaterials.includes(trimmed)) setToolsAndMaterials([...toolsAndMaterials, trimmed])
     setToolInput('')
   }
-
-  function removeTool(tool: string) {
-    setToolsAndMaterials(toolsAndMaterials.filter(t => t !== tool))
-  }
-
+  function removeTool(tool: string) { setToolsAndMaterials(toolsAndMaterials.filter(t => t !== tool)) }
   function handleToolKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault()
-      addTool()
-    }
+    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTool() }
   }
 
   const canSubmitForReview = !!(displayName && bio && avatarUrl)
@@ -337,6 +314,7 @@ export default function ProfileEditPage() {
           availability_status: availabilityStatus,
           availability_note: availabilityNote.trim() || null,
           cover_image_url: coverImageUrl,
+          cover_position: coverPosition,
           professional_title: professionalTitle.trim() || null,
           pronouns: pronouns.trim() || null,
           location_secondary: locationSecondary.trim() || null,
@@ -353,6 +331,8 @@ export default function ProfileEditPage() {
           bio_excerpt: bioExcerpt.trim() || null,
           profile_skills: profileSkills,
           profile_tools: profileTools,
+          artist_statement: artistStatement.trim() || null,
+          philosophy: philosophy.trim() || null,
         }),
       })
       if (res.ok) {
@@ -391,6 +371,357 @@ export default function ProfileEditPage() {
     }
   }
 
+  // --- Tag rendering helper ---
+  function renderTagList(items: string[], onRemove: (item: string) => void) {
+    return (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: items.length > 0 ? 'var(--space-2)' : 0 }}>
+        {items.map(item => (
+          <span key={item} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '999px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', fontSize: 'var(--text-sm)' }}>
+            {item}
+            <button type="button" onClick={() => onRemove(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: '0 2px', fontSize: '14px', lineHeight: 1 }} aria-label={`Remove ${item}`}>&times;</button>
+          </span>
+        ))}
+      </div>
+    )
+  }
+
+  // --- Section renderers ---
+  function renderBasicInfo() {
+    return (
+      <div className="profile-editor-section">
+        <h2 className="profile-editor-section__title">Basic Information</h2>
+        <p className="profile-editor-section__desc">Your public identity on Resonance Network.</p>
+        <div className="profile-editor-section__body">
+          {/* Avatar */}
+          <div className="form-group">
+            <label className="form-label">Profile Photo</label>
+            <div className="profile-editor-avatar">
+              {avatarUrl ? (
+                <div className="profile-editor-avatar__preview" onClick={() => fileInputRef.current?.click()}>
+                  <img src={avatarUrl} alt="Avatar" />
+                </div>
+              ) : (
+                <div className="profile-editor-avatar__placeholder" onClick={() => fileInputRef.current?.click()}>
+                  {displayName?.[0]?.toUpperCase() || '?'}
+                </div>
+              )}
+              <div className="profile-editor-avatar__actions">
+                <button type="button" className="btn btn--outline btn--sm" onClick={() => fileInputRef.current?.click()}>
+                  {avatarUrl ? 'Change Photo' : 'Upload Photo'}
+                </button>
+                {avatarUrl && (
+                  <button type="button" onClick={() => setAvatarUrl(null)} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: 'var(--text-sm)', textDecoration: 'underline', textAlign: 'left' }}>Remove</button>
+                )}
+                <span className="profile-editor-avatar__hint">JPG or PNG, max 5MB</span>
+              </div>
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }} />
+            </div>
+          </div>
+
+          {/* Cover Image */}
+          <div className="form-group">
+            <label className="form-label">Cover Image</label>
+            <CoverImageEditor
+              coverUrl={coverImageUrl}
+              coverPosition={coverPosition}
+              onSave={(url, pos) => { setCoverImageUrl(url); setCoverPosition(pos) }}
+              onUpload={(file) => {
+                const input = { target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>
+                handleCoverImageChange(input)
+              }}
+            />
+            <input ref={coverInputRef} type="file" accept="image/*" onChange={handleCoverImageChange} style={{ display: 'none' }} />
+          </div>
+
+          {/* Display Name */}
+          <div className="form-group">
+            <label htmlFor="display-name" className="form-label">Display Name *</label>
+            <input id="display-name" type="text" required value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Your name" className="form-input" maxLength={200} />
+          </div>
+
+          {/* Professional Title */}
+          <div className="form-group">
+            <label htmlFor="pro-title" className="form-label">Professional Title</label>
+            <input id="pro-title" type="text" value={professionalTitle} onChange={e => setProfessionalTitle(e.target.value)} placeholder="e.g. Interactive Artist & Creative Technologist" className="form-input" maxLength={200} />
+          </div>
+
+          {/* Pronouns */}
+          <div className="form-group">
+            <label htmlFor="pronouns" className="form-label">Pronouns</label>
+            <select id="pronouns" value={pronouns} onChange={e => setPronouns(e.target.value)} className="form-input">
+              <option value="">Select...</option>
+              <option value="he/him">he/him</option>
+              <option value="she/her">she/her</option>
+              <option value="they/them">they/them</option>
+              <option value="he/they">he/they</option>
+              <option value="she/they">she/they</option>
+              <option value="any pronouns">any pronouns</option>
+            </select>
+          </div>
+
+          {/* Location */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+            <div className="form-group">
+              <label htmlFor="location" className="form-label">Location</label>
+              <input id="location" type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="City, region" className="form-input" maxLength={200} />
+            </div>
+            <div className="form-group">
+              <label htmlFor="location-2" className="form-label">Secondary Location</label>
+              <input id="location-2" type="text" value={locationSecondary} onChange={e => setLocationSecondary(e.target.value)} placeholder="Second city or remote" className="form-input" maxLength={200} />
+            </div>
+          </div>
+
+          {/* Website */}
+          <div className="form-group">
+            <label htmlFor="website" className="form-label">Website</label>
+            <input id="website" type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://yourwebsite.com" className="form-input" maxLength={500} />
+          </div>
+
+          {/* Availability */}
+          <div className="form-group">
+            <label className="form-label">Availability</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', textTransform: 'capitalize' }}>
+                {availabilityStatus || 'Not set'}
+                {availabilityTypes.length > 0 && ` — ${availabilityTypes.join(', ')}`}
+              </span>
+              <button type="button" className="btn btn--outline btn--sm" onClick={() => setAvailabilityModalOpen(true)}>
+                Edit Availability
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="profile-editor-section__footer">
+          <button type="button" className="btn btn--primary" disabled={saving} onClick={saveProfile}>
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  function renderWorkExperience() {
+    return (
+      <div className="profile-editor-section">
+        <h2 className="profile-editor-section__title">Work Experience</h2>
+        <p className="profile-editor-section__desc">Exhibitions, education, awards, residencies, and career milestones.</p>
+        <div className="profile-editor-section__body">
+          <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>
+            Timeline entries can be managed in the <button type="button" onClick={() => setActiveSection('blocks')} style={{ color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }}>Content Blocks</button> section using Timeline blocks.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  function renderSkillsTools() {
+    return (
+      <>
+        {/* Simple skills */}
+        <div className="profile-editor-section">
+          <h2 className="profile-editor-section__title">Skills</h2>
+          <p className="profile-editor-section__desc">Add skills that describe your expertise. These appear as tags on your profile.</p>
+          <div className="profile-editor-section__body">
+            {renderTagList(skills, removeSkill)}
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <input type="text" value={skillInput} onChange={e => setSkillInput(e.target.value)} onKeyDown={handleSkillKeyDown} placeholder="Type a skill and press Enter" className="form-input" style={{ flex: 1 }} />
+              <button type="button" className="btn btn--outline" onClick={addSkill} style={{ flexShrink: 0 }}>Add</button>
+            </div>
+
+            <hr className="profile-editor-section__divider" />
+
+            {/* Enhanced categorized skills */}
+            <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-1)' }}>Categorized Skills</h3>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>Add skills grouped by category for better discoverability.</p>
+            {profileSkills.length > 0 && (
+              <div className="skill-tool-editor__list">
+                {profileSkills.map(skill => (
+                  <span key={skill.id} className="skill-tool-editor__item">
+                    {skill.skill_name}
+                    <span className="skill-tool-editor__item-category">{skill.category}</span>
+                    <button type="button" className="skill-tool-editor__item-remove" onClick={() => setProfileSkills(prev => prev.filter(s => s.id !== skill.id))} aria-label={`Remove ${skill.skill_name}`}>&times;</button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="skill-tool-editor__add-row">
+              <input type="text" className="form-input" value={newSkillName} onChange={e => setNewSkillName(e.target.value)} placeholder="Skill name" maxLength={100} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (newSkillName.trim()) { setProfileSkills(prev => [...prev, { id: crypto.randomUUID?.() ?? Math.random().toString(36).substr(2, 9), skill_name: newSkillName.trim(), category: newSkillCategory, display_order: prev.length }]); setNewSkillName('') } } }} />
+              <select className="form-input" value={newSkillCategory} onChange={e => setNewSkillCategory(e.target.value)} style={{ width: '160px', flexShrink: 0 }}>
+                <option value="design">Design</option>
+                <option value="architecture">Architecture</option>
+                <option value="fabrication">Fabrication</option>
+                <option value="sound">Sound</option>
+                <option value="technology">Technology</option>
+                <option value="production">Production</option>
+                <option value="strategy">Strategy</option>
+                <option value="community">Community</option>
+              </select>
+              <button type="button" className="btn btn--outline" style={{ flexShrink: 0 }} onClick={() => { if (newSkillName.trim()) { setProfileSkills(prev => [...prev, { id: crypto.randomUUID?.() ?? Math.random().toString(36).substr(2, 9), skill_name: newSkillName.trim(), category: newSkillCategory, display_order: prev.length }]); setNewSkillName('') } }}>Add</button>
+            </div>
+          </div>
+          <div className="profile-editor-section__footer">
+            <button type="button" className="btn btn--primary" disabled={saving} onClick={saveProfile}>{saving ? 'Saving...' : 'Save Changes'}</button>
+          </div>
+        </div>
+
+        {/* Tools */}
+        <div className="profile-editor-section">
+          <h2 className="profile-editor-section__title">Tools & Materials</h2>
+          <p className="profile-editor-section__desc">Software, hardware, materials, and processes you work with.</p>
+          <div className="profile-editor-section__body">
+            {renderTagList(toolsAndMaterials, removeTool)}
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <input type="text" value={toolInput} onChange={e => setToolInput(e.target.value)} onKeyDown={handleToolKeyDown} placeholder="Type a tool and press Enter" className="form-input" style={{ flex: 1 }} />
+              <button type="button" className="btn btn--outline" onClick={addTool} style={{ flexShrink: 0 }}>Add</button>
+            </div>
+
+            <hr className="profile-editor-section__divider" />
+
+            <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-1)' }}>Categorized Tools</h3>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>Add tools grouped by category.</p>
+            {profileTools.length > 0 && (
+              <div className="skill-tool-editor__list">
+                {profileTools.map(tool => (
+                  <span key={tool.id} className="skill-tool-editor__item">
+                    {tool.tool_name}
+                    <span className="skill-tool-editor__item-category">{tool.category}</span>
+                    <button type="button" className="skill-tool-editor__item-remove" onClick={() => setProfileTools(prev => prev.filter(t => t.id !== tool.id))} aria-label={`Remove ${tool.tool_name}`}>&times;</button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="skill-tool-editor__add-row">
+              <input type="text" className="form-input" value={newToolName} onChange={e => setNewToolName(e.target.value)} placeholder="Tool name" maxLength={100} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (newToolName.trim()) { setProfileTools(prev => [...prev, { id: crypto.randomUUID?.() ?? Math.random().toString(36).substr(2, 9), tool_name: newToolName.trim(), category: newToolCategory, display_order: prev.length }]); setNewToolName('') } } }} />
+              <select className="form-input" value={newToolCategory} onChange={e => setNewToolCategory(e.target.value)} style={{ width: '160px', flexShrink: 0 }}>
+                <option value="software">Software</option>
+                <option value="hardware">Hardware</option>
+                <option value="materials">Materials</option>
+                <option value="processes">Processes</option>
+              </select>
+              <button type="button" className="btn btn--outline" style={{ flexShrink: 0 }} onClick={() => { if (newToolName.trim()) { setProfileTools(prev => [...prev, { id: crypto.randomUUID?.() ?? Math.random().toString(36).substr(2, 9), tool_name: newToolName.trim(), category: newToolCategory, display_order: prev.length }]); setNewToolName('') } }}>Add</button>
+            </div>
+          </div>
+          <div className="profile-editor-section__footer">
+            <button type="button" className="btn btn--primary" disabled={saving} onClick={saveProfile}>{saving ? 'Saving...' : 'Save Changes'}</button>
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  function renderAboutMe() {
+    return (
+      <div className="profile-editor-section">
+        <h2 className="profile-editor-section__title">About Me</h2>
+        <p className="profile-editor-section__desc">Tell the community about yourself and your practice.</p>
+        <div className="profile-editor-section__body">
+          <div className="form-group">
+            <label htmlFor="bio" className="form-label">Bio</label>
+            <textarea id="bio" value={bio} onChange={e => { if (e.target.value.length <= 1000) setBio(e.target.value) }} placeholder="Share your story, practice, and what drives your work" rows={6} className="form-textarea" />
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>{bio.length}/1000</span>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="artist-statement" className="form-label">Artist Statement</label>
+            <textarea id="artist-statement" value={artistStatement} onChange={e => { if (e.target.value.length <= 2000) setArtistStatement(e.target.value) }} placeholder="A formal statement about your artistic practice and vision" rows={4} className="form-textarea" />
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>{artistStatement.length}/2000</span>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="philosophy" className="form-label">Approach / Philosophy</label>
+            <textarea id="philosophy" value={philosophy} onChange={e => { if (e.target.value.length <= 500) setPhilosophy(e.target.value) }} placeholder="A short quote or statement about your approach" rows={3} className="form-textarea" />
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>{philosophy.length}/500</span>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="bio-excerpt" className="form-label">SEO Excerpt</label>
+            <textarea id="bio-excerpt" value={bioExcerpt} onChange={e => { if (e.target.value.length <= 160) setBioExcerpt(e.target.value) }} placeholder="Short description for search engines (160 chars max)" rows={2} className="form-textarea" />
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>{bioExcerpt.length}/160</span>
+          </div>
+        </div>
+        <div className="profile-editor-section__footer">
+          <button type="button" className="btn btn--primary" disabled={saving} onClick={saveProfile}>{saving ? 'Saving...' : 'Save Changes'}</button>
+        </div>
+      </div>
+    )
+  }
+
+  function renderOnTheWeb() {
+    const PLATFORMS = ['instagram', 'linkedin', 'behance', 'artstation', 'dribbble', 'github', 'vimeo', 'soundcloud', 'spotify', 'youtube', 'x', 'tiktok']
+    return (
+      <div className="profile-editor-section">
+        <h2 className="profile-editor-section__title">On The Web</h2>
+        <p className="profile-editor-section__desc">Add your social media profiles and web presence.</p>
+        <div className="profile-editor-section__body">
+          {socialLinks.map((link, i) => (
+            <div key={link.id} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <select value={link.platform} onChange={e => { const updated = [...socialLinks]; updated[i] = { ...updated[i], platform: e.target.value }; setSocialLinks(updated) }} className="form-input" style={{ width: '140px', flexShrink: 0 }}>
+                {PLATFORMS.map(p => <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
+              </select>
+              <input type="url" value={link.url} onChange={e => { const updated = [...socialLinks]; updated[i] = { ...updated[i], url: e.target.value }; setSocialLinks(updated) }} placeholder="https://..." className="form-input" style={{ flex: 1 }} />
+              <button type="button" onClick={() => setSocialLinks(socialLinks.filter((_, j) => j !== i))} style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', color: 'var(--color-text-muted)', flexShrink: 0 }} aria-label="Remove">&times;</button>
+            </div>
+          ))}
+          <button type="button" className="btn btn--outline btn--sm" onClick={() => setSocialLinks([...socialLinks, { id: crypto.randomUUID?.() ?? Math.random().toString(36).substr(2, 9), platform: 'instagram', url: '', display_order: socialLinks.length }])}>
+            + Add Social Link
+          </button>
+        </div>
+        <div className="profile-editor-section__footer">
+          <button type="button" className="btn btn--primary" disabled={saving} onClick={saveProfile}>{saving ? 'Saving...' : 'Save Changes'}</button>
+        </div>
+      </div>
+    )
+  }
+
+  function renderLinks() {
+    return (
+      <div className="profile-editor-section">
+        <h2 className="profile-editor-section__title">Links</h2>
+        <p className="profile-editor-section__desc">External links to your portfolio, press mentions, and other web pages.</p>
+        <div className="profile-editor-section__body">
+          <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>
+            External links can be managed in the <button type="button" onClick={() => setActiveSection('blocks')} style={{ color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }}>Content Blocks</button> section using Link blocks.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  function renderGallery() {
+    return (
+      <div className="profile-editor-section">
+        <h2 className="profile-editor-section__title">Gallery & Media</h2>
+        <p className="profile-editor-section__desc">Manage your media gallery, photos, and video embeds.</p>
+        <div className="profile-editor-section__body">
+          <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>
+            Gallery items and media can be managed in the <button type="button" onClick={() => setActiveSection('blocks')} style={{ color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }}>Content Blocks</button> section using Gallery and Video blocks.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  function renderContentBlocks() {
+    return (
+      <div className="profile-editor-section">
+        <h2 className="profile-editor-section__title">Content Blocks</h2>
+        <p className="profile-editor-section__desc">Arrange and customize the sections that appear on your public profile.</p>
+        <div className="profile-editor-section__body">
+          <BlockEditor blocks={contentBlocks} onChange={blocks => { setContentBlocks(blocks); setBlocksDirty(true) }} />
+        </div>
+        <div className="profile-editor-section__footer">
+          <button type="button" className="btn btn--primary" disabled={blocksSaving || !blocksDirty} onClick={saveBlocks}>
+            {blocksSaving ? 'Saving...' : 'Save Content'}
+          </button>
+          {blocksDirty && (
+            <span style={{ color: 'var(--color-warning, #f59e0b)', fontSize: 'var(--text-sm)', fontStyle: 'italic' }}>Unsaved changes</span>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // --- Loading / Auth guard ---
   if (authLoading || loading) {
     return (
       <div className="container" style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-8)' }}>
@@ -402,707 +733,126 @@ export default function ProfileEditPage() {
   if (!user) return null
 
   return (
-    <div className="container" style={{ paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-10)', maxWidth: '800px' }}>
-      <Link href="/dashboard" style={{ color: 'var(--color-accent)', textDecoration: 'none', fontSize: 'var(--text-sm)' }}>
-        &larr; Back to Dashboard
-      </Link>
+    <div className="profile-editor-layout">
+      {/* TOP BAR */}
+      <div className="profile-editor-topbar">
+        <Link href={profileVisibility === 'published' ? `/profiles/${slugifyName(displayName)}` : '/dashboard'} className="btn btn--primary btn--sm">
+          {profileVisibility === 'published' ? 'View My Profile' : 'Back to Dashboard'}
+        </Link>
 
-      <h1 style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-2)' }}>Edit Profile</h1>
-      <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)' }}>
-        Update your public profile information.
-      </p>
+        <div className="profile-editor-topbar__status">
+          {profileVisibility === 'draft' && (
+            <>
+              <span className="profile-status-badge profile-status-badge--draft">Draft</span>
+              {canSubmitForReview ? (
+                <button className="btn btn--outline btn--sm" onClick={handleSubmitForReview} disabled={saving}>Submit for Review</button>
+              ) : (
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Complete name, bio &amp; avatar to submit</span>
+              )}
+            </>
+          )}
+          {profileVisibility === 'pending' && <span className="profile-status-badge profile-status-badge--pending">Pending Review</span>}
+          {profileVisibility === 'published' && <span className="profile-status-badge profile-status-badge--published">Published</span>}
+        </div>
 
-      {/* Profile Status Banner */}
-      <div className="profile-status-banner">
-        {profileVisibility === 'draft' && (
-          <>
-            <span className="profile-status-badge profile-status-badge--draft">Draft</span>
-            <p style={{ margin: 0, fontSize: 'var(--text-sm)' }}>Your profile is only visible to you.</p>
-            {canSubmitForReview ? (
-              <button className="btn btn--primary btn--sm" onClick={handleSubmitForReview} disabled={saving}>
-                Submit Profile for Review
-              </button>
-            ) : (
-              <p className="text-muted" style={{ margin: 0, fontSize: 'var(--text-xs)' }}>Complete your name, bio, and avatar to submit for review.</p>
-            )}
-          </>
-        )}
-        {profileVisibility === 'pending' && (
-          <>
-            <span className="profile-status-badge profile-status-badge--pending">Pending Review</span>
-            <p style={{ margin: 0, fontSize: 'var(--text-sm)' }}>Your profile is being reviewed by our team. You&apos;ll be notified when it&apos;s approved.</p>
-          </>
-        )}
-        {profileVisibility === 'published' && (
-          <>
-            <span className="profile-status-badge profile-status-badge--published">Published</span>
-            <p style={{ margin: 0, fontSize: 'var(--text-sm)' }}>Your profile is live on the network. <a href={`/profiles/${slugifyName(displayName)}`} style={{ color: 'var(--color-accent)' }}>View your public profile &rarr;</a></p>
-          </>
-        )}
+        <button type="button" className="btn btn--outline btn--sm" onClick={() => setSettingsOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginLeft: 'auto' }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </button>
       </div>
 
+      {/* Message toast */}
       {message && (
-        <div
-          style={{
-            padding: 'var(--space-3) var(--space-4)',
-            borderRadius: '8px',
-            marginBottom: 'var(--space-4)',
-            background: message.type === 'success' ? 'var(--color-success-bg, rgba(20,184,166,0.1))' : 'var(--color-error-bg, rgba(239,68,68,0.1))',
-            color: message.type === 'success' ? 'var(--color-accent)' : 'var(--color-error, #ef4444)',
-            border: `1px solid ${message.type === 'success' ? 'var(--color-accent)' : 'var(--color-error, #ef4444)'}`,
-          }}
-        >
+        <div className="profile-editor-topbar__message" style={{
+          margin: 'var(--space-3) var(--space-6)',
+          background: message.type === 'success' ? 'var(--color-success-bg, rgba(20,184,166,0.1))' : 'var(--color-error-bg, rgba(239,68,68,0.1))',
+          color: message.type === 'success' ? 'var(--color-primary)' : 'var(--color-error, #ef4444)',
+          border: `1px solid ${message.type === 'success' ? 'var(--color-primary)' : 'var(--color-error, #ef4444)'}`,
+        }}>
           {message.text}
         </div>
       )}
 
-      {/* ===== HEADER FORM ===== */}
-      <div>
-        {/* Avatar */}
-        <div className="form-group">
-          <label className="form-label">Profile Photo</label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+      <div className="profile-editor-body">
+        {/* SIDEBAR */}
+        <nav className="profile-editor-sidebar">
+          <div className="profile-editor-sidebar__avatar">
             {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt="Avatar preview"
-                style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--color-border)' }}
-              />
+              <img src={avatarUrl} alt="" className="profile-editor-sidebar__avatar-img" />
             ) : (
-              <div
-                style={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: '50%',
-                  background: 'var(--color-surface)',
-                  border: '2px dashed var(--color-border)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--color-text-muted)',
-                  fontSize: '24px',
-                }}
-              >
+              <div className="profile-editor-sidebar__avatar-placeholder">
                 {displayName?.[0]?.toUpperCase() || '?'}
               </div>
             )}
             <div>
-              <button
-                type="button"
-                className="btn btn--outline"
-                style={{ fontSize: 'var(--text-sm)' }}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                Upload Photo
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                style={{ display: 'none' }}
-              />
-              {avatarUrl && (
-                <button
-                  type="button"
-                  onClick={() => setAvatarUrl(null)}
-                  style={{
-                    marginLeft: 'var(--space-2)',
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--color-text-muted)',
-                    cursor: 'pointer',
-                    fontSize: 'var(--text-sm)',
-                    textDecoration: 'underline',
-                  }}
-                >
-                  Remove
-                </button>
-              )}
+              <div className="profile-editor-sidebar__avatar-name">{displayName || 'Your Name'}</div>
+              <div className="profile-editor-sidebar__avatar-sub">{professionalTitle || 'Edit Profile'}</div>
             </div>
           </div>
-        </div>
 
-        {/* Display Name */}
-        <div className="form-group">
-          <label htmlFor="display-name" className="form-label">Display Name *</label>
-          <input
-            id="display-name"
-            type="text"
-            required
-            value={displayName}
-            onChange={e => setDisplayName(e.target.value)}
-            placeholder="Your name"
-            className="form-input"
-            maxLength={200}
-          />
-        </div>
-
-        {/* Bio */}
-        <div className="form-group">
-          <label htmlFor="bio" className="form-label">Bio</label>
-          <textarea
-            id="bio"
-            value={bio}
-            onChange={e => { if (e.target.value.length <= 1000) setBio(e.target.value) }}
-            placeholder="Tell the community about yourself and your practice"
-            rows={4}
-            className="form-textarea"
-          />
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>{bio.length}/1000</span>
-        </div>
-
-        {/* Location */}
-        <div className="form-group">
-          <label htmlFor="location" className="form-label">Location</label>
-          <input
-            id="location"
-            type="text"
-            value={location}
-            onChange={e => setLocation(e.target.value)}
-            placeholder="City, region, or remote"
-            className="form-input"
-            maxLength={200}
-          />
-        </div>
-
-        {/* Website */}
-        <div className="form-group">
-          <label htmlFor="website" className="form-label">Website</label>
-          <input
-            id="website"
-            type="url"
-            value={website}
-            onChange={e => setWebsite(e.target.value)}
-            placeholder="https://yourwebsite.com"
-            className="form-input"
-            maxLength={500}
-          />
-        </div>
-
-        {/* Skills */}
-        <div className="form-group">
-          <label htmlFor="skills-input" className="form-label">Skills</label>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: skills.length > 0 ? 'var(--space-2)' : 0 }}>
-            {skills.map(skill => (
-              <span
-                key={skill}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '4px 10px',
-                  borderRadius: '999px',
-                  background: 'var(--color-surface)',
-                  border: '1px solid var(--color-border)',
-                  fontSize: 'var(--text-sm)',
-                }}
-              >
-                {skill}
+          <ul className="profile-editor-sidebar__nav">
+            {EDITOR_SECTIONS.map(s => (
+              <li key={s.key}>
                 <button
-                  type="button"
-                  onClick={() => removeSkill(skill)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: 'var(--color-text-muted)',
-                    padding: '0 2px',
-                    fontSize: '14px',
-                    lineHeight: 1,
-                  }}
-                  aria-label={`Remove ${skill}`}
+                  className={`profile-editor-sidebar__link ${activeSection === s.key ? 'profile-editor-sidebar__link--active' : ''}`}
+                  onClick={() => setActiveSection(s.key)}
                 >
-                  &times;
+                  {s.icon}
+                  {s.label}
                 </button>
-              </span>
+              </li>
             ))}
-          </div>
-          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            <input
-              id="skills-input"
-              type="text"
-              value={skillInput}
-              onChange={e => setSkillInput(e.target.value)}
-              onKeyDown={handleSkillKeyDown}
-              placeholder="Type a skill and press Enter"
-              className="form-input"
-              style={{ flex: 1 }}
-            />
-            <button
-              type="button"
-              className="btn btn--outline"
-              onClick={addSkill}
-              style={{ flexShrink: 0 }}
-            >
-              Add
-            </button>
-          </div>
-        </div>
+          </ul>
+        </nav>
 
-        {/* Tools & Materials */}
-        <div className="form-group">
-          <label htmlFor="tools-input" className="form-label">Tools &amp; Materials</label>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: toolsAndMaterials.length > 0 ? 'var(--space-2)' : 0 }}>
-            {toolsAndMaterials.map(tool => (
-              <span
-                key={tool}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '4px 10px',
-                  borderRadius: '999px',
-                  background: 'var(--color-surface)',
-                  border: '1px solid var(--color-border)',
-                  fontSize: 'var(--text-sm)',
-                }}
-              >
-                {tool}
-                <button
-                  type="button"
-                  onClick={() => removeTool(tool)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: 'var(--color-text-muted)',
-                    padding: '0 2px',
-                    fontSize: '14px',
-                    lineHeight: 1,
-                  }}
-                  aria-label={`Remove ${tool}`}
-                >
-                  &times;
-                </button>
-              </span>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            <input
-              id="tools-input"
-              type="text"
-              value={toolInput}
-              onChange={e => setToolInput(e.target.value)}
-              onKeyDown={handleToolKeyDown}
-              placeholder="Type a tool or material and press Enter"
-              className="form-input"
-              style={{ flex: 1 }}
-            />
-            <button
-              type="button"
-              className="btn btn--outline"
-              onClick={addTool}
-              style={{ flexShrink: 0 }}
-            >
-              Add
-            </button>
-          </div>
-        </div>
-
-        {/* Enhanced Skills Editor */}
-        <div className="skill-tool-editor">
-          <h3>Enhanced Skills</h3>
-          <p className="skill-tool-editor__desc">
-            Add categorized skills to your profile for better discoverability.
-          </p>
-          {profileSkills.length > 0 && (
-            <div className="skill-tool-editor__list">
-              {profileSkills.map(skill => (
-                <span key={skill.id} className="skill-tool-editor__item">
-                  {skill.skill_name}
-                  <span className="skill-tool-editor__item-category">{skill.category}</span>
-                  <button
-                    type="button"
-                    className="skill-tool-editor__item-remove"
-                    onClick={() => setProfileSkills(prev => prev.filter(s => s.id !== skill.id))}
-                    aria-label={`Remove ${skill.skill_name}`}
-                  >
-                    &times;
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-          <div className="skill-tool-editor__add-row">
-            <input
-              type="text"
-              className="form-input"
-              value={newSkillName}
-              onChange={e => setNewSkillName(e.target.value)}
-              placeholder="Skill name"
-              maxLength={100}
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  if (newSkillName.trim()) {
-                    setProfileSkills(prev => [...prev, {
-                      id: crypto.randomUUID?.() ?? Math.random().toString(36).substr(2, 9),
-                      skill_name: newSkillName.trim(),
-                      category: newSkillCategory,
-                      display_order: prev.length,
-                    }])
-                    setNewSkillName('')
-                  }
-                }
-              }}
-            />
-            <select
-              className="form-input"
-              value={newSkillCategory}
-              onChange={e => setNewSkillCategory(e.target.value)}
-              style={{ width: '160px', flexShrink: 0 }}
-            >
-              <option value="design">Design</option>
-              <option value="architecture">Architecture</option>
-              <option value="fabrication">Fabrication</option>
-              <option value="sound">Sound</option>
-              <option value="technology">Technology</option>
-              <option value="production">Production</option>
-              <option value="strategy">Strategy</option>
-              <option value="community">Community</option>
-            </select>
-            <button
-              type="button"
-              className="btn btn--outline"
-              style={{ flexShrink: 0 }}
-              onClick={() => {
-                if (newSkillName.trim()) {
-                  setProfileSkills(prev => [...prev, {
-                    id: crypto.randomUUID?.() ?? Math.random().toString(36).substr(2, 9),
-                    skill_name: newSkillName.trim(),
-                    category: newSkillCategory,
-                    display_order: prev.length,
-                  }])
-                  setNewSkillName('')
-                }
-              }}
-            >
-              Add
-            </button>
-          </div>
-        </div>
-
-        {/* Enhanced Tools Editor */}
-        <div className="skill-tool-editor">
-          <h3>Enhanced Tools</h3>
-          <p className="skill-tool-editor__desc">
-            Add categorized tools and technologies to your profile.
-          </p>
-          {profileTools.length > 0 && (
-            <div className="skill-tool-editor__list">
-              {profileTools.map(tool => (
-                <span key={tool.id} className="skill-tool-editor__item">
-                  {tool.tool_name}
-                  <span className="skill-tool-editor__item-category">{tool.category}</span>
-                  <button
-                    type="button"
-                    className="skill-tool-editor__item-remove"
-                    onClick={() => setProfileTools(prev => prev.filter(t => t.id !== tool.id))}
-                    aria-label={`Remove ${tool.tool_name}`}
-                  >
-                    &times;
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-          <div className="skill-tool-editor__add-row">
-            <input
-              type="text"
-              className="form-input"
-              value={newToolName}
-              onChange={e => setNewToolName(e.target.value)}
-              placeholder="Tool name"
-              maxLength={100}
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  if (newToolName.trim()) {
-                    setProfileTools(prev => [...prev, {
-                      id: crypto.randomUUID?.() ?? Math.random().toString(36).substr(2, 9),
-                      tool_name: newToolName.trim(),
-                      category: newToolCategory,
-                      display_order: prev.length,
-                    }])
-                    setNewToolName('')
-                  }
-                }
-              }}
-            />
-            <select
-              className="form-input"
-              value={newToolCategory}
-              onChange={e => setNewToolCategory(e.target.value)}
-              style={{ width: '160px', flexShrink: 0 }}
-            >
-              <option value="software">Software</option>
-              <option value="hardware">Hardware</option>
-              <option value="materials">Materials</option>
-              <option value="processes">Processes</option>
-            </select>
-            <button
-              type="button"
-              className="btn btn--outline"
-              style={{ flexShrink: 0 }}
-              onClick={() => {
-                if (newToolName.trim()) {
-                  setProfileTools(prev => [...prev, {
-                    id: crypto.randomUUID?.() ?? Math.random().toString(36).substr(2, 9),
-                    tool_name: newToolName.trim(),
-                    category: newToolCategory,
-                    display_order: prev.length,
-                  }])
-                  setNewToolName('')
-                }
-              }}
-            >
-              Add
-            </button>
-          </div>
-        </div>
-
-        {/* Availability Status */}
-        <div className="form-group">
-          <label htmlFor="availability-status" className="form-label">Availability Status</label>
-          <select
-            id="availability-status"
-            value={availabilityStatus}
-            onChange={e => setAvailabilityStatus(e.target.value)}
-            className="form-input"
-          >
-            <option value="open">Open</option>
-            <option value="busy">Busy</option>
-            <option value="unavailable">Unavailable</option>
-          </select>
-        </div>
-
-        {/* Availability Note */}
-        <div className="form-group">
-          <label htmlFor="availability-note" className="form-label">Availability Note</label>
-          <input
-            id="availability-note"
-            type="text"
-            value={availabilityNote}
-            onChange={e => setAvailabilityNote(e.target.value)}
-            placeholder="e.g. Available for commissions starting June"
-            className="form-input"
-            maxLength={300}
-          />
-        </div>
-
-        {/* Cover Image */}
-        <div className="form-group">
-          <label className="form-label">Cover Image</label>
-          <div style={{ marginBottom: 'var(--space-3)' }}>
-            {coverImageUrl ? (
-              <div style={{ position: 'relative' }}>
-                <img
-                  src={coverImageUrl}
-                  alt="Cover preview"
-                  style={{
-                    width: '100%',
-                    maxHeight: 240,
-                    objectFit: 'cover',
-                    borderRadius: '8px',
-                    border: '2px solid var(--color-border)',
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setCoverImageUrl(null)}
-                  style={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    background: 'rgba(0,0,0,0.6)',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    padding: '4px 10px',
-                    cursor: 'pointer',
-                    fontSize: 'var(--text-sm)',
-                  }}
-                >
-                  Remove
-                </button>
-              </div>
-            ) : (
-              <div
-                style={{
-                  width: '100%',
-                  height: 160,
-                  borderRadius: '8px',
-                  background: 'var(--color-surface)',
-                  border: '2px dashed var(--color-border)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--color-text-muted)',
-                  fontSize: 'var(--text-sm)',
-                }}
-              >
-                No cover image
-              </div>
-            )}
-          </div>
-          <button
-            type="button"
-            className="btn btn--outline"
-            style={{ fontSize: 'var(--text-sm)' }}
-            onClick={() => coverInputRef.current?.click()}
-          >
-            Upload Cover Image
-          </button>
-          <input
-            ref={coverInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleCoverImageChange}
-            style={{ display: 'none' }}
-          />
-        </div>
-
-        {/* Save Profile */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginTop: 'var(--space-6)' }}>
-          <button
-            type="button"
-            className="btn btn--primary"
-            disabled={saving}
-            onClick={saveProfile}
-          >
-            {saving ? 'Saving...' : 'Save Profile'}
-          </button>
-          <button
-            type="button"
-            className="btn btn--outline"
-            onClick={() => setSettingsOpen(true)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-            </svg>
-            Settings
-          </button>
-          <Link href="/dashboard" className="btn btn--outline">
-            Cancel
-          </Link>
+        {/* CONTENT */}
+        <div className="profile-editor-content">
+          {activeSection === 'basic' && renderBasicInfo()}
+          {activeSection === 'experience' && renderWorkExperience()}
+          {activeSection === 'skills' && renderSkillsTools()}
+          {activeSection === 'about' && renderAboutMe()}
+          {activeSection === 'social' && renderOnTheWeb()}
+          {activeSection === 'links' && renderLinks()}
+          {activeSection === 'gallery' && renderGallery()}
+          {activeSection === 'blocks' && renderContentBlocks()}
         </div>
       </div>
 
-      {/* Divider */}
-      <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 'var(--space-8) 0' }} />
-
-      {/* Work Experience */}
-      <div>
-        <h2 style={{ marginBottom: 'var(--space-2)' }}>Work Experience</h2>
-        <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)' }}>
-          Add your work history and education to your profile.
-        </p>
-
-        <WorkExperienceEditor
-          entries={workExperience}
-          onChange={(entries) => { setWorkExperience(entries); setWorkExpDirty(true) }}
+      {/* Modals */}
+      {avatarCropSrc && (
+        <AvatarCropModal
+          isOpen={true}
+          imageSrc={avatarCropSrc}
+          onCrop={(croppedUrl) => { setAvatarUrl(croppedUrl); setAvatarCropSrc(null) }}
+          onClose={() => setAvatarCropSrc(null)}
         />
+      )}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-          <button
-            type="button"
-            className="btn btn--primary"
-            disabled={workExpSaving || !workExpDirty}
-            onClick={async () => {
-              setWorkExpSaving(true)
-              setMessage(null)
-              try {
-                const res = await fetch('/api/user/work-experience', {
-                  method: 'PUT',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ entries: workExperience }),
-                })
-                if (res.ok) {
-                  const data = await res.json()
-                  setWorkExperience(data.entries)
-                  setWorkExpDirty(false)
-                  setMessage({ type: 'success', text: 'Work experience saved.' })
-                } else {
-                  const data = await res.json()
-                  setMessage({ type: 'error', text: data.error || 'Failed to save work experience.' })
-                }
-              } catch {
-                setMessage({ type: 'error', text: 'Network error. Please try again.' })
-              } finally {
-                setWorkExpSaving(false)
-              }
-            }}
-          >
-            {workExpSaving ? 'Saving...' : 'Save Experience'}
-          </button>
-          {workExpDirty && (
-            <span style={{ color: 'var(--color-warning, #f59e0b)', fontSize: 'var(--text-sm)', fontStyle: 'italic' }}>
-              Unsaved changes
-            </span>
-          )}
-        </div>
-      </div>
+      <AvailabilityModal
+        isOpen={availabilityModalOpen}
+        onClose={() => setAvailabilityModalOpen(false)}
+        currentStatus={availabilityStatus}
+        currentTypes={availabilityTypes}
+        currentNote={availabilityNote}
+        onSave={(status, types, note) => {
+          setAvailabilityStatus(status)
+          setAvailabilityTypes(types)
+          setAvailabilityNote(note)
+          setAvailabilityModalOpen(false)
+        }}
+      />
 
-      {/* Divider */}
-      <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 'var(--space-8) 0' }} />
-
-      {/* Content Blocks */}
-      <div>
-        <h2 style={{ marginBottom: 'var(--space-2)' }}>Profile Content</h2>
-        <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)' }}>
-          Arrange and customize the sections that appear on your public profile.
-        </p>
-
-        <BlockEditor
-          blocks={contentBlocks}
-          onChange={blocks => { setContentBlocks(blocks); setBlocksDirty(true) }}
-        />
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-          <button
-            type="button"
-            className="btn btn--primary"
-            disabled={blocksSaving || !blocksDirty}
-            onClick={saveBlocks}
-          >
-            {blocksSaving ? 'Saving...' : 'Save Content'}
-          </button>
-          {blocksDirty && (
-            <span style={{ color: 'var(--color-warning, #f59e0b)', fontSize: 'var(--text-sm)', fontStyle: 'italic' }}>
-              Unsaved changes
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Profile Settings Panel */}
       <ProfileSettingsPanel
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         profileSlug={slugifyName(displayName)}
         initialData={{
-          displayName,
-          title: professionalTitle,
-          pronouns,
-          location,
-          locationSecondary,
-          availabilityStatus,
-          availabilityNote,
-          availabilityTypes,
-          ctaPrimaryLabel,
-          ctaPrimaryAction,
-          ctaPrimaryUrl,
-          ctaSecondaryLabel,
-          ctaSecondaryAction,
-          ctaSecondaryUrl,
-          socialLinks,
-          sectionOrder,
-          sectionVisibility,
-          slug: slugifyName(displayName),
-          bioExcerpt,
+          displayName, title: professionalTitle, pronouns, location, locationSecondary,
+          availabilityStatus, availabilityNote, availabilityTypes,
+          ctaPrimaryLabel, ctaPrimaryAction, ctaPrimaryUrl,
+          ctaSecondaryLabel, ctaSecondaryAction, ctaSecondaryUrl,
+          socialLinks, sectionOrder, sectionVisibility,
+          slug: slugifyName(displayName), bioExcerpt,
         }}
         onSave={(data) => {
           setDisplayName((data.displayName as string) || displayName)
@@ -1123,7 +873,6 @@ export default function ProfileEditPage() {
           setSectionOrder((data.sectionOrder as string[]) || sectionOrder)
           setSectionVisibility((data.sectionVisibility as Record<string, boolean>) || {})
           setBioExcerpt((data.bioExcerpt as string) || '')
-          // Trigger save after updating state
           setTimeout(() => saveProfile(), 100)
           setSettingsOpen(false)
         }}
