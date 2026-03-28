@@ -209,7 +209,14 @@ export async function PUT(request: Request) {
     if (body.bio !== undefined) updates.bio = sanitizeText(body.bio, 2000)
     if (body.location !== undefined) updates.location = sanitizeText(body.location, 200)
     if (body.website !== undefined) updates.website = sanitizeText(body.website, 500)
-    if (body.avatar_url !== undefined) updates.avatar_url = sanitizeText(body.avatar_url, 1000)
+    if (body.avatar_url !== undefined) {
+      // Allow data URLs (base64 images) through without truncation
+      if (typeof body.avatar_url === 'string' && body.avatar_url.startsWith('data:image/')) {
+        updates.avatar_url = body.avatar_url
+      } else {
+        updates.avatar_url = sanitizeText(body.avatar_url, 2000)
+      }
+    }
     if (body.skills !== undefined && Array.isArray(body.skills)) {
       updates.skills = body.skills.map((s: unknown) => sanitizeText(s, 100)).filter(Boolean)
     }
@@ -231,12 +238,18 @@ export async function PUT(request: Request) {
     if (body.testimonials !== undefined) extendedFields.testimonials = body.testimonials
     if (body.extended_achievements !== undefined) extendedFields.achievements = body.extended_achievements
     if (body.extended_philosophy !== undefined) extendedFields.philosophy = sanitizeText(body.extended_philosophy, 5000)
-    if (body.cover_image_url !== undefined) extendedFields.cover_image_url = sanitizeText(body.cover_image_url, 1000)
+    if (body.cover_image_url !== undefined) {
+      if (typeof body.cover_image_url === 'string' && body.cover_image_url.startsWith('data:image/')) {
+        extendedFields.cover_image_url = body.cover_image_url
+      } else {
+        extendedFields.cover_image_url = sanitizeText(body.cover_image_url, 2000)
+      }
+    }
     if (body.tools_and_materials !== undefined && Array.isArray(body.tools_and_materials)) {
       extendedFields.tools_and_materials = body.tools_and_materials.map((s: unknown) => sanitizeText(s, 200)).filter(Boolean)
     }
     if (body.availability_status !== undefined) {
-      const validStatuses = ['open', 'busy', 'unavailable']
+      const validStatuses = ['open', 'selective', 'focused', 'busy', 'unavailable']
       if (validStatuses.includes(body.availability_status)) {
         extendedFields.availability_status = body.availability_status
       }

@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/components/AuthProvider'
+import { Badge } from '@/components/ui/Badge'
 import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabilityBadge'
 import { ProfileSkillsDisplay } from '@/components/profile/ProfileSkillsDisplay'
 import { ProfileToolsDisplay } from '@/components/profile/ProfileToolsDisplay'
@@ -10,7 +11,9 @@ import type { ProfileSkill, ProfileTool, ProfileSocialLink } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────
 
-type EditSection = 'cover' | 'avatar' | 'identity' | 'bio' | 'skills' | 'tools' | 'availability' | 'social' | 'timeline' | null
+type EditSection = 'cover' | 'avatar' | 'identity' | 'bio' | 'skills' | 'tools' | 'availability' | 'social' | 'timeline' | 'gallery' | null
+
+type GalleryItem = { url: string; alt: string; caption?: string; type: 'image' | 'video'; isFeatured?: boolean; order: number }
 
 type SkillEntry = { id: string; skill_name: string; category: ProfileSkill['category']; display_order: number }
 type ToolEntry = { id: string; tool_name: string; category: ProfileTool['category']; display_order: number }
@@ -365,9 +368,16 @@ export default function LiveProfileEditor() {
   const [philosophy, setPhilosophy] = useState('')
   const [achievements, setAchievements] = useState<string[]>([])
   const [timeline, setTimeline] = useState<TimelineEntry[]>([])
+  const [mediaGallery, setMediaGallery] = useState<GalleryItem[]>([])
   const [accentColor, setAccentColor] = useState('#01696F')
   const [slug, setSlug] = useState('')
   const [profileVisibility, setProfileVisibility] = useState('draft')
+  const [specialties, setSpecialties] = useState<string[]>([])
+  const [links, setLinks] = useState<Array<{label: string; url: string; type?: string}>>([])
+  const [sectionOrder, setSectionOrder] = useState<string[]>(['skills', 'tools', 'about', 'timeline', 'achievements', 'links'])
+
+  // Refs for scroll-to-section
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   // Track changes
   const markDirty = useCallback(() => setHasChanges(true), [])
@@ -396,6 +406,7 @@ export default function LiveProfileEditor() {
               .replace(/\s+/g, '-')
               .replace(/[^a-z0-9-]/g, '')
           )
+          setSpecialties(p.skills || [])
         }
         if (ext) {
           setProfessionalTitle((ext.professional_title as string) || '')
@@ -406,15 +417,19 @@ export default function LiveProfileEditor() {
           setAvailabilityTypes((ext.availability_types as string[]) || [])
           setCoverImageUrl((ext.cover_image_url as string) || null)
           setToolsAndMaterials((ext.tools_and_materials as string[]) || [])
-          setProfileSkills((ext.profile_skills as SkillEntry[]) || [])
-          setProfileTools((ext.profile_tools as ToolEntry[]) || [])
-          setSocialLinks((ext.social_links as SocialEntry[]) || [])
           setArtistStatement((ext.artist_statement as string) || '')
           setPhilosophy((ext.philosophy as string) || '')
           setAchievements((ext.achievements as string[]) || [])
           setTimeline((ext.timeline as TimelineEntry[]) || [])
           setAccentColor((ext.accent_color as string) || '#01696F')
+          setLinks((ext.links as Array<{label: string; url: string; type?: string}>) || [])
+          if (ext.section_order) setSectionOrder(ext.section_order as string[])
+          if (ext.media_gallery) setMediaGallery(ext.media_gallery as GalleryItem[])
         }
+        // Load related table data from top-level API response
+        if (data.profileSkills) setProfileSkills(data.profileSkills as SkillEntry[])
+        if (data.profileTools) setProfileTools(data.profileTools as ToolEntry[])
+        if (data.socialLinks) setSocialLinks(data.socialLinks as SocialEntry[])
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -474,9 +489,16 @@ export default function LiveProfileEditor() {
 
   function openPanel(section: EditSection) {
     setActivePanel(section)
+    // Scroll the section into view
+    if (section && sectionRefs.current[section]) {
+      sectionRefs.current[section]!.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
   }
   function closePanel() {
     setActivePanel(null)
+  }
+  function setSectionRef(key: string) {
+    return (el: HTMLDivElement | null) => { sectionRefs.current[key] = el }
   }
 
   // File upload helpers
@@ -582,8 +604,13 @@ export default function LiveProfileEditor() {
       {/* ── Profile Preview — exact same structure as public page ── */}
       <article className="profile-page" style={{ marginTop: '53px' }}>
 
+        {/* Breadcrumb — matches public page structure */}
+        <nav aria-label="Breadcrumb" className="breadcrumb container" style={{ paddingTop: 'var(--space-4)' }}>
+          <Link href="/dashboard">Dashboard</Link> <span aria-hidden="true">/</span> <span>Edit Profile</span> <span aria-hidden="true">/</span> <span>{displayName || 'Your Name'}</span>
+        </nav>
+
         {/* Cover Banner */}
-        <div className="editable-section" onClick={() => openPanel('cover')}>
+        <div ref={setSectionRef('cover')} className={`editable-section${activePanel === 'cover' ? ' editable-section--active' : ''}`} onClick={() => openPanel('cover')}>
           <section
             className="profile-banner"
             style={
@@ -622,7 +649,7 @@ export default function LiveProfileEditor() {
           <div className="container">
             <div className="profile-header__inner profile-header__inner--left">
               {/* Avatar */}
-              <div className="editable-section editable-section--inline" onClick={() => openPanel('avatar')}>
+              <div ref={setSectionRef('avatar')} className={`editable-section editable-section--inline${activePanel === 'avatar' ? ' editable-section--active' : ''}`} onClick={() => openPanel('avatar')}>
                 <div className="profile-header__avatar profile-header__avatar--overlap">
                   {avatarUrl ? (
                     <img
@@ -643,7 +670,7 @@ export default function LiveProfileEditor() {
 
               <div className="profile-header__content">
                 {/* Identity */}
-                <div className="editable-section editable-section--inline" onClick={() => openPanel('identity')}>
+                <div ref={setSectionRef('identity')} className={`editable-section editable-section--inline${activePanel === 'identity' ? ' editable-section--active' : ''}`} onClick={() => openPanel('identity')}>
                   <div className="profile-header__info profile-header__info--left">
                     <h1 className="profile-header__name">
                       {displayName || <span className="live-editor__placeholder-text">Your Name</span>}
@@ -668,7 +695,7 @@ export default function LiveProfileEditor() {
                 </div>
 
                 {/* Availability */}
-                <div className="editable-section editable-section--inline" onClick={() => openPanel('availability')}>
+                <div ref={setSectionRef('availability')} className={`editable-section editable-section--inline${activePanel === 'availability' ? ' editable-section--active' : ''}`} onClick={() => openPanel('availability')}>
                   {availabilityStatus ? (
                     <ProfileAvailabilityBadge
                       status={availabilityStatus as 'open' | 'busy' | 'unavailable'}
@@ -685,7 +712,7 @@ export default function LiveProfileEditor() {
                 </div>
 
                 {/* Social Links */}
-                <div className="editable-section editable-section--inline" onClick={() => openPanel('social')}>
+                <div ref={setSectionRef('social')} className={`editable-section editable-section--inline${activePanel === 'social' ? ' editable-section--active' : ''}`} onClick={() => openPanel('social')}>
                   {socialLinks.length > 0 ? (
                     <div className="profile-header__social">
                       {[...socialLinks]
@@ -714,8 +741,21 @@ export default function LiveProfileEditor() {
           </div>
         </section>
 
+        {/* Specialties Badges — matches public page */}
+        {specialties.length > 0 && (
+          <section className="profile-specialties">
+            <div className="container">
+              <div className="profile-specialties__list">
+                {specialties.map(s => (
+                  <Badge key={s} variant="domain">{s}</Badge>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Skills Section */}
-        <div className="editable-section" onClick={() => openPanel('skills')}>
+        <div ref={setSectionRef('skills')} className={`editable-section${activePanel === 'skills' ? ' editable-section--active' : ''}`} onClick={() => openPanel('skills')}>
           {profileSkills.length > 0 ? (
             <section className="profile-skills-section">
               <div className="container">
@@ -741,7 +781,7 @@ export default function LiveProfileEditor() {
         </div>
 
         {/* Tools Section */}
-        <div className="editable-section" onClick={() => openPanel('tools')}>
+        <div ref={setSectionRef('tools')} className={`editable-section${activePanel === 'tools' ? ' editable-section--active' : ''}`} onClick={() => openPanel('tools')}>
           {profileTools.length > 0 ? (
             <section className="profile-tools-section">
               <div className="container">
@@ -764,7 +804,7 @@ export default function LiveProfileEditor() {
         </div>
 
         {/* About / Bio Section */}
-        <div className="editable-section" onClick={() => openPanel('bio')}>
+        <div ref={setSectionRef('bio')} className={`editable-section${activePanel === 'bio' ? ' editable-section--active' : ''}`} onClick={() => openPanel('bio')}>
           <section className="profile-about">
             <div className="container">
               <p className="section-label">About</p>
@@ -820,7 +860,7 @@ export default function LiveProfileEditor() {
         )}
 
         {/* Timeline */}
-        <div className="editable-section" onClick={() => openPanel('timeline')}>
+        <div ref={setSectionRef('timeline')} className={`editable-section${activePanel === 'timeline' ? ' editable-section--active' : ''}`} onClick={() => openPanel('timeline')}>
           {timeline.length > 0 ? (
             <section className="profile-timeline-section">
               <div className="container">
@@ -864,11 +904,50 @@ export default function LiveProfileEditor() {
           </div>
         </div>
 
-        {/* CTA at bottom */}
+        {/* Achievements — matches public page */}
+        {achievements.length > 0 && (
+          <section className="profile-achievements">
+            <div className="container">
+              <p className="section-label">Recognition</p>
+              <ul className="profile-achievements__list">
+                {achievements.map((a, i) => (
+                  <li key={i}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M8 1l1.8 3.6L14 5.3l-3 2.9.7 4.1L8 10.5l-3.7 1.8.7-4.1-3-2.9 4.2-.7L8 1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                    </svg>
+                    <span>{a}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
+
+        {/* Links — matches public page */}
+        {links.length > 0 && (
+          <section className="profile-links-section">
+            <div className="container">
+              <p className="section-label">Connect</p>
+              <div className="profile-links-row">
+                {links.map((link, i) => (
+                  <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="profile-link-btn" aria-label={link.label}>
+                    <span>{link.label}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* CTA — matches public page */}
         <section className="profile-cta">
           <div className="container">
             <h2>Work with {displayName.split(' ')[0] || 'You'}</h2>
             <p>Interested in collaborating or learning more about upcoming projects?</p>
+            <div className="profile-cta__actions">
+              <span className="btn btn--primary btn--large" style={{ opacity: 0.6, cursor: 'default' }}>Get in Touch</span>
+              <Link href="/collaborate" className="btn btn--outline btn--large">Browse Open Roles</Link>
+            </div>
           </div>
         </section>
       </article>
@@ -1252,31 +1331,36 @@ export default function LiveProfileEditor() {
           outline-offset: -2px;
           border-radius: 4px;
         }
+        .editable-section--active {
+          outline: 2px solid var(--color-accent, #01696F) !important;
+          outline-offset: -2px;
+          border-radius: 4px;
+          box-shadow: 0 0 0 4px rgba(1, 105, 111, 0.15);
+        }
         .editable-section--inline {
           display: inline-block;
         }
         .editable-section__overlay {
           position: absolute;
-          inset: 0;
-          display: none;
+          top: 8px;
+          right: 8px;
+          display: flex;
           align-items: center;
-          justify-content: center;
-          background: rgba(0, 0, 0, 0.04);
+          gap: var(--space-1);
+          padding: 4px 10px;
+          background: var(--color-primary, #01696F);
+          color: #fff;
           border-radius: 4px;
+          font-size: 11px;
+          font-weight: 600;
+          opacity: 0;
           pointer-events: none;
+          transition: opacity 0.15s ease-out;
+          z-index: 5;
+          white-space: nowrap;
         }
         .editable-section:hover .editable-section__overlay {
-          display: flex;
-        }
-        .editable-section__overlay span {
-          background: var(--color-surface);
-          color: var(--color-text);
-          font-size: var(--text-xs);
-          font-weight: 600;
-          padding: 4px 10px;
-          border-radius: 4px;
-          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
-          pointer-events: none;
+          opacity: 1;
         }
 
         /* Empty placeholders */
@@ -1314,6 +1398,11 @@ export default function LiveProfileEditor() {
           inset: 0;
           z-index: 1100;
           background: rgba(0, 0, 0, 0.3);
+          animation: fadeIn 0.15s ease-out;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
         .live-editor__panel {
           position: fixed;

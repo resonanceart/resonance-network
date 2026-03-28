@@ -156,7 +156,7 @@ export default function ProfileEditPage() {
 
     fetch('/api/user/profile')
       .then(res => res.json())
-      .then((data: { profile: UserProfile; extendedProfile?: Record<string, unknown> }) => {
+      .then((data: { profile: UserProfile; extendedProfile?: Record<string, unknown>; profileSkills?: Array<{id: string; skill_name: string; category: string; display_order: number}>; profileTools?: Array<{id: string; tool_name: string; category: string; display_order: number}>; socialLinks?: Array<{id: string; platform: string; url: string; display_order: number}> }) => {
         if (data.profile) {
           setDisplayName(data.profile.display_name || '')
           setBio(data.profile.bio || '')
@@ -182,17 +182,18 @@ export default function ProfileEditPage() {
           setCtaSecondaryLabel((ext.cta_secondary_label as string) || '')
           setCtaSecondaryAction((ext.cta_secondary_action as string) || 'url')
           setCtaSecondaryUrl((ext.cta_secondary_url as string) || '')
-          setSocialLinks((ext.social_links as Array<{id: string; platform: string; url: string; display_order: number}>) || [])
           setSectionOrder((ext.section_order as string[]) || ['skills', 'tools', 'portfolio', 'gallery', 'about', 'timeline', 'projects', 'achievements', 'links'])
           setSectionVisibility((ext.section_visibility as Record<string, boolean>) || {})
           setBioExcerpt((ext.bio_excerpt as string) || '')
-          setProfileSkills((ext.profile_skills as Array<{id: string; skill_name: string; category: string; display_order: number}>) || [])
-          setProfileTools((ext.profile_tools as Array<{id: string; tool_name: string; category: string; display_order: number}>) || [])
           setArtistStatement((ext.artist_statement as string) || '')
           setPhilosophy((ext.philosophy as string) || '')
           if (ext.cover_position) setCoverPosition(ext.cover_position as {x: number; y: number; scale: number})
         }
 
+        // Load related table data from top-level API response
+        if (data.profileSkills) setProfileSkills(data.profileSkills)
+        if (data.profileTools) setProfileTools(data.profileTools)
+        if (data.socialLinks) setSocialLinks(data.socialLinks)
         const loadedBlocks = (ext?.content_blocks as ContentBlock[]) || []
         if (loadedBlocks.length === 0 && ext) {
           const generated = generateBlocksFromLegacy(ext, { bio: data.profile?.bio, skills: data.profile?.skills })
