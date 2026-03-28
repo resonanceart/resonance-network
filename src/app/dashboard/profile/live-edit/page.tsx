@@ -474,6 +474,7 @@ export default function LiveProfileEditor() {
           achievements: achievements.length > 0 ? achievements : null,
           timeline: timeline.length > 0 ? timeline : null,
           accent_color: accentColor,
+          media_gallery: mediaGallery.length > 0 ? mediaGallery : null,
         }),
       })
       setHasChanges(false)
