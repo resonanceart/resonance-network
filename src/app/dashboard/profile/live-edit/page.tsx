@@ -453,6 +453,10 @@ export default function LiveProfileEditor() {
   const [resumeUrl, setResumeUrl] = useState<string | null>(null)
   const [portfolioPdfUrl, setPortfolioPdfUrl] = useState<string | null>(null)
   const [mediaLinks, setMediaLinks] = useState<Array<{label: string; url: string; type: 'website' | 'fundraiser' | 'other'}>>([])
+  const [pdfDocuments, setPdfDocuments] = useState<Array<{url: string; title: string}>>([])
+  const [showAddLink, setShowAddLink] = useState(false)
+  const [newLinkUrl, setNewLinkUrl] = useState('')
+  const [newLinkLabel, setNewLinkLabel] = useState('')
 
   // Avatar crop state
   const [avatarRawSrc, setAvatarRawSrc] = useState<string | null>(null)
@@ -514,6 +518,7 @@ export default function LiveProfileEditor() {
           setPortfolioPdfUrl((ext.portfolio_pdf_url as string) || null)
           if (ext.media_links) setMediaLinks(ext.media_links as Array<{label: string; url: string; type: 'website' | 'fundraiser' | 'other'}>)
           if (ext.past_work) setPastWork(ext.past_work as PastWorkItem[])
+          if (ext.pdf_documents) setPdfDocuments(ext.pdf_documents as Array<{url: string; title: string}>)
         }
         // Load related table data from top-level API response
         if (data.profileSkills) setProfileSkills(data.profileSkills as SkillEntry[])
@@ -578,6 +583,7 @@ export default function LiveProfileEditor() {
           portfolio_pdf_url: portfolioPdfUrl,
           media_links: mediaLinks.length > 0 ? mediaLinks : null,
           links: links.length > 0 ? links : null,
+          pdf_documents: pdfDocuments.length > 0 ? pdfDocuments : null,
           section_order: sectionOrder,
         }),
       })
@@ -758,6 +764,18 @@ export default function LiveProfileEditor() {
       })
     })
 
+    // PDF documents
+    pdfDocuments.forEach((doc, i) => {
+      items.push({
+        id: `pdf-${i}`,
+        type: 'pdf',
+        url: doc.url,
+        title: doc.title || 'Document',
+        subtitle: 'PDF',
+        order: order++,
+      })
+    })
+
     // Portfolio PDF
     if (portfolioPdfUrl) {
       items.push({
@@ -808,6 +826,41 @@ export default function LiveProfileEditor() {
     })
 
     return items
+  }
+
+  // Social icon renderer
+  function getSocialIconClean(platform: string) {
+    const size = 20
+    switch (platform) {
+      case 'instagram':
+        return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+      case 'linkedin':
+        return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 11v6M7 7v.01M11 17v-4a2 2 0 014 0v4M15 11v6"/></svg>
+      case 'github':
+        return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      case 'youtube':
+        return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="4"/><polygon points="10 8 16 12 10 16" fill="currentColor" stroke="none"/></svg>
+      case 'x':
+        return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      case 'tiktok':
+        return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 2v13a4 4 0 11-3-3.87"/><path d="M12 6c2 1.5 4 2 6 2"/></svg>
+      case 'behance':
+        return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M22 7h-7V5h7v2zm1.726 10c-.442 1.297-2.029 3-5.101 3-3.074 0-5.564-1.729-5.564-5.675 0-3.91 2.325-5.92 5.466-5.92 3.082 0 4.964 1.782 5.375 4.426.078.506.109 1.188.095 2.14H15.97c.13 3.211 3.483 3.312 4.588 1.029h3.168zm-7.686-4h4.965c-.105-1.547-1.136-2.219-2.477-2.219-1.466 0-2.277.768-2.488 2.219zm-9.574 6.988H0V5.021h6.953c5.476.081 5.58 5.444 2.72 6.906 3.461 1.26 3.577 8.061-3.207 8.061zM3 11h3.584c2.508 0 2.906-3-.312-3H3v3zm3.391 3H3v3.016h3.341c3.055 0 2.868-3.016.05-3.016z"/></svg>
+      case 'facebook':
+        return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      case 'dribbble':
+        return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.18 17.72M19.13 5.09C15.22 9.14 10.9 10.44 2.64 10.96M21.75 12.84c-6.62-1.41-12.14 1-16.38 6.32"/></svg>
+      case 'spotify':
+        return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+      case 'vimeo':
+        return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M23.977 6.416c-.105 2.338-1.739 5.543-4.894 9.609-3.268 4.247-6.026 6.37-8.29 6.37-1.409 0-2.578-1.294-3.553-3.881L5.322 11.4C4.603 8.816 3.834 7.522 3.01 7.522c-.179 0-.806.378-1.881 1.132L0 7.197c1.185-1.044 2.351-2.084 3.501-3.128C5.08 2.701 6.266 1.984 7.055 1.91c1.867-.18 3.016 1.1 3.447 3.838.465 2.953.789 4.789.971 5.507.539 2.45 1.131 3.674 1.776 3.674.502 0 1.256-.796 2.265-2.385 1.004-1.589 1.54-2.797 1.612-3.628.144-1.371-.395-2.061-1.614-2.061-.574 0-1.167.121-1.777.391 1.186-3.868 3.434-5.757 6.762-5.637 2.473.06 3.628 1.664 3.493 4.797l-.013.01z"/></svg>
+      case 'soundcloud':
+        return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M2 14V10M5 15V8M8 16V6M11 16V4M14 16V3"/><path d="M17 4c3 0 5 2 5 5s-2.5 5-5 5" stroke="currentColor" strokeWidth="2"/></svg>
+      case 'linktree':
+        return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v18M7 7l5-4 5 4M7 13h10M8 18h8"/></svg>
+      default:
+        return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+    }
   }
 
   // --- Loading ---
@@ -941,23 +994,6 @@ export default function LiveProfileEditor() {
                       Website
                     </span>
                   )}
-                  {resumeUrl && (
-                    <span className="profile-link-btn--pill">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                      Resume
-                    </span>
-                  )}
-                  <div ref={setSectionRef('social')} className={`profile-link-btn--pill profile-link-btn--social-group${activePanel === 'social' ? ' editable-section--active' : ''}`} onClick={(e) => { e.stopPropagation(); openPanel('social') }}>
-                    {socialLinks.length > 0 ? (
-                      socialLinks.sort((a, b) => a.display_order - b.display_order).slice(0, 5).map(link => (
-                        <span key={link.id} className="profile-social-icon-sm" title={link.platform}>
-                          {link.platform.charAt(0).toUpperCase() + link.platform.slice(1).charAt(0)}
-                        </span>
-                      ))
-                    ) : (
-                      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>+ Social</span>
-                    )}
-                  </div>
                 </div>
 
                 {/* Bio */}
@@ -1017,6 +1053,22 @@ export default function LiveProfileEditor() {
                   </div>
                 )}
 
+                {/* Social Links */}
+                <div ref={setSectionRef('social')} style={{ marginTop: 'var(--space-4)' }} onClick={(e) => { e.stopPropagation(); openPanel('social') }}>
+                  <p className="profile-header-grid__sidebar-label">Social</p>
+                  {socialLinks.length > 0 ? (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+                      {[...socialLinks].sort((a, b) => a.display_order - b.display_order).map(link => (
+                        <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="profile-social-icon-sm" title={link.platform} onClick={e => e.stopPropagation()}>
+                          {getSocialIconClean(link.platform)}
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="live-editor__placeholder-text" style={{ fontSize: 'var(--text-sm)' }}>Add social links</p>
+                  )}
+                </div>
+
                 <div className="editable-section__overlay"><span>Edit skills</span></div>
               </div>
             </div>
@@ -1072,6 +1124,9 @@ export default function LiveProfileEditor() {
                   } else if (id.startsWith('pw-')) {
                     const idx = parseInt(id.split('-')[1])
                     setPastWork(prev => prev.filter((_, i) => i !== idx))
+                  } else if (id.startsWith('pdf-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setPdfDocuments(prev => prev.filter((_, i) => i !== idx))
                   } else if (id === 'portfolio-pdf') {
                     setPortfolioPdfUrl(null)
                   } else if (id === 'resume-pdf') {
@@ -1098,10 +1153,43 @@ export default function LiveProfileEditor() {
                 + Add Images
               </label>
               <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer' }}>
-                <input type="file" accept=".pdf" onChange={handlePortfolioPdfUpload} style={{ display: 'none' }} />
+                <input type="file" accept=".pdf" multiple onChange={async (e) => {
+                  const files = e.target.files
+                  if (!files) return
+                  for (const file of Array.from(files)) {
+                    if (file.size > 10 * 1024 * 1024) continue
+                    const result = await upload(file, 'portfolio')
+                    if (result) {
+                      setPdfDocuments(prev => [...prev, { url: result, title: file.name.replace(/\.pdf$/i, '') }])
+                      markDirty()
+                    }
+                  }
+                  e.target.value = ''
+                }} style={{ display: 'none' }} />
                 + Add PDF
               </label>
-              <button className="btn btn--outline btn--sm" onClick={() => openPanel('social')}>+ Add Link</button>
+              {showAddLink ? (
+                <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                  <div className="form-group" style={{ margin: 0, flex: 1, minWidth: 120 }}>
+                    <input className="form-input" value={newLinkUrl} onChange={e => setNewLinkUrl(e.target.value)} placeholder="https://..." style={{ fontSize: 'var(--text-sm)' }} />
+                  </div>
+                  <div className="form-group" style={{ margin: 0, flex: 1, minWidth: 100 }}>
+                    <input className="form-input" value={newLinkLabel} onChange={e => setNewLinkLabel(e.target.value)} placeholder="Label" style={{ fontSize: 'var(--text-sm)' }} />
+                  </div>
+                  <button className="btn btn--primary btn--sm" onClick={() => {
+                    if (newLinkUrl.trim()) {
+                      setMediaLinks(prev => [...prev, { label: newLinkLabel.trim() || 'Link', url: newLinkUrl.trim(), type: 'website' }])
+                      markDirty()
+                      setNewLinkUrl('')
+                      setNewLinkLabel('')
+                      setShowAddLink(false)
+                    }
+                  }}>Add</button>
+                  <button className="btn btn--ghost btn--sm" onClick={() => setShowAddLink(false)}>Cancel</button>
+                </div>
+              ) : (
+                <button className="btn btn--outline btn--sm" onClick={() => setShowAddLink(true)}>+ Add Link</button>
+              )}
             </div>
           </div>
         </section>

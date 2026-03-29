@@ -43,6 +43,7 @@ export default function ProfilePreviewPage() {
   const [mediaGallery, setMediaGallery] = useState<Array<{url: string; alt: string; type: string}>>([])
   const [mediaLinks, setMediaLinks] = useState<Array<{label: string; url: string; type: string}>>([])
   const [pastWork, setPastWork] = useState<Array<{url: string; title: string}>>([])
+  const [pdfDocuments, setPdfDocuments] = useState<Array<{url: string; title: string}>>([])
   const [timeline, setTimeline] = useState<Array<{year: string; title: string; organization?: string; description?: string}>>([])
   const [website, setWebsite] = useState('')
   const [specialties, setSpecialties] = useState<string[]>([])
@@ -81,6 +82,7 @@ export default function ProfilePreviewPage() {
           if (ext.media_gallery) setMediaGallery(ext.media_gallery as any[])
           if (ext.media_links) setMediaLinks(ext.media_links as any[])
           if (ext.past_work) setPastWork(ext.past_work as any[])
+          if (ext.pdf_documents) setPdfDocuments(ext.pdf_documents as any[])
           if (ext.timeline) setTimeline(ext.timeline as any[])
         }
         if (data.profileSkills) setProfileSkills(data.profileSkills)
@@ -138,6 +140,17 @@ export default function ProfilePreviewPage() {
         order: order++,
       })
     }
+
+    pdfDocuments.forEach((doc, i) => {
+      items.push({
+        id: `pdf-${i}`,
+        type: 'pdf',
+        url: doc.url,
+        title: doc.title || 'Document',
+        subtitle: 'PDF',
+        order: order++,
+      })
+    })
 
     if (website) {
       try {
