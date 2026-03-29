@@ -2169,15 +2169,56 @@ main {
 }
 
 .collab-filters {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
   padding: var(--space-4) 0 var(--space-8);
 }
 
-.collab-filters .filter-section {
-  margin-bottom: var(--space-4);
+.collab-filters select,
+.collab-filters .collab-filter-select {
+  padding: var(--space-2) var(--space-4);
+  padding-right: var(--space-8);
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%23656360' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  min-height: 40px;
+  transition: border-color var(--duration-fast) var(--ease-out);
 }
 
-.collab-filters .filter-section:last-child {
+.collab-filters select:focus,
+.collab-filters .collab-filter-select:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.collab-filters select:hover,
+.collab-filters .collab-filter-select:hover {
+  border-color: var(--color-text-faint);
+}
+
+.collab-filters .filter-section {
   margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .collab-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .collab-filters select,
+  .collab-filters .collab-filter-select {
+    width: 100%;
+  }
 }
 
 .collab-grid {
@@ -7147,16 +7188,26 @@ main {
 }
 
 .collab-benefit-card {
-  padding: var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.collab-benefit-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .collab-benefit-card strong {
   display: block;
   margin-bottom: var(--space-2);
   font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 .collab-benefit-card p {
@@ -13655,23 +13706,25 @@ main {
 /* Large tab cards */
 .collab-tabs--large {
   display: flex;
-  gap: var(--space-4);
+  gap: var(--space-2);
   justify-content: center;
   flex-wrap: wrap;
 }
 
 .collab-tab--card {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-6) var(--space-8);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  background: var(--color-card-bg);
+  gap: var(--space-2);
+  padding: 12px 24px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: transparent;
   cursor: pointer;
-  min-width: 280px;
   text-align: center;
+  font-size: var(--text-base);
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: var(--color-text-muted);
   transition: border-color var(--duration-fast) var(--ease-out),
               background var(--duration-fast) var(--ease-out),
               box-shadow var(--duration-fast) var(--ease-out);
@@ -13679,40 +13732,39 @@ main {
 
 .collab-tab--card:hover {
   border-color: var(--color-primary);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  color: var(--color-text);
 }
 
 .collab-tab--card.collab-tab--active {
   border-color: var(--color-primary);
-  background: var(--color-primary-light);
+  background: var(--color-primary);
+  color: #fff;
 }
 
 .collab-tab--card .collab-tab__count {
-  font-size: var(--text-3xl);
-  font-weight: 700;
-  color: var(--color-primary);
-  font-family: var(--font-display);
-  line-height: 1;
+  font-size: inherit;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.collab-tab--card.collab-tab--active .collab-tab__count {
+  opacity: 0.85;
 }
 
 .collab-tab--card .collab-tab__label {
-  font-size: var(--text-lg);
-  font-weight: 700;
-  color: var(--color-text);
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
 }
 
 .collab-tab--card .collab-tab__desc {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  font-weight: 400;
-  max-width: 240px;
-  line-height: 1.4;
+  display: none;
 }
 
 @media (max-width: 640px) {
   .collab-tab--card {
-    min-width: 100%;
-    padding: var(--space-4) var(--space-5);
+    padding: 10px 18px;
+    font-size: var(--text-sm);
   }
   .collab-steps--compact {
     flex-direction: column;
