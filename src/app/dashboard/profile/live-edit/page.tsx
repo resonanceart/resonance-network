@@ -8,6 +8,7 @@ import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabili
 import { ProfileSkillsDisplay } from '@/components/profile/ProfileSkillsDisplay'
 import { ProfileToolsDisplay } from '@/components/profile/ProfileToolsDisplay'
 import { ProfileChecklist } from '@/components/profile/ProfileChecklist'
+import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components/profile/SmartGallery'
 import type { ProfileSkill, ProfileTool, ProfileSocialLink } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -729,6 +730,86 @@ export default function LiveProfileEditor() {
     markDirty()
   }
 
+  // Build unified gallery items from separate data
+  function buildGalleryItems(): SmartGalleryItem[] {
+    const items: SmartGalleryItem[] = []
+    let order = 0
+
+    // Gallery images
+    mediaGallery.forEach((img, i) => {
+      items.push({
+        id: `img-${i}`,
+        type: 'image',
+        url: img.url,
+        title: img.alt || img.caption || 'Gallery Image',
+        order: order++,
+      })
+    })
+
+    // Past work images
+    pastWork.forEach((item, i) => {
+      items.push({
+        id: `pw-${i}`,
+        type: 'image',
+        url: item.url,
+        title: item.title || 'Past Work',
+        subtitle: 'Past Work',
+        order: order++,
+      })
+    })
+
+    // Portfolio PDF
+    if (portfolioPdfUrl) {
+      items.push({
+        id: 'portfolio-pdf',
+        type: 'pdf',
+        url: portfolioPdfUrl,
+        title: 'Portfolio',
+        subtitle: 'PDF Document',
+        order: order++,
+      })
+    }
+
+    // Resume PDF
+    if (resumeUrl) {
+      items.push({
+        id: 'resume-pdf',
+        type: 'pdf',
+        url: resumeUrl,
+        title: 'Resume',
+        subtitle: 'PDF Document',
+        order: order++,
+      })
+    }
+
+    // Website links / media links
+    if (website) {
+      try {
+        items.push({
+          id: 'website',
+          type: 'link',
+          url: website,
+          title: 'Website',
+          subtitle: new URL(website).hostname,
+          order: order++,
+        })
+      } catch {}
+    }
+
+    mediaLinks.forEach((link, i) => {
+      items.push({
+        id: `link-${i}`,
+        type: 'link',
+        url: link.url,
+        title: link.label || 'Link',
+        subtitle: link.type || 'website',
+        order: order++,
+      })
+    })
+
+    return items
+  }
+
   // --- Loading ---
   if (authLoading || loading) {
     return (
@@ -971,124 +1052,56 @@ export default function LiveProfileEditor() {
           <div className="editable-section__overlay"><span>Edit about</span></div>
         </div>
 
-        {/* Row 4: Media & Links */}
-        <section className="profile-media-grid-section" data-editable="gallery">
+        {/* Media Gallery */}
+        <section className="profile-media-grid-section">
           <div className="container">
-            <p className="section-label">Media &amp; Links</p>
-            <div className="media-card-grid">
-              {/* Portfolio PDF */}
-              {portfolioPdfUrl ? (
-                <a href={portfolioPdfUrl} target="_blank" rel="noopener noreferrer" className="media-card media-card--pdf" onClick={e => e.stopPropagation()}>
-                  <div className="media-card__icon">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6M9 17h4"/></svg>
-                  </div>
-                  <p className="media-card__label">Portfolio</p>
-                  <span className="media-card__hint">PDF &middot; Click to view</span>
-                </a>
-              ) : (
-                <div className="media-card media-card--pdf media-card--add" onClick={() => openPanel('gallery')}>
-                  <div className="media-card__icon">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
-                  </div>
-                  <p className="media-card__label">Add Portfolio</p>
-                  <span className="media-card__hint">Upload PDF</span>
-                </div>
-              )}
-
-              {/* Resume PDF */}
-              {resumeUrl ? (
-                <a href={resumeUrl} target="_blank" rel="noopener noreferrer" className="media-card media-card--pdf" onClick={e => e.stopPropagation()}>
-                  <div className="media-card__icon">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6M9 15l3 3 3-3"/></svg>
-                  </div>
-                  <p className="media-card__label">Resume</p>
-                  <span className="media-card__hint">PDF &middot; Click to view</span>
-                </a>
-              ) : (
-                <div className="media-card media-card--pdf media-card--add" onClick={() => openPanel('gallery')}>
-                  <div className="media-card__icon">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
-                  </div>
-                  <p className="media-card__label">Add Resume</p>
-                  <span className="media-card__hint">Upload PDF</span>
-                </div>
-              )}
-
-              {/* Website Links */}
-              {mediaLinks.filter(l => l.type !== 'fundraiser').map((link, i) => (
-                link.url ? (
-                  <a key={`wl-${i}`} href={link.url} target="_blank" rel="noopener noreferrer" className="media-card media-card--website" onClick={e => e.stopPropagation()}>
-                    <div className="media-card__icon">
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c2.5 2.5 4 6 4 10s-1.5 7.5-4 10c-2.5-2.5-4-6-4-10s1.5-7.5 4-10z"/></svg>
-                    </div>
-                    <p className="media-card__label">{link.label || 'Website'}</p>
-                    <span className="media-card__hint">{link.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}</span>
-                  </a>
-                ) : (
-                  <div key={`wl-${i}`} className="media-card media-card--website" onClick={() => openPanel('gallery')}>
-                    <div className="media-card__icon">
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c2.5 2.5 4 6 4 10s-1.5 7.5-4 10c-2.5-2.5-4-6-4-10s1.5-7.5 4-10z"/></svg>
-                    </div>
-                    <p className="media-card__label">{link.label || 'Website'}</p>
-                    <span className="media-card__hint">Add URL</span>
-                  </div>
-                )
-              ))}
-
-              {/* Fundraiser Links */}
-              {mediaLinks.filter(l => l.type === 'fundraiser').map((link, i) => (
-                link.url ? (
-                  <a key={`fl-${i}`} href={link.url} target="_blank" rel="noopener noreferrer" className="media-card media-card--fundraiser" onClick={e => e.stopPropagation()}>
-                    <div className="media-card__icon">
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-                    </div>
-                    <p className="media-card__label">{link.label || 'Support'}</p>
-                    <span className="media-card__hint">{link.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}</span>
-                  </a>
-                ) : (
-                  <div key={`fl-${i}`} className="media-card media-card--fundraiser" onClick={() => openPanel('gallery')}>
-                    <div className="media-card__icon">
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-                    </div>
-                    <p className="media-card__label">{link.label || 'Support'}</p>
-                    <span className="media-card__hint">Add URL</span>
-                  </div>
-                )
-              ))}
-
-              {/* Social Links — icon row */}
-              {socialLinks.length > 0 && (
-                <div className="media-card media-card--social-group" onClick={() => openPanel('social')}>
-                  <p className="media-card__label">Social ({socialLinks.length})</p>
-                  <div className="media-card__social-icons">
-                    {[...socialLinks].sort((a, b) => a.display_order - b.display_order).slice(0, 8).map((link, i) => (
-                      <span key={i} className="media-card__social-dot" title={link.platform.charAt(0).toUpperCase() + link.platform.slice(1)}>
-                        {link.platform.charAt(0).toUpperCase()}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Gallery Images */}
-              {mediaGallery.length > 0 && (
-                <div className="media-card" onClick={() => openPanel('gallery')}>
-                  <div className="media-card__preview--grid">
-                    {mediaGallery.slice(0, 4).map((item, i) => (
-                      <img key={i} src={item.url} alt={item.alt || ''} style={{ width: '100%', height: 60, objectFit: 'cover', borderRadius: 4 }} />
-                    ))}
-                  </div>
-                  <p className="media-card__label">Gallery ({mediaGallery.length})</p>
-                </div>
-              )}
-
-              {/* Add more card */}
-              <div className="media-card media-card--add" onClick={() => openPanel('gallery')}>
-                <div className="media-card__icon">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                </div>
-                <p className="media-card__label">Add Media</p>
+            <p className="section-label">Gallery</p>
+            {buildGalleryItems().length > 0 ? (
+              <SmartGallery
+                items={buildGalleryItems()}
+                editable={true}
+                onReorder={(reordered) => {
+                  // Update the underlying state from reordered items
+                  // For now, just mark dirty — full reorder sync is complex
+                  markDirty()
+                }}
+                onDelete={(id) => {
+                  if (id.startsWith('img-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setMediaGallery(prev => prev.filter((_, i) => i !== idx))
+                  } else if (id.startsWith('pw-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setPastWork(prev => prev.filter((_, i) => i !== idx))
+                  } else if (id === 'portfolio-pdf') {
+                    setPortfolioPdfUrl(null)
+                  } else if (id === 'resume-pdf') {
+                    setResumeUrl(null)
+                  } else if (id === 'website') {
+                    setWebsite('')
+                  } else if (id.startsWith('link-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setMediaLinks(prev => prev.filter((_, i) => i !== idx))
+                  }
+                  markDirty()
+                }}
+              />
+            ) : (
+              <div className="live-editor__empty-placeholder">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>Add images, documents, and links to your gallery</span>
               </div>
+            )}
+            {/* Add buttons */}
+            <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-4)', flexWrap: 'wrap' }}>
+              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer' }}>
+                <input type="file" accept="image/*" multiple onChange={e => handleGalleryUpload(e.target.files)} style={{ display: 'none' }} />
+                + Add Images
+              </label>
+              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer' }}>
+                <input type="file" accept=".pdf" onChange={handlePortfolioPdfUpload} style={{ display: 'none' }} />
+                + Add PDF
+              </label>
+              <button className="btn btn--outline btn--sm" onClick={() => openPanel('social')}>+ Add Link</button>
             </div>
           </div>
         </section>

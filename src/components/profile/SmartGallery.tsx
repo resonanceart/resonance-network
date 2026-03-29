@@ -1,0 +1,122 @@
+'use client'
+
+import { useState } from 'react'
+
+export interface GalleryItem {
+  id: string
+  type: 'image' | 'pdf' | 'link'
+  url: string
+  thumbnail?: string
+  title: string
+  subtitle?: string
+  order: number
+}
+
+interface SmartGalleryProps {
+  items: GalleryItem[]
+  editable?: boolean
+  onReorder?: (items: GalleryItem[]) => void
+  onDelete?: (id: string) => void
+}
+
+export function SmartGallery({ items, editable = false, onReorder, onDelete }: SmartGalleryProps) {
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const sorted = [...items].sort((a, b) => a.order - b.order)
+
+  function handleDragStart(index: number) {
+    setDragIndex(index)
+  }
+
+  function handleDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault()
+    if (dragIndex === null || dragIndex === index) return
+  }
+
+  function handleDrop(index: number) {
+    if (dragIndex === null || dragIndex === index || !onReorder) return
+    const reordered = [...sorted]
+    const [moved] = reordered.splice(dragIndex, 1)
+    reordered.splice(index, 0, moved)
+    const updated = reordered.map((item, i) => ({ ...item, order: i }))
+    onReorder(updated)
+    setDragIndex(null)
+  }
+
+  function handleClick(item: GalleryItem) {
+    if (item.type === 'pdf' || item.type === 'link') {
+      window.open(item.url, '_blank', 'noopener,noreferrer')
+    }
+    // For images: could open lightbox in future
+  }
+
+  if (sorted.length === 0) return null
+
+  return (
+    <div className="smart-gallery">
+      {sorted.map((item, i) => (
+        <div
+          key={item.id}
+          className={`smart-gallery__tile smart-gallery__tile--${item.type}${dragIndex === i ? ' smart-gallery__tile--dragging' : ''}`}
+          onClick={() => handleClick(item)}
+          draggable={editable}
+          onDragStart={() => handleDragStart(i)}
+          onDragOver={(e) => handleDragOver(e, i)}
+          onDrop={() => handleDrop(i)}
+          onDragEnd={() => setDragIndex(null)}
+        >
+          {/* Image background */}
+          {item.type === 'image' && (
+            <img src={item.url} alt={item.title} className="smart-gallery__tile-img" />
+          )}
+
+          {/* PDF icon */}
+          {item.type === 'pdf' && (
+            <div className="smart-gallery__icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+            </div>
+          )}
+
+          {/* Link icon */}
+          {item.type === 'link' && (
+            <div className="smart-gallery__icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+              </svg>
+            </div>
+          )}
+
+          {/* Hover overlay text */}
+          <div className="smart-gallery__tile-body">
+            {item.subtitle && <p className="smart-gallery__tile-subtitle">{item.subtitle}</p>}
+            <h3 className="smart-gallery__tile-title">{item.title}</h3>
+          </div>
+
+          {/* Edit controls */}
+          {editable && (
+            <>
+              <div className="smart-gallery__drag-handle" title="Drag to reorder">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="5" cy="3" r="1.5"/><circle cx="11" cy="3" r="1.5"/><circle cx="5" cy="8" r="1.5"/><circle cx="11" cy="8" r="1.5"/><circle cx="5" cy="13" r="1.5"/><circle cx="11" cy="13" r="1.5"/></svg>
+              </div>
+              {onDelete && (
+                <button
+                  className="smart-gallery__delete"
+                  onClick={(e) => { e.stopPropagation(); onDelete(item.id) }}
+                  title="Remove"
+                >
+                  &times;
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}

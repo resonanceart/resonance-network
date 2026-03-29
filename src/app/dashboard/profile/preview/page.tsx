@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useAuth } from '@/components/AuthProvider'
 import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabilityBadge'
 import { ProfileTimeline } from '@/components/profile/ProfileTimeline'
+import { SmartGallery, type GalleryItem } from '@/components/profile/SmartGallery'
 
 function getInitials(name: string) {
   return name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()
@@ -89,6 +90,81 @@ export default function ProfilePreviewPage() {
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [user, authLoading])
+
+  // Build unified gallery items from separate data
+  function buildGalleryItems(): GalleryItem[] {
+    const items: GalleryItem[] = []
+    let order = 0
+
+    mediaGallery.forEach((img, i) => {
+      items.push({
+        id: `img-${i}`,
+        type: 'image',
+        url: img.url,
+        title: img.alt || 'Gallery Image',
+        order: order++,
+      })
+    })
+
+    pastWork.forEach((item, i) => {
+      items.push({
+        id: `pw-${i}`,
+        type: 'image',
+        url: item.url,
+        title: item.title || 'Past Work',
+        subtitle: 'Past Work',
+        order: order++,
+      })
+    })
+
+    if (portfolioPdfUrl) {
+      items.push({
+        id: 'portfolio-pdf',
+        type: 'pdf',
+        url: portfolioPdfUrl,
+        title: 'Portfolio',
+        subtitle: 'PDF Document',
+        order: order++,
+      })
+    }
+
+    if (resumeUrl) {
+      items.push({
+        id: 'resume-pdf',
+        type: 'pdf',
+        url: resumeUrl,
+        title: 'Resume',
+        subtitle: 'PDF Document',
+        order: order++,
+      })
+    }
+
+    if (website) {
+      try {
+        items.push({
+          id: 'website',
+          type: 'link',
+          url: website,
+          title: 'Website',
+          subtitle: new URL(website).hostname,
+          order: order++,
+        })
+      } catch {}
+    }
+
+    mediaLinks.forEach((link, i) => {
+      items.push({
+        id: `link-${i}`,
+        type: 'link',
+        url: link.url,
+        title: link.label || 'Link',
+        subtitle: link.type || 'website',
+        order: order++,
+      })
+    })
+
+    return items
+  }
 
   async function handlePublish() {
     setPublishing(true)
@@ -251,76 +327,12 @@ export default function ProfilePreviewPage() {
           </section>
         )}
 
-        {/* Media & Links */}
-        {(portfolioPdfUrl || resumeUrl || mediaGallery.length > 0 || mediaLinks.length > 0 || pastWork.length > 0 || socialLinks.length > 0) && (
+        {/* Media Gallery */}
+        {buildGalleryItems().length > 0 && (
           <section className="profile-media-grid-section">
             <div className="container">
-              <p className="section-label">Media &amp; Links</p>
-              <div className="media-card-grid">
-                {portfolioPdfUrl && (
-                  <a href={portfolioPdfUrl} target="_blank" rel="noopener noreferrer" className="media-card media-card--pdf" download>
-                    <div className="media-card__icon">
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6M9 17h4"/></svg>
-                    </div>
-                    <p className="media-card__label">Portfolio</p>
-                    <span className="media-card__hint">PDF</span>
-                  </a>
-                )}
-                {resumeUrl && (
-                  <a href={resumeUrl} target="_blank" rel="noopener noreferrer" className="media-card media-card--pdf" download>
-                    <div className="media-card__icon">
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6M9 15l3 3 3-3"/></svg>
-                    </div>
-                    <p className="media-card__label">Resume</p>
-                    <span className="media-card__hint">PDF</span>
-                  </a>
-                )}
-                {mediaLinks.map((link, i) => (
-                  <a key={`ml-${i}`} href={link.url} target="_blank" rel="noopener noreferrer" className={`media-card ${link.type === 'fundraiser' ? 'media-card--fundraiser' : 'media-card--website'}`}>
-                    <div className="media-card__icon">
-                      {link.type === 'fundraiser' ? (
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-                      ) : (
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c2.5 2.5 4 6 4 10s-1.5 7.5-4 10c-2.5-2.5-4-6-4-10s1.5-7.5 4-10z"/></svg>
-                      )}
-                    </div>
-                    <p className="media-card__label">{link.label || 'Website'}</p>
-                    <span className="media-card__hint">{link.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}</span>
-                  </a>
-                ))}
-                {mediaGallery.length > 0 && (
-                  <div className="media-card">
-                    <div className="media-card__preview--grid">
-                      {mediaGallery.filter(m => m.type === 'image').slice(0, 4).map((item, i) => (
-                        <img key={i} src={item.url} alt={item.alt} style={{ width: '100%', height: 60, objectFit: 'cover', borderRadius: 4 }} />
-                      ))}
-                    </div>
-                    <p className="media-card__label">Gallery ({mediaGallery.filter(m => m.type === 'image').length})</p>
-                  </div>
-                )}
-                {pastWork.length > 0 && (
-                  <div className="media-card">
-                    <div className="media-card__preview--grid">
-                      {pastWork.slice(0, 4).map((item, i) => (
-                        <img key={i} src={item.url} alt={item.title} style={{ width: '100%', height: 60, objectFit: 'cover', borderRadius: 4 }} />
-                      ))}
-                    </div>
-                    <p className="media-card__label">Past Work ({pastWork.length})</p>
-                  </div>
-                )}
-                {socialLinks.length > 0 && (
-                  <div className="media-card media-card--social-group">
-                    <p className="media-card__label">Social ({socialLinks.length})</p>
-                    <div className="media-card__social-icons">
-                      {[...socialLinks].sort((a, b) => a.display_order - b.display_order).map(link => (
-                        <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="media-card__social-dot" title={link.platform.charAt(0).toUpperCase() + link.platform.slice(1)}>
-                          {link.platform.charAt(0).toUpperCase()}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <p className="section-label">Gallery</p>
+              <SmartGallery items={buildGalleryItems()} editable={false} />
             </div>
           </section>
         )}
