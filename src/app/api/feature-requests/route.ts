@@ -97,7 +97,7 @@ export async function POST(request: Request) {
     try {
       const userName = profile?.display_name || profile?.email || user.email || 'A user'
       await sendEmail({
-        to: 'admin@resonanceart.org',
+        to: 'resonanceartcollective@gmail.com',
         subject: `Feature Request: ${title}`,
         html: `
           <h2>New Feature Request</h2>

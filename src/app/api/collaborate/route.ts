@@ -100,7 +100,7 @@ export async function POST(request: Request) {
     }
 
     // Send styled admin/artist notification
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance-network.vercel.app'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance.network'
     for (const recipient of recipients) {
       try {
         const notifEmail = collaborationInterestNotification({

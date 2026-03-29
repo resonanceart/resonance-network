@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     }
 
     // Send welcome email
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance-network.vercel.app'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance.network'
     const name = profile?.display_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'there'
     const email = welcomeEmail(name, `${siteUrl}/dashboard`)
 

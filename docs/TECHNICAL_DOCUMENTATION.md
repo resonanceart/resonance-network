@@ -1,4 +1,5 @@
 # Resonance Network — Technical Documentation
+## Platform Reference Guide
 
 ## Platform Overview
 Resonance Network is a curated platform connecting creators of immersive and regenerative spatial projects with aligned collaborators. Built with Next.js 14 (App Router), Supabase (PostgreSQL + Auth + Storage), TypeScript, and React 18.

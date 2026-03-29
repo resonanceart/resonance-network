@@ -1,4 +1,4 @@
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance-network.vercel.app'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance.network'
 
 // Shared base layout for all emails
 function baseLayout(content: string): string {
