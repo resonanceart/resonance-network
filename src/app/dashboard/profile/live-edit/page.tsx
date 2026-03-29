@@ -1153,7 +1153,7 @@ export default function LiveProfileEditor() {
                 + Add Images
               </label>
               <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer' }}>
-                <input type="file" accept=".pdf" multiple onChange={async (e) => {
+                <input type="file" accept=".pdf,application/pdf" multiple onChange={async (e) => {
                   const files = e.target.files
                   if (!files) return
                   for (const file of Array.from(files)) {
@@ -1609,7 +1609,7 @@ export default function LiveProfileEditor() {
                   <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, marginBottom: 'var(--space-3)', color: 'rgba(255,255,255,0.8)' }}>Documents</h4>
                   <div className="form-group">
                     <label className="form-label">Portfolio PDF</label>
-                    <input type="file" accept=".pdf" onChange={handlePortfolioPdfUpload} className="form-input" />
+                    <input type="file" accept=".pdf,application/pdf" onChange={handlePortfolioPdfUpload} className="form-input" />
                     {portfolioPdfUrl && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
                         <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)' }}>Portfolio uploaded</span>
@@ -1619,7 +1619,7 @@ export default function LiveProfileEditor() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Resume PDF</label>
-                    <input type="file" accept=".pdf" onChange={handleResumeUpload} className="form-input" />
+                    <input type="file" accept=".pdf,application/pdf" onChange={handleResumeUpload} className="form-input" />
                     {resumeUrl && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
                         <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)' }}>Resume uploaded</span>
