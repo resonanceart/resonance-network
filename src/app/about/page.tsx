@@ -66,11 +66,12 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Core Values — titles only, no descriptions */}
+      {/* Values & Evaluation Framework — combined, single section */}
       <section className="about-section" id="values">
         <div className="container">
-          <p className="section-label">Core Values</p>
+          <p className="section-label">Core Values &amp; Evaluation</p>
           <h2>What Guides Us</h2>
+          <p className="about-section__intro">These eight values guide everything we do — from how we collaborate to how we evaluate projects for the network.</p>
           <div className="values-grid values-grid--compact">
             <div className="value-card value-card--title-only value-card--accent-1"><h3>Resonance</h3></div>
             <div className="value-card value-card--title-only value-card--accent-2"><h3>Inspiration</h3></div>
@@ -128,48 +129,41 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* How Curation Works — 3 steps, compact, no descriptions */}
+      {/* How Curation Works — 3 steps with descriptions */}
       <section className="about-section about-section--alt" id="process">
         <div className="container">
           <p className="section-label">Process</p>
           <h2>How Curation Works</h2>
-          <div className="curation-steps-compact">
-            <div className="curation-step-compact">
-              <span className="curation-step-compact__number">1</span>
-              <h3>Submission</h3>
+          <div className="curation-timeline">
+            <div className="curation-timeline__step">
+              <div className="curation-timeline__marker">
+                <span className="step-number">1</span>
+                <span className="curation-timeline__line" />
+              </div>
+              <div className="step-content">
+                <h3>Submission</h3>
+                <p>Creators submit their project through our intake form, including images, descriptions, classification, and collaboration needs.</p>
+              </div>
             </div>
-            <div className="curation-step-compact__arrow" aria-hidden="true">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+            <div className="curation-timeline__step">
+              <div className="curation-timeline__marker">
+                <span className="step-number">2</span>
+                <span className="curation-timeline__line" />
+              </div>
+              <div className="step-content">
+                <h3>Review</h3>
+                <p>A curation team of practicing artists and makers reviews every project for values alignment and readiness. Human approval is always required.</p>
+              </div>
             </div>
-            <div className="curation-step-compact">
-              <span className="curation-step-compact__number">2</span>
-              <h3>Review</h3>
+            <div className="curation-timeline__step">
+              <div className="curation-timeline__marker">
+                <span className="step-number">3</span>
+              </div>
+              <div className="step-content">
+                <h3>Publish or Guide</h3>
+                <p>Approved projects are published to the network. Projects not yet ready receive clear, actionable feedback — with an invitation to resubmit.</p>
+              </div>
             </div>
-            <div className="curation-step-compact__arrow" aria-hidden="true">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
-            </div>
-            <div className="curation-step-compact">
-              <span className="curation-step-compact__number">3</span>
-              <h3>Publish or Guide</h3>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How We Evaluate — domains only, no questions, no fit levels */}
-      <section className="about-section" id="evaluation">
-        <div className="container">
-          <p className="section-label">Evaluation</p>
-          <h2>How We Evaluate Projects</h2>
-          <div className="eval-domains-grid eval-domains-grid--compact">
-            <div className="eval-domain eval-domain--accent-1"><strong>Resonance</strong></div>
-            <div className="eval-domain eval-domain--accent-2"><strong>Inspiration</strong></div>
-            <div className="eval-domain eval-domain--accent-3"><strong>Participation</strong></div>
-            <div className="eval-domain eval-domain--accent-4"><strong>Transparency</strong></div>
-            <div className="eval-domain eval-domain--accent-5"><strong>Regeneration</strong></div>
-            <div className="eval-domain eval-domain--accent-6"><strong>Inclusivity</strong></div>
-            <div className="eval-domain eval-domain--accent-7"><strong>Originality</strong></div>
-            <div className="eval-domain eval-domain--accent-8"><strong>Stewardship</strong></div>
           </div>
         </div>
       </section>

@@ -22,6 +22,8 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
 
   // Roles tab state
   const [selectedCategory, setSelectedCategory] = useState('')
+  const [selectedLocation, setSelectedLocation] = useState('')
+  const [selectedStage, setSelectedStage] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
   // Read tab from URL on mount
@@ -50,15 +52,27 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
     })
   }, [profiles, search, selectedSpecialty, selectedType])
 
-  // Roles filtering
+  // Roles filtering — derive locations and stages from projects
+  const allLocations = useMemo(() => {
+    const set = new Set<string>()
+    projects.forEach(p => { if (p.location) set.add(p.location) })
+    return Array.from(set).sort()
+  }, [projects])
+
+  const STAGES = ['Concept', 'Design Development', 'Engineering', 'Fundraising', 'Production']
+
   const filteredTasks = useMemo(() => {
     const q = searchQuery.toLowerCase()
     return tasks.filter(t => {
       const categoryMatch = !selectedCategory || t.category === selectedCategory
       const textMatch = !q || t.title.toLowerCase().includes(q) || t.description.toLowerCase().includes(q) || t.projectTitle.toLowerCase().includes(q) || t.skillsNeeded.some(s => s.toLowerCase().includes(q))
-      return categoryMatch && textMatch
+      // Location/stage filter: match via the task's project
+      const proj = projects.find(p => p.slug === t.projectId || p.id === t.projectId)
+      const locationMatch = !selectedLocation || (proj && proj.location === selectedLocation)
+      const stageMatch = !selectedStage || (proj && proj.stage === selectedStage)
+      return categoryMatch && textMatch && locationMatch && stageMatch
     })
-  }, [tasks, selectedCategory, searchQuery])
+  }, [tasks, selectedCategory, searchQuery, selectedLocation, selectedStage, projects])
 
   function getProjectCount(profile: Profile): number {
     return projects.filter(pr => pr.leadArtistName === profile.name).length
@@ -66,14 +80,11 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
 
   return (
     <>
-      {/* Page Header */}
+      {/* Page Header — no breadcrumb */}
       <section className="page-header">
         <div className="container">
-          <nav aria-label="Breadcrumb" className="breadcrumb">
-            <Link href="/">Home</Link> <span aria-hidden="true">/</span> <span>Community</span>
-          </nav>
           <p className="section-label">Community</p>
-          <h1>Connecting Community for Passion and Purpose</h1>
+          <h1>Community Connections Board</h1>
           <p className="lead">
             A curated community of creators, engineers, fabricators, and specialists building immersive and regenerative spatial projects — together.
           </p>
@@ -106,34 +117,42 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
 
           <div className="collab-benefits">
             <h3>What You Gain</h3>
-            <div className="collab-benefits__grid collab-benefits__grid--compact">
-              <div className="collab-benefit-pill"><strong>Beautiful portfolio projects</strong></div>
-              <div className="collab-benefit-pill"><strong>Community connections</strong></div>
-              <div className="collab-benefit-pill"><strong>Credibility</strong></div>
-              <div className="collab-benefit-pill"><strong>Purpose through passion</strong></div>
+            <div className="collab-benefits__grid">
+              <div className="collab-benefit-card">
+                <strong>Portfolio-worthy work</strong>
+                <p>Contribute to ambitious projects you can proudly showcase — not commercial campaigns, but values-aligned creative work.</p>
+              </div>
+              <div className="collab-benefit-card">
+                <strong>Credited contributions</strong>
+                <p>Your role is publicly documented on the project page and linked to your profile.</p>
+              </div>
+              <div className="collab-benefit-card">
+                <strong>Flexible commitment</strong>
+                <p>From a 2-hour plan review to an ongoing team role — contribute at the level that works for you.</p>
+              </div>
+              <div className="collab-benefit-card">
+                <strong>Meaningful relationships</strong>
+                <p>Build long-term connections with visionary creators and fellow specialists — a guild, not a gig.</p>
+              </div>
             </div>
           </div>
 
-          <div className="collab-tabs collab-tabs--large" role="tablist" aria-label="Community view">
+          <div className="collab-tabs" role="tablist" aria-label="Community view">
             <button
               role="tab"
               aria-selected={activeTab === 'roles'}
-              className={`collab-tab collab-tab--card${activeTab === 'roles' ? ' collab-tab--active' : ''}`}
+              className={`collab-tab${activeTab === 'roles' ? ' collab-tab--active' : ''}`}
               onClick={() => setActiveTab('roles')}
             >
-              <span className="collab-tab__count">{tasks.length}</span>
-              <span className="collab-tab__label">Available Roles</span>
-              <span className="collab-tab__desc">Browse open collaboration positions on active projects</span>
+              Available Roles ({tasks.length})
             </button>
             <button
               role="tab"
               aria-selected={activeTab === 'people'}
-              className={`collab-tab collab-tab--card${activeTab === 'people' ? ' collab-tab--active' : ''}`}
+              className={`collab-tab${activeTab === 'people' ? ' collab-tab--active' : ''}`}
               onClick={() => setActiveTab('people')}
             >
-              <span className="collab-tab__count">{profiles.length}</span>
-              <span className="collab-tab__label">People</span>
-              <span className="collab-tab__desc">Discover creators, engineers, and specialists in the network</span>
+              People ({profiles.length})
             </button>
           </div>
         </div>
@@ -269,9 +288,31 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
                   className="filter-select"
                   aria-label="Filter by category"
                 >
-                  <option value="">All Categories</option>
+                  <option value="">Category</option>
                   {CATEGORIES.map(cat => (
                     <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+                <select
+                  value={selectedLocation}
+                  onChange={e => setSelectedLocation(e.target.value)}
+                  className="filter-select"
+                  aria-label="Filter by location"
+                >
+                  <option value="">Location</option>
+                  {allLocations.map(loc => (
+                    <option key={loc} value={loc}>{loc}</option>
+                  ))}
+                </select>
+                <select
+                  value={selectedStage}
+                  onChange={e => setSelectedStage(e.target.value)}
+                  className="filter-select"
+                  aria-label="Filter by stage"
+                >
+                  <option value="">Stage</option>
+                  {STAGES.map(s => (
+                    <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
               </div>
