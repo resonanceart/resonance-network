@@ -146,6 +146,7 @@ export default function ProfilePreviewPage() {
         id: `pdf-${i}`,
         type: 'pdf',
         url: doc.url,
+        thumbnail: (doc as Record<string, unknown>).thumbnail as string | undefined,
         title: doc.title || 'Document',
         subtitle: 'PDF',
         order: order++,
@@ -166,12 +167,15 @@ export default function ProfilePreviewPage() {
     }
 
     mediaLinks.forEach((link, i) => {
+      let subtitle = 'website'
+      try { subtitle = new URL(link.url).hostname } catch {}
       items.push({
         id: `link-${i}`,
         type: 'link',
         url: link.url,
+        thumbnail: (link as Record<string, unknown>).thumbnail as string | undefined,
         title: link.label || 'Link',
-        subtitle: link.type || 'website',
+        subtitle,
         order: order++,
       })
     })

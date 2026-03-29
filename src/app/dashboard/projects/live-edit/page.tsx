@@ -307,23 +307,50 @@ function LiveProjectEditorInner() {
     setSaving(false)
   }
 
+  async function uploadFileToStorage(file: File, type: string): Promise<string | null> {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('type', type)
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', credentials: 'same-origin', body: formData })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        setErrorMessage(err.error || 'Upload failed')
+        return null
+      }
+      const data = await res.json()
+      return data.url || null
+    } catch {
+      setErrorMessage('Network error during upload')
+      return null
+    }
+  }
+
   async function handleHeroUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file || file.size > 10 * 1024 * 1024) return
-    const dataUrl = await compressImage(file, 1600, 0.85)
-    setHeroImageUrl(dataUrl)
-    markDirty()
+    setSaving(true)
+    const url = await uploadFileToStorage(file, 'hero')
+    if (url) {
+      setHeroImageUrl(url)
+      markDirty()
+    }
+    setSaving(false)
   }
 
   async function handleGalleryUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files
     if (!files) return
+    setSaving(true)
     for (const file of Array.from(files)) {
       if (file.size > 10 * 1024 * 1024) continue
-      const dataUrl = await compressImage(file, 1200, 0.8)
-      setGalleryImages(prev => [...prev, { url: dataUrl, alt: file.name.replace(/\.[^.]+$/, '') }])
-      markDirty()
+      const url = await uploadFileToStorage(file, 'gallery')
+      if (url) {
+        setGalleryImages(prev => [...prev, { url, alt: file.name.replace(/\.[^.]+$/, '') }])
+        markDirty()
+      }
     }
+    setSaving(false)
   }
 
   function handlePhotoUpload(callback: (dataUrl: string) => void) {
