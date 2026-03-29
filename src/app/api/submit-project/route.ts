@@ -90,6 +90,7 @@ export async function POST(request: Request) {
     }
     const collaborationRoleCount = typeof body.collaborationRoleCount === 'number' && body.collaborationRoleCount >= 1 && body.collaborationRoleCount <= 20 ? body.collaborationRoleCount : null
     const artistHeadshotData = typeof body.artistHeadshotData === 'string' && body.artistHeadshotData.length <= 7_340_032 ? body.artistHeadshotData : null
+    const teamMembers = Array.isArray(body.teamMembers) ? body.teamMembers.slice(0, 20) : null
 
     if (!projectTitle) {
       return NextResponse.json(
@@ -132,6 +133,7 @@ export async function POST(request: Request) {
       collaboration_needs: collaborationNeeds || null,
       collaboration_role_count: collaborationRoleCount,
       artist_headshot_data: artistHeadshotData || null,
+      team_members: teamMembers || [],
       user_id: userId,
       status: submissionStatus,
     }

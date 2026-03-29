@@ -28,6 +28,7 @@ interface ProjectSubmission {
   gallery_images_data: string | null
   collaboration_needs: string | null
   collaboration_role_count: number | null
+  team_members: Array<{ name: string; role: string; photo: string | null }> | null
   status: string
 }
 
@@ -317,6 +318,32 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
           )
         } catch { return null }
       })()}
+
+      {/* Team Members */}
+      {project.team_members && project.team_members.length > 0 && (
+        <section className="project-artist">
+          <div className="container">
+            <p className="section-label">The Team</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
+              {project.team_members.map((member, i) => (
+                <div key={i} style={{ textAlign: 'center' }}>
+                  {member.photo ? (
+                    <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: 'var(--space-3)' }}>
+                      <img src={member.photo} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                  ) : (
+                    <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--space-3)', fontSize: '2rem', color: 'var(--color-text-muted)' }}>
+                      {member.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: '0 0 var(--space-1)' }}>{member.name}</h3>
+                  {member.role && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>{member.role}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Classification */}
       {(project.domains?.length || project.pathways?.length) && (

@@ -174,6 +174,12 @@ function LiveProjectEditorInner() {
                 }
               } catch { /* */ }
             }
+            // Load team members
+            if (Array.isArray(p.team_members) && p.team_members.length > 0) {
+              setCollaborators(p.team_members.map((t: { name: string; role: string; photo: string | null }) => ({
+                name: t.name || '', role: t.role || '', photo: t.photo || null,
+              })))
+            }
           }
         })
         .catch(() => {})
@@ -239,6 +245,7 @@ function LiveProjectEditorInner() {
             : null,
           collaborationNeeds: rolesJson,
           collaborationRoleCount: collabRoles.filter(r => r.title || r.customTitle).length || null,
+          teamMembers: collaborators.filter(c => c.name.trim()).map(c => ({ name: c.name.trim(), role: c.role.trim(), photo: c.photo })),
           status: 'draft',
         }),
       })
