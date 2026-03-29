@@ -16,7 +16,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Too many requests.' }, { status: 429 })
     }
 
-    const supabase = createSupabaseServerClient()
+    const supabase = await createSupabaseServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -50,15 +50,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 })
     }
 
-    const supabase = createSupabaseServerClient()
+    const supabase = await createSupabaseServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await request.json()
-    const title = sanitizeText(body.title?.trim() || '')
-    const description = sanitizeText(body.description?.trim() || '')
+    const title = sanitizeText(body.title?.trim() || '', 200)
+    const description = sanitizeText(body.description?.trim() || '', 2000)
     const priority = ['low', 'medium', 'high'].includes(body.priority) ? body.priority : 'medium'
 
     if (!title || title.length < 3) {
