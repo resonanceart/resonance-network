@@ -14209,3 +14209,71 @@ main {
   width: 18px;
   height: 18px;
 }
+
+/* =========================
+   SHARE PROFILE
+   ========================= */
+.share-profile {
+  text-align: center;
+  padding: var(--space-8) var(--space-6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.02);
+  max-width: 520px;
+  margin: var(--space-8) auto;
+}
+
+.share-profile__icon {
+  color: var(--color-primary);
+  margin-bottom: var(--space-3);
+}
+
+.share-profile__heading {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.share-profile__text {
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: var(--space-5);
+  line-height: 1.5;
+}
+
+.share-profile__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+.share-profile__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+  font-family: inherit;
+}
+
+.share-profile__btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.share-profile__btn--x:hover { border-color: #1da1f2; color: #1da1f2; }
+.share-profile__btn--linkedin:hover { border-color: #0077b5; color: #0077b5; }
+.share-profile__btn--facebook:hover { border-color: #1877f2; color: #1877f2; }
+.share-profile__btn--copy:hover { border-color: var(--color-primary); color: var(--color-primary); }
