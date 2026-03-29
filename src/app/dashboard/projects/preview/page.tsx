@@ -54,7 +54,7 @@ function ProjectPreviewInner() {
     if (!user) { window.location.href = '/login'; return }
     if (!projectId) { setLoading(false); return }
 
-    fetch('/api/user/projects', { credentials: 'same-origin' })
+    fetch('/api/user/projects', { credentials: 'include' })
       .then(r => r.json())
       .then(data => {
         const submissions: ProjectSubmission[] = data.submissions || []
@@ -79,7 +79,7 @@ function ProjectPreviewInner() {
     try {
       const res = await fetch('/api/submit-project', {
         method: 'POST',
-        credentials: 'same-origin',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: projectId,

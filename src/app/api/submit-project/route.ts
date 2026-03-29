@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, validateEmail, getClientIp } from '@/lib/sanitize'
 import { validateCsrf } from '@/lib/csrf'
@@ -31,7 +32,6 @@ export async function POST(request: Request) {
     }
 
     // Require authentication
-    const { createSupabaseServerClient } = await import('@/lib/supabase-server')
     const supabase = await createSupabaseServerClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
@@ -169,9 +169,9 @@ export async function POST(request: Request) {
         .eq('id', existingId)
 
       if (updateError) {
-        console.error('Supabase update error:', updateError.message)
+        console.error('Supabase update error:', updateError.message, updateError.code, updateError.details)
         return NextResponse.json(
-          { success: false, message: 'Failed to update submission. Please try again.' },
+          { success: false, message: `Update failed: ${updateError.message}` },
           { status: 500 }
         )
       }
@@ -184,9 +184,9 @@ export async function POST(request: Request) {
         .single()
 
       if (error) {
-        console.error('Supabase insert error:', error.message)
+        console.error('Supabase insert error:', error.message, error.code, error.details)
         return NextResponse.json(
-          { success: false, message: 'Failed to save submission. Please try again.' },
+          { success: false, message: `Save failed: ${error.message}` },
           { status: 500 }
         )
       }

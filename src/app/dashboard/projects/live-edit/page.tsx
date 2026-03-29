@@ -197,12 +197,12 @@ function LiveProjectEditorInner() {
       )
       const res = await fetch('/api/submit-project', {
         method: 'POST',
-        credentials: 'same-origin',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: submissionId || undefined,
-          artistName: leadArtistName,
-          artistEmail: contactEmail,
+          artistName: leadArtistName || 'Unknown',
+          artistEmail: contactEmail || 'unknown@placeholder.com',
           artistBio: '',
           artistWebsite: '',
           projectTitle: title.trim(),
@@ -260,12 +260,12 @@ function LiveProjectEditorInner() {
         }))
       const res = await fetch('/api/submit-project', {
         method: 'POST',
-        credentials: 'same-origin',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: submissionId || undefined,
-          artistName: leadArtistName,
-          artistEmail: contactEmail,
+          artistName: leadArtistName || 'Unknown',
+          artistEmail: contactEmail || 'unknown@placeholder.com',
           artistBio: '',
           artistWebsite: '',
           projectTitle: title.trim(),
@@ -402,7 +402,10 @@ function LiveProjectEditorInner() {
           <span className="live-editor__toolbar-title">Building Your Project</span>
           <div className="live-editor__toolbar-actions">
             {errorMessage && (
-              <span className="live-editor__error" onClick={() => setErrorMessage(null)} title="Click to dismiss">{errorMessage}</span>
+              <div style={{ background: '#dc2626', color: 'white', padding: '8px 16px', borderRadius: 8, fontSize: '14px', display: 'flex', alignItems: 'center', gap: 8, maxWidth: 400 }}>
+                <span style={{ flex: 1 }}>{errorMessage}</span>
+                <button onClick={() => setErrorMessage(null)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: 18 }}>&times;</button>
+              </div>
             )}
             {hasChanges && !errorMessage && <span className="live-editor__unsaved">Unsaved changes</span>}
             {savedMessage && <span className="live-editor__saved">Saved!</span>}
