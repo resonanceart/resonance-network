@@ -396,11 +396,14 @@ export default function AdminPage() {
                       </div>
                       <div className="admin-item__actions">
                         <a href={`/preview/project/${p.id}`} target="_blank" className="btn btn--outline btn--sm">Preview</a>
-                        {p.status === 'new' && (
+                        {(p.status === 'new' || p.status === 'draft') && (
                           <>
                             <button className="btn btn--primary btn--sm" onClick={() => handleAction('project', p.id, 'approve')}>Approve</button>
                             <button className="btn btn--ghost btn--sm" onClick={() => handleAction('project', p.id, 'reject')}>Reject</button>
                           </>
+                        )}
+                        {p.status === 'approved' && (
+                          <button className="btn btn--ghost btn--sm" onClick={() => handleAction('project', p.id, 'reject')}>Unpublish</button>
                         )}
                       </div>
                     </div>
@@ -483,11 +486,23 @@ export default function AdminPage() {
                         </span>
                       </div>
                       <div className="admin-item__actions">
+                        <a
+                          href={up.profile_visibility === 'published'
+                            ? `/profiles/${up.display_name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`
+                            : `/profiles/${up.display_name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}?preview=1`}
+                          target="_blank"
+                          className="btn btn--outline btn--sm"
+                        >
+                          View
+                        </a>
                         {up.profile_visibility === 'pending' && (
                           <>
-                            <button className="btn btn--primary btn--sm" onClick={() => handleUserProfileAction(up.id, 'approve')}>Approve</button>
+                            <button className="btn btn--primary btn--sm" onClick={() => handleUserProfileAction(up.id, 'approve')}>Publish</button>
                             <button className="btn btn--ghost btn--sm" onClick={() => handleUserProfileAction(up.id, 'reject')}>Reject</button>
                           </>
+                        )}
+                        {up.profile_visibility === 'published' && (
+                          <button className="btn btn--ghost btn--sm" onClick={() => handleUserProfileAction(up.id, 'reject')}>Unpublish</button>
                         )}
                       </div>
                     </div>

@@ -1,6 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
+import { useAuth } from '@/components/AuthProvider'
+import { SmartGallery, type GalleryItem } from '@/components/profile/SmartGallery'
 
 interface ProjectSubmission {
   id: string
@@ -24,32 +26,29 @@ interface ProjectSubmission {
   special_needs: string | null
   hero_image_data: string | null
   gallery_images_data: string | null
+  collaboration_needs: string | null
+  collaboration_role_count: number | null
   status: string
 }
 
 export default function ProjectPreviewPage({ params }: { params: { id: string } }) {
+  const { user } = useAuth()
   const [project, setProject] = useState<ProjectSubmission | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [actionStatus, setActionStatus] = useState<'idle' | 'approving' | 'rejecting' | 'approved' | 'rejected'>('idle')
   const [isAdmin, setIsAdmin] = useState(false)
 
-  // Check if URL has ?admin=true to show the admin login option
+  // Auto-detect admin role from logged-in user
   useEffect(() => {
-    const params2 = new URLSearchParams(window.location.search)
-    if (params2.get('admin') === 'true') {
-      const pw = window.prompt('Enter admin password to enable approval controls:')
-      if (pw) {
-        fetch('/api/admin/auth', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: pw }),
-        }).then(r => r.json()).then(d => {
-          if (d.success) setIsAdmin(true)
-        }).catch(() => {})
-      }
-    }
-  }, [])
+    if (!user) return
+    fetch('/api/user/profile', { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.profile?.role === 'admin') setIsAdmin(true)
+      })
+      .catch(() => {})
+  }, [user])
 
   useEffect(() => {
     async function fetchProject() {
@@ -89,6 +88,7 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
     try {
       const res = await fetch('/api/admin/approve', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'project', id: params.id, action }),
       })
@@ -148,7 +148,7 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
       )}
 
       {/* Admin action bar — only visible to authenticated admins */}
-      {isAdmin && project.status === 'new' && actionStatus === 'idle' && (
+      {isAdmin && (project.status === 'new' || project.status === 'draft') && actionStatus === 'idle' && (
         <div className="admin-action-bar">
           <div className="container" style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center', padding: 'var(--space-4) 0' }}>
             <button className="btn btn--approve" onClick={() => handleAction('approve')}>Approve</button>
@@ -255,6 +255,68 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
           </div>
         </section>
       )}
+
+      {/* Media Gallery */}
+      {project.gallery_images_data && (() => {
+        try {
+          const parsed = JSON.parse(project.gallery_images_data)
+          const galleryItems: GalleryItem[] = []
+          let order = 0
+          // Handle both legacy (array) and new ({images, pdfs, links}) formats
+          const images = Array.isArray(parsed) ? parsed : (parsed.images || [])
+          const pdfs = Array.isArray(parsed) ? [] : (parsed.pdfs || [])
+          const links = Array.isArray(parsed) ? [] : (parsed.links || [])
+
+          images.forEach((img: { url: string; alt?: string }, i: number) => {
+            galleryItems.push({ id: `img-${i}`, type: 'image', url: img.url, title: img.alt || 'Gallery', order: order++ })
+          })
+          pdfs.forEach((doc: { url: string; title?: string; thumbnail?: string }, i: number) => {
+            galleryItems.push({ id: `pdf-${i}`, type: 'pdf', url: doc.url, thumbnail: doc.thumbnail, title: doc.title || 'Document', subtitle: 'PDF', order: order++ })
+          })
+          links.forEach((link: { url: string; label?: string; thumbnail?: string }, i: number) => {
+            let subtitle = 'website'
+            try { subtitle = new URL(link.url).hostname } catch {}
+            galleryItems.push({ id: `link-${i}`, type: 'link', url: link.url, thumbnail: link.thumbnail, title: link.label || 'Link', subtitle, order: order++ })
+          })
+
+          if (galleryItems.length === 0) return null
+          return (
+            <section style={{ padding: 'var(--space-8) 0' }}>
+              <div className="container">
+                <p className="section-label">Media</p>
+                <SmartGallery items={galleryItems} editable={false} />
+              </div>
+            </section>
+          )
+        } catch { return null }
+      })()}
+
+      {/* Collaboration Roles */}
+      {project.collaboration_needs && (() => {
+        try {
+          const roles = JSON.parse(project.collaboration_needs)
+          if (!Array.isArray(roles) || roles.length === 0) return null
+          return (
+            <section className="project-collab" style={{ padding: 'var(--space-12) 0' }}>
+              <div className="container">
+                <p className="section-label">Join This Project</p>
+                <h2>Open Roles</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
+                  {roles.map((role: { title: string; description: string; image_url?: string }, i: number) => (
+                    <div key={i} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                      {role.image_url && (
+                        <img src={role.image_url} alt={role.title} style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 'var(--radius-md)' }} />
+                      )}
+                      <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: 0 }}>{role.title}</h3>
+                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>{role.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )
+        } catch { return null }
+      })()}
 
       {/* Classification */}
       {(project.domains?.length || project.pathways?.length) && (

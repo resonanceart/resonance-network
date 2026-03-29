@@ -303,16 +303,21 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
   }
 
   // Check for user profile by slugified display_name
+  // Fetch all profiles (not just published) so admins and preview can access
   try {
-    const { data: publishedUsers, error: upError } = await supabaseAdmin
+    const { data: allUsers, error: upError } = await supabaseAdmin
       .from('user_profiles')
       .select('*')
-      .eq('profile_visibility', 'published')
 
-    if (!upError && publishedUsers) {
-      const match = publishedUsers.find(
+    if (!upError && allUsers) {
+      // First try published, then any visibility
+      const publishedMatch = allUsers.find(
+        (row: Record<string, unknown>) => slugify(String(row.display_name)) === slug && row.profile_visibility === 'published'
+      )
+      const anyMatch = allUsers.find(
         (row: Record<string, unknown>) => slugify(String(row.display_name)) === slug
       )
+      const match = publishedMatch || anyMatch
       if (match) {
         const { data: extended } = await supabaseAdmin
           .from('profile_extended')
