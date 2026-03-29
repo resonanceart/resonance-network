@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, getClientIp } from '@/lib/sanitize'
+import { sendNotification } from '@/lib/notify'
 import { validateCsrf } from '@/lib/csrf'
 
 // Increase body size limit to 10MB for base64 image uploads
@@ -377,6 +378,31 @@ export async function PUT(request: Request) {
         .eq('id', user.id)
         .single()
       profile = data
+    }
+
+    // Send email notification when profile submitted for review
+    if (body.profile_visibility === 'pending' && profile) {
+      const displayName = String(profile.display_name || 'Unknown')
+      const userEmail = String(profile.email || '')
+      try {
+        // Notify admin
+        await sendNotification({
+          to: ['resonanceartcollective@gmail.com'],
+          subject: `New Profile Submitted for Review: ${displayName}`,
+          body: `${displayName} has submitted their profile for review.\n\nEmail: ${userEmail}\nUser ID: ${user.id}\n\nReview profiles in the admin dashboard.`,
+        })
+        // Confirm to user
+        if (userEmail) {
+          await sendNotification({
+            to: [userEmail],
+            subject: 'Profile Submitted — Resonance Network',
+            body: `Hi ${displayName},\n\nYour profile has been submitted for review. Our team will review it shortly and you'll be notified when it's published.\n\nIn the meantime, you can continue editing your profile.\n\nThank you,\nResonance Network`,
+          })
+        }
+      } catch (e) {
+        console.error('Failed to send review notification:', e)
+        // Don't fail the request if email fails
+      }
     }
 
     let extendedProfile = null

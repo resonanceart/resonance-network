@@ -357,11 +357,11 @@ function LiveProjectEditorInner() {
             </button>
             {submissionId && (
               <a
-                href={`/preview/project/${submissionId}`}
+                href={`/dashboard/projects/preview?id=${submissionId}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn btn--ghost btn--sm"
-                onClick={async (e) => { if (hasChanges) { e.preventDefault(); await saveDraft(true); window.open(`/preview/project/${submissionId}`, '_blank') } }}
+                onClick={async (e) => { if (hasChanges) { e.preventDefault(); await saveDraft(true); window.open(`/dashboard/projects/preview?id=${submissionId}`, '_blank') } }}
               >
                 Preview
               </a>
