@@ -773,13 +773,10 @@ export default function LiveProfileEditor() {
             <button
               onClick={async () => {
                 if (hasChanges) await saveAll(true)
-                const previewSlug = displayName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-                if (previewSlug) {
-                  // Add timestamp to bust cache since profile pages are ISR-cached
-                  setTimeout(() => {
-                    window.open(`/profiles/${previewSlug}?preview=${Date.now()}`, '_blank')
-                  }, 1500)
-                }
+                // Open the dashboard preview route (works for unpublished profiles)
+                setTimeout(() => {
+                  window.open('/dashboard/profile/preview', '_blank')
+                }, 1000)
               }}
               className="btn btn--outline btn--sm"
               disabled={saving || !displayName.trim()}
@@ -1363,20 +1360,6 @@ export default function LiveProfileEditor() {
                         maxLength={200}
                       />
                     </div>
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Resume / CV (PDF)</label>
-                    {resumeUrl ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-primary)' }}>Resume uploaded</span>
-                        <button className="btn btn--ghost btn--sm" onClick={() => { setResumeUrl(null); markDirty() }}>Remove</button>
-                      </div>
-                    ) : (
-                      <label className="live-editor__upload-zone" style={{ padding: 'var(--space-4)' }}>
-                        <input type="file" accept=".pdf" onChange={handleResumeUpload} style={{ display: 'none' }} />
-                        <span>Upload PDF (max 5MB)</span>
-                      </label>
-                    )}
                   </div>
                 </div>
               )}
