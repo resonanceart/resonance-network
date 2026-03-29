@@ -2,8 +2,9 @@
 import { useState, useMemo, useEffect } from 'react'
 import { supabase } from '@/lib/supabase-client'
 import { useAuth } from '@/components/AuthProvider'
+import '@/styles/admin.css'
 
-type Tab = 'review' | 'projects' | 'profiles' | 'user_profiles' | 'users' | 'interests' | 'messages' | 'activity'
+type AdminView = 'overview' | 'review' | 'users' | 'projects' | 'profiles' | 'user_profiles' | 'messages' | 'interests' | 'activity'
 
 interface ProjectSubmission {
   id: string
@@ -85,14 +86,15 @@ export default function AdminPage() {
   const [users, setUsers] = useState<UserAccount[]>([])
   const [interests, setInterests] = useState<InterestEntry[]>([])
   const [userProfiles, setUserProfiles] = useState<UserProfileEntry[]>([])
-  const [messages, setMessages] = useState<Array<{ id: string; created_at: string; from_name: string; from_email: string; subject_type: string; message: string; is_read: boolean }>>([])
+  const [messages, setMessages] = useState<Array<{id:string; created_at:string; from_name:string; from_email:string; subject_type:string; message:string; is_read:boolean; to_profile_id:string}>>([])
   const [loading, setLoading] = useState(true)
   const [actionMsg, setActionMsg] = useState('')
   const [expandedMsg, setExpandedMsg] = useState<string | null>(null)
 
-  const [activeTab, setActiveTab] = useState<Tab>('review')
+  const [activeView, setActiveView] = useState<AdminView>('overview')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   async function handleAuth(e: React.FormEvent) {
     e.preventDefault()
@@ -212,12 +214,6 @@ export default function AdminPage() {
     }
   }
 
-  const statusColor = (s: string) => {
-    if (s === 'approved') return 'var(--color-primary)'
-    if (s === 'rejected') return '#c44'
-    return 'var(--color-text-muted)'
-  }
-
   // Filtering
   const q = search.toLowerCase()
 
@@ -250,569 +246,478 @@ export default function AdminPage() {
     return matchSearch && matchStatus
   }), [interests, q, statusFilter])
 
-  const pendingItems = useMemo(() => {
-    const items: Array<{
-      id: string
-      type: 'profile' | 'project'
-      name: string
-      email: string
-      date: string
-      status: string
-      avatar?: string | null
-    }> = []
+  // Computed values
+  const pendingProfiles = userProfiles.filter(up => up.profile_visibility === 'pending')
+  const pendingProjects = projects.filter(p => p.status === 'new' || p.status === 'draft')
+  const pendingCount = pendingProfiles.length + pendingProjects.length
+  const publishedProfiles = userProfiles.filter(up => up.profile_visibility === 'published')
+  const approvedProjects = projects.filter(p => p.status === 'approved')
+  const recentUsers = userProfiles.filter(up => {
+    const week = 7 * 24 * 60 * 60 * 1000
+    return Date.now() - new Date(up.created_at).getTime() < week
+  })
 
-    userProfiles.filter(up => up.profile_visibility === 'pending').forEach(up => {
-      items.push({
-        id: up.id,
-        type: 'profile',
-        name: up.display_name,
-        email: up.email,
-        date: up.created_at,
-        status: 'pending',
-        avatar: up.avatar_url,
-      })
-    })
-
-    projects.filter(p => p.status === 'new' || p.status === 'draft').forEach(p => {
-      items.push({
-        id: p.id,
-        type: 'project',
-        name: p.project_title,
-        email: p.artist_email,
-        date: p.created_at,
-        status: p.status,
-      })
-    })
-
+  // Combined review queue
+  const reviewQueue = useMemo(() => {
+    const items: Array<{id:string; type:'profile'|'project'; name:string; email:string; date:string; status:string; avatar?:string|null}> = []
+    pendingProfiles.forEach(up => items.push({ id: up.id, type: 'profile', name: up.display_name, email: up.email, date: up.created_at, status: 'pending', avatar: up.avatar_url }))
+    pendingProjects.forEach(p => items.push({ id: p.id, type: 'project', name: p.project_title, email: p.artist_email, date: p.created_at, status: p.status }))
     return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-  }, [userProfiles, projects])
+  }, [pendingProfiles, pendingProjects])
 
+  // Activity feed
   const activityFeed = useMemo(() => {
-    const feed: Array<{ id: string; type: string; text: string; date: string }> = []
-
-    userProfiles.forEach(up => {
-      feed.push({ id: `up-${up.id}`, type: 'user', text: `${up.display_name} signed up`, date: up.created_at })
-      if (up.profile_visibility === 'pending') {
-        feed.push({ id: `up-pending-${up.id}`, type: 'profile', text: `${up.display_name} submitted profile for review`, date: up.created_at })
-      }
-    })
-
-    projects.forEach(p => {
-      feed.push({ id: `proj-${p.id}`, type: 'project', text: `${p.artist_name} submitted "${p.project_title}"`, date: p.created_at })
-    })
-
-    interests.forEach(i => {
-      feed.push({ id: `int-${i.id}`, type: 'interest', text: `${i.name} expressed interest in ${i.project_title || 'a role'}`, date: i.created_at })
-    })
-
-    return feed.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 50)
+    const feed: Array<{id:string; type:string; text:string; date:string}> = []
+    userProfiles.forEach(up => feed.push({ id: `signup-${up.id}`, type: 'user', text: `${up.display_name} joined`, date: up.created_at }))
+    projects.forEach(p => feed.push({ id: `proj-${p.id}`, type: 'project', text: `${p.artist_name} submitted "${p.project_title}"`, date: p.created_at }))
+    interests.forEach(i => feed.push({ id: `int-${i.id}`, type: 'interest', text: `${i.name} interested in ${i.project_title || 'a role'}`, date: i.created_at }))
+    return feed.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 100)
   }, [userProfiles, projects, interests])
 
-  const pendingProfiles = userProfiles.filter(up => up.profile_visibility === 'pending').length
-  const pendingProjects = projects.filter(p => p.status === 'new' || p.status === 'draft').length
-  const publishedProfiles = userProfiles.filter(up => up.profile_visibility === 'published').length
-  const approvedProjects = projects.filter(p => p.status === 'approved').length
+  function timeAgo(dateStr: string) {
+    const ms = Date.now() - new Date(dateStr).getTime()
+    const mins = Math.floor(ms / 60000)
+    if (mins < 60) return `${mins}m ago`
+    const hrs = Math.floor(mins / 60)
+    if (hrs < 24) return `${hrs}h ago`
+    const days = Math.floor(hrs / 24)
+    if (days < 30) return `${days}d ago`
+    return new Date(dateStr).toLocaleDateString()
+  }
 
+  // Auth screen
   if (!isAuthenticated) {
+    if (checkingRole) return <div className="admin-auth"><p style={{color:'#555'}}>Checking access...</p></div>
     return (
-      <div className="container" style={{ padding: 'var(--space-16) 0', maxWidth: '400px', margin: '0 auto' }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', marginBottom: 'var(--space-6)', textAlign: 'center' }}>Admin Access</h1>
-        <form onSubmit={handleAuth}>
-          {authError && <p className="form-error" style={{ marginBottom: 'var(--space-4)' }}>{authError}</p>}
-          <div className="form-group">
-            <label htmlFor="admin-password" className="form-label">Password</label>
-            <input
-              id="admin-password"
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="form-input"
-              placeholder="Enter admin password"
-              autoFocus
-            />
-          </div>
-          <button type="submit" className="btn btn--primary btn--full" disabled={authLoading} style={{ marginTop: 'var(--space-4)' }}>
-            {authLoading ? 'Checking...' : 'Sign In'}
-          </button>
-        </form>
+      <div className="admin-auth">
+        <div className="admin-auth__card">
+          <h1 className="admin-auth__title">Resonance Admin</h1>
+          <p className="admin-auth__subtitle">Enter admin password to continue</p>
+          <form onSubmit={handleAuth}>
+            {authError && <p className="admin-auth__error">{authError}</p>}
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="admin-auth__input" placeholder="Admin password" autoFocus />
+            <button type="submit" className="admin-auth__btn" disabled={authLoading}>{authLoading ? 'Checking...' : 'Sign In'}</button>
+          </form>
+        </div>
       </div>
     )
   }
 
-  const tabs: { key: Tab; label: string; count: number }[] = [
-    { key: 'review', label: '\u26A1 Review Queue', count: pendingItems.length },
-    { key: 'projects', label: 'Projects', count: projects.length },
-    { key: 'profiles', label: 'Profiles', count: profiles.length },
-    { key: 'user_profiles', label: 'User Profiles', count: userProfiles.length },
-    { key: 'users', label: 'Users', count: users.length },
-    { key: 'interests', label: 'Interests', count: interests.length },
-    { key: 'messages', label: 'Messages', count: messages.length },
-    { key: 'activity', label: 'Activity', count: activityFeed.length },
-  ]
-
   return (
-    <div className="container" style={{ padding: 'var(--space-12) 0' }}>
-      <h1 style={{ fontFamily: 'var(--font-display)', marginBottom: 'var(--space-2)' }}>Admin Dashboard</h1>
-      <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>
-        Manage submissions, users, and collaboration interests.
-      </p>
-
-      {actionMsg && (
-        <p style={{ padding: 'var(--space-3) var(--space-4)', background: 'var(--color-surface)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>
-          {actionMsg}
-        </p>
-      )}
-
-      {loading ? (
-        <p style={{ color: 'var(--color-text-muted)' }}>Loading...</p>
-      ) : (
-        <>
-          {/* Quick Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
-            {[
-              { label: 'Pending Review', value: pendingProfiles + pendingProjects, color: '#f59e0b' },
-              { label: 'Published Profiles', value: publishedProfiles, color: 'var(--color-primary)' },
-              { label: 'Approved Projects', value: approvedProjects, color: '#22c55e' },
-              { label: 'Projects', value: projects.length, color: 'var(--color-primary)' },
-              { label: 'Profiles', value: profiles.length, color: '#6366f1' },
-              { label: 'User Profiles', value: userProfiles.length, color: '#8b5cf6' },
-              { label: 'Users', value: users.length, color: '#f59e0b' },
-              { label: 'Interests', value: interests.length, color: '#ec4899' },
-            ].map(stat => (
-              <div key={stat.label} style={{
-                padding: 'var(--space-4)',
-                background: 'var(--color-surface)',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--color-border)',
-                textAlign: 'center',
-              }}>
-                <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 700, color: stat.color }}>{stat.value}</div>
-                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</div>
-              </div>
-            ))}
+    <div className="admin-layout">
+      {/* Sidebar */}
+      <aside className={`admin-sidebar${sidebarOpen ? ' admin-sidebar--open' : ''}`}>
+        <div className="admin-sidebar__brand"><span>Resonance</span> Admin</div>
+        <nav className="admin-sidebar__nav">
+          {[
+            { key: 'overview', label: 'Overview', icon: '\uD83D\uDCCA' },
+            { key: 'review', label: 'Review Queue', icon: '\u26A1', badge: pendingCount },
+            { key: 'user_profiles', label: 'Profiles', icon: '\uD83D\uDC64' },
+            { key: 'projects', label: 'Projects', icon: '\uD83D\uDCC1' },
+            { key: 'users', label: 'Users', icon: '\uD83D\uDC65' },
+            { key: 'messages', label: 'Messages', icon: '\uD83D\uDCAC', badge: messages.filter(m => !m.is_read).length },
+            { key: 'interests', label: 'Interests', icon: '\uD83E\uDD1D' },
+            { key: 'activity', label: 'Activity', icon: '\uD83D\uDCE1' },
+          ].map(item => (
+            <button key={item.key} onClick={() => { setActiveView(item.key as AdminView); setSidebarOpen(false) }}
+              className={`admin-sidebar__link${activeView === item.key ? ' admin-sidebar__link--active' : ''}`}>
+              <span>{item.icon}</span>
+              {item.label}
+              {item.badge ? <span className="admin-sidebar__badge">{item.badge}</span> : null}
+            </button>
+          ))}
+        </nav>
+        <div className="admin-sidebar__user">
+          <div className="admin-sidebar__user-avatar">A</div>
+          <div>
+            <div className="admin-sidebar__user-name">Admin</div>
+            <div className="admin-sidebar__user-role">Administrator</div>
           </div>
+        </div>
+      </aside>
 
-          {/* Tabs */}
-          <div style={{ display: 'flex', gap: 'var(--space-1)', marginBottom: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', overflowX: 'auto' }}>
-            {tabs.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                style={{
-                  padding: 'var(--space-2) var(--space-4)',
-                  background: 'none',
-                  border: 'none',
-                  borderBottom: activeTab === tab.key ? '2px solid var(--color-primary)' : '2px solid transparent',
-                  color: activeTab === tab.key ? 'var(--color-primary)' : 'var(--color-text-muted)',
-                  fontWeight: activeTab === tab.key ? 600 : 400,
-                  cursor: 'pointer',
-                  fontSize: 'var(--text-sm)',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {tab.label} ({tab.count})
-              </button>
-            ))}
+      {/* Main */}
+      <main className="admin-main">
+        <div className="admin-topbar">
+          <button className="admin-topbar__icon-btn" onClick={() => setSidebarOpen(!sidebarOpen)} style={{ display: 'none' }}>{'\u2630'}</button>
+          <span className="admin-topbar__title">{activeView === 'overview' ? 'Dashboard' : activeView.charAt(0).toUpperCase() + activeView.slice(1).replace('_', ' ')}</span>
+          <input type="text" className="admin-topbar__search" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} />
+          <div className="admin-topbar__actions">
+            <a href="/" target="_blank" className="admin-btn admin-btn--outline admin-btn--sm">View Site</a>
+            <button className="admin-topbar__icon-btn" title="Notifications">
+              {'\uD83D\uDD14'}
+              {pendingCount > 0 && <span className="admin-topbar__notification-dot" />}
+            </button>
           </div>
+        </div>
 
-          {/* Search & Filter */}
-          <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-6)', flexWrap: 'wrap' }}>
-            <input
-              type="text"
-              className="form-input"
-              placeholder="Search by name or email..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              style={{ flex: '1 1 200px', maxWidth: '320px' }}
-            />
-            {activeTab !== 'users' && activeTab !== 'review' && activeTab !== 'messages' && activeTab !== 'activity' && (
-              <select
-                className="form-input"
-                value={statusFilter}
-                onChange={e => setStatusFilter(e.target.value)}
-                style={{ width: 'auto', minWidth: '120px' }}
-              >
-                <option value="all">All Status</option>
-                {activeTab === 'user_profiles' ? (
-                  <>
-                    <option value="draft">Draft</option>
-                    <option value="pending">Pending</option>
-                    <option value="published">Published</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="new">New</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                  </>
-                )}
-              </select>
-            )}
-          </div>
+        <div className="admin-content">
+          {loading ? <p style={{color:'#555'}}>Loading data...</p> : (
+            <>
+              {/* OVERVIEW */}
+              {activeView === 'overview' && (
+                <>
+                  <div className="admin-content__header">
+                    <h1 className="admin-content__title">Dashboard</h1>
+                    <p className="admin-content__subtitle">Overview of your network</p>
+                  </div>
+                  <div className="admin-stats">
+                    <div className="admin-stat-card">
+                      <div className="admin-stat-card__value">{userProfiles.length}</div>
+                      <div className="admin-stat-card__label">Total Users</div>
+                      {recentUsers.length > 0 && <div className="admin-stat-card__change">+{recentUsers.length} this week</div>}
+                    </div>
+                    <div className="admin-stat-card">
+                      <div className="admin-stat-card__value">{publishedProfiles.length}</div>
+                      <div className="admin-stat-card__label">Published Profiles</div>
+                    </div>
+                    <div className="admin-stat-card">
+                      <div className="admin-stat-card__value">{approvedProjects.length}</div>
+                      <div className="admin-stat-card__label">Active Projects</div>
+                    </div>
+                    <div className="admin-stat-card">
+                      <div className="admin-stat-card__value" style={{color: pendingCount > 0 ? '#f59e0b' : '#22c55e'}}>{pendingCount}</div>
+                      <div className="admin-stat-card__label">Pending Review</div>
+                    </div>
+                    <div className="admin-stat-card">
+                      <div className="admin-stat-card__value">{interests.length}</div>
+                      <div className="admin-stat-card__label">Collaboration Interests</div>
+                    </div>
+                    <div className="admin-stat-card">
+                      <div className="admin-stat-card__value">{messages.length}</div>
+                      <div className="admin-stat-card__label">Messages</div>
+                    </div>
+                  </div>
 
-          {/* Review Queue Tab */}
-          {activeTab === 'review' && (
-            <section>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>
-                Review Queue ({pendingItems.length})
-              </h2>
-              {pendingItems.length === 0 ? (
-                <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                  <p style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-2)' }}>All caught up!</p>
-                  <p>No pending items to review.</p>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                  {pendingItems.map(item => (
-                    <div key={`${item.type}-${item.id}`} className="admin-item">
-                      <div className="admin-item__info">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                          <span style={{
-                            display: 'inline-block',
-                            padding: '2px 8px',
-                            borderRadius: 999,
-                            fontSize: 'var(--text-xs)',
-                            fontWeight: 600,
-                            background: item.type === 'profile' ? 'rgba(99,102,241,0.15)' : 'rgba(20,184,166,0.15)',
-                            color: item.type === 'profile' ? '#6366f1' : 'var(--color-primary)',
-                          }}>
-                            {item.type === 'profile' ? 'Profile' : 'Project'}
-                          </span>
-                          {item.avatar && (
-                            <img src={item.avatar} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
-                          )}
-                          <strong>{item.name}</strong>
+                  {/* Quick actions */}
+                  <div className="admin-quick-actions">
+                    {pendingCount > 0 && <button className="admin-btn admin-btn--primary" onClick={() => setActiveView('review')}>Review {pendingCount} Pending Items</button>}
+                    <a href="/dashboard/profile/live-edit" target="_blank" className="admin-btn admin-btn--outline">Profile Builder</a>
+                    <a href="/dashboard/projects/live-edit" target="_blank" className="admin-btn admin-btn--outline">Project Builder</a>
+                  </div>
+
+                  {/* Recent activity mini-feed */}
+                  <div className="admin-section">
+                    <div className="admin-section__title">Recent Activity</div>
+                    <div className="admin-feed">
+                      {activityFeed.slice(0, 10).map(a => (
+                        <div key={a.id} className="admin-feed__item">
+                          <div className={`admin-feed__icon admin-feed__icon--${a.type}`}>
+                            {a.type === 'user' && '\uD83D\uDC64'}
+                            {a.type === 'project' && '\uD83D\uDCC1'}
+                            {a.type === 'interest' && '\uD83E\uDD1D'}
+                          </div>
+                          <span className="admin-feed__text" dangerouslySetInnerHTML={{__html: a.text.replace(/(^[^"]+)/, '<strong>$1</strong>')}} />
+                          <span className="admin-feed__time">{timeAgo(a.date)}</span>
                         </div>
-                        <span style={{ fontSize: 'var(--text-sm)' }}>{item.email}</span>
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                          {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </span>
-                      </div>
-                      <div className="admin-item__actions">
-                        {item.type === 'profile' ? (
-                          <>
-                            <a href={`/profiles/${item.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}?preview=1`} target="_blank" className="btn btn--outline btn--sm">Preview</a>
-                            <button className="btn btn--primary btn--sm" onClick={() => handleUserProfileAction(item.id, 'approve')}>Publish</button>
-                            <button className="btn btn--ghost btn--sm" onClick={() => handleUserProfileAction(item.id, 'reject')}>Reject</button>
-                          </>
-                        ) : (
-                          <>
-                            <a href={`/dashboard/projects/preview?id=${item.id}`} target="_blank" className="btn btn--outline btn--sm">Preview</a>
-                            <button className="btn btn--primary btn--sm" onClick={() => handleAction('project', item.id, 'approve')}>Approve</button>
-                            <button className="btn btn--ghost btn--sm" onClick={() => handleAction('project', item.id, 'reject')}>Reject</button>
-                          </>
-                        )}
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                </>
               )}
-            </section>
-          )}
 
-          {/* Projects Tab */}
-          {activeTab === 'projects' && (
-            <section>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>
-                Project Submissions ({filteredProjects.length})
-              </h2>
-              {filteredProjects.length === 0 ? (
-                <p style={{ color: 'var(--color-text-muted)' }}>No matching submissions.</p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                  {filteredProjects.map(p => (
-                    <div key={p.id} className="admin-item">
-                      <div className="admin-item__info">
-                        <strong>{p.project_title}</strong>
-                        <span>by {p.artist_name} ({p.artist_email})</span>
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                          {new Date(p.created_at).toLocaleDateString()} · <span style={{ color: statusColor(p.status) }}>{p.status}</span>
-                        </span>
-                      </div>
-                      <div className="admin-item__actions">
-                        <a href={`/preview/project/${p.id}`} target="_blank" className="btn btn--outline btn--sm">Preview</a>
-                        {(p.status === 'new' || p.status === 'draft') && (
-                          <>
-                            <button className="btn btn--primary btn--sm" onClick={() => handleAction('project', p.id, 'approve')}>Approve</button>
-                            <button className="btn btn--ghost btn--sm" onClick={() => handleAction('project', p.id, 'reject')}>Reject</button>
-                          </>
-                        )}
-                        {p.status === 'approved' && (
-                          <button className="btn btn--ghost btn--sm" onClick={() => handleAction('project', p.id, 'reject')}>Unpublish</button>
-                        )}
-                      </div>
+              {/* REVIEW QUEUE */}
+              {activeView === 'review' && (
+                <>
+                  <div className="admin-content__header">
+                    <h1 className="admin-content__title">Review Queue</h1>
+                    <p className="admin-content__subtitle">{reviewQueue.length} items need your attention</p>
+                  </div>
+                  {actionMsg && <p style={{padding:'8px 16px', background:'#111', border:'1px solid #222', borderRadius:8, marginBottom:16, fontSize:13, color:'#14b8a6'}}>{actionMsg}</p>}
+                  {reviewQueue.length === 0 ? (
+                    <div className="admin-empty">
+                      <div className="admin-empty__icon">{'\u2705'}</div>
+                      <div className="admin-empty__title">All caught up!</div>
+                      <div className="admin-empty__subtitle">No pending items to review.</div>
                     </div>
-                  ))}
-                </div>
+                  ) : (
+                    <table className="admin-table">
+                      <thead><tr><th>Type</th><th>Name</th><th>Email</th><th>Date</th><th>Actions</th></tr></thead>
+                      <tbody>
+                        {reviewQueue.map(item => (
+                          <tr key={`${item.type}-${item.id}`}>
+                            <td><span className={`admin-badge admin-badge--${item.type}`}>{item.type}</span></td>
+                            <td>
+                              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                                {item.avatar && <img src={item.avatar} className="admin-avatar" alt="" />}
+                                <span className="admin-table__name">{item.name}</span>
+                              </div>
+                            </td>
+                            <td className="admin-table__email">{item.email}</td>
+                            <td className="admin-table__date">{timeAgo(item.date)}</td>
+                            <td>
+                              <div style={{display:'flex',gap:6}}>
+                                {item.type === 'profile' ? (
+                                  <>
+                                    <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={() => handleUserProfileAction(item.id, 'approve')}>Publish</button>
+                                    <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleUserProfileAction(item.id, 'reject')}>Reject</button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <a href={`/dashboard/projects/preview?id=${item.id}`} target="_blank" className="admin-btn admin-btn--outline admin-btn--sm">Preview</a>
+                                    <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={() => handleAction('project', item.id, 'approve')}>Approve</button>
+                                    <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleAction('project', item.id, 'reject')}>Reject</button>
+                                  </>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </>
               )}
-            </section>
-          )}
 
-          {/* Profiles Tab */}
-          {activeTab === 'profiles' && (
-            <section>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>
-                Collaborator Profiles ({filteredProfiles.length})
-              </h2>
-              {filteredProfiles.length === 0 ? (
-                <p style={{ color: 'var(--color-text-muted)' }}>No matching profiles.</p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                  {filteredProfiles.map(p => (
-                    <div key={p.id} className="admin-item">
-                      <div className="admin-item__info">
-                        <strong>{p.name}</strong>
-                        <span>{p.email}</span>
-                        {p.skills && <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Skills: {p.skills}</span>}
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                          {new Date(p.created_at).toLocaleDateString()} · <span style={{ color: statusColor(p.status) }}>{p.status}</span>
-                        </span>
-                      </div>
-                      <div className="admin-item__actions">
-                        <a href={`/preview/profile/${p.id}`} target="_blank" className="btn btn--outline btn--sm">Preview</a>
-                        {p.status === 'new' && (
-                          <>
-                            <button className="btn btn--primary btn--sm" onClick={() => handleAction('profile', p.id, 'approve')}>Approve</button>
-                            <button className="btn btn--ghost btn--sm" onClick={() => handleAction('profile', p.id, 'reject')}>Reject</button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
-
-          {/* User Profiles Tab */}
-          {activeTab === 'user_profiles' && (
-            <section>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>
-                User Profiles ({filteredUserProfiles.length})
-              </h2>
-              {filteredUserProfiles.length === 0 ? (
-                <p style={{ color: 'var(--color-text-muted)' }}>No matching user profiles.</p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                  {filteredUserProfiles.map(up => (
-                    <div key={up.id} className="admin-item">
-                      <div className="admin-item__info">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                          {up.avatar_url ? (
-                            <img src={up.avatar_url} alt="" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
-                          ) : (
-                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                              {up.display_name?.[0]?.toUpperCase() || '?'}
+              {/* USER PROFILES */}
+              {activeView === 'user_profiles' && (
+                <>
+                  <div className="admin-content__header">
+                    <h1 className="admin-content__title">User Profiles</h1>
+                    <p className="admin-content__subtitle">{userProfiles.length} profiles total</p>
+                  </div>
+                  <div className="admin-filters">
+                    <select className="admin-filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+                      <option value="all">All Status</option>
+                      <option value="draft">Draft</option>
+                      <option value="pending">Pending</option>
+                      <option value="published">Published</option>
+                    </select>
+                  </div>
+                  {actionMsg && <p style={{padding:'8px 16px', background:'#111', border:'1px solid #222', borderRadius:8, marginBottom:16, fontSize:13, color:'#14b8a6'}}>{actionMsg}</p>}
+                  <table className="admin-table">
+                    <thead><tr><th>User</th><th>Email</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {filteredUserProfiles.map(up => (
+                        <tr key={up.id}>
+                          <td>
+                            <div style={{display:'flex',alignItems:'center',gap:8}}>
+                              {up.avatar_url ? <img src={up.avatar_url} className="admin-avatar" alt="" /> : <div className="admin-avatar-placeholder">{up.display_name?.[0]?.toUpperCase()}</div>}
+                              <span className="admin-table__name">{up.display_name}</span>
                             </div>
-                          )}
-                          <strong>{up.display_name}</strong>
-                        </div>
-                        <span>{up.email}</span>
-                        {up.bio && (
-                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', maxWidth: '400px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                            {up.bio}
-                          </span>
-                        )}
-                        {up.skills && up.skills.length > 0 && (
-                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Skills: {up.skills.join(', ')}</span>
-                        )}
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                          {new Date(up.created_at).toLocaleDateString()} · <span style={{ color: up.profile_visibility === 'published' ? 'var(--color-primary)' : up.profile_visibility === 'pending' ? '#d97706' : 'var(--color-text-muted)' }}>{up.profile_visibility}</span>
-                        </span>
-                      </div>
-                      <div className="admin-item__actions">
-                        <a
-                          href={up.profile_visibility === 'published'
-                            ? `/profiles/${up.display_name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`
-                            : `/profiles/${up.display_name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}?preview=1`}
-                          target="_blank"
-                          className="btn btn--outline btn--sm"
-                        >
-                          View
-                        </a>
-                        {up.profile_visibility === 'pending' && (
-                          <>
-                            <button className="btn btn--primary btn--sm" onClick={() => handleUserProfileAction(up.id, 'approve')}>Publish</button>
-                            <button className="btn btn--ghost btn--sm" onClick={() => handleUserProfileAction(up.id, 'reject')}>Reject</button>
-                          </>
-                        )}
-                        {up.profile_visibility === 'published' && (
-                          <button className="btn btn--ghost btn--sm" onClick={() => handleUserProfileAction(up.id, 'reject')}>Unpublish</button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
-
-          {/* Users Tab */}
-          {activeTab === 'users' && (
-            <section>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>
-                User Accounts ({filteredUsers.length})
-              </h2>
-              {filteredUsers.length === 0 ? (
-                <p style={{ color: 'var(--color-text-muted)' }}>No matching users.</p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                  {filteredUsers.map(u => (
-                    <div key={u.id} className="admin-item">
-                      <div className="admin-item__info">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                          {u.avatar_url ? (
-                            <img src={u.avatar_url} alt="" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
-                          ) : (
-                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                              {u.display_name?.[0]?.toUpperCase() || '?'}
+                          </td>
+                          <td className="admin-table__email">{up.email}</td>
+                          <td><span className={`admin-badge admin-badge--${up.profile_visibility}`}>{up.profile_visibility}</span></td>
+                          <td className="admin-table__date">{new Date(up.created_at).toLocaleDateString()}</td>
+                          <td>
+                            <div style={{display:'flex',gap:6}}>
+                              <a href={`/profiles/${up.display_name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}?preview=1`} target="_blank" className="admin-btn admin-btn--outline admin-btn--sm">View</a>
+                              {up.profile_visibility === 'pending' && (
+                                <>
+                                  <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={() => handleUserProfileAction(up.id, 'approve')}>Publish</button>
+                                  <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleUserProfileAction(up.id, 'reject')}>Reject</button>
+                                </>
+                              )}
+                              {up.profile_visibility === 'published' && (
+                                <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleUserProfileAction(up.id, 'reject')}>Unpublish</button>
+                              )}
                             </div>
-                          )}
-                          <strong>{u.display_name}</strong>
-                        </div>
-                        <span>{u.email}</span>
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                          Joined {new Date(u.created_at).toLocaleDateString()} · Onboarding: {u.onboarding_complete ? 'Complete' : 'Pending'}
-                        </span>
-                      </div>
-                      <div className="admin-item__actions">
-                        <select
-                          value={u.role}
-                          onChange={e => handleRoleChange(u.id, e.target.value)}
-                          className="form-input"
-                          style={{ width: 'auto', minWidth: '120px', padding: 'var(--space-1) var(--space-2)', fontSize: 'var(--text-sm)' }}
-                        >
-                          <option value="collaborator">Collaborator</option>
-                          <option value="creator">Creator</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
               )}
-            </section>
-          )}
 
-          {/* Interests Tab */}
-          {activeTab === 'interests' && (
-            <section>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>
-                Collaboration Interests ({filteredInterests.length})
-              </h2>
-              {filteredInterests.length === 0 ? (
-                <p style={{ color: 'var(--color-text-muted)' }}>No matching interests.</p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                  {filteredInterests.map(i => (
-                    <div key={i.id} className="admin-item">
-                      <div className="admin-item__info">
-                        <strong>{i.name}</strong>
-                        <span>{i.email}</span>
-                        {i.task_title && <span style={{ fontSize: 'var(--text-sm)' }}>Task: {i.task_title}</span>}
-                        {i.project_title && <span style={{ fontSize: 'var(--text-sm)' }}>Project: {i.project_title}</span>}
-                        {i.experience && (
-                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', maxWidth: '400px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                            {i.experience}
-                          </span>
-                        )}
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                          {new Date(i.created_at).toLocaleDateString()} · <span style={{ color: statusColor(i.status) }}>{i.status}</span>
-                        </span>
-                      </div>
-                      <div className="admin-item__actions">
-                        <a href={`mailto:${i.email}`} className="btn btn--outline btn--sm">Email</a>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              {/* PROJECTS */}
+              {activeView === 'projects' && (
+                <>
+                  <div className="admin-content__header">
+                    <h1 className="admin-content__title">Project Submissions</h1>
+                    <p className="admin-content__subtitle">{projects.length} total submissions</p>
+                  </div>
+                  <div className="admin-filters">
+                    <select className="admin-filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+                      <option value="all">All Status</option>
+                      <option value="new">New</option>
+                      <option value="draft">Draft</option>
+                      <option value="approved">Approved</option>
+                      <option value="rejected">Rejected</option>
+                    </select>
+                  </div>
+                  {actionMsg && <p style={{padding:'8px 16px', background:'#111', border:'1px solid #222', borderRadius:8, marginBottom:16, fontSize:13, color:'#14b8a6'}}>{actionMsg}</p>}
+                  <table className="admin-table">
+                    <thead><tr><th>Project</th><th>Creator</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {filteredProjects.map(p => (
+                        <tr key={p.id}>
+                          <td className="admin-table__name">{p.project_title}</td>
+                          <td>
+                            <div>{p.artist_name}</div>
+                            <div className="admin-table__email">{p.artist_email}</div>
+                          </td>
+                          <td><span className={`admin-badge admin-badge--${p.status}`}>{p.status}</span></td>
+                          <td className="admin-table__date">{new Date(p.created_at).toLocaleDateString()}</td>
+                          <td>
+                            <div style={{display:'flex',gap:6}}>
+                              <a href={`/dashboard/projects/preview?id=${p.id}`} target="_blank" className="admin-btn admin-btn--outline admin-btn--sm">Preview</a>
+                              {(p.status === 'new' || p.status === 'draft') && (
+                                <>
+                                  <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={() => handleAction('project', p.id, 'approve')}>Approve</button>
+                                  <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleAction('project', p.id, 'reject')}>Reject</button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
               )}
-            </section>
-          )}
 
-          {/* Messages Tab */}
-          {activeTab === 'messages' && (
-            <section>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>
-                Messages ({messages.length})
-              </h2>
-              {messages.length === 0 ? (
-                <p style={{ color: 'var(--color-text-muted)' }}>No messages yet.</p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                  {messages.map(m => (
-                    <div key={m.id} style={{
-                      padding: 'var(--space-3) var(--space-4)',
-                      background: 'var(--color-surface)',
-                      border: '1px solid var(--color-border)',
-                      borderRadius: 'var(--radius-md)',
-                      borderLeft: m.is_read ? undefined : '3px solid var(--color-primary)',
-                      cursor: 'pointer',
-                    }} onClick={() => setExpandedMsg(expandedMsg === m.id ? null : m.id)}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <div>
-                          <strong style={{ fontSize: 'var(--text-sm)' }}>{m.from_name}</strong>
-                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginLeft: 'var(--space-2)' }}>{m.from_email}</span>
-                          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 2 }}>
-                            {m.subject_type} · {new Date(m.created_at).toLocaleDateString()}
+              {/* USERS */}
+              {activeView === 'users' && (
+                <>
+                  <div className="admin-content__header">
+                    <h1 className="admin-content__title">User Accounts</h1>
+                    <p className="admin-content__subtitle">{users.length} registered users</p>
+                  </div>
+                  {actionMsg && <p style={{padding:'8px 16px', background:'#111', border:'1px solid #222', borderRadius:8, marginBottom:16, fontSize:13, color:'#14b8a6'}}>{actionMsg}</p>}
+                  <table className="admin-table">
+                    <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {filteredUsers.map(u => (
+                        <tr key={u.id}>
+                          <td>
+                            <div style={{display:'flex',alignItems:'center',gap:8}}>
+                              {u.avatar_url ? <img src={u.avatar_url} className="admin-avatar" alt="" /> : <div className="admin-avatar-placeholder">{u.display_name?.[0]?.toUpperCase()}</div>}
+                              <span className="admin-table__name">{u.display_name}</span>
+                            </div>
+                          </td>
+                          <td className="admin-table__email">{u.email}</td>
+                          <td><span className={`admin-badge admin-badge--${u.role === 'admin' ? 'approved' : 'new'}`}>{u.role}</span></td>
+                          <td className="admin-table__date">{new Date(u.created_at).toLocaleDateString()}</td>
+                          <td>
+                            <select value={u.role} onChange={e => handleRoleChange(u.id, e.target.value)} className="admin-filter-select" style={{minWidth:100}}>
+                              <option value="collaborator">Collaborator</option>
+                              <option value="creator">Creator</option>
+                              <option value="admin">Admin</option>
+                            </select>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
+              )}
+
+              {/* MESSAGES */}
+              {activeView === 'messages' && (
+                <>
+                  <div className="admin-content__header">
+                    <h1 className="admin-content__title">Messages</h1>
+                    <p className="admin-content__subtitle">{messages.length} total messages</p>
+                  </div>
+                  {messages.length === 0 ? (
+                    <div className="admin-empty">
+                      <div className="admin-empty__icon">{'\uD83D\uDCAC'}</div>
+                      <div className="admin-empty__title">No messages yet</div>
+                    </div>
+                  ) : (
+                    messages.map(m => (
+                      <div key={m.id} className={`admin-message-card${!m.is_read ? ' admin-message-card--unread' : ''}`} onClick={() => setExpandedMsg(expandedMsg === m.id ? null : m.id)}>
+                        <div className="admin-message-card__header">
+                          <div>
+                            <span className="admin-message-card__from">{m.from_name}</span>
+                            <span className="admin-message-card__email">{m.from_email}</span>
+                          </div>
+                          <div style={{display:'flex',alignItems:'center',gap:8}}>
+                            <span className="admin-message-card__date">{timeAgo(m.created_at)}</span>
+                            <a href={`mailto:${m.from_email}?subject=Re: ${m.subject_type}`} className="admin-btn admin-btn--outline admin-btn--sm" onClick={e => e.stopPropagation()}>Reply</a>
                           </div>
                         </div>
-                        <a href={`mailto:${m.from_email}?subject=Re: ${m.subject_type}`} className="btn btn--outline btn--sm" onClick={e => e.stopPropagation()}>Reply</a>
+                        <div className="admin-message-card__type">{m.subject_type}</div>
+                        {expandedMsg === m.id && <div className="admin-message-card__body">{m.message}</div>}
                       </div>
-                      {expandedMsg === m.id && (
-                        <div style={{ marginTop: 'var(--space-3)', paddingTop: 'var(--space-3)', borderTop: '1px solid var(--color-border)', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
-                          {m.message}
+                    ))
+                  )}
+                </>
+              )}
+
+              {/* INTERESTS */}
+              {activeView === 'interests' && (
+                <>
+                  <div className="admin-content__header">
+                    <h1 className="admin-content__title">Collaboration Interests</h1>
+                    <p className="admin-content__subtitle">{interests.length} expressions of interest</p>
+                  </div>
+                  <table className="admin-table">
+                    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Project</th><th>Date</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {filteredInterests.map(i => (
+                        <tr key={i.id}>
+                          <td className="admin-table__name">{i.name}</td>
+                          <td className="admin-table__email">{i.email}</td>
+                          <td>{i.task_title || '\u2014'}</td>
+                          <td>{i.project_title || '\u2014'}</td>
+                          <td className="admin-table__date">{new Date(i.created_at).toLocaleDateString()}</td>
+                          <td><a href={`mailto:${i.email}`} className="admin-btn admin-btn--outline admin-btn--sm">Email</a></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
+              )}
+
+              {/* ACTIVITY */}
+              {activeView === 'activity' && (
+                <>
+                  <div className="admin-content__header">
+                    <h1 className="admin-content__title">Activity Feed</h1>
+                    <p className="admin-content__subtitle">Last {activityFeed.length} activities</p>
+                  </div>
+                  <div className="admin-feed">
+                    {activityFeed.map(a => (
+                      <div key={a.id} className="admin-feed__item">
+                        <div className={`admin-feed__icon admin-feed__icon--${a.type}`}>
+                          {a.type === 'user' ? '\uD83D\uDC64' : a.type === 'project' ? '\uD83D\uDCC1' : '\uD83E\uDD1D'}
                         </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
-
-          {/* Activity Tab */}
-          {activeTab === 'activity' && (
-            <section>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>
-                Activity Feed ({activityFeed.length})
-              </h2>
-              {activityFeed.length === 0 ? (
-                <p style={{ color: 'var(--color-text-muted)' }}>No activity yet.</p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                  {activityFeed.map(item => {
-                    const icon = item.type === 'user' ? '\uD83D\uDC64' : item.type === 'profile' ? '\uD83D\uDCCB' : item.type === 'project' ? '\uD83C\uDFA8' : '\u2B50'
-                    const now = new Date()
-                    const then = new Date(item.date)
-                    const diffMs = now.getTime() - then.getTime()
-                    const diffMin = Math.floor(diffMs / 60000)
-                    const diffHr = Math.floor(diffMin / 60)
-                    const diffDay = Math.floor(diffHr / 24)
-                    const relativeDate = diffMin < 1 ? 'just now' : diffMin < 60 ? `${diffMin}m ago` : diffHr < 24 ? `${diffHr}h ago` : diffDay < 30 ? `${diffDay}d ago` : then.toLocaleDateString()
-
-                    return (
-                      <div key={item.id} style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 'var(--space-3)',
-                        padding: 'var(--space-3) var(--space-4)',
-                        background: 'var(--color-surface)',
-                        border: '1px solid var(--color-border)',
-                        borderRadius: 'var(--radius-md)',
-                      }}>
-                        <span style={{ fontSize: 'var(--text-lg)' }}>{icon}</span>
-                        <span style={{ flex: 1, fontSize: 'var(--text-sm)' }}>{item.text}</span>
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>{relativeDate}</span>
+                        <span className="admin-feed__text">{a.text}</span>
+                        <span className="admin-feed__time">{timeAgo(a.date)}</span>
                       </div>
-                    )
-                  })}
-                </div>
+                    ))}
+                  </div>
+                </>
               )}
-            </section>
+
+              {/* PROFILES (legacy collaborator profiles) */}
+              {activeView === 'profiles' && (
+                <>
+                  <div className="admin-content__header">
+                    <h1 className="admin-content__title">Collaborator Profiles</h1>
+                    <p className="admin-content__subtitle">{profiles.length} legacy profiles</p>
+                  </div>
+                  <table className="admin-table">
+                    <thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {filteredProfiles.map(p => (
+                        <tr key={p.id}>
+                          <td className="admin-table__name">{p.name}</td>
+                          <td className="admin-table__email">{p.email}</td>
+                          <td><span className={`admin-badge admin-badge--${p.status}`}>{p.status}</span></td>
+                          <td className="admin-table__date">{new Date(p.created_at).toLocaleDateString()}</td>
+                          <td>
+                            <div style={{display:'flex',gap:6}}>
+                              {p.status === 'new' && (
+                                <>
+                                  <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={() => handleAction('profile', p.id, 'approve')}>Approve</button>
+                                  <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleAction('profile', p.id, 'reject')}>Reject</button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
+              )}
+            </>
           )}
-        </>
-      )}
+        </div>
+      </main>
     </div>
   )
 }
