@@ -175,6 +175,7 @@ function mapUserProfileRow(
       portfolio_pdf_url: extended.portfolio_pdf_url ? String(extended.portfolio_pdf_url) : undefined,
       media_links: Array.isArray(extended.media_links) ? extended.media_links as { label: string; url: string; type: 'website' | 'fundraiser' | 'other' }[] : undefined,
       past_work: Array.isArray(extended.past_work) ? extended.past_work as { url: string; title: string; description?: string }[] : undefined,
+      pdf_documents: Array.isArray(extended.pdf_documents) ? extended.pdf_documents as { url: string; title: string }[] : undefined,
     } : {}),
     // Related data from separate tables
     ...(relatedData ? {

@@ -323,6 +323,7 @@ export interface Profile {
   portfolio_projects?: PortfolioProject[]
   work_experience?: WorkExperience[]
   past_work?: { url: string; title: string; description?: string }[]
+  pdf_documents?: { url: string; title: string }[]
 }
 
 export interface UserProfile {

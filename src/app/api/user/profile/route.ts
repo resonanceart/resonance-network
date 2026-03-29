@@ -338,6 +338,13 @@ export async function PUT(request: Request) {
         extendedFields.past_work = body.past_work
       }
     }
+    if (body.pdf_documents !== undefined) {
+      if (body.pdf_documents === null) {
+        extendedFields.pdf_documents = null
+      } else if (Array.isArray(body.pdf_documents) && body.pdf_documents.length <= 50) {
+        extendedFields.pdf_documents = body.pdf_documents
+      }
+    }
 
     // Check if we have related table arrays to update
     const hasRelatedUpdates =
