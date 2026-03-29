@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, getClientIp } from '@/lib/sanitize'
+import { validateCsrf } from '@/lib/csrf'
 
 export async function GET(request: Request) {
   try {
@@ -22,6 +23,7 @@ export async function GET(request: Request) {
       .from('user_profiles')
       .select('id, created_at, display_name, email, role, onboarding_complete, avatar_url')
       .order('created_at', { ascending: false })
+      .limit(500)
 
     if (error) {
       console.error('Admin users fetch error:', error.message)
@@ -41,6 +43,13 @@ export async function PUT(request: Request) {
       return NextResponse.json(
         { success: false, message: 'Too many requests.' },
         { status: 429 }
+      )
+    }
+
+    if (!validateCsrf(request)) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid request origin.' },
+        { status: 403 }
       )
     }
 

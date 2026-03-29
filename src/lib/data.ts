@@ -308,6 +308,8 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
     const { data: allUsers, error: upError } = await supabaseAdmin
       .from('user_profiles')
       .select('*')
+      .limit(1000)
+      .order('created_at', { ascending: false })
 
     if (!upError && allUsers) {
       // First try published, then any visibility

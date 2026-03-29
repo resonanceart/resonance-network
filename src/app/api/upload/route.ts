@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { rateLimit } from '@/lib/rate-limit'
+import { getClientIp } from '@/lib/sanitize'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -27,6 +29,12 @@ export async function POST(request: Request) {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Rate limit file uploads
+    const ip = getClientIp(request)
+    if (!rateLimit(ip)) {
+      return NextResponse.json({ error: 'Too many uploads. Please wait.' }, { status: 429 })
     }
 
     const formData = await request.formData()

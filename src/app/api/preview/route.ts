@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { rateLimit } from '@/lib/rate-limit'
+import { getClientIp } from '@/lib/sanitize'
 
 export async function GET(request: Request) {
+  const ip = getClientIp(request)
+  if (!rateLimit(ip)) {
+    return NextResponse.json({ error: 'Too many requests.' }, { status: 429 })
+  }
+
   const { searchParams } = new URL(request.url)
   const type = searchParams.get('type')
   const id = searchParams.get('id')
@@ -12,6 +20,22 @@ export async function GET(request: Request) {
 
   if (!['project', 'profile'].includes(type)) {
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
+  }
+
+  // Check if user is authenticated (owner or admin)
+  let isAuthorized = false
+  try {
+    const supabase = await createSupabaseServerClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      isAuthorized = true // Any authenticated user can preview
+    }
+  } catch {
+    // Check admin password header as fallback
+    const adminPwd = request.headers.get('x-admin-password')
+    if (adminPwd === process.env.ADMIN_PASSWORD) {
+      isAuthorized = true
+    }
   }
 
   const table = type === 'project' ? 'project_submissions' : 'collaborator_profiles'
@@ -25,6 +49,14 @@ export async function GET(request: Request) {
 
     if (error || !data) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
+    // If not authorized, only allow viewing approved/published items
+    if (!isAuthorized) {
+      const status = (data as Record<string, unknown>).status as string
+      if (status !== 'approved' && status !== 'published') {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 })
+      }
     }
 
     return NextResponse.json({ data })
