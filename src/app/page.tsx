@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { ProjectGallery } from '@/components/ProjectGallery'
 import { AuthAwareCTA } from '@/components/AuthAwareCTA'
 import { getProjects } from '@/lib/data'
@@ -75,7 +76,7 @@ export default async function HomePage() {
         <div className="cta-bottom__inner">
           <h2 className="cta-bottom__heading">Connect to Your Passion and Purpose</h2>
           <div className="cta-bottom__actions">
-            <a href="/collaborate" className="btn btn--primary btn--large">Find Role</a>
+            <Link href="/collaborate" className="btn btn--primary btn--large">Find Role</Link>
             <AuthAwareCTA
               loggedOutHref="/login?tab=signup"
               loggedOutLabel="Build Profile"

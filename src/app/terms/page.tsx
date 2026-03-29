@@ -1,8 +1,15 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description: 'Resonance Network terms of service — the rules and guidelines for using our platform.',
+  alternates: { canonical: 'https://resonance.network/terms' },
+  openGraph: {
+    title: 'Terms of Service — Resonance Network',
+    description: 'The rules and guidelines for using Resonance Network.',
+    url: 'https://resonance.network/terms',
+  },
 }
 
 export default function TermsPage() {
@@ -22,7 +29,7 @@ export default function TermsPage() {
         <p>
           By creating an account or using any part of the Resonance Network platform, you
           acknowledge that you have read, understood, and agree to be bound by these Terms
-          and our <a href="/privacy">Privacy Policy</a>.
+          and our <Link href="/privacy">Privacy Policy</Link>.
         </p>
 
         <h2>2. Account Responsibilities</h2>

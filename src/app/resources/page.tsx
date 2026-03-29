@@ -4,6 +4,12 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Resources — Guides, Tools & Pathways for Creative Projects',
   description: 'Fundraising guides, permitting resources, fiscal sponsorship pathways, and production tools for ambitious spatial and creative projects.',
+  alternates: { canonical: 'https://resonance.network/resources' },
+  openGraph: {
+    title: 'Resources — Resonance Network',
+    description: 'Fundraising guides, permitting resources, and production tools for ambitious creative projects.',
+    url: 'https://resonance.network/resources',
+  },
 }
 
 export default function ResourcesPage() {

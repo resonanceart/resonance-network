@@ -4,6 +4,12 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description: 'Resonance Network privacy policy — how we collect, use, and protect your data.',
+  alternates: { canonical: 'https://resonance.network/privacy' },
+  openGraph: {
+    title: 'Privacy Policy — Resonance Network',
+    description: 'How we collect, use, and protect your data.',
+    url: 'https://resonance.network/privacy',
+  },
 }
 
 export default function PrivacyPage() {
