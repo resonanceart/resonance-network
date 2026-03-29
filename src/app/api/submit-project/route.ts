@@ -71,7 +71,19 @@ export async function POST(request: Request) {
     const pathways = Array.isArray(body.pathways) ? body.pathways.filter((p: unknown) => typeof p === 'string').map((p: string) => p.slice(0, 100)) : null
     const heroImageData = typeof body.heroImageData === 'string' && body.heroImageData.length <= 7_340_032 ? body.heroImageData : null
     const galleryImagesData = typeof body.galleryImagesData === 'string' && body.galleryImagesData.length <= 44_040_192 ? body.galleryImagesData : null
-    const collaborationNeeds = sanitizeText(body.collaborationNeeds, 5000)
+    // collaborationNeeds can be JSON (role cards) or plain text — don't sanitize JSON
+    let collaborationNeeds: string | null = null
+    if (typeof body.collaborationNeeds === 'string') {
+      // Check if it's valid JSON (role cards array)
+      try {
+        JSON.parse(body.collaborationNeeds)
+        // It's JSON — allow up to 50KB for roles with image URLs
+        collaborationNeeds = body.collaborationNeeds.length <= 50_000 ? body.collaborationNeeds : null
+      } catch {
+        // Plain text — sanitize normally
+        collaborationNeeds = sanitizeText(body.collaborationNeeds, 5000)
+      }
+    }
     const collaborationRoleCount = typeof body.collaborationRoleCount === 'number' && body.collaborationRoleCount >= 1 && body.collaborationRoleCount <= 20 ? body.collaborationRoleCount : null
     const artistHeadshotData = typeof body.artistHeadshotData === 'string' && body.artistHeadshotData.length <= 7_340_032 ? body.artistHeadshotData : null
 

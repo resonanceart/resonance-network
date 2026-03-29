@@ -59,6 +59,7 @@ function LiveProjectEditorInner() {
   const [saving, setSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
   const [savedMessage, setSavedMessage] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [activePanel, setActivePanel] = useState<EditSection>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [submissionId, setSubmissionId] = useState<string | null>(existingId)
@@ -170,12 +171,23 @@ function LiveProjectEditorInner() {
       return
     }
     setSaving(true)
+    setErrorMessage(null)
     try {
+      const rolesJson = JSON.stringify(
+        collabRoles
+          .filter(r => (r.title === 'Other' ? r.customTitle.trim() : r.title) && r.description.trim())
+          .map(r => ({
+            title: r.title === 'Other' ? r.customTitle.trim() : r.title,
+            description: r.description.trim(),
+            image_url: r.imageUrl,
+          }))
+      )
       const res = await fetch('/api/submit-project', {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          id: submissionId || undefined,
           artistName: leadArtistName,
           artistEmail: contactEmail,
           artistBio: '',
@@ -195,30 +207,28 @@ function LiveProjectEditorInner() {
           specialNeeds: specialNeeds.trim(),
           heroImageData: heroImageUrl,
           galleryImagesData: galleryImages.length > 0 ? JSON.stringify(galleryImages) : null,
-          collaborationNeeds: JSON.stringify(
-            collabRoles
-              .filter(r => (r.title === 'Other' ? r.customTitle.trim() : r.title) && r.description.trim())
-              .map(r => ({
-                title: r.title === 'Other' ? r.customTitle.trim() : r.title,
-                description: r.description.trim(),
-                image_url: r.imageUrl,
-              }))
-          ),
+          collaborationNeeds: rolesJson,
           collaborationRoleCount: collabRoles.filter(r => r.title || r.customTitle).length || null,
           status: 'draft',
         }),
       })
-      if (res.ok) {
-        const data = await res.json()
-        if (data.id && !submissionId) setSubmissionId(data.id)
-        setHasChanges(false)
-        if (!silent) {
-          setSavedMessage(true)
-          setTimeout(() => setSavedMessage(false), 3000)
-        }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        console.error('Draft save failed:', res.status, data)
+        if (!silent) setErrorMessage(data.message || `Save failed (${res.status})`)
+        setSaving(false)
+        return
       }
-    } catch {
-      // silent fail
+      const data = await res.json()
+      if (data.id) setSubmissionId(data.id)
+      setHasChanges(false)
+      if (!silent) {
+        setSavedMessage(true)
+        setTimeout(() => setSavedMessage(false), 3000)
+      }
+    } catch (err) {
+      console.error('Draft save error:', err)
+      if (!silent) setErrorMessage('Network error. Please try again.')
     }
     setSaving(false)
   }
@@ -226,6 +236,7 @@ function LiveProjectEditorInner() {
   async function submitForReview() {
     if (!title.trim()) { alert('Please enter a project title.'); return }
     setSaving(true)
+    setErrorMessage(null)
     try {
       const rolesData = collabRoles
         .filter(r => (r.title === 'Other' ? r.customTitle.trim() : r.title) && r.description.trim())
@@ -264,14 +275,22 @@ function LiveProjectEditorInner() {
           status: 'pending',
         }),
       })
-      if (res.ok) {
-        const data = await res.json()
-        if (data.id && !submissionId) setSubmissionId(data.id)
-        setHasChanges(false)
-        setSavedMessage(true)
-        setTimeout(() => setSavedMessage(false), 3000)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        console.error('Submit failed:', res.status, data)
+        setErrorMessage(data.message || `Submission failed (${res.status})`)
+        setSaving(false)
+        return
       }
-    } catch { /* */ }
+      const data = await res.json()
+      if (data.id) setSubmissionId(data.id)
+      setHasChanges(false)
+      setSavedMessage(true)
+      setTimeout(() => setSavedMessage(false), 3000)
+    } catch (err) {
+      console.error('Submit error:', err)
+      setErrorMessage('Network error. Please try again.')
+    }
     setSaving(false)
   }
 
@@ -348,7 +367,10 @@ function LiveProjectEditorInner() {
         <div className="live-editor__toolbar-inner container">
           <span className="live-editor__toolbar-title">Building Your Project</span>
           <div className="live-editor__toolbar-actions">
-            {hasChanges && <span className="live-editor__unsaved">Unsaved changes</span>}
+            {errorMessage && (
+              <span className="live-editor__error" onClick={() => setErrorMessage(null)} title="Click to dismiss">{errorMessage}</span>
+            )}
+            {hasChanges && !errorMessage && <span className="live-editor__unsaved">Unsaved changes</span>}
             {savedMessage && <span className="live-editor__saved">Saved!</span>}
             <button onClick={() => saveDraft(false)} className="btn btn--primary btn--sm" disabled={saving || !hasChanges}>
               {saving ? 'Saving...' : 'Save Draft'}
