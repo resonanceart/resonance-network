@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useAuth } from '@/components/AuthProvider'
 import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabilityBadge'
 import { ProfileTimeline } from '@/components/profile/ProfileTimeline'
+import { ShareProfile } from '@/components/profile/ShareProfile'
 import { SmartGallery, type GalleryItem } from '@/components/profile/SmartGallery'
 
 function getInitials(name: string) {
@@ -229,6 +230,7 @@ export default function ProfilePreviewPage() {
 
   const locationDisplay = [location, locationSecondary].filter(Boolean).join(' / ')
   const initials = getInitials(displayName)
+  const profileSlug = displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
   return (
     <>
@@ -393,6 +395,13 @@ export default function ProfilePreviewPage() {
               <p className="section-label">Milestones</p>
               <ProfileTimeline entries={timeline as any} />
             </div>
+          </section>
+        )}
+
+        {/* Share Profile — show for published or pending profiles */}
+        {(profileVisibility === 'published' || profileVisibility === 'pending') && profileSlug && (
+          <section className="container" style={{ paddingBottom: 'var(--space-8)' }}>
+            <ShareProfile slug={profileSlug} displayName={displayName} />
           </section>
         )}
       </article>

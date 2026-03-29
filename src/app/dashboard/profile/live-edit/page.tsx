@@ -8,6 +8,7 @@ import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabili
 import { ProfileSkillsDisplay } from '@/components/profile/ProfileSkillsDisplay'
 import { ProfileToolsDisplay } from '@/components/profile/ProfileToolsDisplay'
 import { ProfileChecklist } from '@/components/profile/ProfileChecklist'
+import { ShareProfile } from '@/components/profile/ShareProfile'
 import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components/profile/SmartGallery'
 import type { ProfileSkill, ProfileTool, ProfileSocialLink } from '@/types'
 
@@ -1289,6 +1290,13 @@ export default function LiveProfileEditor() {
           <div className="editable-section__overlay"><span>Edit milestones</span></div>
         </div>
       </article>
+
+      {/* Share Profile — show after save when profile is published or pending */}
+      {savedMessage && (profileVisibility === 'published' || profileVisibility === 'pending') && slug && (
+        <div className="container">
+          <ShareProfile slug={slug} displayName={displayName} />
+        </div>
+      )}
 
       {/* Profile Checklist */}
       <ProfileChecklist
