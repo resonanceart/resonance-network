@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
+import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components/profile/SmartGallery'
 
 type EditSection = 'hero' | 'overview' | 'gallery' | 'experience' | 'story' | 'goals' | 'classification' | 'team' | 'roles' | null
 
@@ -87,10 +88,16 @@ function LiveProjectEditorInner() {
   const [materials, setMaterials] = useState('')
   const [specialNeeds, setSpecialNeeds] = useState('')
   const [galleryImages, setGalleryImages] = useState<Array<{ url: string; alt: string }>>([])
+  const [projectPdfs, setProjectPdfs] = useState<Array<{ url: string; title: string; thumbnail?: string }>>([])
+  const [projectLinks, setProjectLinks] = useState<Array<{ url: string; label: string; thumbnail?: string }>>([])
   const [collaborators, setCollaborators] = useState<Array<{ name: string; role: string; photo: string | null }>>([])
   const [collabRoles, setCollabRoles] = useState<CollabRole[]>([emptyRole()])
   const [contactEmail, setContactEmail] = useState('')
   const [leadArtistName, setLeadArtistName] = useState('')
+  const [showProjectAddLink, setShowProjectAddLink] = useState(false)
+  const [newProjectLinkUrl, setNewProjectLinkUrl] = useState('')
+  const [newProjectLinkLabel, setNewProjectLinkLabel] = useState('')
+  const [galleryUploading, setGalleryUploading] = useState(false)
 
   const lastChangeTime = useRef(0)
   const markDirty = useCallback(() => { setHasChanges(true); lastChangeTime.current = Date.now() }, [])
@@ -155,8 +162,16 @@ function LiveProjectEditorInner() {
             if (p.hero_image_data) setHeroImageUrl(p.hero_image_data)
             if (p.gallery_images_data) {
               try {
-                const imgs = JSON.parse(p.gallery_images_data)
-                if (Array.isArray(imgs)) setGalleryImages(imgs)
+                const parsed = JSON.parse(p.gallery_images_data)
+                if (Array.isArray(parsed)) {
+                  // Legacy format — array of images only
+                  setGalleryImages(parsed)
+                } else if (parsed && typeof parsed === 'object') {
+                  // New format — { images, pdfs, links }
+                  if (Array.isArray(parsed.images)) setGalleryImages(parsed.images)
+                  if (Array.isArray(parsed.pdfs)) setProjectPdfs(parsed.pdfs)
+                  if (Array.isArray(parsed.links)) setProjectLinks(parsed.links)
+                }
               } catch { /* */ }
             }
           }
@@ -219,7 +234,9 @@ function LiveProjectEditorInner() {
           materials: materials.trim(),
           specialNeeds: specialNeeds.trim(),
           heroImageData: heroImageUrl,
-          galleryImagesData: galleryImages.length > 0 ? JSON.stringify(galleryImages) : null,
+          galleryImagesData: (galleryImages.length > 0 || projectPdfs.length > 0 || projectLinks.length > 0)
+            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks })
+            : null,
           collaborationNeeds: rolesJson,
           collaborationRoleCount: collabRoles.filter(r => r.title || r.customTitle).length || null,
           status: 'draft',
@@ -282,7 +299,9 @@ function LiveProjectEditorInner() {
           materials: materials.trim(),
           specialNeeds: specialNeeds.trim(),
           heroImageData: heroImageUrl,
-          galleryImagesData: galleryImages.length > 0 ? JSON.stringify(galleryImages) : null,
+          galleryImagesData: (galleryImages.length > 0 || projectPdfs.length > 0 || projectLinks.length > 0)
+            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks })
+            : null,
           collaborationNeeds: JSON.stringify(rolesData),
           collaborationRoleCount: rolesData.length || null,
           status: 'pending',
@@ -351,6 +370,23 @@ function LiveProjectEditorInner() {
       }
     }
     setSaving(false)
+  }
+
+  function buildProjectGalleryItems(): SmartGalleryItem[] {
+    const items: SmartGalleryItem[] = []
+    let order = 0
+    galleryImages.forEach((img, i) => {
+      items.push({ id: `img-${i}`, type: 'image', url: img.url, title: img.alt || 'Gallery Image', order: order++ })
+    })
+    projectPdfs.forEach((doc, i) => {
+      items.push({ id: `pdf-${i}`, type: 'pdf', url: doc.url, thumbnail: doc.thumbnail, title: doc.title || 'Document', subtitle: 'PDF', order: order++ })
+    })
+    projectLinks.forEach((link, i) => {
+      let subtitle = 'website'
+      try { subtitle = new URL(link.url).hostname } catch {}
+      items.push({ id: `link-${i}`, type: 'link', url: link.url, thumbnail: link.thumbnail, title: link.label || 'Link', subtitle, order: order++ })
+    })
+    return items
   }
 
   function handlePhotoUpload(callback: (dataUrl: string) => void) {
@@ -518,30 +554,112 @@ function LiveProjectEditorInner() {
           <div className="editable-section__overlay"><span>Edit overview</span></div>
         </div>
 
-        {/* Gallery */}
-        <div className="editable-section" onClick={() => openPanel('gallery')}>
-          {galleryImages.length > 0 ? (
-            <section style={{ padding: 'var(--space-8) 0' }}>
-              <div className="container">
-                <p className="section-label">Gallery</p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-3)' }}>
-                  {galleryImages.map((img, i) => (
-                    <div key={i} style={{ borderRadius: 8, overflow: 'hidden', aspectRatio: '4/3' }}>
-                      <img src={img.url} alt={img.alt} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                  ))}
+        {/* Media Gallery — SmartGallery with images, PDFs, links */}
+        <section style={{ padding: 'var(--space-8) 0' }}>
+          <div className="container">
+            <p className="section-label">Media Gallery</p>
+            {buildProjectGalleryItems().length > 0 ? (
+              <SmartGallery
+                items={buildProjectGalleryItems()}
+                editable={true}
+                onReorder={(reordered) => markDirty()}
+                onDelete={(id) => {
+                  if (id.startsWith('img-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setGalleryImages(prev => prev.filter((_, i) => i !== idx))
+                  } else if (id.startsWith('pdf-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setProjectPdfs(prev => prev.filter((_, i) => i !== idx))
+                  } else if (id.startsWith('link-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setProjectLinks(prev => prev.filter((_, i) => i !== idx))
+                  }
+                  markDirty()
+                }}
+                onEditTitle={(id, newTitle) => {
+                  if (id.startsWith('img-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setGalleryImages(prev => prev.map((item, i) => i === idx ? { ...item, alt: newTitle } : item))
+                  } else if (id.startsWith('pdf-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setProjectPdfs(prev => prev.map((item, i) => i === idx ? { ...item, title: newTitle } : item))
+                  } else if (id.startsWith('link-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setProjectLinks(prev => prev.map((item, i) => i === idx ? { ...item, label: newTitle } : item))
+                  }
+                  markDirty()
+                }}
+                onEditThumbnail={(id, thumbnailUrl) => {
+                  if (id.startsWith('pdf-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setProjectPdfs(prev => prev.map((item, i) => i === idx ? { ...item, thumbnail: thumbnailUrl } : item))
+                  } else if (id.startsWith('link-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setProjectLinks(prev => prev.map((item, i) => i === idx ? { ...item, thumbnail: thumbnailUrl } : item))
+                  }
+                  markDirty()
+                }}
+              />
+            ) : (
+              <div className="live-editor__empty-placeholder">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>Add images, documents, and links to your media gallery</span>
+              </div>
+            )}
+            {/* Add buttons */}
+            {galleryUploading && (
+              <div style={{ padding: '10px 16px', borderRadius: 8, marginTop: 'var(--space-3)', fontSize: 'var(--text-sm)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(1,105,111,0.1)' }}>
+                <span className="dashboard-spinner" style={{ width: 16, height: 16 }} /> Uploading...
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-4)', flexWrap: 'wrap' }}>
+              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer' }}>
+                <input type="file" accept="image/*" multiple onChange={async (e) => {
+                  setGalleryUploading(true)
+                  await handleGalleryUpload(e)
+                  setGalleryUploading(false)
+                }} style={{ display: 'none' }} />
+                {galleryUploading ? 'Uploading...' : '+ Add Images'}
+              </label>
+              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer' }}>
+                <input type="file" accept=".pdf,application/pdf" multiple onChange={async (e) => {
+                  const files = e.target.files
+                  if (!files) return
+                  setGalleryUploading(true)
+                  for (const file of Array.from(files)) {
+                    if (file.size > 10 * 1024 * 1024) continue
+                    const url = await uploadFileToStorage(file, 'portfolio')
+                    if (url) {
+                      setProjectPdfs(prev => [...prev, { url, title: file.name.replace(/\.pdf$/i, '') }])
+                      markDirty()
+                    }
+                  }
+                  setGalleryUploading(false)
+                  e.target.value = ''
+                }} style={{ display: 'none' }} />
+                + Add PDF
+              </label>
+              {showProjectAddLink ? (
+                <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-end', flexWrap: 'wrap', flex: 1 }}>
+                  <input className="form-input" value={newProjectLinkUrl} onChange={e => setNewProjectLinkUrl(e.target.value)} placeholder="https://..." style={{ flex: 1, minWidth: 120, fontSize: 'var(--text-sm)' }} />
+                  <input className="form-input" value={newProjectLinkLabel} onChange={e => setNewProjectLinkLabel(e.target.value)} placeholder="Label" style={{ flex: 1, minWidth: 80, fontSize: 'var(--text-sm)' }} />
+                  <button className="btn btn--primary btn--sm" onClick={() => {
+                    if (newProjectLinkUrl.trim()) {
+                      setProjectLinks(prev => [...prev, { url: newProjectLinkUrl.trim(), label: newProjectLinkLabel.trim() || 'Link' }])
+                      markDirty()
+                      setNewProjectLinkUrl('')
+                      setNewProjectLinkLabel('')
+                      setShowProjectAddLink(false)
+                    }
+                  }}>Add</button>
+                  <button className="btn btn--ghost btn--sm" onClick={() => setShowProjectAddLink(false)}>Cancel</button>
                 </div>
-              </div>
-            </section>
-          ) : (
-            <section style={{ padding: 'var(--space-8) 0' }}>
-              <div className="container">
-                <div className="live-editor__empty-placeholder"><span>Add gallery images</span></div>
-              </div>
-            </section>
-          )}
-          <div className="editable-section__overlay"><span>Edit gallery</span></div>
-        </div>
+              ) : (
+                <button className="btn btn--outline btn--sm" onClick={() => setShowProjectAddLink(true)}>+ Add Link</button>
+              )}
+            </div>
+          </div>
+        </section>
 
         {/* Experience */}
         <div className="editable-section" onClick={() => openPanel('experience')}>
@@ -806,35 +924,7 @@ function LiveProjectEditorInner() {
                 </div>
               )}
 
-              {/* GALLERY PANEL */}
-              {activePanel === 'gallery' && (
-                <div className="live-editor__panel-section">
-                  {galleryImages.length > 0 && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
-                      {galleryImages.map((img, i) => (
-                        <div key={i} style={{ position: 'relative', borderRadius: 8, overflow: 'hidden' }}>
-                          <img src={img.url} alt={img.alt} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover' }} />
-                          <button
-                            onClick={() => { setGalleryImages(prev => prev.filter((_, j) => j !== i)); markDirty() }}
-                            style={{
-                              position: 'absolute', top: 4, right: 4, width: 24, height: 24, borderRadius: 4,
-                              background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', cursor: 'pointer',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
-                            }}
-                          >
-                            &times;
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <label className="live-editor__upload-zone">
-                    <input type="file" accept="image/*" multiple onChange={handleGalleryUpload} style={{ display: 'none' }} />
-                    <span>Upload Gallery Images</span>
-                    <small>Select multiple images</small>
-                  </label>
-                </div>
-              )}
+              {/* Gallery is now inline — no panel needed */}
 
               {/* EXPERIENCE PANEL */}
               {activePanel === 'experience' && (
