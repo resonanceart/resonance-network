@@ -36,18 +36,24 @@ function emptyRole(): CollabRole {
   return { title: '', customTitle: '', description: '', imageUrl: null }
 }
 
-async function uploadFile(file: File, type: string): Promise<string | null> {
-  const formData = new FormData()
-  formData.append('file', file)
-  formData.append('type', type)
-  try {
-    const res = await fetch('/api/upload', { method: 'POST', credentials: 'same-origin', body: formData })
-    if (!res.ok) return null
-    const data = await res.json()
-    return data.url || null
-  } catch {
-    return null
-  }
+function compressImage(file: File, maxWidth: number, quality: number): Promise<string> {
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const img = new window.Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const ratio = Math.min(maxWidth / img.width, 1)
+        canvas.width = img.width * ratio
+        canvas.height = img.height * ratio
+        const ctx = canvas.getContext('2d')!
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+        resolve(canvas.toDataURL('image/jpeg', quality))
+      }
+      img.src = reader.result as string
+    }
+    reader.readAsDataURL(file)
+  })
 }
 
 function LiveProjectEditorInner() {
@@ -107,11 +113,12 @@ function LiveProjectEditorInner() {
 
     if (existingId) {
       // Fetch existing submission
-      fetch(`/api/user/projects?id=${existingId}`, { credentials: 'same-origin' })
+      fetch('/api/user/projects', { credentials: 'same-origin' })
         .then(r => r.json())
         .then(data => {
-          if (data.project) {
-            const p = data.project
+          const submissions = data.submissions || []
+          const p = submissions.find((s: Record<string, unknown>) => s.id === existingId)
+          if (p) {
             setTitle(p.project_title || '')
             setShortDescription(p.one_sentence || '')
             setOverviewLead(p.vision || '')
@@ -146,6 +153,12 @@ function LiveProjectEditorInner() {
             setLeadArtistName(p.artist_name || '')
             setContactEmail(p.artist_email || '')
             if (p.hero_image_data) setHeroImageUrl(p.hero_image_data)
+            if (p.gallery_images_data) {
+              try {
+                const imgs = JSON.parse(p.gallery_images_data)
+                if (Array.isArray(imgs)) setGalleryImages(imgs)
+              } catch { /* */ }
+            }
           }
         })
         .catch(() => {})
@@ -297,13 +310,9 @@ function LiveProjectEditorInner() {
   async function handleHeroUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file || file.size > 10 * 1024 * 1024) return
-    setSaving(true)
-    const url = await uploadFile(file, 'hero')
-    if (url) {
-      setHeroImageUrl(url)
-      markDirty()
-    }
-    setSaving(false)
+    const dataUrl = await compressImage(file, 1600, 0.85)
+    setHeroImageUrl(dataUrl)
+    markDirty()
   }
 
   async function handleGalleryUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -311,11 +320,9 @@ function LiveProjectEditorInner() {
     if (!files) return
     for (const file of Array.from(files)) {
       if (file.size > 10 * 1024 * 1024) continue
-      const url = await uploadFile(file, 'gallery')
-      if (url) {
-        setGalleryImages(prev => [...prev, { url, alt: file.name.replace(/\.[^.]+$/, '') }])
-        markDirty()
-      }
+      const dataUrl = await compressImage(file, 1200, 0.8)
+      setGalleryImages(prev => [...prev, { url: dataUrl, alt: file.name.replace(/\.[^.]+$/, '') }])
+      markDirty()
     }
   }
 
