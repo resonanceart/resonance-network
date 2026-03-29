@@ -1,6 +1,7 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { supabase } from '@/lib/supabase-client'
+import { useAuth } from '@/components/AuthProvider'
 
 type Tab = 'projects' | 'profiles' | 'user_profiles' | 'users' | 'interests'
 
@@ -55,10 +56,29 @@ interface InterestEntry {
 }
 
 export default function AdminPage() {
+  const { user } = useAuth()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
+  const [checkingRole, setCheckingRole] = useState(true)
+
+  // Auto-authenticate if user has admin role
+  useEffect(() => {
+    if (!user) { setCheckingRole(false); return }
+    fetch('/api/user/profile', { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.profile?.role === 'admin') {
+          setPassword(process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'auto')
+          setIsAuthenticated(true)
+          fetchData()
+        }
+      })
+      .catch(() => {})
+      .finally(() => setCheckingRole(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
 
   const [projects, setProjects] = useState<ProjectSubmission[]>([])
   const [profiles, setProfiles] = useState<ProfileSubmission[]>([])
@@ -109,10 +129,11 @@ export default function AdminPage() {
     setInterests((intRes.data || []) as InterestEntry[])
     setUserProfiles((upRes.data || []) as UserProfileEntry[])
 
-    // Fetch users via admin API
+    // Fetch users via admin API (requires admin password)
     try {
       const userRes = await fetch('/api/admin/users', {
-        headers: { 'x-admin-password': password },
+        headers: { 'x-admin-password': password || '' },
+        credentials: 'include',
       })
       const userData = await userRes.json()
       if (userData.success) {
@@ -131,7 +152,7 @@ export default function AdminPage() {
       const res = await fetch('/api/admin/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'user_profile', id, action, adminPassword: password }),
+        body: JSON.stringify({ type: 'user_profile', id, action, adminPassword: password || 'auto' }),
       })
       const data = await res.json()
       if (data.success) {
@@ -151,7 +172,7 @@ export default function AdminPage() {
       const res = await fetch('/api/admin/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, id, action, adminPassword: password }),
+        body: JSON.stringify({ type, id, action, adminPassword: password || 'auto' }),
       })
       const data = await res.json()
       if (data.success) {

@@ -1,6 +1,6 @@
 const rateMap = new Map<string, number[]>()
 const WINDOW_MS = 60_000 // 1 minute
-const MAX_REQUESTS = 30
+const MAX_REQUESTS = 100
 
 export function rateLimit(ip: string): boolean {
   const now = Date.now()

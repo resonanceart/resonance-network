@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { supabaseAdmin } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, getClientIp } from '@/lib/sanitize'
 import { sendEmail } from '@/lib/gmail'
@@ -18,9 +19,27 @@ export async function POST(request: Request) {
 
     const body = await request.json()
 
-    // Verify admin password
+    // Verify admin access — either password OR authenticated admin user
     const adminPassword = body.adminPassword || request.headers.get('x-admin-password')
-    if (adminPassword !== process.env.ADMIN_PASSWORD) {
+    let isAdmin = adminPassword === process.env.ADMIN_PASSWORD
+
+    if (!isAdmin) {
+      // Check if authenticated user has admin role
+      try {
+        const supabase = await createSupabaseServerClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data: profile } = await supabaseAdmin
+            .from('user_profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+          if (profile?.role === 'admin') isAdmin = true
+        }
+      } catch {}
+    }
+
+    if (!isAdmin) {
       return NextResponse.json({ success: false, message: 'Unauthorized.' }, { status: 401 })
     }
 

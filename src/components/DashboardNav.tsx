@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
@@ -82,7 +83,18 @@ const navItems = [
 
 export function DashboardNav() {
   const pathname = usePathname()
-  const { signOut } = useAuth()
+  const { user, signOut } = useAuth()
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    if (!user) return
+    fetch('/api/user/profile', { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.profile?.role === 'admin') setIsAdmin(true)
+      })
+      .catch(() => {})
+  }, [user])
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href
@@ -103,6 +115,20 @@ export function DashboardNav() {
             </Link>
           </li>
         ))}
+        {isAdmin && (
+          <li>
+            <Link
+              href="/admin"
+              className={`dashboard-nav__link${isActive('/admin') ? ' dashboard-nav__link--active' : ''}`}
+              style={{ color: '#f59e0b' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              <span>Admin</span>
+            </Link>
+          </li>
+        )}
       </ul>
       <button className="dashboard-nav__signout" onClick={() => signOut()}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
