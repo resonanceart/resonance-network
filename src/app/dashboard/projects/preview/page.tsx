@@ -27,9 +27,11 @@ interface ProjectSubmission {
   materials: string | null
   special_needs: string | null
   collaboration_needs: string | null
+  collaboration_role_count: number | null
   hero_image_data: string | null
   gallery_images_data: string | null
   status: string
+  user_id: string | null
 }
 
 interface CollabRole {
@@ -44,6 +46,7 @@ function ProjectPreviewInner() {
   const projectId = searchParams.get('id')
 
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const [project, setProject] = useState<ProjectSubmission | null>(null)
 
   useEffect(() => {
@@ -68,6 +71,45 @@ function ProjectPreviewInner() {
         <p style={{ color: 'var(--color-text-muted)' }}>Loading preview...</p>
       </div>
     )
+  }
+
+  async function handleSubmitForReview() {
+    if (!project || !projectId) return
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/submit-project', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: projectId,
+          artistName: project.artist_name,
+          artistEmail: project.artist_email,
+          projectTitle: project.project_title,
+          oneSentence: project.one_sentence,
+          vision: project.vision,
+          experience: project.experience,
+          story: project.story,
+          goals: project.goals,
+          domains: project.domains,
+          pathways: project.pathways,
+          stage: project.stage,
+          scale: project.scale,
+          location: project.location,
+          materials: project.materials,
+          specialNeeds: project.special_needs,
+          heroImageData: project.hero_image_data,
+          galleryImagesData: project.gallery_images_data,
+          collaborationNeeds: project.collaboration_needs,
+          collaborationRoleCount: project.collaboration_role_count,
+          status: 'pending',
+        }),
+      })
+      if (res.ok) {
+        setProject({ ...project, status: 'new' })
+      }
+    } catch { /* */ }
+    setSubmitting(false)
   }
 
   if (!project) {
@@ -113,17 +155,39 @@ function ProjectPreviewInner() {
       <div style={{ position: 'sticky', top: 64, zIndex: 100, background: 'var(--color-primary)', color: '#fff', padding: 'var(--space-2) 0' }}>
         <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-4)' }}>
           <span style={{ fontSize: 'var(--text-sm)', fontWeight: 500 }}>
-            {project.status === 'approved' ? 'This project is live on the network' : 'Preview — this project has not been published yet'}
+            {project.status === 'approved'
+              ? 'This project is live on the network'
+              : project.status === 'new'
+                ? 'Submitted for review'
+                : 'Draft preview — not yet submitted'}
           </span>
-          <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
             <Link href={`/dashboard/projects/live-edit?id=${projectId}`} style={{ color: '#fff', fontSize: 'var(--text-sm)', textDecoration: 'underline' }}>
               Back to Editor
             </Link>
+            {project.status === 'draft' && (
+              <button
+                onClick={handleSubmitForReview}
+                disabled={submitting}
+                style={{
+                  background: 'rgba(255,255,255,0.2)', color: '#fff',
+                  border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6,
+                  padding: '4px 14px', fontSize: 'var(--text-sm)', fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                {submitting ? 'Submitting...' : 'Submit for Review'}
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       <article>
+        {/* Breadcrumb */}
+        <nav aria-label="Breadcrumb" className="breadcrumb container" style={{ paddingTop: 'var(--space-4)' }}>
+          <Link href="/dashboard">Dashboard</Link> <span aria-hidden="true">/</span> <Link href="/dashboard/projects">Projects</Link> <span aria-hidden="true">/</span> <span>{project.project_title}</span>
+        </nav>
         {/* Hero */}
         <section className="project-hero" style={{ minHeight: '400px', background: '#1a1a1a' }}>
           {project.hero_image_data && (
@@ -290,7 +354,7 @@ function ProjectPreviewInner() {
         {(collabRoles.length > 0 || collabPlainText) && (
           <section className="project-collab">
             <div className="container">
-              <p className="section-label">Collaboration</p>
+              <p className="section-label">Join This Project</p>
               <h2>Open Roles</h2>
               {collabRoles.length > 0 ? (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
@@ -313,18 +377,26 @@ function ProjectPreviewInner() {
           </section>
         )}
 
-        {/* Artist / Creator */}
+        {/* Team */}
         <section className="project-artist">
           <div className="container">
-            <p className="section-label">The Creator</p>
-            <div style={{ maxWidth: '65ch' }}>
-              <h3>{project.artist_name}</h3>
-              {project.artist_bio && <p className="overview-body">{project.artist_bio}</p>}
-              {project.artist_website && (
-                <p style={{ fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)' }}>
-                  <a href={project.artist_website} target="_blank" rel="noopener noreferrer">{project.artist_website}</a>
-                </p>
-              )}
+            <p className="section-label">The People Behind It</p>
+            <div className="team-grid">
+              <div style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'flex-start', padding: 'var(--space-5)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', background: 'var(--color-card-bg)' }}>
+                <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--color-primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 'var(--text-xl)', flexShrink: 0 }}>
+                  {(project.artist_name || '?').charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-1)' }}>{project.artist_name}</h3>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', margin: 0 }}>Lead Creator</p>
+                  {project.artist_bio && <p className="overview-body" style={{ marginTop: 'var(--space-2)' }}>{project.artist_bio}</p>}
+                  {project.artist_website && (
+                    <p style={{ fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)' }}>
+                      <a href={project.artist_website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)' }}>{project.artist_website}</a>
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -334,8 +406,8 @@ function ProjectPreviewInner() {
           <section className="project-contact">
             <div className="container">
               <p className="section-label">Reach Out</p>
-              <h2>Start a Conversation</h2>
-              <p>Interested in supporting, hosting, or collaborating on this project?</p>
+              <h2>Get in Touch</h2>
+              <p>Want to support, host, or collaborate on this project? We&apos;d love to hear from you.</p>
               <a
                 href={`mailto:${project.artist_email}?subject=Inquiry%20about%20${encodeURIComponent(project.project_title)}%20via%20Resonance%20Network`}
                 className="btn btn--primary btn--large"
@@ -345,6 +417,14 @@ function ProjectPreviewInner() {
             </div>
           </section>
         )}
+
+        {/* Bottom nav — matches public page */}
+        <nav className="project-nav" aria-label="Related pages">
+          <div className="container" style={{ display: 'flex', gap: 'var(--space-4)', paddingBottom: 'var(--space-8)', flexWrap: 'wrap' }}>
+            <Link href="/dashboard/projects" className="btn btn--outline">My Projects</Link>
+            <Link href={`/dashboard/projects/live-edit?id=${projectId}`} className="btn btn--outline">Edit This Project</Link>
+          </div>
+        </nav>
       </article>
     </>
   )
