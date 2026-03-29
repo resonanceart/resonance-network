@@ -729,6 +729,88 @@ export default function AdminPage() {
               )}
             </section>
           )}
+
+          {/* Messages Tab */}
+          {activeTab === 'messages' && (
+            <section>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>
+                Messages ({messages.length})
+              </h2>
+              {messages.length === 0 ? (
+                <p style={{ color: 'var(--color-text-muted)' }}>No messages yet.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  {messages.map(m => (
+                    <div key={m.id} style={{
+                      padding: 'var(--space-3) var(--space-4)',
+                      background: 'var(--color-surface)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-md)',
+                      borderLeft: m.is_read ? undefined : '3px solid var(--color-primary)',
+                      cursor: 'pointer',
+                    }} onClick={() => setExpandedMsg(expandedMsg === m.id ? null : m.id)}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                          <strong style={{ fontSize: 'var(--text-sm)' }}>{m.from_name}</strong>
+                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginLeft: 'var(--space-2)' }}>{m.from_email}</span>
+                          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 2 }}>
+                            {m.subject_type} · {new Date(m.created_at).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <a href={`mailto:${m.from_email}?subject=Re: ${m.subject_type}`} className="btn btn--outline btn--sm" onClick={e => e.stopPropagation()}>Reply</a>
+                      </div>
+                      {expandedMsg === m.id && (
+                        <div style={{ marginTop: 'var(--space-3)', paddingTop: 'var(--space-3)', borderTop: '1px solid var(--color-border)', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+                          {m.message}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* Activity Tab */}
+          {activeTab === 'activity' && (
+            <section>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>
+                Activity Feed ({activityFeed.length})
+              </h2>
+              {activityFeed.length === 0 ? (
+                <p style={{ color: 'var(--color-text-muted)' }}>No activity yet.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  {activityFeed.map(item => {
+                    const icon = item.type === 'user' ? '\uD83D\uDC64' : item.type === 'profile' ? '\uD83D\uDCCB' : item.type === 'project' ? '\uD83C\uDFA8' : '\u2B50'
+                    const now = new Date()
+                    const then = new Date(item.date)
+                    const diffMs = now.getTime() - then.getTime()
+                    const diffMin = Math.floor(diffMs / 60000)
+                    const diffHr = Math.floor(diffMin / 60)
+                    const diffDay = Math.floor(diffHr / 24)
+                    const relativeDate = diffMin < 1 ? 'just now' : diffMin < 60 ? `${diffMin}m ago` : diffHr < 24 ? `${diffHr}h ago` : diffDay < 30 ? `${diffDay}d ago` : then.toLocaleDateString()
+
+                    return (
+                      <div key={item.id} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 'var(--space-3)',
+                        padding: 'var(--space-3) var(--space-4)',
+                        background: 'var(--color-surface)',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: 'var(--radius-md)',
+                      }}>
+                        <span style={{ fontSize: 'var(--text-lg)' }}>{icon}</span>
+                        <span style={{ flex: 1, fontSize: 'var(--text-sm)' }}>{item.text}</span>
+                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>{relativeDate}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </section>
+          )}
         </>
       )}
     </div>
