@@ -1073,8 +1073,14 @@ function LiveProjectEditorInner() {
                   <textarea className="form-textarea" value={story} onChange={e => { setStory(e.target.value); markDirty() }} rows={4} maxLength={5000} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Goals (one per line)</label>
-                  <textarea className="form-textarea" value={goals.join('\n')} onChange={e => { setGoals(e.target.value.split('\n').filter(Boolean)); markDirty() }} rows={4} />
+                  <label className="form-label">Goals</label>
+                  {goals.map((g, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                      <input className="form-input" value={g} onChange={e => { const u = [...goals]; u[i] = e.target.value; setGoals(u); markDirty() }} style={{ flex: 1 }} placeholder={`Goal ${i + 1}`} />
+                      <button type="button" className="btn btn--ghost btn--sm" onClick={() => { setGoals(goals.filter((_, j) => j !== i)); markDirty() }}>&times;</button>
+                    </div>
+                  ))}
+                  <button type="button" className="btn btn--outline btn--sm" onClick={() => { setGoals([...goals, '']); markDirty() }}>+ Add Goal</button>
                 </div>
               </div>
 
@@ -1115,9 +1121,48 @@ function LiveProjectEditorInner() {
                 </div>
               </div>
 
-              {/* Collaboration */}
+              {/* Team */}
               <div style={{ marginBottom: 'var(--space-6)' }}>
-                <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 'var(--space-4)' }}>Collaboration</h4>
+                <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 'var(--space-4)' }}>Team</h4>
+                <div className="form-group">
+                  <label className="form-label">Lead Creator</label>
+                  <input className="form-input" value={leadArtistName} onChange={e => { setLeadArtistName(e.target.value); markDirty() }} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Team Members</label>
+                  {collaborators.map((c, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-2)', alignItems: 'center' }}>
+                      <input className="form-input" placeholder="Name" value={c.name} onChange={e => { const u = [...collaborators]; u[i] = { ...u[i], name: e.target.value }; setCollaborators(u); markDirty() }} style={{ flex: 1 }} />
+                      <input className="form-input" placeholder="Role" value={c.role} onChange={e => { const u = [...collaborators]; u[i] = { ...u[i], role: e.target.value }; setCollaborators(u); markDirty() }} style={{ flex: 1 }} />
+                      <button type="button" className="btn btn--ghost btn--sm" onClick={() => { setCollaborators(collaborators.filter((_, j) => j !== i)); markDirty() }}>&times;</button>
+                    </div>
+                  ))}
+                  <button type="button" className="btn btn--outline btn--sm" onClick={() => { setCollaborators([...collaborators, { name: '', role: '', photo: null }]); markDirty() }}>+ Add Team Member</button>
+                </div>
+              </div>
+
+              {/* Collaboration Roles */}
+              <div style={{ marginBottom: 'var(--space-6)' }}>
+                <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 'var(--space-4)' }}>Collaboration Roles</h4>
+                {collabRoles.map((role, i) => (
+                  <div key={i} style={{ padding: 'var(--space-3)', border: '1px solid var(--color-border)', borderRadius: 8, marginBottom: 'var(--space-3)', position: 'relative' }}>
+                    <button type="button" style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: 16 }} onClick={() => { setCollabRoles(prev => prev.filter((_, j) => j !== i)); markDirty() }}>&times;</button>
+                    <div className="form-group" style={{ marginBottom: 'var(--space-2)' }}>
+                      <label className="form-label">Role Title</label>
+                      <input className="form-input" value={role.title || role.customTitle || ''} onChange={e => { const u = [...collabRoles]; u[i] = { ...u[i], title: e.target.value, customTitle: e.target.value }; setCollabRoles(u); markDirty() }} placeholder="e.g. Structural Engineer" />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label">Description</label>
+                      <textarea className="form-textarea" value={role.description || ''} onChange={e => { const u = [...collabRoles]; u[i] = { ...u[i], description: e.target.value }; setCollabRoles(u); markDirty() }} rows={2} placeholder="What this role involves..." />
+                    </div>
+                  </div>
+                ))}
+                <button type="button" className="btn btn--outline btn--sm" onClick={() => { setCollabRoles(prev => [...prev, emptyRole()]); markDirty() }}>+ Add Role</button>
+              </div>
+
+              {/* Collaboration Details */}
+              <div style={{ marginBottom: 'var(--space-6)' }}>
+                <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 'var(--space-4)' }}>Collaboration Details</h4>
                 <div className="form-group">
                   <label className="form-label">Materials &amp; Technical Needs</label>
                   <textarea className="form-textarea" value={materials} onChange={e => { setMaterials(e.target.value); markDirty() }} rows={3} maxLength={5000} />
