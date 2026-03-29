@@ -17,10 +17,13 @@ interface SmartGalleryProps {
   editable?: boolean
   onReorder?: (items: GalleryItem[]) => void
   onDelete?: (id: string) => void
+  onEditTitle?: (id: string, newTitle: string) => void
 }
 
-export function SmartGallery({ items, editable = false, onReorder, onDelete }: SmartGalleryProps) {
+export function SmartGallery({ items, editable = false, onReorder, onDelete, onEditTitle }: SmartGalleryProps) {
   const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editText, setEditText] = useState('')
   const sorted = [...items].sort((a, b) => a.order - b.order)
 
   function handleDragStart(index: number) {
@@ -43,10 +46,24 @@ export function SmartGallery({ items, editable = false, onReorder, onDelete }: S
   }
 
   function handleClick(item: GalleryItem) {
+    if (editingId) return // Don't navigate while editing title
     if (item.type === 'pdf' || item.type === 'link') {
       window.open(item.url, '_blank', 'noopener,noreferrer')
     }
-    // For images: could open lightbox in future
+  }
+
+  function startEditTitle(e: React.MouseEvent, item: GalleryItem) {
+    e.stopPropagation()
+    setEditingId(item.id)
+    setEditText(item.title)
+  }
+
+  function saveTitle() {
+    if (editingId && onEditTitle && editText.trim()) {
+      onEditTitle(editingId, editText.trim())
+    }
+    setEditingId(null)
+    setEditText('')
   }
 
   if (sorted.length === 0) return null
@@ -58,7 +75,7 @@ export function SmartGallery({ items, editable = false, onReorder, onDelete }: S
           key={item.id}
           className={`smart-gallery__tile smart-gallery__tile--${item.type}${item.type === 'link' && item.thumbnail ? ' smart-gallery__tile--has-thumb' : ''}${dragIndex === i ? ' smart-gallery__tile--dragging' : ''}`}
           onClick={() => handleClick(item)}
-          draggable={editable}
+          draggable={editable && !editingId}
           onDragStart={() => handleDragStart(i)}
           onDragOver={(e) => handleDragOver(e, i)}
           onDrop={() => handleDrop(i)}
@@ -86,7 +103,7 @@ export function SmartGallery({ items, editable = false, onReorder, onDelete }: S
           {item.type === 'link' && item.thumbnail && (
             <img src={item.thumbnail} alt={item.title} className="smart-gallery__tile-img" />
           )}
-          {item.type === 'link' && (
+          {item.type === 'link' && !item.thumbnail && (
             <div className="smart-gallery__icon">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"/>
@@ -99,7 +116,32 @@ export function SmartGallery({ items, editable = false, onReorder, onDelete }: S
           {/* Hover overlay text */}
           <div className="smart-gallery__tile-body">
             {item.subtitle && <p className="smart-gallery__tile-subtitle">{item.subtitle}</p>}
-            <h3 className="smart-gallery__tile-title">{item.title}</h3>
+            {editingId === item.id ? (
+              <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                <input
+                  type="text"
+                  value={editText}
+                  onChange={e => setEditText(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') saveTitle(); if (e.key === 'Escape') setEditingId(null) }}
+                  autoFocus
+                  style={{
+                    background: 'rgba(0,0,0,0.6)',
+                    border: '1px solid rgba(255,255,255,0.4)',
+                    borderRadius: 4,
+                    color: 'white',
+                    padding: '4px 8px',
+                    fontSize: '0.9rem',
+                    fontFamily: 'var(--font-display)',
+                    fontWeight: 700,
+                    width: '100%',
+                    textAlign: 'center',
+                  }}
+                />
+                <button onClick={saveTitle} style={{ background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 4, padding: '4px 8px', cursor: 'pointer', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>Save</button>
+              </div>
+            ) : (
+              <h3 className="smart-gallery__tile-title">{item.title}</h3>
+            )}
           </div>
 
           {/* Edit controls */}
@@ -108,6 +150,23 @@ export function SmartGallery({ items, editable = false, onReorder, onDelete }: S
               <div className="smart-gallery__drag-handle" title="Drag to reorder">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="5" cy="3" r="1.5"/><circle cx="11" cy="3" r="1.5"/><circle cx="5" cy="8" r="1.5"/><circle cx="11" cy="8" r="1.5"/><circle cx="5" cy="13" r="1.5"/><circle cx="11" cy="13" r="1.5"/></svg>
               </div>
+              {/* Edit title button */}
+              {onEditTitle && editingId !== item.id && (
+                <button
+                  className="smart-gallery__edit-title"
+                  onClick={(e) => startEditTitle(e, item)}
+                  title="Edit title"
+                  style={{
+                    position: 'absolute', bottom: 8, left: 8, zIndex: 2,
+                    opacity: 0, transition: 'opacity 0.2s',
+                    background: 'rgba(0,0,0,0.6)', color: 'white',
+                    border: 'none', borderRadius: 4, padding: '3px 8px',
+                    cursor: 'pointer', fontSize: '0.7rem',
+                  }}
+                >
+                  ✎ Edit title
+                </button>
+              )}
               {onDelete && (
                 <button
                   className="smart-gallery__delete"

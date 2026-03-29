@@ -14089,6 +14089,11 @@ main {
   background: #dc2626;
 }
 
+/* Edit title button — show on hover */
+.smart-gallery__tile:hover .smart-gallery__edit-title {
+  opacity: 1 !important;
+}
+
 /* Dragging state */
 .smart-gallery__tile--dragging {
   opacity: 0.4;

@@ -417,6 +417,7 @@ export default function LiveProfileEditor() {
   const [savedMessage, setSavedMessage] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [galleryUploading, setGalleryUploading] = useState(false)
   const [activePanel, setActivePanel] = useState<EditSection>(null)
   const [showWelcome, setShowWelcome] = useState(false)
 
@@ -457,6 +458,7 @@ export default function LiveProfileEditor() {
   const [showAddLink, setShowAddLink] = useState(false)
   const [newLinkUrl, setNewLinkUrl] = useState('')
   const [newLinkLabel, setNewLinkLabel] = useState('')
+  const [newLinkThumbnail, setNewLinkThumbnail] = useState<string | null>(null)
 
   // Avatar crop state
   const [avatarRawSrc, setAvatarRawSrc] = useState<string | null>(null)
@@ -815,12 +817,15 @@ export default function LiveProfileEditor() {
     }
 
     mediaLinks.forEach((link, i) => {
+      let subtitle = 'website'
+      try { subtitle = new URL(link.url).hostname } catch {}
       items.push({
         id: `link-${i}`,
         type: 'link',
         url: link.url,
+        thumbnail: (link as Record<string, unknown>).thumbnail as string | undefined,
         title: link.label || 'Link',
-        subtitle: link.type || 'website',
+        subtitle,
         order: order++,
       })
     })
@@ -1139,6 +1144,22 @@ export default function LiveProfileEditor() {
                   }
                   markDirty()
                 }}
+                onEditTitle={(id, newTitle) => {
+                  if (id.startsWith('img-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setMediaGallery(prev => prev.map((item, i) => i === idx ? { ...item, alt: newTitle, caption: newTitle } : item))
+                  } else if (id.startsWith('pw-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setPastWork(prev => prev.map((item, i) => i === idx ? { ...item, title: newTitle } : item))
+                  } else if (id.startsWith('pdf-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setPdfDocuments(prev => prev.map((item, i) => i === idx ? { ...item, title: newTitle } : item))
+                  } else if (id.startsWith('link-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setMediaLinks(prev => prev.map((item, i) => i === idx ? { ...item, label: newTitle } : item))
+                  }
+                  markDirty()
+                }}
               />
             ) : (
               <div className="live-editor__empty-placeholder">
@@ -1146,46 +1167,83 @@ export default function LiveProfileEditor() {
                 <span>Add images, documents, and links to your gallery</span>
               </div>
             )}
+            {/* Upload status and errors — visible in the gallery area */}
+            {uploadError && (
+              <div style={{ background: 'rgba(220,38,38,0.15)', color: '#ff6b6b', padding: '10px 16px', borderRadius: 8, marginTop: 'var(--space-3)', fontSize: 'var(--text-sm)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid rgba(220,38,38,0.3)' }}>
+                <span>{uploadError}</span>
+                <button onClick={() => setUploadError(null)} style={{ background: 'none', border: 'none', color: '#ff6b6b', cursor: 'pointer', fontSize: 18, padding: '0 4px', lineHeight: 1 }}>&times;</button>
+              </div>
+            )}
+            {galleryUploading && (
+              <div style={{ padding: '10px 16px', borderRadius: 8, marginTop: 'var(--space-3)', fontSize: 'var(--text-sm)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(1,105,111,0.1)', border: '1px solid rgba(1,105,111,0.3)' }}>
+                <span className="dashboard-spinner" style={{ width: 16, height: 16 }} /> Uploading file...
+              </div>
+            )}
             {/* Add buttons */}
             <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-4)', flexWrap: 'wrap' }}>
               <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer' }}>
-                <input type="file" accept="image/*" multiple onChange={e => handleGalleryUpload(e.target.files)} style={{ display: 'none' }} />
-                + Add Images
+                <input type="file" accept="image/*" multiple onChange={async (e) => {
+                  setGalleryUploading(true)
+                  await handleGalleryUpload(e.target.files)
+                  setGalleryUploading(false)
+                }} style={{ display: 'none' }} />
+                {galleryUploading ? 'Uploading...' : '+ Add Images'}
               </label>
-              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer' }}>
+              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer', position: 'relative' }}>
                 <input type="file" accept=".pdf,application/pdf" multiple onChange={async (e) => {
                   const files = e.target.files
-                  if (!files) return
+                  if (!files || files.length === 0) return
+                  setUploadError(null)
+                  setGalleryUploading(true)
                   for (const file of Array.from(files)) {
-                    if (file.size > 10 * 1024 * 1024) continue
+                    if (file.size > 10 * 1024 * 1024) {
+                      setUploadError(`${file.name} is too large (max 10MB)`)
+                      continue
+                    }
                     const result = await upload(file, 'portfolio')
                     if (result) {
                       setPdfDocuments(prev => [...prev, { url: result, title: file.name.replace(/\.pdf$/i, '') }])
                       markDirty()
                     }
                   }
+                  setGalleryUploading(false)
                   e.target.value = ''
                 }} style={{ display: 'none' }} />
-                + Add PDF
+                {galleryUploading ? 'Uploading...' : '+ Add PDF'}
               </label>
               {showAddLink ? (
-                <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-end', flexWrap: 'wrap', flex: 1 }}>
                   <div className="form-group" style={{ margin: 0, flex: 1, minWidth: 120 }}>
+                    <label className="form-label" style={{ fontSize: 'var(--text-xs)' }}>URL</label>
                     <input className="form-input" value={newLinkUrl} onChange={e => setNewLinkUrl(e.target.value)} placeholder="https://..." style={{ fontSize: 'var(--text-sm)' }} />
                   </div>
                   <div className="form-group" style={{ margin: 0, flex: 1, minWidth: 100 }}>
-                    <input className="form-input" value={newLinkLabel} onChange={e => setNewLinkLabel(e.target.value)} placeholder="Label" style={{ fontSize: 'var(--text-sm)' }} />
+                    <label className="form-label" style={{ fontSize: 'var(--text-xs)' }}>Label</label>
+                    <input className="form-input" value={newLinkLabel} onChange={e => setNewLinkLabel(e.target.value)} placeholder="My Website" style={{ fontSize: 'var(--text-sm)' }} />
+                  </div>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: 'var(--text-xs)' }}>Tile Image (optional)</label>
+                    <label className="btn btn--ghost btn--sm" style={{ cursor: 'pointer', fontSize: 'var(--text-xs)' }}>
+                      <input type="file" accept="image/*" onChange={async (e) => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        const url = await upload(file, 'gallery')
+                        if (url) setNewLinkThumbnail(url)
+                      }} style={{ display: 'none' }} />
+                      {newLinkThumbnail ? '✓ Image added' : '+ Image'}
+                    </label>
                   </div>
                   <button className="btn btn--primary btn--sm" onClick={() => {
                     if (newLinkUrl.trim()) {
-                      setMediaLinks(prev => [...prev, { label: newLinkLabel.trim() || 'Link', url: newLinkUrl.trim(), type: 'website' }])
+                      setMediaLinks(prev => [...prev, { label: newLinkLabel.trim() || 'Link', url: newLinkUrl.trim(), type: 'website' as const, thumbnail: newLinkThumbnail || undefined } as typeof prev[0]])
                       markDirty()
                       setNewLinkUrl('')
                       setNewLinkLabel('')
+                      setNewLinkThumbnail(null)
                       setShowAddLink(false)
                     }
                   }}>Add</button>
-                  <button className="btn btn--ghost btn--sm" onClick={() => setShowAddLink(false)}>Cancel</button>
+                  <button className="btn btn--ghost btn--sm" onClick={() => { setShowAddLink(false); setNewLinkThumbnail(null) }}>Cancel</button>
                 </div>
               ) : (
                 <button className="btn btn--outline btn--sm" onClick={() => setShowAddLink(true)}>+ Add Link</button>
