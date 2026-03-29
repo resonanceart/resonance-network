@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { ProfileTimeline } from '@/components/profile/ProfileTimeline'
 import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabilityBadge'
-import { ProfileMediaGrid } from '@/components/profile/ProfileMediaGrid'
+import { ProfileSmartGallery } from '@/components/profile/ProfileSmartGallery'
 import { ProfileEditOverlay } from '@/components/profile/ProfileEditOverlay'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { getProfiles, getProfileBySlug } from '@/lib/data'
@@ -505,7 +505,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
       )}
 
       {/* Row 4: Media & Links Grid */}
-      <ProfileMediaGrid profile={profile} />
+      <ProfileSmartGallery profile={profile} />
 
       {/* Row 5: Milestones */}
       {((profile.work_experience && profile.work_experience.length > 0) || (profile.timeline && profile.timeline.length > 0)) && (

@@ -373,14 +373,18 @@ export default function ProfilePreviewPage() {
         )}
 
         {/* Media Gallery */}
-        {buildGalleryItems().length > 0 && (
-          <section className="profile-media-grid-section">
-            <div className="container">
-              <p className="section-label">Gallery</p>
-              <SmartGallery items={buildGalleryItems()} editable={false} />
-            </div>
-          </section>
-        )}
+        {(() => {
+          const items = buildGalleryItems()
+          if (items.length === 0) return null
+          return (
+            <section className="profile-media-grid-section">
+              <div className="container">
+                <p className="section-label">Gallery ({items.length} items)</p>
+                <SmartGallery items={items} editable={false} />
+              </div>
+            </section>
+          )
+        })()}
 
         {/* Milestones */}
         {timeline.length > 0 && (

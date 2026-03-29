@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { supabase } from '@/lib/supabase-client'
 import { useAuth } from '@/components/AuthProvider'
 
-type Tab = 'projects' | 'profiles' | 'user_profiles' | 'users' | 'interests'
+type Tab = 'review' | 'projects' | 'profiles' | 'user_profiles' | 'users' | 'interests' | 'messages' | 'activity'
 
 interface ProjectSubmission {
   id: string
@@ -85,10 +85,12 @@ export default function AdminPage() {
   const [users, setUsers] = useState<UserAccount[]>([])
   const [interests, setInterests] = useState<InterestEntry[]>([])
   const [userProfiles, setUserProfiles] = useState<UserProfileEntry[]>([])
+  const [messages, setMessages] = useState<Array<{ id: string; created_at: string; from_name: string; from_email: string; subject_type: string; message: string; is_read: boolean }>>([])
   const [loading, setLoading] = useState(true)
   const [actionMsg, setActionMsg] = useState('')
+  const [expandedMsg, setExpandedMsg] = useState<string | null>(null)
 
-  const [activeTab, setActiveTab] = useState<Tab>('projects')
+  const [activeTab, setActiveTab] = useState<Tab>('review')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
 
@@ -128,6 +130,10 @@ export default function AdminPage() {
     setProfiles((profRes.data || []) as ProfileSubmission[])
     setInterests((intRes.data || []) as InterestEntry[])
     setUserProfiles((upRes.data || []) as UserProfileEntry[])
+
+    // Fetch messages
+    const msgRes = await supabase.from('profile_messages').select('*').order('created_at', { ascending: false }).limit(100)
+    setMessages((msgRes.data || []) as any[])
 
     // Fetch users via admin API (requires admin password)
     try {
@@ -244,6 +250,69 @@ export default function AdminPage() {
     return matchSearch && matchStatus
   }), [interests, q, statusFilter])
 
+  const pendingItems = useMemo(() => {
+    const items: Array<{
+      id: string
+      type: 'profile' | 'project'
+      name: string
+      email: string
+      date: string
+      status: string
+      avatar?: string | null
+    }> = []
+
+    userProfiles.filter(up => up.profile_visibility === 'pending').forEach(up => {
+      items.push({
+        id: up.id,
+        type: 'profile',
+        name: up.display_name,
+        email: up.email,
+        date: up.created_at,
+        status: 'pending',
+        avatar: up.avatar_url,
+      })
+    })
+
+    projects.filter(p => p.status === 'new' || p.status === 'draft').forEach(p => {
+      items.push({
+        id: p.id,
+        type: 'project',
+        name: p.project_title,
+        email: p.artist_email,
+        date: p.created_at,
+        status: p.status,
+      })
+    })
+
+    return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  }, [userProfiles, projects])
+
+  const activityFeed = useMemo(() => {
+    const feed: Array<{ id: string; type: string; text: string; date: string }> = []
+
+    userProfiles.forEach(up => {
+      feed.push({ id: `up-${up.id}`, type: 'user', text: `${up.display_name} signed up`, date: up.created_at })
+      if (up.profile_visibility === 'pending') {
+        feed.push({ id: `up-pending-${up.id}`, type: 'profile', text: `${up.display_name} submitted profile for review`, date: up.created_at })
+      }
+    })
+
+    projects.forEach(p => {
+      feed.push({ id: `proj-${p.id}`, type: 'project', text: `${p.artist_name} submitted "${p.project_title}"`, date: p.created_at })
+    })
+
+    interests.forEach(i => {
+      feed.push({ id: `int-${i.id}`, type: 'interest', text: `${i.name} expressed interest in ${i.project_title || 'a role'}`, date: i.created_at })
+    })
+
+    return feed.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 50)
+  }, [userProfiles, projects, interests])
+
+  const pendingProfiles = userProfiles.filter(up => up.profile_visibility === 'pending').length
+  const pendingProjects = projects.filter(p => p.status === 'new' || p.status === 'draft').length
+  const publishedProfiles = userProfiles.filter(up => up.profile_visibility === 'published').length
+  const approvedProjects = projects.filter(p => p.status === 'approved').length
+
   if (!isAuthenticated) {
     return (
       <div className="container" style={{ padding: 'var(--space-16) 0', maxWidth: '400px', margin: '0 auto' }}>
@@ -271,11 +340,14 @@ export default function AdminPage() {
   }
 
   const tabs: { key: Tab; label: string; count: number }[] = [
+    { key: 'review', label: '\u26A1 Review Queue', count: pendingItems.length },
     { key: 'projects', label: 'Projects', count: projects.length },
     { key: 'profiles', label: 'Profiles', count: profiles.length },
     { key: 'user_profiles', label: 'User Profiles', count: userProfiles.length },
     { key: 'users', label: 'Users', count: users.length },
     { key: 'interests', label: 'Interests', count: interests.length },
+    { key: 'messages', label: 'Messages', count: messages.length },
+    { key: 'activity', label: 'Activity', count: activityFeed.length },
   ]
 
   return (
@@ -298,6 +370,9 @@ export default function AdminPage() {
           {/* Quick Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
             {[
+              { label: 'Pending Review', value: pendingProfiles + pendingProjects, color: '#f59e0b' },
+              { label: 'Published Profiles', value: publishedProfiles, color: 'var(--color-primary)' },
+              { label: 'Approved Projects', value: approvedProjects, color: '#22c55e' },
               { label: 'Projects', value: projects.length, color: 'var(--color-primary)' },
               { label: 'Profiles', value: profiles.length, color: '#6366f1' },
               { label: 'User Profiles', value: userProfiles.length, color: '#8b5cf6' },
@@ -350,7 +425,7 @@ export default function AdminPage() {
               onChange={e => setSearch(e.target.value)}
               style={{ flex: '1 1 200px', maxWidth: '320px' }}
             />
-            {activeTab !== 'users' && (
+            {activeTab !== 'users' && activeTab !== 'review' && activeTab !== 'messages' && activeTab !== 'activity' && (
               <select
                 className="form-input"
                 value={statusFilter}
@@ -374,6 +449,66 @@ export default function AdminPage() {
               </select>
             )}
           </div>
+
+          {/* Review Queue Tab */}
+          {activeTab === 'review' && (
+            <section>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>
+                Review Queue ({pendingItems.length})
+              </h2>
+              {pendingItems.length === 0 ? (
+                <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                  <p style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-2)' }}>All caught up!</p>
+                  <p>No pending items to review.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                  {pendingItems.map(item => (
+                    <div key={`${item.type}-${item.id}`} className="admin-item">
+                      <div className="admin-item__info">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '2px 8px',
+                            borderRadius: 999,
+                            fontSize: 'var(--text-xs)',
+                            fontWeight: 600,
+                            background: item.type === 'profile' ? 'rgba(99,102,241,0.15)' : 'rgba(20,184,166,0.15)',
+                            color: item.type === 'profile' ? '#6366f1' : 'var(--color-primary)',
+                          }}>
+                            {item.type === 'profile' ? 'Profile' : 'Project'}
+                          </span>
+                          {item.avatar && (
+                            <img src={item.avatar} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
+                          )}
+                          <strong>{item.name}</strong>
+                        </div>
+                        <span style={{ fontSize: 'var(--text-sm)' }}>{item.email}</span>
+                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+                          {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                      </div>
+                      <div className="admin-item__actions">
+                        {item.type === 'profile' ? (
+                          <>
+                            <a href={`/profiles/${item.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}?preview=1`} target="_blank" className="btn btn--outline btn--sm">Preview</a>
+                            <button className="btn btn--primary btn--sm" onClick={() => handleUserProfileAction(item.id, 'approve')}>Publish</button>
+                            <button className="btn btn--ghost btn--sm" onClick={() => handleUserProfileAction(item.id, 'reject')}>Reject</button>
+                          </>
+                        ) : (
+                          <>
+                            <a href={`/dashboard/projects/preview?id=${item.id}`} target="_blank" className="btn btn--outline btn--sm">Preview</a>
+                            <button className="btn btn--primary btn--sm" onClick={() => handleAction('project', item.id, 'approve')}>Approve</button>
+                            <button className="btn btn--ghost btn--sm" onClick={() => handleAction('project', item.id, 'reject')}>Reject</button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
 
           {/* Projects Tab */}
           {activeTab === 'projects' && (
