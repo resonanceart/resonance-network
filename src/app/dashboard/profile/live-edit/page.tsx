@@ -911,12 +911,18 @@ export default function LiveProfileEditor() {
               {saving ? 'Saving...' : 'Save All Changes'}
             </button>
             <button
-              onClick={async () => {
-                if (hasChanges) await saveAll(true)
-                // Open the dashboard preview route (works for unpublished profiles)
-                setTimeout(() => {
-                  window.open('/dashboard/profile/preview', '_blank')
-                }, 1000)
+              onClick={() => {
+                // Open window immediately to avoid Safari popup blocker
+                const previewWindow = window.open('about:blank', '_blank')
+                if (previewWindow) {
+                  if (hasChanges) {
+                    saveAll(true).then(() => {
+                      previewWindow.location.href = '/dashboard/profile/preview'
+                    })
+                  } else {
+                    previewWindow.location.href = '/dashboard/profile/preview'
+                  }
+                }
               }}
               className="btn btn--outline btn--sm"
               disabled={saving || !displayName.trim()}
