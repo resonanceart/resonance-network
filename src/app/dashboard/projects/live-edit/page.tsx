@@ -11,10 +11,11 @@ type EditSection = 'hero' | 'overview' | 'gallery' | 'experience' | 'story' | 'g
 const DOMAINS = [
   'Architecture', 'Immersive Art', 'Ecological Design', 'Material Innovation',
   'Public Space', 'Community Infrastructure', 'Experimental Technology', 'Social Impact',
+  'Other',
 ]
 const PATHWAYS = [
   'Public Art', 'Exhibition/Cultural', 'Festival Installation', 'R&D',
-  'Development/Commercial', 'Social Impact/Humanitarian',
+  'Development/Commercial', 'Social Impact/Humanitarian', 'Other',
 ]
 const STAGES = ['Concept', 'Design Development', 'Engineering', 'Fundraising', 'Production']
 
@@ -1024,6 +1025,10 @@ function LiveProjectEditorInner() {
                 <div className="form-group">
                   <label className="form-label">Vision</label>
                   <textarea className="form-textarea" value={overviewLead} onChange={e => { setOverviewLead(e.target.value); markDirty() }} rows={4} maxLength={5000} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Detailed Description</label>
+                  <textarea className="form-textarea" value={overviewBody} onChange={e => { setOverviewBody(e.target.value); markDirty() }} rows={4} maxLength={5000} placeholder="Expand on your vision with more detail..." />
                 </div>
               </div>
 

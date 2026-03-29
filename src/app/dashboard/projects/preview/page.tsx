@@ -293,11 +293,16 @@ function ProjectPreviewInner() {
               <p className="section-label">Collaboration</p>
               <h2>Open Roles</h2>
               {collabRoles.length > 0 ? (
-                <div className="task-grid">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
                   {collabRoles.map((role, i) => (
-                    <div key={i} style={{ background: 'var(--color-surface)', borderRadius: 12, padding: 'var(--space-5)', border: '1px solid var(--color-border)' }}>
-                      <h3 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-2)' }}>{role.title}</h3>
-                      {role.description && <p className="overview-body">{role.description}</p>}
+                    <div key={i} className="collab-role-card">
+                      <div className="collab-role-card__header">
+                        <span className="collab-role-card__number">{role.title}</span>
+                      </div>
+                      <div className="collab-role-card__body">
+                        {role.description && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', margin: 0 }}>{role.description}</p>}
+                        {role.image_url && <img src={role.image_url} alt="" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 8, marginTop: 'var(--space-2)' }} />}
+                      </div>
                     </div>
                   ))}
                 </div>
