@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { createSupabaseBrowserClient } from '@/lib/supabase-auth'
 import Link from 'next/link'
+import { FeatureRequestForm } from '@/components/FeatureRequestForm'
 
 export default function SettingsPage() {
   const { user, loading: authLoading } = useAuth()
@@ -38,6 +39,15 @@ export default function SettingsPage() {
 
         <ChangePasswordSection supabase={supabase} />
         <EmailPreferencesSection />
+
+        <div className="settings-card">
+          <h2 className="settings-card__title">Feature Requests</h2>
+          <p className="settings-card__desc">
+            Have an idea for a new feature? Let us know what would make Resonance Network better for you.
+          </p>
+          <FeatureRequestForm />
+        </div>
+
         <DataExportSection />
         <SignOutAllSection supabase={supabase} router={router} />
         <DeleteAccountSection router={router} />
