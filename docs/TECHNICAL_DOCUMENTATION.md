@@ -168,20 +168,83 @@ Social sharing buttons (Twitter/X, LinkedIn, Facebook, Copy Link) for published 
 
 ---
 
+## Authentication
+
+### Providers
+- **Email/Password:** Supabase Auth with email confirmation
+- **Google OAuth:** Configured via Supabase Dashboard (Authentication > Providers > Google)
+  - Callback URL: `https://resonance.network/auth/callback`
+  - Scopes: email, profile
+  - New Google users auto-create `user_profiles` entry
+
+### Auth Flow
+- Client: `createSupabaseBrowserClient()` — used in 'use client' components
+- Server: `createSupabaseServerClient()` — used in API routes (reads cookies)
+- Admin: `supabaseAdmin` — service role, bypasses RLS
+
+---
+
+## Security Audit Results
+
+Full details in [SECURITY_AUDIT.md](./SECURITY_AUDIT.md).
+
+### Critical Issues (Fixed)
+1. **CSRF origin spoofing** — `startsWith` replaced with exact matching + URL parsing (commit c8bd293)
+2. **Missing credentials on fetch calls** — Added `credentials: 'same-origin'` to all client API calls
+
+### Critical Issues (Pending)
+3. Missing RLS policies on `collaboration_interest` table
+4. Missing `welcome_email_sent` column on `user_profiles`
+5. Missing database indexes on frequently queried foreign keys
+
+### High Issues
+6. Base64 images in database (avatar/cover) — should migrate to Storage URLs
+7. In-memory rate limiting — acceptable for current traffic, needs Redis for scale
+
+### Medium Issues
+8. No admin audit logging
+9. Missing input length limits on some endpoints
+10. File upload MIME validation could be stricter
+
+### SEO Status
+- generateMetadata, OG tags, Twitter cards, JSON-LD: implemented
+- Missing: sitemap.xml, robots.txt, project page structured data
+
+### Privacy Status
+- Data export, account deletion, email preferences: implemented
+- Missing: privacy policy page, terms of service page, cookie consent
+
+---
+
+## Launch Readiness Checklist
+
+Full checklist in [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md).
+
+### Launch Blockers
+1. Add RLS to `collaboration_interest` table
+2. Add `welcome_email_sent` column
+3. Create `/privacy` and `/terms` placeholder pages
+4. Generate sitemap.xml and robots.txt
+
+### Post-Launch Priority
+1. Database indexes on foreign keys
+2. Admin audit logging
+3. Migrate base64 images to Storage URLs
+4. CSP headers
+5. Error monitoring (Sentry)
+6. Distributed rate limiting
+
+---
+
 ## Known Issues & Remediation Plan
 
-### Critical (Fix before launch)
-1. Missing `welcome_email_sent` column on user_profiles
-2. Missing RLS policies on collaboration_interest table
-3. Missing database indexes on frequently queried foreign keys
-
 ### Medium (Fix soon after launch)
-4. Admin approval audit logging (who approved what, when)
-5. URL validation for social/custom links
-6. Better error messages in API responses
-7. Pagination for admin data tables
+1. Admin approval audit logging (who approved what, when)
+2. URL validation for social/custom links
+3. Better error messages in API responses
+4. Pagination for admin data tables
 
 ### Low (Technical debt)
-8. Duplicate migration columns (cosmetic, no functional impact)
-9. Dead code cleanup (legacy components)
-10. Performance optimization (memoize expensive computations)
+5. Duplicate migration columns (cosmetic, no functional impact)
+6. Dead code cleanup (legacy components)
+7. Performance optimization (memoize expensive computations)
