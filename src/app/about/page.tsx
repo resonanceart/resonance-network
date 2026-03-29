@@ -82,6 +82,32 @@ export default function AboutPage() {
             <div className="value-card value-card--title-only value-card--accent-7"><h3>Originality</h3></div>
             <div className="value-card value-card--title-only value-card--accent-8"><h3>Stewardship</h3></div>
           </div>
+
+          {/* Fit Levels */}
+          <div style={{ marginTop: 'var(--space-10)' }}>
+            <h3 style={{ marginBottom: 'var(--space-4)', textAlign: 'center' }}>Fit Levels</h3>
+            <p className="about-section__intro">Projects don&apos;t need to score perfectly across all domains. We look for meaningful alignment in the areas most relevant to the work.</p>
+            <div className="eval-fit-grid">
+              <div className="eval-fit-card">
+                <span className="eval-fit-card__icon" aria-hidden="true">&#9673;</span>
+                <strong>Core-Fit</strong>
+                <p>Strong alignment in 2&ndash;3 domains. The project has a clear center of gravity and genuine potential. Accepted with guidance on strengthening weaker areas.</p>
+              </div>
+              <div className="eval-fit-card">
+                <span className="eval-fit-card__icon eval-fit-card__icon--petal" aria-hidden="true">&#9673;&#9673;</span>
+                <strong>Petal-Fit</strong>
+                <p>Alignment across 4&ndash;5 domains. Well-rounded project with broad resonance. Full network support and active collaboration matching.</p>
+              </div>
+              <div className="eval-fit-card">
+                <span className="eval-fit-card__icon eval-fit-card__icon--full" aria-hidden="true">&#9673;&#9673;&#9673;</span>
+                <strong>Full-Bloom</strong>
+                <p>Deep alignment across 6+ domains. Rare, exceptional projects that embody the network&apos;s values. Priority placement and flagship support.</p>
+              </div>
+            </div>
+            <blockquote className="about-pullquote about-pullquote--centered" style={{ marginTop: 'var(--space-6)' }}>
+              <p>The message is never &quot;no.&quot; It is <em>&quot;not yet — and here&apos;s how to come back.&quot;</em></p>
+            </blockquote>
+          </div>
         </div>
       </section>
 

@@ -9,14 +9,6 @@ import { projectSubmissionConfirmation } from '@/lib/email-templates'
 
 export async function POST(request: Request) {
   try {
-    const ip = getClientIp(request)
-    if (!rateLimit(ip)) {
-      return NextResponse.json(
-        { success: false, message: 'Too many requests. Please try again later.' },
-        { status: 429 }
-      )
-    }
-
     if (!validateCsrf(request)) {
       return NextResponse.json(
         { success: false, message: 'Invalid request origin.' },
@@ -25,6 +17,18 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
+
+    // Only rate limit NEW submissions (not authenticated draft saves)
+    const isExistingDraft = !!body.id
+    if (!isExistingDraft) {
+      const ip = getClientIp(request)
+      if (!rateLimit(ip)) {
+        return NextResponse.json(
+          { success: false, message: 'Too many requests. Please try again later.' },
+          { status: 429 }
+        )
+      }
+    }
 
     // Require authentication
     const { createSupabaseServerClient } = await import('@/lib/supabase-server')
