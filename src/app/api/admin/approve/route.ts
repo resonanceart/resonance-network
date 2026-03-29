@@ -146,7 +146,7 @@ export async function POST(request: Request) {
         // Send email notification
         if (submitterEmail) {
           const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance-network.vercel.app'
-          const recipientName = type === 'project' ? row.artist_email?.split('@')[0] : row.name
+          const recipientName = type === 'project' ? (row.artist_name || row.artist_email?.split('@')[0]) : row.name
           try {
             if (action === 'approve') {
               const pageUrl = type === 'project'
