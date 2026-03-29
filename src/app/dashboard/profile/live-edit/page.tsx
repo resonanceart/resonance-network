@@ -555,7 +555,7 @@ export default function LiveProfileEditor() {
     try {
       const res = await fetch('/api/user/profile', {
         method: 'PUT',
-        credentials: 'same-origin',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           display_name: displayName.trim(),
@@ -639,13 +639,23 @@ export default function LiveProfileEditor() {
   }
 
   // File upload helpers
-  function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file || file.size > 5 * 1024 * 1024) return
+    if (!file || file.size > 5 * 1024 * 1024) {
+      if (file) setUploadError('Image must be under 5MB')
+      return
+    }
+    // Upload immediately to Supabase Storage
+    setUploadError(null)
+    const url = await upload(file, 'avatar')
+    if (url) {
+      setAvatarUrl(url)
+      markDirty()
+    }
+    // Also set raw src for optional crop UI
     const reader = new FileReader()
     reader.onload = () => {
       setAvatarRawSrc(reader.result as string)
-      // Open the avatar panel to show crop UI
       setActivePanel('avatar')
     }
     reader.readAsDataURL(file)

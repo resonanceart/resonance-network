@@ -29,6 +29,7 @@ interface ProjectSubmission {
   collaboration_needs: string | null
   collaboration_role_count: number | null
   team_members: Array<{ name: string; role: string; photo: string | null }> | null
+  user_id: string | null
   status: string
 }
 
@@ -39,8 +40,9 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
   const [notFound, setNotFound] = useState(false)
   const [actionStatus, setActionStatus] = useState<'idle' | 'approving' | 'rejecting' | 'approved' | 'rejected'>('idle')
   const [isAdmin, setIsAdmin] = useState(false)
+  const [creatorAvatar, setCreatorAvatar] = useState<string | null>(null)
 
-  // Auto-detect admin role from logged-in user
+  // Auto-detect admin role and fetch creator avatar
   useEffect(() => {
     if (!user) return
     fetch('/api/user/profile', { credentials: 'include' })
@@ -67,6 +69,18 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
           setNotFound(true)
         } else {
           setProject(json.data)
+          // Fetch creator's avatar from their profile
+          if (json.data.user_id) {
+            try {
+              const avatarRes = await fetch(`/api/user/profile`, { credentials: 'include' })
+              if (avatarRes.ok) {
+                const avatarData = await avatarRes.json()
+                if (avatarData.profile?.avatar_url) {
+                  setCreatorAvatar(avatarData.profile.avatar_url)
+                }
+              }
+            } catch {}
+          }
         }
       } catch (err) {
         console.error('Preview fetch exception:', err)
@@ -319,31 +333,44 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
         } catch { return null }
       })()}
 
-      {/* Team Members */}
-      {project.team_members && project.team_members.length > 0 && (
-        <section className="project-artist">
-          <div className="container">
-            <p className="section-label">The Team</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
-              {project.team_members.map((member, i) => (
-                <div key={i} style={{ textAlign: 'center' }}>
-                  {member.photo ? (
-                    <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: 'var(--space-3)' }}>
-                      <img src={member.photo} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                  ) : (
-                    <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--space-3)', fontSize: '2rem', color: 'var(--color-text-muted)' }}>
-                      {member.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: '0 0 var(--space-1)' }}>{member.name}</h3>
-                  {member.role && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>{member.role}</p>}
+      {/* The Team — combines project creator + team members */}
+      <section className="project-artist">
+        <div className="container">
+          <p className="section-label">The People Behind It</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
+            {/* Project creator — auto-included with their profile photo */}
+            <div style={{ textAlign: 'center' }}>
+              {creatorAvatar ? (
+                <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: 'var(--space-3)' }}>
+                  <img src={creatorAvatar} alt={project.artist_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
-              ))}
+              ) : (
+                <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--space-3)', fontSize: '2rem', color: 'var(--color-text-muted)' }}>
+                  {project.artist_name.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: '0 0 var(--space-1)' }}>{project.artist_name}</h3>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>Lead Creator</p>
             </div>
+            {/* Additional team members */}
+            {project.team_members && project.team_members.map((member, i) => (
+              <div key={i} style={{ textAlign: 'center' }}>
+                {member.photo ? (
+                  <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: 'var(--space-3)' }}>
+                    <img src={member.photo} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                ) : (
+                  <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--space-3)', fontSize: '2rem', color: 'var(--color-text-muted)' }}>
+                    {member.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: '0 0 var(--space-1)' }}>{member.name}</h3>
+                {member.role && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>{member.role}</p>}
+              </div>
+            ))}
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* Classification */}
       {(project.domains?.length || project.pathways?.length) && (
@@ -388,26 +415,16 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
         </section>
       )}
 
-      {/* Artist */}
-      <section className="project-artist">
-        <div className="container">
-          <p className="section-label">The Creator</p>
-          <div style={{ maxWidth: '65ch' }}>
-            <h3>{project.artist_name}</h3>
-            {project.artist_bio && <p className="overview-body">{project.artist_bio}</p>}
-            {project.artist_email && (
-              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
-                {project.artist_email}
-              </p>
-            )}
-            {project.artist_website && (
-              <p style={{ fontSize: 'var(--text-sm)' }}>
-                <a href={project.artist_website} target="_blank" rel="noopener noreferrer">{project.artist_website}</a>
-              </p>
-            )}
+      {/* Artist bio (shown below team) */}
+      {project.artist_bio && (
+        <section style={{ padding: 'var(--space-8) 0', borderTop: '1px solid var(--color-border)' }}>
+          <div className="container">
+            <div style={{ maxWidth: '65ch' }}>
+              <p className="overview-body">{project.artist_bio}</p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Contact CTA */}
       {project.artist_email && (

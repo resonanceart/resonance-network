@@ -17,7 +17,7 @@ const MAX_SIZES: Record<string, number> = {
   pastwork: 10 * 1024 * 1024,
 }
 
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif', 'image/bmp', 'image/tiff', 'image/svg+xml', 'image/avif']
 const ALLOWED_PDF_TYPES = ['application/pdf']
 const BUCKET = 'profile-uploads'
 
