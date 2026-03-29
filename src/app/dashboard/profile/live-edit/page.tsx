@@ -772,6 +772,7 @@ export default function LiveProfileEditor() {
         id: `pdf-${i}`,
         type: 'pdf',
         url: doc.url,
+        thumbnail: (doc as Record<string, unknown>).thumbnail as string | undefined,
         title: doc.title || 'Document',
         subtitle: 'PDF',
         order: order++,
@@ -991,16 +992,6 @@ export default function LiveProfileEditor() {
                   {professionalTitle || <span className="live-editor__placeholder-text">Your professional title</span>}
                 </p>
 
-                {/* Link buttons */}
-                <div className="profile-link-buttons">
-                  {website && (
-                    <span className="profile-link-btn--pill">
-                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3"><circle cx="8" cy="8" r="6.5"/></svg>
-                      Website
-                    </span>
-                  )}
-                </div>
-
                 {/* Bio */}
                 <div ref={setSectionRef('bio')} className={`profile-header-grid__bio${activePanel === 'bio' ? ' editable-section--active' : ''}`} onClick={(e) => { e.stopPropagation(); openPanel('bio') }} style={{ cursor: 'pointer' }}>
                   {bio ? (
@@ -1141,6 +1132,18 @@ export default function LiveProfileEditor() {
                   } else if (id.startsWith('link-')) {
                     const idx = parseInt(id.split('-')[1])
                     setMediaLinks(prev => prev.filter((_, i) => i !== idx))
+                  }
+                  markDirty()
+                }}
+                onEditThumbnail={(id, thumbnailUrl) => {
+                  if (id.startsWith('pdf-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setPdfDocuments(prev => prev.map((item, i) => i === idx ? { ...item, thumbnail: thumbnailUrl } : item))
+                  } else if (id.startsWith('link-')) {
+                    const idx = parseInt(id.split('-')[1])
+                    setMediaLinks(prev => prev.map((item, i) => i === idx ? { ...item, thumbnail: thumbnailUrl } as typeof item : item))
+                  } else if (id === 'portfolio-pdf' || id === 'resume-pdf') {
+                    // Store thumbnail in a separate state or extend the data
                   }
                   markDirty()
                 }}

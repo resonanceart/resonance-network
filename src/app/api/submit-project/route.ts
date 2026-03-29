@@ -91,9 +91,16 @@ export async function POST(request: Request) {
     const collaborationRoleCount = typeof body.collaborationRoleCount === 'number' && body.collaborationRoleCount >= 1 && body.collaborationRoleCount <= 20 ? body.collaborationRoleCount : null
     const artistHeadshotData = typeof body.artistHeadshotData === 'string' && body.artistHeadshotData.length <= 7_340_032 ? body.artistHeadshotData : null
 
-    if (!artistName || !artistEmail || !projectTitle) {
+    if (!projectTitle) {
       return NextResponse.json(
-        { success: false, message: 'Valid name, email, and project title are required.' },
+        { success: false, message: 'Project title is required.' },
+        { status: 400 }
+      )
+    }
+    // For non-draft submissions, require email
+    if (body.status !== 'draft' && !artistEmail) {
+      return NextResponse.json(
+        { success: false, message: 'Valid email is required to submit for review.' },
         { status: 400 }
       )
     }
@@ -103,7 +110,7 @@ export async function POST(request: Request) {
     const submissionStatus = isDraft ? 'draft' : 'new'
 
     const submissionData = {
-      artist_name: artistName,
+      artist_name: artistName || 'Unknown',
       artist_bio: artistBio || null,
       artist_email: artistEmail,
       artist_website: artistWebsite || null,
@@ -204,7 +211,7 @@ export async function POST(request: Request) {
       try {
         const confirmEmail = projectSubmissionConfirmation(artistName, projectTitle, previewUrl)
         await sendEmail({
-          to: artistEmail,
+          to: artistEmail!,
           subject: confirmEmail.subject,
           html: confirmEmail.html,
         })

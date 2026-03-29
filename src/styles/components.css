@@ -14089,9 +14089,34 @@ main {
   background: #dc2626;
 }
 
-/* Edit title button — show on hover */
-.smart-gallery__tile:hover .smart-gallery__edit-title {
-  opacity: 1 !important;
+/* Edit buttons group — bottom left, show on hover */
+.smart-gallery__edit-buttons {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 3;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: auto;
+}
+.smart-gallery__tile:hover .smart-gallery__edit-buttons {
+  opacity: 1;
+}
+.smart-gallery__edit-buttons button {
+  background: rgba(0,0,0,0.7);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  pointer-events: auto;
+}
+.smart-gallery__edit-buttons button:hover {
+  background: rgba(0,0,0,0.9);
 }
 
 /* Dragging state */

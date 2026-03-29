@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 export interface GalleryItem {
   id: string
@@ -18,168 +18,178 @@ interface SmartGalleryProps {
   onReorder?: (items: GalleryItem[]) => void
   onDelete?: (id: string) => void
   onEditTitle?: (id: string, newTitle: string) => void
+  onEditThumbnail?: (id: string, thumbnailUrl: string) => void
 }
 
-export function SmartGallery({ items, editable = false, onReorder, onDelete, onEditTitle }: SmartGalleryProps) {
+export function SmartGallery({ items, editable = false, onReorder, onDelete, onEditTitle, onEditThumbnail }: SmartGalleryProps) {
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editText, setEditText] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [thumbnailTargetId, setThumbnailTargetId] = useState<string | null>(null)
   const sorted = [...items].sort((a, b) => a.order - b.order)
 
-  function handleDragStart(index: number) {
-    setDragIndex(index)
-  }
-
-  function handleDragOver(e: React.DragEvent, index: number) {
-    e.preventDefault()
-    if (dragIndex === null || dragIndex === index) return
-  }
-
+  function handleDragStart(index: number) { setDragIndex(index) }
+  function handleDragOver(e: React.DragEvent) { e.preventDefault() }
   function handleDrop(index: number) {
     if (dragIndex === null || dragIndex === index || !onReorder) return
     const reordered = [...sorted]
     const [moved] = reordered.splice(dragIndex, 1)
     reordered.splice(index, 0, moved)
-    const updated = reordered.map((item, i) => ({ ...item, order: i }))
-    onReorder(updated)
+    onReorder(reordered.map((item, i) => ({ ...item, order: i })))
     setDragIndex(null)
   }
 
   function handleClick(item: GalleryItem) {
-    if (editingId) return // Don't navigate while editing title
+    if (editingId) return
     if (item.type === 'pdf' || item.type === 'link') {
       window.open(item.url, '_blank', 'noopener,noreferrer')
     }
   }
 
-  function startEditTitle(e: React.MouseEvent, item: GalleryItem) {
+  function startEdit(e: React.MouseEvent, item: GalleryItem) {
     e.stopPropagation()
     setEditingId(item.id)
     setEditText(item.title)
   }
 
-  function saveTitle() {
+  function saveEdit() {
     if (editingId && onEditTitle && editText.trim()) {
       onEditTitle(editingId, editText.trim())
     }
     setEditingId(null)
-    setEditText('')
+  }
+
+  function startThumbnailUpload(e: React.MouseEvent, itemId: string) {
+    e.stopPropagation()
+    setThumbnailTargetId(itemId)
+    fileInputRef.current?.click()
+  }
+
+  async function handleThumbnailFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !thumbnailTargetId || !onEditThumbnail) return
+    // Upload via /api/upload
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('type', 'gallery')
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', credentials: 'same-origin', body: formData })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.url) onEditThumbnail(thumbnailTargetId, data.url)
+      }
+    } catch {}
+    setThumbnailTargetId(null)
+    e.target.value = ''
   }
 
   if (sorted.length === 0) return null
 
   return (
     <div className="smart-gallery">
-      {sorted.map((item, i) => (
-        <div
-          key={item.id}
-          className={`smart-gallery__tile smart-gallery__tile--${item.type}${item.type === 'link' && item.thumbnail ? ' smart-gallery__tile--has-thumb' : ''}${dragIndex === i ? ' smart-gallery__tile--dragging' : ''}`}
-          onClick={() => handleClick(item)}
-          draggable={editable && !editingId}
-          onDragStart={() => handleDragStart(i)}
-          onDragOver={(e) => handleDragOver(e, i)}
-          onDrop={() => handleDrop(i)}
-          onDragEnd={() => setDragIndex(null)}
-        >
-          {/* Image background */}
-          {item.type === 'image' && (
-            <img src={item.url} alt={item.title} className="smart-gallery__tile-img" />
-          )}
+      {/* Hidden file input for thumbnail uploads */}
+      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleThumbnailFile} style={{ display: 'none' }} />
 
-          {/* PDF icon — large centered document */}
-          {item.type === 'pdf' && (
-            <div className="smart-gallery__icon">
-              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <line x1="10" y1="9" x2="8" y2="9"/>
-              </svg>
-            </div>
-          )}
+      {sorted.map((item, i) => {
+        const isEditing = editingId === item.id
+        const hasThumbnail = !!(item.thumbnail || (item.type === 'image'))
 
-          {/* Link tile — with optional thumbnail */}
-          {item.type === 'link' && item.thumbnail && (
-            <img src={item.thumbnail} alt={item.title} className="smart-gallery__tile-img" />
-          )}
-          {item.type === 'link' && !item.thumbnail && (
-            <div className="smart-gallery__icon">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="2" y1="12" x2="22" y2="12"/>
-                <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
-              </svg>
-            </div>
-          )}
+        return (
+          <div
+            key={item.id}
+            className={`smart-gallery__tile smart-gallery__tile--${item.type}${hasThumbnail && item.type !== 'image' ? ' smart-gallery__tile--has-thumb' : ''}${dragIndex === i ? ' smart-gallery__tile--dragging' : ''}`}
+            onClick={() => handleClick(item)}
+            draggable={editable && !isEditing}
+            onDragStart={() => handleDragStart(i)}
+            onDragOver={handleDragOver}
+            onDrop={() => handleDrop(i)}
+            onDragEnd={() => setDragIndex(null)}
+          >
+            {/* Background image — for images and tiles with thumbnails */}
+            {item.type === 'image' && (
+              <img src={item.url} alt={item.title} className="smart-gallery__tile-img" />
+            )}
+            {item.type !== 'image' && item.thumbnail && (
+              <img src={item.thumbnail} alt={item.title} className="smart-gallery__tile-img" />
+            )}
 
-          {/* Hover overlay text */}
-          <div className="smart-gallery__tile-body">
-            {item.subtitle && <p className="smart-gallery__tile-subtitle">{item.subtitle}</p>}
-            {editingId === item.id ? (
-              <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                <input
-                  type="text"
-                  value={editText}
-                  onChange={e => setEditText(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') saveTitle(); if (e.key === 'Escape') setEditingId(null) }}
-                  autoFocus
-                  style={{
-                    background: 'rgba(0,0,0,0.6)',
-                    border: '1px solid rgba(255,255,255,0.4)',
-                    borderRadius: 4,
-                    color: 'white',
-                    padding: '4px 8px',
-                    fontSize: '0.9rem',
-                    fontFamily: 'var(--font-display)',
-                    fontWeight: 700,
-                    width: '100%',
-                    textAlign: 'center',
-                  }}
-                />
-                <button onClick={saveTitle} style={{ background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 4, padding: '4px 8px', cursor: 'pointer', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>Save</button>
+            {/* PDF icon overlay */}
+            {item.type === 'pdf' && !item.thumbnail && (
+              <div className="smart-gallery__icon">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  <line x1="10" y1="9" x2="8" y2="9"/>
+                </svg>
               </div>
-            ) : (
-              <h3 className="smart-gallery__tile-title">{item.title}</h3>
+            )}
+
+            {/* Link icon overlay — only when no thumbnail */}
+            {item.type === 'link' && !item.thumbnail && (
+              <div className="smart-gallery__icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+                </svg>
+              </div>
+            )}
+
+            {/* Hover overlay with title — always visible bottom gradient */}
+            <div className="smart-gallery__tile-body">
+              {item.subtitle && <p className="smart-gallery__tile-subtitle">{item.subtitle}</p>}
+              {isEditing ? (
+                <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: 6, alignItems: 'center', pointerEvents: 'auto' }}>
+                  <input
+                    type="text" value={editText}
+                    onChange={e => setEditText(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') setEditingId(null) }}
+                    autoFocus
+                    style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 4, color: 'white', padding: '6px 10px', fontSize: '0.9rem', fontWeight: 700, width: '100%', textAlign: 'center' }}
+                  />
+                  <button onClick={saveEdit} style={{ background: '#01696F', color: 'white', border: 'none', borderRadius: 4, padding: '6px 12px', cursor: 'pointer', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Save</button>
+                </div>
+              ) : (
+                <h3 className="smart-gallery__tile-title">{item.title}</h3>
+              )}
+            </div>
+
+            {/* Edit controls — visible on hover */}
+            {editable && !isEditing && (
+              <>
+                {/* Drag handle - top left */}
+                <div className="smart-gallery__drag-handle" title="Drag to reorder">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="5" cy="3" r="1.5"/><circle cx="11" cy="3" r="1.5"/><circle cx="5" cy="8" r="1.5"/><circle cx="11" cy="8" r="1.5"/><circle cx="5" cy="13" r="1.5"/><circle cx="11" cy="13" r="1.5"/></svg>
+                </div>
+
+                {/* Edit buttons - bottom left */}
+                <div className="smart-gallery__edit-buttons">
+                  {onEditTitle && (
+                    <button onClick={(e) => startEdit(e, item)} title="Edit title">
+                      ✎ Title
+                    </button>
+                  )}
+                  {onEditThumbnail && (item.type === 'pdf' || item.type === 'link') && (
+                    <button onClick={(e) => startThumbnailUpload(e, item.id)} title="Add/change preview image">
+                      🖼 Image
+                    </button>
+                  )}
+                </div>
+
+                {/* Delete - top right */}
+                {onDelete && (
+                  <button className="smart-gallery__delete" onClick={(e) => { e.stopPropagation(); onDelete(item.id) }} title="Remove">
+                    &times;
+                  </button>
+                )}
+              </>
             )}
           </div>
-
-          {/* Edit controls */}
-          {editable && (
-            <>
-              <div className="smart-gallery__drag-handle" title="Drag to reorder">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="5" cy="3" r="1.5"/><circle cx="11" cy="3" r="1.5"/><circle cx="5" cy="8" r="1.5"/><circle cx="11" cy="8" r="1.5"/><circle cx="5" cy="13" r="1.5"/><circle cx="11" cy="13" r="1.5"/></svg>
-              </div>
-              {/* Edit title button */}
-              {onEditTitle && editingId !== item.id && (
-                <button
-                  className="smart-gallery__edit-title"
-                  onClick={(e) => startEditTitle(e, item)}
-                  title="Edit title"
-                  style={{
-                    position: 'absolute', bottom: 8, left: 8, zIndex: 2,
-                    opacity: 0, transition: 'opacity 0.2s',
-                    background: 'rgba(0,0,0,0.6)', color: 'white',
-                    border: 'none', borderRadius: 4, padding: '3px 8px',
-                    cursor: 'pointer', fontSize: '0.7rem',
-                  }}
-                >
-                  ✎ Edit title
-                </button>
-              )}
-              {onDelete && (
-                <button
-                  className="smart-gallery__delete"
-                  onClick={(e) => { e.stopPropagation(); onDelete(item.id) }}
-                  title="Remove"
-                >
-                  &times;
-                </button>
-              )}
-            </>
-          )}
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
