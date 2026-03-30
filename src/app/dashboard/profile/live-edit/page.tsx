@@ -211,23 +211,33 @@ function ToolsPanel({
 }
 
 function SocialPanel({
-  socialLinks,
-  setSocialLinks,
+  socialLinks: initialLinks,
+  setSocialLinks: syncToParent,
 }: {
   socialLinks: SocialEntry[]
   setSocialLinks: (v: SocialEntry[]) => void
 }) {
-  const platformLinks = socialLinks.filter(l => l.platform !== 'custom')
-  const customLinks = socialLinks.filter(l => l.platform === 'custom')
+  // Use LOCAL state to avoid stale closure issues
+  const [links, setLinks] = useState<SocialEntry[]>(initialLinks)
+  const [dragIdx, setDragIdx] = useState<number | null>(null)
+
+  // Sync local changes to parent
+  function updateLinks(newLinks: SocialEntry[]) {
+    setLinks(newLinks)
+    syncToParent(newLinks)
+  }
+
+  const platformLinks = links.filter(l => l.platform !== 'custom')
+  const customLinks = links.filter(l => l.platform === 'custom')
 
   function addLink() {
     const entry: SocialEntry = {
       id: `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       platform: 'instagram',
       url: '',
-      display_order: socialLinks.length,
+      display_order: links.length,
     }
-    setSocialLinks([...socialLinks, entry])
+    updateLinks([...links, entry])
   }
 
   function addCustomLink() {
@@ -236,24 +246,37 @@ function SocialPanel({
       platform: 'custom' as ProfileSocialLink['platform'],
       url: '',
       label: '',
-      display_order: socialLinks.length,
+      display_order: links.length,
     }
-    setSocialLinks([...socialLinks, entry])
+    updateLinks([...links, entry])
   }
 
   function updateLink(id: string, field: 'platform' | 'url' | 'label', value: string) {
-    setSocialLinks(socialLinks.map(l => l.id === id ? { ...l, [field]: value } : l))
+    updateLinks(links.map(l => l.id === id ? { ...l, [field]: value } : l))
   }
 
   function removeLink(id: string) {
-    setSocialLinks(socialLinks.filter(l => l.id !== id))
+    updateLinks(links.filter(l => l.id !== id))
+  }
+
+  // Drag to reorder
+  function handleDragStart(idx: number) { setDragIdx(idx) }
+  function handleDragOver(e: React.DragEvent) { e.preventDefault() }
+  function handleDrop(idx: number) {
+    if (dragIdx === null || dragIdx === idx) return
+    const reordered = [...links]
+    const [moved] = reordered.splice(dragIdx, 1)
+    reordered.splice(idx, 0, moved)
+    updateLinks(reordered.map((l, i) => ({ ...l, display_order: i })))
+    setDragIdx(null)
   }
 
   return (
     <div className="live-editor__panel-section">
-      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Social Platforms</p>
-      {platformLinks.map((link) => (
-        <div key={link.id} style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-start', marginBottom: 'var(--space-3)' }}>
+      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Social Platforms</p>
+      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }}>Drag to reorder · Add as many as you need</p>
+      {platformLinks.map((link, idx) => (
+        <div key={link.id} draggable onDragStart={() => handleDragStart(links.indexOf(link))} onDragOver={handleDragOver} onDrop={() => handleDrop(links.indexOf(link))} onDragEnd={() => setDragIdx(null)} style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-start', marginBottom: 'var(--space-3)', cursor: 'grab', opacity: dragIdx === links.indexOf(link) ? 0.4 : 1 }}>
           <select
             className="form-input"
             value={link.platform}
@@ -1559,27 +1582,44 @@ export default function LiveProfileEditor() {
                       <option value="any pronouns">any pronouns</option>
                     </select>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
-                    <div className="form-group">
-                      <label className="form-label">Location</label>
-                      <input
-                        className="form-input"
-                        value={location}
-                        onChange={e => { setLocation(e.target.value); markDirty() }}
-                        placeholder="City, region"
-                        maxLength={200}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Secondary Location</label>
-                      <input
-                        className="form-input"
-                        value={locationSecondary}
-                        onChange={e => { setLocationSecondary(e.target.value); markDirty() }}
-                        placeholder="Second city"
-                        maxLength={200}
-                      />
-                    </div>
+                  <div className="form-group">
+                    <label className="form-label">Locations</label>
+                    {(() => {
+                      // Build locations array from primary + secondary (which can be comma-separated)
+                      const allLocations = [location, ...(locationSecondary ? locationSecondary.split(' / ').map(s => s.trim()).filter(Boolean) : [])]
+                      if (allLocations.length === 0 || (allLocations.length === 1 && !allLocations[0])) {
+                        return (
+                          <div>
+                            <input className="form-input" value={location} onChange={e => { setLocation(e.target.value); markDirty() }} placeholder="City, Country" maxLength={200} style={{ marginBottom: 'var(--space-2)' }} />
+                            <button type="button" className="btn btn--ghost btn--sm" onClick={() => { if (!locationSecondary) setLocationSecondary(' '); markDirty() }}>+ Add another location</button>
+                          </div>
+                        )
+                      }
+                      return (
+                        <div>
+                          <input className="form-input" value={location} onChange={e => { setLocation(e.target.value); markDirty() }} placeholder="Primary location" maxLength={200} style={{ marginBottom: 'var(--space-2)' }} />
+                          {(locationSecondary || '').split(' / ').map((loc, i) => (
+                            <div key={i} style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                              <input className="form-input" value={loc.trim()} onChange={e => {
+                                const parts = (locationSecondary || '').split(' / ')
+                                parts[i] = e.target.value
+                                setLocationSecondary(parts.join(' / '))
+                                markDirty()
+                              }} placeholder="Additional location" maxLength={200} style={{ flex: 1 }} />
+                              <button type="button" className="btn btn--ghost btn--sm" onClick={() => {
+                                const parts = (locationSecondary || '').split(' / ').filter((_, j) => j !== i)
+                                setLocationSecondary(parts.join(' / '))
+                                markDirty()
+                              }}>&times;</button>
+                            </div>
+                          ))}
+                          <button type="button" className="btn btn--ghost btn--sm" onClick={() => {
+                            setLocationSecondary((locationSecondary ? locationSecondary + ' / ' : '') + '')
+                            markDirty()
+                          }}>+ Add another location</button>
+                        </div>
+                      )
+                    })()}
                   </div>
                 </div>
               )}

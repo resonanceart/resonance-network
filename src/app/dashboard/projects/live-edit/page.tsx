@@ -99,6 +99,10 @@ function LiveProjectEditorInner() {
   const [newProjectLinkUrl, setNewProjectLinkUrl] = useState('')
   const [newProjectLinkLabel, setNewProjectLinkLabel] = useState('')
   const [galleryUploading, setGalleryUploading] = useState(false)
+  const [projectSocialLinks, setProjectSocialLinks] = useState<Array<{platform: string; url: string}>>([])
+  const [showAddProjectSocial, setShowAddProjectSocial] = useState(false)
+  const [newSocialPlatform, setNewSocialPlatform] = useState('instagram')
+  const [newSocialUrl, setNewSocialUrl] = useState('')
 
   const lastChangeTime = useRef(0)
   const markDirty = useCallback(() => { setHasChanges(true); lastChangeTime.current = Date.now() }, [])
@@ -173,6 +177,7 @@ function LiveProjectEditorInner() {
                   if (Array.isArray(parsed.images)) setGalleryImages(parsed.images)
                   if (Array.isArray(parsed.pdfs)) setProjectPdfs(parsed.pdfs)
                   if (Array.isArray(parsed.links)) setProjectLinks(parsed.links)
+                  if (Array.isArray(parsed.socialLinks)) setProjectSocialLinks(parsed.socialLinks)
                 }
               } catch { /* */ }
             }
@@ -242,8 +247,8 @@ function LiveProjectEditorInner() {
           materials: materials.trim(),
           specialNeeds: specialNeeds.trim(),
           heroImageData: heroImageUrl,
-          galleryImagesData: (galleryImages.length > 0 || projectPdfs.length > 0 || projectLinks.length > 0)
-            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks })
+          galleryImagesData: (galleryImages.length > 0 || projectPdfs.length > 0 || projectLinks.length > 0 || projectSocialLinks.length > 0)
+            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks })
             : null,
           collaborationNeeds: rolesJson,
           collaborationRoleCount: collabRoles.filter(r => r.title || r.customTitle).length || null,
@@ -308,8 +313,8 @@ function LiveProjectEditorInner() {
           materials: materials.trim(),
           specialNeeds: specialNeeds.trim(),
           heroImageData: heroImageUrl,
-          galleryImagesData: (galleryImages.length > 0 || projectPdfs.length > 0 || projectLinks.length > 0)
-            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks })
+          galleryImagesData: (galleryImages.length > 0 || projectPdfs.length > 0 || projectLinks.length > 0 || projectSocialLinks.length > 0)
+            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks })
             : null,
           collaborationNeeds: JSON.stringify(rolesData),
           collaborationRoleCount: rolesData.length || null,
@@ -691,6 +696,44 @@ function LiveProjectEditorInner() {
                 <button className="btn btn--outline btn--sm" onClick={() => setShowProjectAddLink(true)}>+ Add Link</button>
               )}
             </div>
+          </div>
+        </section>
+
+        {/* Social & Custom Links for Project */}
+        <section style={{ padding: 'var(--space-6) 0', borderTop: '1px solid var(--color-border)' }}>
+          <div className="container">
+            <p className="section-label">Project Links & Social</p>
+            {projectSocialLinks.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
+                {projectSocialLinks.map((link, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 20, padding: '4px 12px', fontSize: 'var(--text-sm)' }}>
+                    <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{link.platform}</span>
+                    <button onClick={() => { setProjectSocialLinks(prev => prev.filter((_, j) => j !== i)); markDirty() }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: 14, padding: '0 2px' }}>&times;</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {showAddProjectSocial ? (
+              <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-end', flexWrap: 'wrap', marginBottom: 'var(--space-3)' }}>
+                <select className="form-input" value={newSocialPlatform} onChange={e => setNewSocialPlatform(e.target.value)} style={{ width: 'auto', minWidth: 130 }}>
+                  {['instagram', 'linkedin', 'facebook', 'x', 'youtube', 'tiktok', 'behance', 'github', 'vimeo', 'soundcloud', 'spotify', 'linktree', 'website', 'fundraiser'].map(p => (
+                    <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+                  ))}
+                </select>
+                <input className="form-input" value={newSocialUrl} onChange={e => setNewSocialUrl(e.target.value)} placeholder="https://..." style={{ flex: 1, minWidth: 150 }} />
+                <button className="btn btn--primary btn--sm" onClick={() => {
+                  if (newSocialUrl.trim()) {
+                    setProjectSocialLinks(prev => [...prev, { platform: newSocialPlatform, url: newSocialUrl.trim() }])
+                    markDirty()
+                    setNewSocialUrl('')
+                    setShowAddProjectSocial(false)
+                  }
+                }}>Add</button>
+                <button className="btn btn--ghost btn--sm" onClick={() => setShowAddProjectSocial(false)}>Cancel</button>
+              </div>
+            ) : (
+              <button className="btn btn--outline btn--sm" onClick={() => setShowAddProjectSocial(true)}>+ Add Social / Website Link</button>
+            )}
           </div>
         </section>
 
