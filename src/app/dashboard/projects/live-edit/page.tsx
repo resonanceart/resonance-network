@@ -75,6 +75,10 @@ function LiveProjectEditorInner() {
   const [title, setTitle] = useState('')
   const [shortDescription, setShortDescription] = useState('')
   const [heroImageUrl, setHeroImageUrl] = useState<string | null>(null)
+  const [heroPositionY, setHeroPositionY] = useState(50)
+  const [isDraggingHero, setIsDraggingHero] = useState(false)
+  const heroDragStartY = useRef(0)
+  const heroDragStartPos = useRef(50)
   const [overviewLead, setOverviewLead] = useState('')
   const [overviewBody, setOverviewBody] = useState('')
   const [experience, setExperience] = useState('')
@@ -178,6 +182,7 @@ function LiveProjectEditorInner() {
                   if (Array.isArray(parsed.pdfs)) setProjectPdfs(parsed.pdfs)
                   if (Array.isArray(parsed.links)) setProjectLinks(parsed.links)
                   if (Array.isArray(parsed.socialLinks)) setProjectSocialLinks(parsed.socialLinks)
+                  if (typeof parsed.heroPositionY === 'number') setHeroPositionY(parsed.heroPositionY)
                 }
               } catch { /* */ }
             }
@@ -248,7 +253,7 @@ function LiveProjectEditorInner() {
           specialNeeds: specialNeeds.trim(),
           heroImageData: heroImageUrl,
           galleryImagesData: (galleryImages.length > 0 || projectPdfs.length > 0 || projectLinks.length > 0 || projectSocialLinks.length > 0)
-            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks })
+            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks, heroPositionY })
             : null,
           collaborationNeeds: rolesJson,
           collaborationRoleCount: collabRoles.filter(r => r.title || r.customTitle).length || null,
@@ -314,7 +319,7 @@ function LiveProjectEditorInner() {
           specialNeeds: specialNeeds.trim(),
           heroImageData: heroImageUrl,
           galleryImagesData: (galleryImages.length > 0 || projectPdfs.length > 0 || projectLinks.length > 0 || projectSocialLinks.length > 0)
-            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks })
+            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks, heroPositionY })
             : null,
           collaborationNeeds: JSON.stringify(rolesData),
           collaborationRoleCount: rolesData.length || null,
@@ -492,20 +497,40 @@ function LiveProjectEditorInner() {
         </nav>
 
         {/* Hero */}
-        <div className="editable-section" onClick={() => openPanel('hero')}>
+        <div className="editable-section" onClick={!isDraggingHero ? () => openPanel('hero') : undefined}>
           <section
             className="project-hero"
             style={heroImageUrl
-              ? undefined
+              ? { cursor: isDraggingHero ? 'grabbing' : 'grab' }
               : { background: 'linear-gradient(135deg, #01696F 0%, #01696Fcc 50%, #01696F88 100%)', position: 'relative', minHeight: 400 }
             }
+            onMouseDown={heroImageUrl ? (e) => {
+              e.stopPropagation()
+              setIsDraggingHero(true)
+              heroDragStartY.current = e.clientY
+              heroDragStartPos.current = heroPositionY
+              e.preventDefault()
+            } : undefined}
+            onMouseMove={isDraggingHero ? (e) => {
+              const delta = e.clientY - heroDragStartY.current
+              const heroHeight = (e.currentTarget as HTMLElement).offsetHeight
+              const newPos = Math.max(0, Math.min(100, heroDragStartPos.current + (delta / heroHeight) * 100))
+              setHeroPositionY(newPos)
+            } : undefined}
+            onMouseUp={() => { if (isDraggingHero) { setIsDraggingHero(false); markDirty() } }}
+            onMouseLeave={() => { if (isDraggingHero) { setIsDraggingHero(false); markDirty() } }}
           >
             {heroImageUrl && (
-              <img
-                src={heroImageUrl}
-                alt="Hero"
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-              />
+              <>
+                <img
+                  src={heroImageUrl}
+                  alt="Hero"
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: `center ${heroPositionY}%` }}
+                />
+                <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.5)', color: 'white', padding: '4px 12px', borderRadius: 20, fontSize: '0.7rem', zIndex: 2, pointerEvents: 'none' }}>
+                  ↕ Drag to reposition
+                </div>
+              </>
             )}
             <div className="project-hero__overlay" />
             <div className="project-hero__content">

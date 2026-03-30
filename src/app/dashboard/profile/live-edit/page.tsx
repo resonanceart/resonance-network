@@ -455,6 +455,10 @@ export default function LiveProfileEditor() {
   const [website, setWebsite] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null)
+  const [coverPositionY, setCoverPositionY] = useState(50) // 0-100, percentage from top
+  const [isDraggingCover, setIsDraggingCover] = useState(false)
+  const coverDragStartY = useRef(0)
+  const coverDragStartPos = useRef(50)
   const [availabilityStatus, setAvailabilityStatus] = useState('')
   const [availabilityNote, setAvailabilityNote] = useState('')
   const [availabilityTypes, setAvailabilityTypes] = useState<string[]>([])
@@ -531,6 +535,9 @@ export default function LiveProfileEditor() {
           setAvailabilityNote((ext.availability_note as string) || '')
           setAvailabilityTypes((ext.availability_types as string[]) || [])
           setCoverImageUrl((ext.cover_image_url as string) || null)
+          if (ext.cover_position && typeof ext.cover_position === 'object') {
+            setCoverPositionY((ext.cover_position as {y?: number}).y ?? 50)
+          }
           setToolsAndMaterials((ext.tools_and_materials as string[]) || [])
           setArtistStatement((ext.artist_statement as string) || '')
           setPhilosophy((ext.philosophy as string) || '')
@@ -591,6 +598,7 @@ export default function LiveProfileEditor() {
           availability_status: availabilityStatus || null,
           availability_note: availabilityNote.trim() || null,
           cover_image_url: coverImageUrl,
+          cover_position: { x: 50, y: coverPositionY, scale: 1 },
           professional_title: professionalTitle.trim() || null,
           pronouns: pronouns.trim() || null,
           location_secondary: locationSecondary.trim() || null,
@@ -996,8 +1004,35 @@ export default function LiveProfileEditor() {
         {/* Row 1: Banner */}
         <div ref={setSectionRef('cover')} className={`editable-section${activePanel === 'cover' ? ' editable-section--active' : ''}`} onClick={() => openPanel('cover')}>
           <section className="profile-banner"
-            style={coverImageUrl ? undefined : { background: `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}cc 50%, ${accentColor}88 100%)` }}>
-            {coverImageUrl && <img src={coverImageUrl} alt="Cover" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
+            style={coverImageUrl ? { cursor: isDraggingCover ? 'grabbing' : 'grab' } : { background: `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}cc 50%, ${accentColor}88 100%)` }}
+            onMouseDown={coverImageUrl ? (e) => {
+              setIsDraggingCover(true)
+              coverDragStartY.current = e.clientY
+              coverDragStartPos.current = coverPositionY
+              e.preventDefault()
+            } : undefined}
+            onMouseMove={isDraggingCover ? (e) => {
+              const delta = e.clientY - coverDragStartY.current
+              const bannerHeight = (e.currentTarget as HTMLElement).offsetHeight
+              const newPos = Math.max(0, Math.min(100, coverDragStartPos.current + (delta / bannerHeight) * 100))
+              setCoverPositionY(newPos)
+            } : undefined}
+            onMouseUp={() => { if (isDraggingCover) { setIsDraggingCover(false); markDirty() } }}
+            onMouseLeave={() => { if (isDraggingCover) { setIsDraggingCover(false); markDirty() } }}
+          >
+            {coverImageUrl && (
+              <>
+                <img src={coverImageUrl} alt="Cover" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: `center ${coverPositionY}%` }} />
+                <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 12px', borderRadius: 20, fontSize: '0.75rem', zIndex: 2, pointerEvents: 'none', opacity: isDraggingCover ? 1 : 0, transition: 'opacity 0.2s' }}>
+                  Drag to reposition
+                </div>
+                {!isDraggingCover && (
+                  <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.5)', color: 'white', padding: '4px 12px', borderRadius: 20, fontSize: '0.7rem', zIndex: 2, pointerEvents: 'none' }}>
+                    ↕ Drag to reposition
+                  </div>
+                )}
+              </>
+            )}
             <div className="profile-banner__overlay" />
             {!coverImageUrl && (
               <div className="live-editor__empty-placeholder">

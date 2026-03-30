@@ -56,6 +56,7 @@ export default function ProfilePreviewPage() {
   const [locationSecondary, setLocationSecondary] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null)
+  const [coverPositionY, setCoverPositionY] = useState(50)
   const [accentColor, setAccentColor] = useState('#01696F')
   const [availabilityStatus, setAvailabilityStatus] = useState('')
   const [availabilityNote, setAvailabilityNote] = useState('')
@@ -100,6 +101,9 @@ export default function ProfilePreviewPage() {
           setAvailabilityStatus((ext.availability_status as string) || '')
           setAvailabilityNote((ext.availability_note as string) || '')
           setCoverImageUrl((ext.cover_image_url as string) || null)
+          if (ext.cover_position && typeof ext.cover_position === 'object') {
+            setCoverPositionY((ext.cover_position as {y?: number}).y ?? 50)
+          }
           setArtistStatement((ext.artist_statement as string) || '')
           setPhilosophy((ext.philosophy as string) || '')
           setAccentColor((ext.accent_color as string) || '#01696F')
@@ -257,7 +261,7 @@ export default function ProfilePreviewPage() {
       <article className="profile-page">
         {/* Banner */}
         <section className="profile-banner" style={coverImageUrl ? undefined : { background: `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}cc 50%, ${accentColor}88 100%)` }}>
-          {coverImageUrl && <img src={coverImageUrl} alt="Cover" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
+          {coverImageUrl && <img src={coverImageUrl} alt="Cover" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: `center ${coverPositionY}%` }} />}
           <div className="profile-banner__overlay" />
         </section>
 
