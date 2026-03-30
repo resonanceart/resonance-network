@@ -711,7 +711,10 @@ export default function LiveProfileEditor() {
   async function handleGalleryUpload(files: FileList | null) {
     if (!files) return
     for (const file of Array.from(files)) {
-      if (file.size > 10 * 1024 * 1024) continue
+      if (file.size > 10 * 1024 * 1024) {
+        setUploadError(`"${file.name}" is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 10MB.`)
+        continue
+      }
       const url = await upload(file, 'gallery')
       if (url) {
         setMediaGallery(prev => [...prev, {
@@ -722,6 +725,7 @@ export default function LiveProfileEditor() {
         }])
         markDirty()
       }
+      // If upload returned null, the upload() function already set uploadError
     }
   }
 
@@ -1126,8 +1130,33 @@ export default function LiveProfileEditor() {
                 items={buildGalleryItems()}
                 editable={true}
                 onReorder={(reordered) => {
-                  // Update the underlying state from reordered items
-                  // For now, just mark dirty — full reorder sync is complex
+                  // Rebuild arrays from reordered items preserving new order
+                  const newImages: typeof mediaGallery = []
+                  const newPdfs: typeof pdfDocuments = []
+                  const newLinks: typeof mediaLinks = []
+                  const newPastWork: typeof pastWork = []
+
+                  reordered.forEach(item => {
+                    if (item.id.startsWith('img-')) {
+                      const idx = parseInt(item.id.split('-')[1])
+                      if (mediaGallery[idx]) newImages.push(mediaGallery[idx])
+                    } else if (item.id.startsWith('pdf-')) {
+                      const idx = parseInt(item.id.split('-')[1])
+                      if (pdfDocuments[idx]) newPdfs.push(pdfDocuments[idx])
+                    } else if (item.id.startsWith('link-')) {
+                      const idx = parseInt(item.id.split('-')[1])
+                      if (mediaLinks[idx]) newLinks.push(mediaLinks[idx])
+                    } else if (item.id.startsWith('pw-')) {
+                      const idx = parseInt(item.id.split('-')[1])
+                      if (pastWork[idx]) newPastWork.push(pastWork[idx])
+                    }
+                  })
+
+                  // Only update arrays that changed
+                  if (newImages.length > 0) setMediaGallery(newImages)
+                  if (newPdfs.length > 0) setPdfDocuments(newPdfs)
+                  if (newLinks.length > 0) setMediaLinks(newLinks)
+                  if (newPastWork.length > 0) setPastWork(newPastWork)
                   markDirty()
                 }}
                 onDelete={(id) => {
@@ -1199,11 +1228,16 @@ export default function LiveProfileEditor() {
                 <span className="dashboard-spinner" style={{ width: 16, height: 16 }} /> Uploading file...
               </div>
             )}
+            {/* Image requirements */}
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-3)', marginBottom: 'var(--space-1)' }}>
+              Accepted: JPG, PNG, WebP, GIF, HEIC, AVIF, BMP, TIFF, SVG (max 10MB) · PDF (max 10MB) · Drag tiles to reorder
+            </p>
             {/* Add buttons */}
-            <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-4)', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-2)', flexWrap: 'wrap' }}>
               <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer' }}>
-                <input type="file" accept="image/*" multiple onChange={async (e) => {
+                <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,image/avif,image/bmp,image/tiff,image/svg+xml" multiple onChange={async (e) => {
                   setGalleryUploading(true)
+                  setUploadError(null)
                   await handleGalleryUpload(e.target.files)
                   setGalleryUploading(false)
                 }} style={{ display: 'none' }} />

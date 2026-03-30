@@ -58,8 +58,11 @@ export async function POST(request: Request) {
     const isPdf = type === 'resume' || type === 'portfolio'
     const allowedTypes = isPdf ? [...ALLOWED_IMAGE_TYPES, ...ALLOWED_PDF_TYPES] : ALLOWED_IMAGE_TYPES
     if (!allowedTypes.includes(file.type)) {
+      const friendlyTypes = isPdf
+        ? 'JPG, PNG, WebP, GIF, HEIC, AVIF, BMP, TIFF, SVG, or PDF'
+        : 'JPG, PNG, WebP, GIF, HEIC, AVIF, BMP, TIFF, or SVG'
       return NextResponse.json(
-        { error: `Invalid file type. Allowed: ${allowedTypes.join(', ')}` },
+        { error: `"${file.name}" is not a supported file type (${file.type || 'unknown'}). Accepted formats: ${friendlyTypes}.` },
         { status: 400 }
       )
     }
@@ -79,8 +82,8 @@ export async function POST(request: Request) {
       })
 
     if (error) {
-      console.error('Storage upload error:', error.message)
-      return NextResponse.json({ error: 'Upload failed. Please try again.' }, { status: 500 })
+      console.error('Storage upload error:', error.message, error.statusCode)
+      return NextResponse.json({ error: `Upload failed: ${error.message}. Please try again.` }, { status: 500 })
     }
 
     // Get public URL

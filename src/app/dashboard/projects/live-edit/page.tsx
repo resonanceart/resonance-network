@@ -571,7 +571,27 @@ function LiveProjectEditorInner() {
               <SmartGallery
                 items={buildProjectGalleryItems()}
                 editable={true}
-                onReorder={(reordered) => markDirty()}
+                onReorder={(reordered) => {
+                  const newImages: typeof galleryImages = []
+                  const newPdfs: typeof projectPdfs = []
+                  const newLinks: typeof projectLinks = []
+                  reordered.forEach(item => {
+                    if (item.id.startsWith('img-')) {
+                      const idx = parseInt(item.id.split('-')[1])
+                      if (galleryImages[idx]) newImages.push(galleryImages[idx])
+                    } else if (item.id.startsWith('pdf-')) {
+                      const idx = parseInt(item.id.split('-')[1])
+                      if (projectPdfs[idx]) newPdfs.push(projectPdfs[idx])
+                    } else if (item.id.startsWith('link-')) {
+                      const idx = parseInt(item.id.split('-')[1])
+                      if (projectLinks[idx]) newLinks.push(projectLinks[idx])
+                    }
+                  })
+                  if (newImages.length > 0) setGalleryImages(newImages)
+                  if (newPdfs.length > 0) setProjectPdfs(newPdfs)
+                  if (newLinks.length > 0) setProjectLinks(newLinks)
+                  markDirty()
+                }}
                 onDelete={(id) => {
                   if (id.startsWith('img-')) {
                     const idx = parseInt(id.split('-')[1])
@@ -615,6 +635,10 @@ function LiveProjectEditorInner() {
                 <span>Add images, documents, and links to your media gallery</span>
               </div>
             )}
+            {/* Image requirements */}
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-3)', marginBottom: 'var(--space-1)' }}>
+              Accepted: JPG, PNG, WebP, GIF, HEIC, AVIF (max 10MB) · PDF (max 10MB) · Drag tiles to reorder
+            </p>
             {/* Add buttons */}
             {galleryUploading && (
               <div style={{ padding: '10px 16px', borderRadius: 8, marginTop: 'var(--space-3)', fontSize: 'var(--text-sm)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(1,105,111,0.1)' }}>
