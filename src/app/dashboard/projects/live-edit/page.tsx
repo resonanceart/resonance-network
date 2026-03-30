@@ -94,6 +94,7 @@ function LiveProjectEditorInner() {
   const [collabRoles, setCollabRoles] = useState<CollabRole[]>([emptyRole()])
   const [contactEmail, setContactEmail] = useState('')
   const [leadArtistName, setLeadArtistName] = useState('')
+  const [creatorAvatarUrl, setCreatorAvatarUrl] = useState<string | null>(null)
   const [showProjectAddLink, setShowProjectAddLink] = useState(false)
   const [newProjectLinkUrl, setNewProjectLinkUrl] = useState('')
   const [newProjectLinkLabel, setNewProjectLinkLabel] = useState('')
@@ -114,6 +115,7 @@ function LiveProjectEditorInner() {
         if (data.profile) {
           setLeadArtistName(data.profile.display_name || '')
           setContactEmail(data.profile.email || '')
+          if (data.profile.avatar_url) setCreatorAvatarUrl(data.profile.avatar_url)
         }
       })
       .catch(() => {})
@@ -756,24 +758,32 @@ function LiveProjectEditorInner() {
             <div className="container">
               <p className="section-label">The People Behind It</p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 'var(--space-4)' }}>
-                <div style={{ padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
-                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--color-primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto var(--space-2)', fontWeight: 700 }}>
-                    {(leadArtistName || 'Y').charAt(0).toUpperCase()}
-                  </div>
-                  <strong style={{ fontSize: 'var(--text-sm)' }}>{leadArtistName || 'You'}</strong>
-                  <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)', margin: 'var(--space-1) 0 0' }}>Lead Creator</p>
+                <div style={{ textAlign: 'center' }}>
+                  {creatorAvatarUrl ? (
+                    <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: 'var(--space-3)' }}>
+                      <img src={creatorAvatarUrl} alt={leadArtistName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                  ) : (
+                    <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--space-3)', fontSize: '2rem', color: 'var(--color-text-muted)' }}>
+                      {(leadArtistName || 'Y').charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: '0 0 var(--space-1)' }}>{leadArtistName || 'You'}</h3>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>Lead Creator</p>
                 </div>
                 {collaborators.map((c, i) => (
-                  <div key={i} style={{ padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
+                  <div key={i} style={{ textAlign: 'center' }}>
                     {c.photo ? (
-                      <img src={c.photo} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', margin: '0 auto var(--space-2)' }} />
+                      <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: 'var(--space-3)' }}>
+                        <img src={c.photo} alt={c.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
                     ) : (
-                      <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--color-surface)', border: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto var(--space-2)', fontWeight: 700, color: 'var(--color-text-muted)' }}>
+                      <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--space-3)', fontSize: '2rem', color: 'var(--color-text-muted)' }}>
                         {(c.name || '?').charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <strong style={{ fontSize: 'var(--text-sm)' }}>{c.name || 'Team Member'}</strong>
-                    <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)', margin: 'var(--space-1) 0 0' }}>{c.role}</p>
+                    <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: '0 0 var(--space-1)' }}>{c.name || 'Team Member'}</h3>
+                    {c.role && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>{c.role}</p>}
                   </div>
                 ))}
               </div>
