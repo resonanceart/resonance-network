@@ -18,8 +18,22 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Missing type or id' }, { status: 400 })
   }
 
-  if (!['project', 'profile'].includes(type)) {
+  if (!['project', 'profile', 'profile_avatar'].includes(type)) {
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
+  }
+
+  // Quick endpoint to get a user's avatar by ID
+  if (type === 'profile_avatar') {
+    try {
+      const { data } = await supabaseAdmin
+        .from('user_profiles')
+        .select('avatar_url, display_name')
+        .eq('id', id)
+        .single()
+      return NextResponse.json({ avatar_url: data?.avatar_url || null, display_name: data?.display_name || null })
+    } catch {
+      return NextResponse.json({ avatar_url: null })
+    }
   }
 
   // Check if user is authenticated (owner or admin)

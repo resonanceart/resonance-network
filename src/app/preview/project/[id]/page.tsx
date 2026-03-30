@@ -56,7 +56,7 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
   useEffect(() => {
     async function fetchProject() {
       try {
-        const res = await fetch(`/api/preview?type=project&id=${encodeURIComponent(params.id)}`)
+        const res = await fetch(`/api/preview?type=project&id=${encodeURIComponent(params.id)}`, { credentials: 'include' })
         if (!res.ok) {
           console.error('Preview fetch failed:', res.status, res.statusText)
           setNotFound(true)
@@ -69,14 +69,14 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
           setNotFound(true)
         } else {
           setProject(json.data)
-          // Fetch creator's avatar from their profile
+          // Fetch creator's avatar by their user_id (not current user)
           if (json.data.user_id) {
             try {
-              const avatarRes = await fetch(`/api/user/profile`, { credentials: 'include' })
+              const avatarRes = await fetch(`/api/preview?type=profile_avatar&id=${json.data.user_id}`, { credentials: 'include' })
               if (avatarRes.ok) {
                 const avatarData = await avatarRes.json()
-                if (avatarData.profile?.avatar_url) {
-                  setCreatorAvatar(avatarData.profile.avatar_url)
+                if (avatarData.avatar_url) {
+                  setCreatorAvatar(avatarData.avatar_url)
                 }
               }
             } catch {}
