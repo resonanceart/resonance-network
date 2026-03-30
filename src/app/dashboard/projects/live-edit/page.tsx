@@ -462,8 +462,9 @@ function LiveProjectEditorInner() {
                 <button onClick={() => setErrorMessage(null)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: 18 }}>&times;</button>
               </div>
             )}
-            {hasChanges && !errorMessage && <span className="live-editor__unsaved">Unsaved changes</span>}
-            {savedMessage && <span className="live-editor__saved">Saved!</span>}
+            {saving && hasChanges && <span className="live-editor__autosave">Auto-saving...</span>}
+            {hasChanges && !saving && !errorMessage && <span className="live-editor__unsaved">Unsaved changes</span>}
+            {savedMessage && !saving && <span className="live-editor__saved">Saved!</span>}
             <button onClick={() => saveDraft(false)} className="btn btn--primary btn--sm" disabled={saving || !hasChanges}>
               {saving ? 'Saving...' : 'Save Draft'}
             </button>
