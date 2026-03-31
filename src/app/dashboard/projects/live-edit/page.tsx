@@ -100,6 +100,8 @@ function LiveProjectEditorInner() {
   const [collaborators, setCollaborators] = useState<Array<{ name: string; role: string; photo: string | null }>>([])
   const [collabRoles, setCollabRoles] = useState<CollabRole[]>([emptyRole()])
   const [contactEmail, setContactEmail] = useState('')
+  const [projectContactEmail, setProjectContactEmail] = useState('')
+  const [contactMethod, setContactMethod] = useState('email') // email, form, website
   const [leadArtistName, setLeadArtistName] = useState('')
   const [creatorAvatarUrl, setCreatorAvatarUrl] = useState<string | null>(null)
   const [galleryOrder, setGalleryOrder] = useState<string[]>([]) // ordered list of item IDs for cross-type reordering
@@ -181,6 +183,7 @@ function LiveProjectEditorInner() {
             }
             setLeadArtistName(p.artist_name || '')
             setContactEmail(p.artist_email || '')
+            setProjectContactEmail(p.artist_email || '')
             if (p.hero_image_data) setHeroImageUrl(p.hero_image_data)
             if (p.gallery_images_data) {
               try {
@@ -255,7 +258,7 @@ function LiveProjectEditorInner() {
         body: JSON.stringify({
           id: submissionId || undefined,
           artistName: leadArtistName || 'Unknown',
-          artistEmail: contactEmail || 'unknown@placeholder.com',
+          artistEmail: projectContactEmail || contactEmail || 'unknown@placeholder.com',
           artistBio: '',
           artistWebsite: '',
           projectTitle: title.trim(),
@@ -321,7 +324,7 @@ function LiveProjectEditorInner() {
         body: JSON.stringify({
           id: submissionId || undefined,
           artistName: leadArtistName || 'Unknown',
-          artistEmail: contactEmail || 'unknown@placeholder.com',
+          artistEmail: projectContactEmail || contactEmail || 'unknown@placeholder.com',
           artistBio: '',
           artistWebsite: '',
           projectTitle: title.trim(),
@@ -1506,8 +1509,17 @@ function LiveProjectEditorInner() {
                   <textarea className="form-textarea" value={specialNeeds} onChange={e => { setSpecialNeeds(e.target.value); markDirty() }} rows={3} maxLength={5000} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Contact Email</label>
-                  <input className="form-input" type="email" value={contactEmail} onChange={e => { setContactEmail(e.target.value); markDirty() }} />
+                  <label className="form-label">Contact Email (for inquiries about this project)</label>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)' }}>This can be different from your login email. This is the email people will use to reach you about this project.</p>
+                  <input className="form-input" type="email" value={projectContactEmail || contactEmail} onChange={e => { setProjectContactEmail(e.target.value); markDirty() }} placeholder="your-project-email@example.com" />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Preferred Contact Method</label>
+                  <select className="form-input" value={contactMethod} onChange={e => { setContactMethod(e.target.value); markDirty() }}>
+                    <option value="email">Email</option>
+                    <option value="form">Contact Form on Resonance</option>
+                    <option value="website">Link to My Website</option>
+                  </select>
                 </div>
               </div>
             </div>

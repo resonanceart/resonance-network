@@ -473,10 +473,14 @@ export default function LiveProfileEditor() {
   const [website, setWebsite] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null)
-  const [coverPositionY, setCoverPositionY] = useState(50) // 0-100, percentage from top
+  const [coverPositionY, setCoverPositionY] = useState(50)
   const [isDraggingCover, setIsDraggingCover] = useState(false)
   const coverDragStartY = useRef(0)
   const coverDragStartPos = useRef(50)
+  const [avatarPositionY, setAvatarPositionY] = useState(50)
+  const [isDraggingAvatar, setIsDraggingAvatar] = useState(false)
+  const avatarDragStartY = useRef(0)
+  const avatarDragStartPos = useRef(50)
   const [availabilityStatus, setAvailabilityStatus] = useState('')
   const [availabilityNote, setAvailabilityNote] = useState('')
   const [availabilityTypes, setAvailabilityTypes] = useState<string[]>([])
@@ -556,6 +560,7 @@ export default function LiveProfileEditor() {
           setCoverImageUrl((ext.cover_image_url as string) || null)
           if (ext.cover_position && typeof ext.cover_position === 'object') {
             setCoverPositionY((ext.cover_position as {y?: number}).y ?? 50)
+            setAvatarPositionY((ext.cover_position as {avatarY?: number}).avatarY ?? 50)
           }
           setToolsAndMaterials((ext.tools_and_materials as string[]) || [])
           setArtistStatement((ext.artist_statement as string) || '')
@@ -622,7 +627,7 @@ export default function LiveProfileEditor() {
           availability_status: availabilityStatus || null,
           availability_note: availabilityNote.trim() || null,
           cover_image_url: coverImageUrl,
-          cover_position: { x: 50, y: coverPositionY, scale: 1 },
+          cover_position: { x: 50, y: coverPositionY, scale: 1, avatarY: avatarPositionY },
           professional_title: professionalTitle.trim() || null,
           pronouns: pronouns.trim() || null,
           location_secondary: locationSecondary.trim() || null,
@@ -1122,7 +1127,7 @@ export default function LiveProfileEditor() {
               <div>
                 <div ref={setSectionRef('avatar')} className={`editable-section profile-header-grid__photo${activePanel === 'avatar' ? ' editable-section--active' : ''}`} onClick={() => openPanel('avatar')}>
                   {avatarUrl ? (
-                    <img src={avatarUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={avatarUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: `center ${avatarPositionY}%` }} />
                   ) : (
                     <div className="profile-header-grid__initials" style={{ backgroundColor: accentColor }}>
                       {initials || '?'}
@@ -1590,34 +1595,30 @@ export default function LiveProfileEditor() {
                   {avatarUrl && (
                     <div style={{ marginTop: 'var(--space-4)' }}>
                       <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>Reposition Photo</p>
-                      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)' }}>Drag the image up or down to adjust the visible area</p>
+                      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)' }}>↕ Drag up or down to adjust</p>
                       <div
-                        style={{ position: 'relative', width: '100%', maxWidth: 200, aspectRatio: '3/4', margin: '0 auto', overflow: 'hidden', borderRadius: 8, border: '1px solid var(--color-border)', cursor: 'grab' }}
+                        style={{ position: 'relative', width: '100%', maxWidth: 200, aspectRatio: '3/4', margin: '0 auto', overflow: 'hidden', borderRadius: 8, border: '2px solid var(--color-primary)', cursor: isDraggingAvatar ? 'grabbing' : 'grab', userSelect: 'none' }}
                         onMouseDown={(e) => {
-                          const el = e.currentTarget
-                          const img = el.querySelector('img')
-                          if (!img) return
-                          const startY = e.clientY
-                          const startPos = parseInt(img.style.objectPosition?.split(' ')[1] || '50') || 50
-                          const onMove = (ev: MouseEvent) => {
-                            const delta = ev.clientY - startY
-                            const newPos = Math.max(0, Math.min(100, startPos + (delta / el.offsetHeight) * 100))
-                            img.style.objectPosition = `center ${newPos}%`
-                          }
-                          const onUp = () => {
-                            const finalPos = parseInt(img.style.objectPosition?.split(' ')[1] || '50') || 50
-                            // Save position — we can't easily save avatar position in current schema
-                            // but the visual feedback works
-                            document.removeEventListener('mousemove', onMove)
-                            document.removeEventListener('mouseup', onUp)
-                            markDirty()
-                          }
-                          document.addEventListener('mousemove', onMove)
-                          document.addEventListener('mouseup', onUp)
+                          setIsDraggingAvatar(true)
+                          avatarDragStartY.current = e.clientY
+                          avatarDragStartPos.current = avatarPositionY
                           e.preventDefault()
                         }}
+                        onMouseMove={isDraggingAvatar ? (e) => {
+                          const delta = e.clientY - avatarDragStartY.current
+                          const containerHeight = (e.currentTarget as HTMLElement).offsetHeight
+                          const newPos = Math.max(0, Math.min(100, avatarDragStartPos.current + (delta / containerHeight) * 100))
+                          setAvatarPositionY(newPos)
+                        } : undefined}
+                        onMouseUp={() => { if (isDraggingAvatar) { setIsDraggingAvatar(false); markDirty() } }}
+                        onMouseLeave={() => { if (isDraggingAvatar) { setIsDraggingAvatar(false); markDirty() } }}
                       >
-                        <img src={avatarUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
+                        <img src={avatarUrl} alt="Profile" draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: `center ${avatarPositionY}%`, pointerEvents: 'none' }} />
+                        {isDraggingAvatar && (
+                          <div style={{ position: 'absolute', top: 4, left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.7)', color: 'white', padding: '2px 10px', borderRadius: 12, fontSize: '0.65rem', zIndex: 2 }}>
+                            {Math.round(avatarPositionY)}%
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
