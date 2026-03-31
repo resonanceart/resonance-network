@@ -208,12 +208,16 @@ function LiveProjectEditorInner() {
     setLoading(false)
   }, [user, authLoading, existingId])
 
+  // Keep a ref to the latest saveDraft function to avoid stale closures
+  const saveDraftRef = useRef(saveDraft)
+  useEffect(() => { saveDraftRef.current = saveDraft })
+
   // Autosave every 15s with 2s debounce
   useEffect(() => {
     if (!hasChanges) return
     const timer = setInterval(() => {
       if (Date.now() - lastChangeTime.current < 2000) return
-      saveDraft(true)
+      saveDraftRef.current(true)
     }, 15000)
     return () => clearInterval(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps

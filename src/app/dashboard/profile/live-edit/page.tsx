@@ -567,13 +567,17 @@ export default function LiveProfileEditor() {
       .finally(() => setLoading(false))
   }, [user, authLoading])
 
+  // Keep ref to latest saveAll to avoid stale closure in autosave interval
+  const saveAllRef = useRef(saveAll)
+  useEffect(() => { saveAllRef.current = saveAll })
+
   // Auto-save: 15s interval, debounced 2s after last change
   useEffect(() => {
     if (!hasChanges) return
     const timer = setInterval(() => {
       // Don't autosave if user changed something in the last 2 seconds
       if (Date.now() - lastChangeTime.current < 2000) return
-      saveAll(true)
+      saveAllRef.current(true)
     }, 15000)
     return () => clearInterval(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps

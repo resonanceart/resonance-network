@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
+import { SmartGallery, type GalleryItem } from '@/components/profile/SmartGallery'
 
 interface ProjectSubmission {
   id: string
@@ -137,11 +138,20 @@ function ProjectPreviewInner() {
   const domains = project.domains || []
   const pathways = project.pathways || []
 
-  // Parse gallery images
+  // Parse gallery images — handle both legacy array and new {images, pdfs, links} format
   let galleryImages: Array<{ url: string; alt: string }> = []
+  let galleryPdfs: Array<{ url: string; title: string; thumbnail?: string }> = []
+  let galleryLinks: Array<{ url: string; label: string; thumbnail?: string }> = []
   if (project.gallery_images_data) {
     try {
-      galleryImages = JSON.parse(project.gallery_images_data)
+      const parsed = JSON.parse(project.gallery_images_data)
+      if (Array.isArray(parsed)) {
+        galleryImages = parsed
+      } else if (parsed && typeof parsed === 'object') {
+        if (Array.isArray(parsed.images)) galleryImages = parsed.images
+        if (Array.isArray(parsed.pdfs)) galleryPdfs = parsed.pdfs
+        if (Array.isArray(parsed.links)) galleryLinks = parsed.links
+      }
     } catch {}
   }
 
@@ -259,21 +269,30 @@ function ProjectPreviewInner() {
           </section>
         )}
 
-        {/* Gallery */}
-        {galleryImages.length > 0 && (
-          <section style={{ padding: 'var(--space-12) 0' }}>
-            <div className="container">
-              <p className="section-label">Gallery</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--space-3)' }}>
-                {galleryImages.map((img, i) => (
-                  <div key={i} style={{ borderRadius: 8, overflow: 'hidden', aspectRatio: '4/3' }}>
-                    <img src={img.url} alt={img.alt || `Gallery image ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
-                ))}
+        {/* Gallery — SmartGallery with images, PDFs, links */}
+        {(galleryImages.length > 0 || galleryPdfs.length > 0 || galleryLinks.length > 0) && (() => {
+          const items: GalleryItem[] = []
+          let order = 0
+          galleryImages.forEach((img, i) => {
+            items.push({ id: `img-${i}`, type: 'image', url: img.url, title: img.alt || 'Gallery', order: order++ })
+          })
+          galleryPdfs.forEach((doc, i) => {
+            items.push({ id: `pdf-${i}`, type: 'pdf', url: doc.url, thumbnail: doc.thumbnail, title: doc.title || 'Document', subtitle: 'PDF', order: order++ })
+          })
+          galleryLinks.forEach((link, i) => {
+            let subtitle = 'website'
+            try { subtitle = new URL(link.url).hostname } catch {}
+            items.push({ id: `link-${i}`, type: 'link', url: link.url, thumbnail: link.thumbnail, title: link.label || 'Link', subtitle, order: order++ })
+          })
+          return (
+            <section style={{ padding: 'var(--space-8) 0' }}>
+              <div className="container">
+                <p className="section-label">Media</p>
+                <SmartGallery items={items} editable={false} />
               </div>
-            </div>
-          </section>
-        )}
+            </section>
+          )
+        })()}
 
         {/* Experience */}
         {project.experience && (
