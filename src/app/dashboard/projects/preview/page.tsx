@@ -286,12 +286,7 @@ function ProjectPreviewInner() {
                       <p className="overview-stat__value">{project.location}</p>
                     </div>
                   )}
-                  {pathways.length > 0 && (
-                    <div className="overview-stat">
-                      <p className="overview-stat__label">Pathways</p>
-                      <p className="overview-stat__value">{pathways.join(' · ')}</p>
-                    </div>
-                  )}
+                  {/* Pathways shown in Classification section below instead */}
                   {projectSocialLinks.length > 0 && (
                     <div className="overview-stat">
                       <p className="overview-stat__label">Links</p>
