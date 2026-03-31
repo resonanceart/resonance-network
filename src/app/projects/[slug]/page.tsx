@@ -171,13 +171,12 @@ export default async function ProjectPage({ params }: { params: { slug: string }
         <Link href="/">Home</Link> <span aria-hidden="true">/</span> <Link href="/#projects">Projects</Link> <span aria-hidden="true">/</span> <span>{project.title}</span>
       </nav>
 
-      {/* Hero — raw img matching preview */}
-      <section className="project-hero" style={{ minHeight: '400px', background: '#1a1a1a' }}>
+      {/* Hero */}
+      <section className="project-hero">
         {project.heroImage.url && project.heroImage.url !== '/assets/images/projects/money-shot.png' && (
           <img
             src={project.heroImage.url}
             alt={project.heroImage.alt}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
           />
         )}
         <div className="project-hero__overlay" />
