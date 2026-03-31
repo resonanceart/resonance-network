@@ -55,6 +55,8 @@ interface ProjectSubmission {
 
 interface CollabRole {
   title: string
+  customTitle?: string
+  skills?: string
   description: string
   image_url?: string
 }
@@ -511,14 +513,20 @@ function ProjectPreviewInner() {
               {collabRoles.length > 0 ? (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
                   {collabRoles.map((role, i) => (
-                    <div key={i} className="collab-role-card">
-                      <div className="collab-role-card__header">
-                        <span className="collab-role-card__number">{role.title}</span>
-                      </div>
-                      <div className="collab-role-card__body">
-                        {role.description && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', margin: 0 }}>{role.description}</p>}
-                        {role.image_url && <img src={role.image_url} alt="" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 8, marginTop: 'var(--space-2)' }} />}
-                      </div>
+                    <div key={i} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                      {role.image_url && (
+                        <img src={role.image_url} alt={role.title} style={{ width: '100%', height: 140, objectFit: 'cover', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-2)' }} />
+                      )}
+                      <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: 0 }}>{role.title}</h3>
+                      {role.customTitle && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-primary)', margin: 0, fontWeight: 600 }}>{role.customTitle}</p>}
+                      {role.skills && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                          {role.skills.split(',').map((s: string, j: number) => (
+                            <span key={j} style={{ fontSize: 'var(--text-xs)', padding: '2px 8px', borderRadius: 12, background: 'rgba(1,105,111,0.15)', color: 'var(--color-primary)' }}>{s.trim()}</span>
+                          ))}
+                        </div>
+                      )}
+                      {role.description && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>{role.description}</p>}
                     </div>
                   ))}
                 </div>

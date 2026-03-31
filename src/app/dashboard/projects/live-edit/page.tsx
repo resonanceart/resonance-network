@@ -29,12 +29,13 @@ const ROLE_OPTIONS = [
 interface CollabRole {
   title: string
   customTitle: string
+  skills: string
   description: string
   imageUrl: string | null
 }
 
 function emptyRole(): CollabRole {
-  return { title: '', customTitle: '', description: '', imageUrl: null }
+  return { title: '', customTitle: '', skills: '', description: '', imageUrl: null }
 }
 
 function compressImage(file: File, maxWidth: number, quality: number): Promise<string> {
@@ -168,17 +169,18 @@ function LiveProjectEditorInner() {
             try {
               const parsed = JSON.parse(p.collaboration_needs || '[]')
               if (Array.isArray(parsed) && parsed.length > 0) {
-                setCollabRoles(parsed.map((r: { title?: string; description?: string; image_url?: string }) => ({
-                  title: ROLE_OPTIONS.includes(r.title || '') ? r.title || '' : 'Other',
-                  customTitle: ROLE_OPTIONS.includes(r.title || '') ? '' : r.title || '',
-                  description: r.description || '',
-                  imageUrl: r.image_url || null,
+                setCollabRoles(parsed.map((r: Record<string, unknown>) => ({
+                  title: ROLE_OPTIONS.includes(String(r.title || '')) ? String(r.title || '') : (r.title ? 'Other' : ''),
+                  customTitle: String(r.customTitle || (!ROLE_OPTIONS.includes(String(r.title || '')) ? r.title : '') || ''),
+                  skills: String(r.skills || ''),
+                  description: String(r.description || ''),
+                  imageUrl: (r.image_url as string) || null,
                 })))
               }
             } catch {
               // Legacy plain-text format — put it in first role's description
               if (p.collaboration_needs) {
-                setCollabRoles([{ title: '', customTitle: '', description: p.collaboration_needs, imageUrl: null }])
+                setCollabRoles([{ title: '', customTitle: '', skills: '', description: p.collaboration_needs, imageUrl: null }])
               }
             }
             setLeadArtistName(p.artist_name || '')
@@ -244,10 +246,12 @@ function LiveProjectEditorInner() {
     try {
       const rolesJson = JSON.stringify(
         collabRoles
-          .filter(r => (r.title === 'Other' ? r.customTitle.trim() : r.title) && r.description.trim())
+          .filter(r => (r.title === 'Other' ? r.customTitle.trim() : r.title))
           .map(r => ({
             title: r.title === 'Other' ? r.customTitle.trim() : r.title,
+            customTitle: r.customTitle?.trim() || '',
             description: r.description.trim(),
+            skills: r.skills?.trim() || '',
             image_url: r.imageUrl,
           }))
       )
@@ -1314,23 +1318,26 @@ function LiveProjectEditorInner() {
                       </div>
                       <div className="collab-role-card__body">
                         <div className="form-group">
-                          <label className="form-label">Role</label>
-                          <select className="form-select" value={role.title}
+                          <label className="form-label">Role Category</label>
+                          <select className="form-input" value={role.title} style={{ appearance: 'auto', WebkitAppearance: 'menulist', color: 'var(--color-text)', backgroundColor: 'var(--color-surface)' }}
                             onChange={e => { const u = [...collabRoles]; u[i] = { ...u[i], title: e.target.value }; setCollabRoles(u); markDirty() }}>
                             <option value="">Select a role...</option>
                             {ROLE_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
                           </select>
                         </div>
-                        {role.title === 'Other' && (
-                          <div className="form-group">
-                            <label className="form-label">Custom role title</label>
-                            <input className="form-input" value={role.customTitle} placeholder="e.g. Kinetic Sculptor"
-                              onChange={e => { const u = [...collabRoles]; u[i] = { ...u[i], customTitle: e.target.value }; setCollabRoles(u); markDirty() }} />
-                          </div>
-                        )}
                         <div className="form-group">
-                          <label className="form-label">Description</label>
-                          <textarea className="form-textarea" rows={3} value={role.description} placeholder="What will this collaborator do?"
+                          <label className="form-label">Role Title</label>
+                          <input className="form-input" value={role.customTitle} placeholder="e.g. Interior Designer, Lead Fabricator"
+                            onChange={e => { const u = [...collabRoles]; u[i] = { ...u[i], customTitle: e.target.value }; setCollabRoles(u); markDirty() }} />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Skills Needed</label>
+                          <input className="form-input" value={role.skills} placeholder="e.g. Rhino, SketchUp, AutoCAD"
+                            onChange={e => { const u = [...collabRoles]; u[i] = { ...u[i], skills: e.target.value }; setCollabRoles(u); markDirty() }} />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Role Description</label>
+                          <textarea className="form-textarea" rows={3} value={role.description} placeholder="Describe what this collaborator will do..."
                             onChange={e => { const u = [...collabRoles]; u[i] = { ...u[i], description: e.target.value }; setCollabRoles(u); markDirty() }} />
                         </div>
                         <div className="form-group">
