@@ -12786,8 +12786,6 @@ main {
   font-size: var(--text-sm);
   line-height: 1.6;
   color: var(--color-text-secondary);
-  max-width: 60ch;
-  overflow: hidden;
 }
 
 .profile-header-grid__bio p {
