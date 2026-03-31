@@ -139,6 +139,70 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
 
   const goalsList = project.goals ? project.goals.split('\n').filter(Boolean) : []
 
+  // Parse gallery data — matching user preview page exactly
+  let galleryImages: Array<{ url: string; alt: string }> = []
+  let galleryPdfs: Array<{ url: string; title: string; thumbnail?: string }> = []
+  let galleryLinks: Array<{ url: string; label: string; thumbnail?: string }> = []
+  let projectSocialLinks: Array<{ platform: string; url: string }> = []
+  let projectDescription = ''
+  let inclusivityStatement = ''
+  let materialsRegen = ''
+  let savedGalleryOrder: string[] = []
+  if (project.gallery_images_data) {
+    try {
+      const parsed = JSON.parse(project.gallery_images_data)
+      if (Array.isArray(parsed)) {
+        galleryImages = parsed
+      } else if (parsed && typeof parsed === 'object') {
+        if (Array.isArray(parsed.images)) galleryImages = parsed.images
+        if (Array.isArray(parsed.pdfs)) galleryPdfs = parsed.pdfs
+        if (Array.isArray(parsed.links)) galleryLinks = parsed.links
+        if (Array.isArray(parsed.socialLinks)) projectSocialLinks = parsed.socialLinks
+        if (Array.isArray(parsed.galleryOrder)) savedGalleryOrder = parsed.galleryOrder
+        if (parsed.projectDescription) projectDescription = parsed.projectDescription
+        if (parsed.inclusivityStatement) inclusivityStatement = parsed.inclusivityStatement
+        if (parsed.materialsRegen) materialsRegen = parsed.materialsRegen
+      }
+    } catch {}
+  }
+
+  // Parse collaboration roles — matching user preview page exactly
+  let collabRoles: Array<{ title: string; customTitle?: string; skills?: string; description: string; image_url?: string }> = []
+  let collabPlainText = ''
+  if (project.collaboration_needs) {
+    try {
+      const parsed = JSON.parse(project.collaboration_needs)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        collabRoles = parsed
+      }
+    } catch {
+      collabPlainText = project.collaboration_needs
+    }
+  }
+
+  // Build gallery items for SmartGallery
+  function buildGalleryItems(): GalleryItem[] {
+    const items: GalleryItem[] = []
+    let order = 0
+    galleryImages.forEach((img, i) => {
+      items.push({ id: `img-${i}`, type: 'image', url: img.url, title: img.alt || 'Gallery', order: order++ })
+    })
+    galleryPdfs.forEach((doc, i) => {
+      items.push({ id: `pdf-${i}`, type: 'pdf', url: doc.url, thumbnail: doc.thumbnail, title: doc.title || 'Document', subtitle: 'PDF', order: order++ })
+    })
+    galleryLinks.forEach((link, i) => {
+      let subtitle = 'website'
+      try { subtitle = new URL(link.url).hostname } catch {}
+      items.push({ id: `link-${i}`, type: 'link', url: link.url, thumbnail: link.thumbnail, title: link.label || 'Link', subtitle, order: order++ })
+    })
+    if (savedGalleryOrder.length > 0) {
+      const orderMap = new Map(savedGalleryOrder.map((id, i) => [id, i]))
+      items.sort((a, b) => (orderMap.get(a.id) ?? 999) - (orderMap.get(b.id) ?? 999))
+      items.forEach((item, i) => { item.order = i })
+    }
+    return items
+  }
+
   return (
     <article>
       {/* Status banner */}
@@ -162,7 +226,7 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
         </div>
       )}
 
-      {/* Admin action bar — only visible to authenticated admins */}
+      {/* Admin action bar */}
       {isAdmin && (project.status === 'new' || project.status === 'draft') && actionStatus === 'idle' && (
         <div className="admin-action-bar">
           <div className="container" style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center', padding: 'var(--space-4) 0' }}>
@@ -179,12 +243,14 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
         </div>
       )}
 
+      {/* === SECTIONS BELOW MATCH USER PREVIEW EXACTLY === */}
+
       {/* Hero */}
       <section className="project-hero" style={{ minHeight: '400px', background: '#1a1a1a' }}>
         {project.hero_image_data && (
           <img
             src={project.hero_image_data}
-            alt={`Hero image for the ${project.project_title} project`}
+            alt={`Hero image for ${project.project_title}`}
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
           />
         )}
@@ -203,7 +269,17 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
             <p className="section-label">Project Philosophy</p>
             <div className="overview-grid">
               <div>
-                {project.vision && <p className="overview-lead">{project.vision}</p>}
+                {project.vision && (() => {
+                  const parts = project.vision.split('\n\n')
+                  return (
+                    <>
+                      <p className="overview-lead">{parts[0]}</p>
+                      {parts.slice(1).map((p, i) => (
+                        <p key={i} className="overview-body">{p}</p>
+                      ))}
+                    </>
+                  )
+                })()}
               </div>
               <aside className="overview-stats">
                 <div className="overview-stat">
@@ -228,8 +304,48 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
                     <p className="overview-stat__value">{project.location}</p>
                   </div>
                 )}
+                {projectSocialLinks.length > 0 && (
+                  <div className="overview-stat">
+                    <p className="overview-stat__label">Links</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                      {projectSocialLinks.map((link, i) => (
+                        <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" title={link.platform}
+                          style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', color: 'var(--color-text)', textDecoration: 'none', border: '1px solid var(--color-border)' }}>
+                          {link.platform.charAt(0).toUpperCase()}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </aside>
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* Gallery */}
+      {(() => {
+        const items = buildGalleryItems()
+        if (items.length === 0) return null
+        return (
+          <section style={{ padding: 'var(--space-8) 0' }}>
+            <div className="container">
+              <p className="section-label">Media</p>
+              <SmartGallery items={items} editable={false} />
+            </div>
+          </section>
+        )
+      })()}
+
+      {/* Project Description */}
+      {projectDescription && (
+        <section className="project-experience">
+          <div className="container">
+            <p className="section-label">Project Description</p>
+            <h2>About This Project</h2>
+            {projectDescription.split('\n\n').map((p, i) => (
+              <p key={i} className="overview-body">{p}</p>
+            ))}
           </div>
         </section>
       )}
@@ -241,6 +357,31 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
             <p className="section-label">The Experience</p>
             <h2>What It Feels Like</h2>
             <p className="overview-body">{project.experience}</p>
+            {project.stage && project.stage !== 'Production' && project.stage !== 'Completed' && (
+              <p style={{ fontStyle: 'italic', color: 'var(--color-text-muted)', marginTop: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>
+                This project is currently in {project.stage} stage. The experience above reflects the artist&apos;s vision for the completed work.
+              </p>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Inclusivity Statement */}
+      {inclusivityStatement && (
+        <section className="project-experience">
+          <div className="container">
+            <p className="section-label">Inclusivity Statement</p>
+            {inclusivityStatement.split('\n\n').map((p, i) => <p key={i} className="overview-body">{p}</p>)}
+          </div>
+        </section>
+      )}
+
+      {/* Materials & Regenerative Practices */}
+      {materialsRegen && (
+        <section className="project-experience">
+          <div className="container">
+            <p className="section-label">Materials & Regenerative Practices</p>
+            {materialsRegen.split('\n\n').map((p, i) => <p key={i} className="overview-body">{p}</p>)}
           </div>
         </section>
       )}
@@ -261,7 +402,7 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
         <section className="project-goals">
           <div className="container">
             <p className="section-label">Ambition</p>
-            <h2>What This Project Aims to Achieve</h2>
+            <h2>What We&apos;re Working Toward</h2>
             <ul className="goals-list">
               {goalsList.map((goal, i) => (
                 <li key={i} className="goals-list__item">{goal}</li>
@@ -271,99 +412,12 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
         </section>
       )}
 
-      {/* Media Gallery */}
-      {project.gallery_images_data && (() => {
-        try {
-          const parsed = JSON.parse(project.gallery_images_data)
-          const galleryItems: GalleryItem[] = []
-          let order = 0
-          // Handle both legacy (array) and new ({images, pdfs, links}) formats
-          const images = Array.isArray(parsed) ? parsed : (parsed.images || [])
-          const pdfs = Array.isArray(parsed) ? [] : (parsed.pdfs || [])
-          const links = Array.isArray(parsed) ? [] : (parsed.links || [])
-
-          images.forEach((img: { url: string; alt?: string }, i: number) => {
-            galleryItems.push({ id: `img-${i}`, type: 'image', url: img.url, title: img.alt || 'Gallery', order: order++ })
-          })
-          pdfs.forEach((doc: { url: string; title?: string; thumbnail?: string }, i: number) => {
-            galleryItems.push({ id: `pdf-${i}`, type: 'pdf', url: doc.url, thumbnail: doc.thumbnail, title: doc.title || 'Document', subtitle: 'PDF', order: order++ })
-          })
-          links.forEach((link: { url: string; label?: string; thumbnail?: string }, i: number) => {
-            let subtitle = 'website'
-            try { subtitle = new URL(link.url).hostname } catch {}
-            galleryItems.push({ id: `link-${i}`, type: 'link', url: link.url, thumbnail: link.thumbnail, title: link.label || 'Link', subtitle, order: order++ })
-          })
-
-          // Apply saved gallery order
-          const savedOrder = !Array.isArray(parsed) && Array.isArray(parsed.galleryOrder) ? parsed.galleryOrder as string[] : []
-          if (savedOrder.length > 0) {
-            const orderMap = new Map(savedOrder.map((id: string, i: number) => [id, i]))
-            galleryItems.sort((a, b) => (orderMap.get(a.id) ?? 999) - (orderMap.get(b.id) ?? 999))
-            galleryItems.forEach((item, i) => { item.order = i })
-          }
-
-          if (galleryItems.length === 0) return null
-          return (
-            <section style={{ padding: 'var(--space-8) 0' }}>
-              <div className="container">
-                <p className="section-label">Media</p>
-                <SmartGallery items={galleryItems} editable={false} />
-              </div>
-            </section>
-          )
-        } catch { return null }
-      })()}
-
-      {/* Collaboration Roles — task-card styling */}
-      {project.collaboration_needs && (() => {
-        try {
-          const roles = JSON.parse(project.collaboration_needs)
-          if (!Array.isArray(roles) || roles.length === 0) return null
-          return (
-            <section className="project-collab" style={{ padding: 'var(--space-12) 0' }}>
-              <div className="container">
-                <p className="section-label">Join This Project</p>
-                <h2>Open Roles</h2>
-                <div className="task-grid">
-                  {roles.map((role: { title: string; customTitle?: string; skills?: string; description: string; image_url?: string }, i: number) => (
-                    <div key={i} className="task-card">
-                      {project.hero_image_data && (
-                        <div className="task-card__banner">
-                          <img src={project.hero_image_data} alt={project.project_title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </div>
-                      )}
-                      <div className="task-card__content">
-                        <div className="task-card__header">
-                          <Badge variant="open">Open</Badge>
-                        </div>
-                        <h3 className="task-card__title">{role.title}</h3>
-                        {role.customTitle && (
-                          <p className="task-card__meta-line">{role.customTitle}</p>
-                        )}
-                        {role.skills && (
-                          <div className="task-card__skills">
-                            {role.skills.split(',').map((s: string, j: number) => (
-                              <span key={j} className="skill-tag">{s.trim()}</span>
-                            ))}
-                          </div>
-                        )}
-                        {role.description && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>{role.description}</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )
-        } catch { return null }
-      })()}
-
-      {/* The Team — combines project creator + team members */}
+      {/* Team Members */}
       <section className="project-artist">
         <div className="container">
           <p className="section-label">The People Behind It</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
-            {/* Project creator — auto-included with their profile photo */}
+            {/* Creator */}
             <div style={{ textAlign: 'center' }}>
               {creatorAvatar ? (
                 <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: 'var(--space-3)' }}>
@@ -377,7 +431,7 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
               <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: '0 0 var(--space-1)' }}>{project.artist_name}</h3>
               <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>Lead Creator</p>
             </div>
-            {/* Additional team members */}
+            {/* Team members */}
             {project.team_members && project.team_members.map((member, i) => (
               <div key={i} style={{ textAlign: 'center' }}>
                 {member.photo ? (
@@ -440,13 +494,44 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
         </section>
       )}
 
-      {/* Artist bio (shown below team) */}
-      {project.artist_bio && (
-        <section style={{ padding: 'var(--space-8) 0', borderTop: '1px solid var(--color-border)' }}>
+      {/* Collaboration Roles */}
+      {(collabRoles.length > 0 || collabPlainText) && (
+        <section className="project-collab">
           <div className="container">
-            <div style={{ maxWidth: '65ch' }}>
-              <p className="overview-body">{project.artist_bio}</p>
-            </div>
+            <p className="section-label">Join This Project</p>
+            <h2>Open Roles</h2>
+            {collabRoles.length > 0 ? (
+              <div className="task-grid">
+                {collabRoles.map((role, i) => (
+                  <div key={i} className="task-card">
+                    {project.hero_image_data && (
+                      <div className="task-card__banner">
+                        <img src={project.hero_image_data} alt={project.project_title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    )}
+                    <div className="task-card__content">
+                      <div className="task-card__header">
+                        <Badge variant="open">Open</Badge>
+                      </div>
+                      <h3 className="task-card__title">{role.title}</h3>
+                      {role.customTitle && (
+                        <p className="task-card__meta-line">{role.customTitle}</p>
+                      )}
+                      {role.skills && (
+                        <div className="task-card__skills">
+                          {role.skills.split(',').map((s: string, j: number) => (
+                            <span key={j} className="skill-tag">{s.trim()}</span>
+                          ))}
+                        </div>
+                      )}
+                      {role.description && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>{role.description}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="overview-body">{collabPlainText}</p>
+            )}
           </div>
         </section>
       )}
@@ -456,8 +541,8 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
         <section className="project-contact">
           <div className="container">
             <p className="section-label">Reach Out</p>
-            <h2>Start a Conversation</h2>
-            <p>Interested in supporting, hosting, or collaborating on this project?</p>
+            <h2>Get in Touch</h2>
+            <p>Want to support, host, or collaborate on this project? We&apos;d love to hear from you.</p>
             <a
               href={`mailto:${project.artist_email}?subject=Inquiry%20about%20${encodeURIComponent(project.project_title)}%20via%20Resonance%20Network`}
               className="btn btn--primary btn--large"
