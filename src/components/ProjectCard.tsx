@@ -20,7 +20,7 @@ export function ProjectCard({ project, index = 0, transitionDelay = 0 }: Props) 
   return (
     <div
       ref={ref}
-      className={`project-card${isVisible ? ' project-card--visible' : ''}`}
+      className={`project-card${isVisible ? ' project-card--visible' : ''}${project.source === 'json' ? ' project-card--concept' : ''}`}
       style={{
         animationDelay: isVisible ? `${staggerDelay}s` : undefined,
         transitionDelay: `${transitionDelay}s`,
@@ -50,6 +50,9 @@ export function ProjectCard({ project, index = 0, transitionDelay = 0 }: Props) 
             style={{ position: 'absolute', inset: 0, backgroundColor: '#1a1a1a' }}
             aria-hidden="true"
           />
+        )}
+        {project.source === 'json' && (
+          <span className="project-card__concept-tooltip">AI Concept — developed by AI</span>
         )}
         <div className="project-card__body">
           <p className="project-card__eyebrow">{project.eyebrow}</p>

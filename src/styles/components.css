@@ -884,6 +884,33 @@ main {
   margin-top: var(--space-2);
 }
 
+.project-card__concept-tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: #a78bfa;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(-100%);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+}
+
+.project-card--concept:hover .project-card__concept-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .project-card__desc {
   font-size: var(--text-sm);
   color: rgba(255, 255, 255, 0.8);

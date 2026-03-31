@@ -1,7 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ProjectGallery } from '@/components/ProjectGallery'
-import { CollapsibleSection } from '@/components/CollapsibleSection'
 import { ProjectCard } from '@/components/ProjectCard'
 import { AuthAwareCTA } from '@/components/AuthAwareCTA'
 import { getProjects } from '@/lib/data'
@@ -82,20 +81,16 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* AI Concept Projects — collapsed by default */}
+      {/* AI Concept Projects */}
       {conceptProjects.length > 0 && (
         <section id="ai-concepts" style={{ borderTop: '1px solid var(--color-border)' }}>
-          <div className="container" style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-2)' }}>
-            <CollapsibleSection
-              label="AI Concept Projects"
-              description="Sample projects generated with AI to demonstrate the platform. Not real submissions."
-            >
-              <div className="project-grid">
-                {conceptProjects.map((project, i) => (
-                  <ProjectCard key={project.id} project={project} index={i} transitionDelay={(i % 3) * 0.05} />
-                ))}
-              </div>
-            </CollapsibleSection>
+          <div className="container" style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-8)' }}>
+            <p className="section-label">AI Concept Projects</p>
+            <div className="project-grid">
+              {conceptProjects.map((project, i) => (
+                <ProjectCard key={project.id} project={project} index={i} transitionDelay={(i % 3) * 0.05} />
+              ))}
+            </div>
           </div>
         </section>
       )}
