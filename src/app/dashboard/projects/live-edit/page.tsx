@@ -588,7 +588,7 @@ function LiveProjectEditorInner() {
         <div className="editable-section" onClick={() => openPanel('overview')}>
           <section className="project-overview">
             <div className="container">
-              <p className="section-label">The Vision</p>
+              <p className="section-label">Project Philosophy</p>
               <div className="overview-grid">
                 <div>
                   {overviewLead

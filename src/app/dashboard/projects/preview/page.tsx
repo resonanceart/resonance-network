@@ -250,7 +250,7 @@ function ProjectPreviewInner() {
         {(project.vision || project.artist_name) && (
           <section className="project-overview">
             <div className="container">
-              <p className="section-label">The Vision</p>
+              <p className="section-label">Project Philosophy</p>
               <div className="overview-grid">
                 <div>
                   {project.vision && (() => {

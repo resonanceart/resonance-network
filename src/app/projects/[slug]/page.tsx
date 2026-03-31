@@ -157,7 +157,7 @@ export default async function ProjectPage({ params }: { params: { slug: string }
         <section className="project-overview">
           <div className="container">
             <h2 className="sr-only">Project Overview</h2>
-            <p className="section-label">The Vision</p>
+            <p className="section-label">Project Philosophy</p>
             <div className="overview-grid">
               <div>
                 {project.overviewLead && (
