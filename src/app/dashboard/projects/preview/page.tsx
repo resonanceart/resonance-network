@@ -238,12 +238,11 @@ function ProjectPreviewInner() {
           <Link href="/dashboard">Dashboard</Link> <span aria-hidden="true">/</span> <Link href="/dashboard/projects">Projects</Link> <span aria-hidden="true">/</span> <span>{project.project_title}</span>
         </nav>
         {/* Hero */}
-        <section className="project-hero" style={{ minHeight: '400px', background: '#1a1a1a' }}>
+        <section className="project-hero">
           {project.hero_image_data && (
             <img
               src={project.hero_image_data}
               alt={`Hero image for ${project.project_title}`}
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
             />
           )}
           <div className="project-hero__overlay" />
