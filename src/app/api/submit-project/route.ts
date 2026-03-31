@@ -157,7 +157,49 @@ export async function POST(request: Request) {
         )
       }
 
-      // Only allow updates to drafts, new, and rejected submissions (not approved)
+      // Approved projects: allow edits to roles, team, and gallery only
+      const APPROVED_EDITABLE_FIELDS = new Set([
+        'collaboration_needs', 'collaboration_role_count', 'team_members',
+        'gallery_images_data', 'hero_image_data',
+      ])
+
+      if (existing.status === 'approved') {
+        // Restrict to allowed fields only — status stays "approved"
+        const updateData: Record<string, unknown> = {}
+        for (const [key, value] of Object.entries(submissionData)) {
+          if (!APPROVED_EDITABLE_FIELDS.has(key)) continue
+          if (value === null || value === undefined) continue
+          if (Array.isArray(value) && value.length === 0) continue
+          updateData[key] = value
+        }
+        updateData.status = 'approved'
+
+        if (Object.keys(updateData).length <= 1) {
+          // Only status, nothing to update
+          return NextResponse.json({ success: true, id: existingId, message: 'No changes to save.' })
+        }
+
+        const { error: updateError } = await supabaseAdmin
+          .from('project_submissions')
+          .update(updateData)
+          .eq('id', existingId)
+
+        if (updateError) {
+          console.error('Supabase update error:', updateError.message, updateError.code, updateError.details)
+          return NextResponse.json(
+            { success: false, message: `Update failed: ${updateError.message}` },
+            { status: 500 }
+          )
+        }
+
+        return NextResponse.json({
+          success: true,
+          id: existingId,
+          message: 'Changes saved.',
+        })
+      }
+
+      // Non-approved: allow full edits for draft, new, and rejected
       if (existing.status !== 'draft' && existing.status !== 'new' && existing.status !== 'rejected') {
         return NextResponse.json(
           { success: false, message: 'This submission can no longer be edited.' },
