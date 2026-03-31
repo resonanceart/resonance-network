@@ -244,17 +244,17 @@ function LiveProjectEditorInner() {
     setSaving(true)
     setErrorMessage(null)
     try {
-      const rolesJson = JSON.stringify(
-        collabRoles
-          .filter(r => (r.title === 'Other' ? r.customTitle.trim() : r.title))
-          .map(r => ({
+      // Save ALL roles that have at least a title selected
+      const filteredRoles = collabRoles.filter(r => r.title || r.customTitle?.trim())
+      const rolesJson = filteredRoles.length > 0
+        ? JSON.stringify(filteredRoles.map(r => ({
             title: r.title === 'Other' ? r.customTitle.trim() : r.title,
             customTitle: r.customTitle?.trim() || '',
-            description: r.description.trim(),
+            description: r.description?.trim() || '',
             skills: r.skills?.trim() || '',
             image_url: r.imageUrl,
-          }))
-      )
+          })))
+        : null
       const res = await fetch('/api/submit-project', {
         method: 'POST',
         credentials: 'include',

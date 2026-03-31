@@ -130,7 +130,7 @@ export async function POST(request: Request) {
       special_needs: specialNeeds || null,
       hero_image_data: heroImageData || null,
       gallery_images_data: galleryImagesData || null,
-      collaboration_needs: collaborationNeeds || null,
+      collaboration_needs: collaborationNeeds,
       collaboration_role_count: collaborationRoleCount,
       artist_headshot_data: artistHeadshotData || null,
       team_members: teamMembers || [],
