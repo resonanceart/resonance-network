@@ -480,25 +480,14 @@ export default async function ProfilePage({ params }: { params: { slug: string }
         </div>
       </section>
 
-      {/* Row 3: Artist Statement | Philosophy (2-column) */}
+      {/* Artist Statement — combined */}
       {(profile.artist_statement || profile.philosophy) && (
         <section className="profile-two-col-section">
           <div className="container">
-            <div className="profile-two-col">
-              {profile.artist_statement && (
-                <div className="profile-two-col__block" data-editable="bio">
-                  <p className="section-label">Artist Statement</p>
-                  <div className="profile-two-col__text">
-                    {profile.artist_statement.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
-                  </div>
-                </div>
-              )}
-              {profile.philosophy && (
-                <div className="profile-two-col__block">
-                  <p className="section-label">Philosophy</p>
-                  <div className="profile-two-col__text">{profile.philosophy.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}</div>
-                </div>
-              )}
+            <p className="section-label">Artist Statement</p>
+            <div className="profile-two-col__text">
+              {profile.artist_statement && profile.artist_statement.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
+              {profile.philosophy && profile.philosophy.split('\n\n').map((p, i) => <p key={`ph-${i}`}>{p}</p>)}
             </div>
           </div>
         </section>

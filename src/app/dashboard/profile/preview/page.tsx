@@ -368,23 +368,14 @@ export default function ProfilePreviewPage() {
           )
         })()}
 
-        {/* Statement / Philosophy — below gallery */}
+        {/* Artist Statement — combined, below gallery */}
         {(artistStatement || philosophy) && (
           <section className="profile-two-col-section">
             <div className="container">
-              <div className="profile-two-col">
-                {artistStatement && (
-                  <div className="profile-two-col__block">
-                    <p className="section-label">Artist Statement</p>
-                    <div className="profile-two-col__text">{artistStatement.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}</div>
-                  </div>
-                )}
-                {philosophy && (
-                  <div className="profile-two-col__block">
-                    <p className="section-label">Philosophy</p>
-                    <div className="profile-two-col__text">{philosophy.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}</div>
-                  </div>
-                )}
+              <p className="section-label">Artist Statement</p>
+              <div className="profile-two-col__text">
+                {artistStatement && artistStatement.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
+                {philosophy && philosophy.split('\n\n').map((p, i) => <p key={`ph-${i}`}>{p}</p>)}
               </div>
             </div>
           </section>
