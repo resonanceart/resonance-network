@@ -245,10 +245,8 @@ export async function getProfiles(): Promise<Profile[]> {
 }
 
 export async function getProfileBySlug(slug: string): Promise<Profile | null> {
-  const jsonProfile = (profilesData as Profile[]).find(
-    p => p.slug === slug && p.status === 'published'
-  )
-  if (jsonProfile) return { ...jsonProfile, source: 'json' }
+  // Check Supabase user profiles FIRST (these are the real, editable profiles)
+  // JSON profiles are legacy sample data and should only be used as fallback
 
   if (slug.startsWith('collab-')) {
     try {
@@ -333,6 +331,12 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
   } catch {
     // continue
   }
+
+  // Fallback: check legacy JSON profiles (sample data)
+  const jsonProfile = (profilesData as Profile[]).find(
+    p => p.slug === slug && p.status === 'published'
+  )
+  if (jsonProfile) return { ...jsonProfile, source: 'json' }
 
   return null
 }
