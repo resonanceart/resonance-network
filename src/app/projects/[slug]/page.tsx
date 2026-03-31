@@ -128,6 +128,11 @@ export default async function ProjectPage({ params }: { params: { slug: string }
     } catch {}
   }
 
+  // Fallback: legacy JSON projects have galleryImages directly on the project object
+  if (galleryImages.length === 0 && project.galleryImages && project.galleryImages.length > 0) {
+    galleryImages = project.galleryImages.map(img => ({ url: img.url, alt: img.alt || '' }))
+  }
+
   // Parse collaboration roles — matching preview page logic
   let collabRoles: CollabRole[] = []
   let collabPlainText = ''
