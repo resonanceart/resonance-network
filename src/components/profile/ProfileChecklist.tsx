@@ -38,7 +38,7 @@ export function ProfileChecklist({
     { key: 'skills', label: 'Add your skills (3+)', done: hasSkills },
     { key: 'availability', label: 'Set your availability', done: hasAvailability },
     { key: 'cover', label: 'Add a cover image', done: hasCover },
-    { key: 'project', label: 'Add past work images', done: hasProject },
+    { key: 'project', label: 'Add images', done: hasProject },
   ]
 
   const completedCount = items.filter((i) => i.done).length

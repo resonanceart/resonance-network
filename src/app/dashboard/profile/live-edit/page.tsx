@@ -1425,7 +1425,7 @@ export default function LiveProfileEditor() {
         hasSkills={profileSkills.length >= 3}
         hasAvailability={!!availabilityStatus}
         hasCover={!!coverImageUrl}
-        hasProject={false}
+        hasProject={mediaGallery.length > 0 || pdfDocuments.length > 0 || mediaLinks.length > 0}
         onEditSection={(section) => openPanel(section as EditSection)}
       />
 
