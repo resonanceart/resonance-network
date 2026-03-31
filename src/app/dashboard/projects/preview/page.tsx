@@ -161,6 +161,8 @@ function ProjectPreviewInner() {
   let galleryLinks: Array<{ url: string; label: string; thumbnail?: string }> = []
   let projectSocialLinks: Array<{ platform: string; url: string }> = []
   let projectDescription = ''
+  let inclusivityStatement = ''
+  let materialsRegen = ''
   if (project.gallery_images_data) {
     try {
       const parsed = JSON.parse(project.gallery_images_data)
@@ -172,6 +174,8 @@ function ProjectPreviewInner() {
         if (Array.isArray(parsed.links)) galleryLinks = parsed.links
         if (Array.isArray(parsed.socialLinks)) projectSocialLinks = parsed.socialLinks
         if (parsed.projectDescription) projectDescription = parsed.projectDescription
+        if (parsed.inclusivityStatement) inclusivityStatement = parsed.inclusivityStatement
+        if (parsed.materialsRegen) materialsRegen = parsed.materialsRegen
       }
     } catch {}
   }
@@ -358,6 +362,28 @@ function ProjectPreviewInner() {
                   This project is currently in {project.stage} stage. The experience above reflects the artist&apos;s vision for the completed work.
                 </p>
               )}
+            </div>
+          </section>
+        )}
+
+        {/* Inclusivity Statement */}
+        {inclusivityStatement && (
+          <section className="project-experience">
+            <div className="container">
+              <p className="section-label">Inclusivity Statement</p>
+              <h2>Inclusivity & Access</h2>
+              {inclusivityStatement.split('\n\n').map((p, i) => <p key={i} className="overview-body">{p}</p>)}
+            </div>
+          </section>
+        )}
+
+        {/* Materials & Regenerative Practices */}
+        {materialsRegen && (
+          <section className="project-experience">
+            <div className="container">
+              <p className="section-label">Materials & Regenerative Practices</p>
+              <h2>Materials & Sustainability</h2>
+              {materialsRegen.split('\n\n').map((p, i) => <p key={i} className="overview-body">{p}</p>)}
             </div>
           </section>
         )}

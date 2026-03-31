@@ -7,7 +7,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
 import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components/profile/SmartGallery'
 
-type EditSection = 'hero' | 'overview' | 'gallery' | 'description' | 'experience' | 'story' | 'goals' | 'classification' | 'team' | 'roles' | null
+type EditSection = 'hero' | 'overview' | 'gallery' | 'description' | 'experience' | 'inclusivity' | 'materials_regen' | 'story' | 'goals' | 'classification' | 'team' | 'roles' | null
 
 const DOMAINS = [
   'Architecture', 'Immersive Art', 'Ecological Design', 'Material Innovation',
@@ -83,6 +83,8 @@ function LiveProjectEditorInner() {
   const [overviewBody, setOverviewBody] = useState('')
   const [projectDescription, setProjectDescription] = useState('')
   const [experience, setExperience] = useState('')
+  const [inclusivityStatement, setInclusivityStatement] = useState('')
+  const [materialsRegen, setMaterialsRegen] = useState('')
   const [story, setStory] = useState('')
   const [goals, setGoals] = useState<string[]>([])
   const [domains, setDomains] = useState<string[]>([])
@@ -194,6 +196,8 @@ function LiveProjectEditorInner() {
                   if (Array.isArray(parsed.socialLinks)) setProjectSocialLinks(parsed.socialLinks)
                   if (typeof parsed.heroPositionY === 'number') setHeroPositionY(parsed.heroPositionY)
                   if (parsed.projectDescription) setProjectDescription(parsed.projectDescription)
+                  if (parsed.inclusivityStatement) setInclusivityStatement(parsed.inclusivityStatement)
+                  if (parsed.materialsRegen) setMaterialsRegen(parsed.materialsRegen)
                   if (Array.isArray(parsed.galleryOrder)) setGalleryOrder(parsed.galleryOrder)
                 }
               } catch { /* */ }
@@ -269,7 +273,7 @@ function LiveProjectEditorInner() {
           specialNeeds: specialNeeds.trim(),
           heroImageData: heroImageUrl,
           galleryImagesData: (galleryImages.length > 0 || projectPdfs.length > 0 || projectLinks.length > 0 || projectSocialLinks.length > 0)
-            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks, heroPositionY, projectDescription: projectDescription.trim() || undefined, galleryOrder: galleryOrder.length > 0 ? galleryOrder : undefined })
+            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks, heroPositionY, projectDescription: projectDescription.trim() || undefined, inclusivityStatement: inclusivityStatement.trim() || undefined, materialsRegen: materialsRegen.trim() || undefined, galleryOrder: galleryOrder.length > 0 ? galleryOrder : undefined })
             : (projectDescription.trim() ? JSON.stringify({ projectDescription: projectDescription.trim() }) : null),
           collaborationNeeds: rolesJson,
           collaborationRoleCount: collabRoles.filter(r => r.title || r.customTitle).length || null,
@@ -335,7 +339,7 @@ function LiveProjectEditorInner() {
           specialNeeds: specialNeeds.trim(),
           heroImageData: heroImageUrl,
           galleryImagesData: (galleryImages.length > 0 || projectPdfs.length > 0 || projectLinks.length > 0 || projectSocialLinks.length > 0)
-            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks, heroPositionY, projectDescription: projectDescription.trim() || undefined, galleryOrder: galleryOrder.length > 0 ? galleryOrder : undefined })
+            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks, heroPositionY, projectDescription: projectDescription.trim() || undefined, inclusivityStatement: inclusivityStatement.trim() || undefined, materialsRegen: materialsRegen.trim() || undefined, galleryOrder: galleryOrder.length > 0 ? galleryOrder : undefined })
             : (projectDescription.trim() ? JSON.stringify({ projectDescription: projectDescription.trim() }) : null),
           collaborationNeeds: JSON.stringify(rolesData),
           collaborationRoleCount: rolesData.length || null,
@@ -806,6 +810,36 @@ function LiveProjectEditorInner() {
           <div className="editable-section__overlay"><span>Edit experience</span></div>
         </div>
 
+        {/* Inclusivity Statement */}
+        <div className="editable-section" onClick={() => openPanel('inclusivity')}>
+          <section className="project-experience">
+            <div className="container">
+              <p className="section-label">Inclusivity Statement</p>
+              <h2>Inclusivity & Access</h2>
+              {inclusivityStatement
+                ? inclusivityStatement.split('\n\n').map((p, i) => <p key={i} className="overview-body">{p}</p>)
+                : <p style={{ opacity: 0.4, fontStyle: 'italic' }}>Describe how your project promotes inclusivity and access...</p>
+              }
+            </div>
+          </section>
+          <div className="editable-section__overlay"><span>Edit inclusivity</span></div>
+        </div>
+
+        {/* Materials & Regenerative Practices */}
+        <div className="editable-section" onClick={() => openPanel('materials_regen')}>
+          <section className="project-experience">
+            <div className="container">
+              <p className="section-label">Materials & Regenerative Practices</p>
+              <h2>Materials & Sustainability</h2>
+              {materialsRegen
+                ? materialsRegen.split('\n\n').map((p, i) => <p key={i} className="overview-body">{p}</p>)
+                : <p style={{ opacity: 0.4, fontStyle: 'italic' }}>Describe the materials and regenerative practices used...</p>
+              }
+            </div>
+          </section>
+          <div className="editable-section__overlay"><span>Edit materials</span></div>
+        </div>
+
         {/* Story */}
         <div className="editable-section" onClick={() => openPanel('story')}>
           <section className="project-story">
@@ -956,6 +990,8 @@ function LiveProjectEditorInner() {
                 {activePanel === 'gallery' && 'Gallery Images'}
                 {activePanel === 'description' && 'Project Description'}
                 {activePanel === 'experience' && 'The Experience'}
+                {activePanel === 'inclusivity' && 'Inclusivity Statement'}
+                {activePanel === 'materials_regen' && 'Materials & Regenerative Practices'}
                 {activePanel === 'story' && 'The Story'}
                 {activePanel === 'goals' && 'Goals'}
                 {activePanel === 'classification' && 'Classification'}
@@ -1096,6 +1132,28 @@ function LiveProjectEditorInner() {
                       placeholder="Describe the sensory and emotional experience of your project..."
                       maxLength={5000}
                     />
+                  </div>
+                </div>
+              )}
+
+              {/* INCLUSIVITY PANEL */}
+              {activePanel === 'inclusivity' && (
+                <div className="live-editor__panel-section">
+                  <div className="form-group">
+                    <label className="form-label">Inclusivity Statement</label>
+                    <textarea className="form-textarea" value={inclusivityStatement} onChange={e => { setInclusivityStatement(e.target.value); markDirty() }} rows={6} placeholder="How does your project promote inclusivity, access, and diverse participation?" maxLength={5000} />
+                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 4 }}>{inclusivityStatement.length}/5000</p>
+                  </div>
+                </div>
+              )}
+
+              {/* MATERIALS & REGENERATIVE PANEL */}
+              {activePanel === 'materials_regen' && (
+                <div className="live-editor__panel-section">
+                  <div className="form-group">
+                    <label className="form-label">Materials & Regenerative Practices</label>
+                    <textarea className="form-textarea" value={materialsRegen} onChange={e => { setMaterialsRegen(e.target.value); markDirty() }} rows={6} placeholder="Describe the materials, processes, and regenerative practices used in your project..." maxLength={5000} />
+                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 4 }}>{materialsRegen.length}/5000</p>
                   </div>
                 </div>
               )}
