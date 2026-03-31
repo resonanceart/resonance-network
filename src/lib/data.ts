@@ -1,7 +1,7 @@
 import { supabaseAdmin } from './supabase'
 import projectsData from '../../data/projects.json'
 import profilesData from '../../data/profiles.json'
-import type { Project, Profile, PortfolioProject, ProjectContentBlock, WorkExperience } from '@/types'
+import type { Project, Profile, CollaborationTask, PortfolioProject, ProjectContentBlock, WorkExperience } from '@/types'
 
 function slugify(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -137,6 +137,62 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
   }
 
   return null
+}
+
+function inferCategory(roleTitle: string): string {
+  const t = roleTitle.toLowerCase()
+  if (t.includes('engineer') || t.includes('structural') || t.includes('acoustic') || t.includes('electrical')) return 'Engineering'
+  if (t.includes('architect') || t.includes('design') || t.includes('landscape')) return 'Architecture'
+  if (t.includes('fabricat') || t.includes('build') || t.includes('construct') || t.includes('weld')) return 'Fabrication'
+  if (t.includes('light') || t.includes('sound') || t.includes('production') || t.includes('install') || t.includes('audio') || t.includes('video')) return 'Production'
+  if (t.includes('fund') || t.includes('grant') || t.includes('financ') || t.includes('sponsor')) return 'Funding'
+  if (t.includes('admin') || t.includes('project manag') || t.includes('coordinat') || t.includes('operations')) return 'Admin'
+  return 'Other'
+}
+
+export async function getCollaborationTasksFromSupabase(): Promise<CollaborationTask[]> {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('project_submissions')
+      .select('id, project_title, artist_name, artist_email, collaboration_needs, hero_image_data, stage')
+      .eq('status', 'approved')
+      .not('collaboration_needs', 'is', null)
+
+    if (error || !data) return []
+
+    const tasks: CollaborationTask[] = []
+    for (const row of data) {
+      if (!row.collaboration_needs) continue
+      try {
+        const roles = JSON.parse(row.collaboration_needs)
+        if (!Array.isArray(roles)) continue
+        const projectSlug = 'sub-' + slugify(String(row.project_title)) + '-' + String(row.id).substring(0, 8)
+        for (const role of roles) {
+          if (!role.title) continue
+          const roleTitle = role.title === 'Other' && role.customTitle ? String(role.customTitle) : String(role.title)
+          tasks.push({
+            id: `${row.id}-${slugify(roleTitle)}`,
+            projectId: projectSlug,
+            projectSlug: projectSlug,
+            projectTitle: String(row.project_title || ''),
+            title: roleTitle,
+            description: String(role.description || ''),
+            category: inferCategory(roleTitle),
+            status: 'Open',
+            skillsNeeded: role.skills ? String(role.skills).split(',').map((s: string) => s.trim()).filter(Boolean) : [],
+            estimatedScope: '',
+            contactEmail: String(row.artist_email || ''),
+            contactEmailSubject: `Collaboration Interest: ${roleTitle} for ${row.project_title}`,
+            heroImageUrl: typeof row.hero_image_data === 'string' ? row.hero_image_data : undefined,
+            source: 'supabase',
+          })
+        }
+      } catch {}
+    }
+    return tasks
+  } catch {
+    return []
+  }
 }
 
 function mapUserProfileRow(

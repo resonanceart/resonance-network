@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { getProfiles } from '@/lib/data'
+import { getProfiles, getCollaborationTasksFromSupabase } from '@/lib/data'
 import tasksData from '../../../data/tasks.json'
 import type { CollaborationTask } from '@/types'
 import { CommunityPage } from '@/components/CommunityPage'
@@ -28,10 +28,14 @@ export const metadata: Metadata = {
 }
 
 export default async function CollaboratePage() {
-  const [profiles, tasks] = await Promise.all([
+  const [profiles, staticTasks, supabaseTasks] = await Promise.all([
     getProfiles(),
     Promise.resolve(tasksData as CollaborationTask[]),
+    getCollaborationTasksFromSupabase(),
   ])
+
+  // Supabase (real) tasks first, then static legacy tasks
+  const tasks = [...supabaseTasks, ...staticTasks]
 
   return <CommunityPage profiles={profiles} tasks={tasks} />
 }

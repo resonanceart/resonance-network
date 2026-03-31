@@ -22,7 +22,8 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
   const project = (projectsData as Project[]).find(p => p.slug === task.projectId || p.id === task.projectId)
   const leadName = project?.leadArtistName
   const leadProfile = leadName ? (profilesData as Profile[]).find(p => p.name === leadName && p.status === 'published') : null
-  const heroImage = project?.heroImage?.url
+  const heroImage = task.heroImageUrl || project?.heroImage?.url
+  const projectLink = task.projectSlug || task.projectId
 
   const categoryVariant = task.category.toLowerCase()
 
@@ -67,15 +68,24 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
       {/* Hero banner */}
       {heroImage && (
         <div className="task-card__banner">
-          <Image
-            src={heroImage}
-            alt={`Hero image for the ${task.projectTitle} project`}
-            width={600}
-            height={200}
-            sizes="(max-width: 768px) 100vw, 50vw"
-            loading="lazy"
-            style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-          />
+          {heroImage.startsWith('/') ? (
+            <Image
+              src={heroImage}
+              alt={`Hero image for the ${task.projectTitle} project`}
+              width={600}
+              height={200}
+              sizes="(max-width: 768px) 100vw, 50vw"
+              loading="lazy"
+              style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+            />
+          ) : (
+            <img
+              src={heroImage}
+              alt={`Hero image for the ${task.projectTitle} project`}
+              loading="lazy"
+              style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+            />
+          )}
         </div>
       )}
 
@@ -91,7 +101,7 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
 
         {/* Project + Lead on one line */}
         <p className="task-card__meta-line">
-          <Link href={`/projects/${task.projectId}`}>{task.projectTitle}</Link>
+          <Link href={`/projects/${projectLink}`}>{task.projectTitle}</Link>
           {leadName && (
             <>
               {' · '}
