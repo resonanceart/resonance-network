@@ -871,6 +871,19 @@ main {
   line-height: 1.2;
 }
 
+.project-card__concept-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a78bfa;
+  background: rgba(139, 92, 246, 0.2);
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-top: var(--space-2);
+}
+
 .project-card__desc {
   font-size: var(--text-sm);
   color: rgba(255, 255, 255, 0.8);
@@ -939,6 +952,16 @@ main {
 .badge--stage {
   background: var(--color-primary-light);
   color: var(--color-primary);
+}
+
+.badge--concept {
+  background: rgba(139, 92, 246, 0.12);
+  color: #8b5cf6;
+}
+
+[data-theme="dark"] .badge--concept {
+  background: rgba(167, 139, 250, 0.15);
+  color: #a78bfa;
 }
 
 .badge--open {

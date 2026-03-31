@@ -181,7 +181,10 @@ export default async function ProjectPage({ params }: { params: { slug: string }
         )}
         <div className="project-hero__overlay" />
         <div className="project-hero__content">
-          <Badge variant="stage">{project.stage}</Badge>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+            <Badge variant="stage">{project.stage}</Badge>
+            {project.source === 'json' && <Badge variant="concept">AI Concept</Badge>}
+          </div>
           <h1 className="project-hero__title">{project.title}</h1>
           <p className="project-hero__desc">{project.shortDescription}</p>
           <div style={{ marginTop: 'var(--space-4)' }}>
@@ -189,6 +192,15 @@ export default async function ProjectPage({ params }: { params: { slug: string }
           </div>
         </div>
       </section>
+
+      {/* AI Concept notice */}
+      {project.source === 'json' && (
+        <div style={{ background: 'var(--color-surface-alt)', borderBottom: '1px solid var(--color-border)', padding: 'var(--space-3) 0', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', textAlign: 'center' }}>
+          <div className="container">
+            This is a fictional AI-generated concept project to demonstrate the platform. <a href="/#projects" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>View real projects</a>
+          </div>
+        </div>
+      )}
 
       {/* Overview with stats sidebar — matching preview */}
       {(project.overviewLead || project.leadArtistName) && (
