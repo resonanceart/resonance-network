@@ -107,8 +107,16 @@ export function SmartGallery({ items, editable = false, onReorder, onDelete, onE
             onDragEnd={() => setDragIndex(null)}
           >
             {/* Background image — for images and tiles with thumbnails */}
-            {item.type === 'image' && (
+            {item.type === 'image' && item.url ? (
               <img src={item.url} alt={item.title} className="smart-gallery__tile-img" />
+            ) : item.type === 'image' && (
+              <div className="smart-gallery__icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+              </div>
             )}
             {item.type !== 'image' && item.thumbnail && (
               <img src={item.thumbnail} alt={item.title} className="smart-gallery__tile-img" />
