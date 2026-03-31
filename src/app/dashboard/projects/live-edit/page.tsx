@@ -142,8 +142,12 @@ function LiveProjectEditorInner() {
             setSubmissionId(p.id as string)
             setTitle(p.project_title || '')
             setShortDescription(p.one_sentence || '')
-            setOverviewLead(p.vision || '')
-            setOverviewBody(p.vision || '')
+            // Split vision into lead (first paragraph) and body (rest)
+            if (p.vision) {
+              const parts = p.vision.split('\n\n')
+              setOverviewLead(parts[0] || '')
+              setOverviewBody(parts.slice(1).join('\n\n') || '')
+            }
             setExperience(p.experience || '')
             setStory(p.story || '')
             setGoals(p.goals ? p.goals.split('\n').filter(Boolean) : [])
@@ -244,7 +248,7 @@ function LiveProjectEditorInner() {
           artistWebsite: '',
           projectTitle: title.trim(),
           oneSentence: shortDescription.trim(),
-          vision: overviewLead.trim(),
+          vision: [overviewLead.trim(), overviewBody.trim()].filter(Boolean).join('\n\n'),
           experience: experience.trim(),
           story: story.trim(),
           goals: goals.join('\n'),
@@ -310,7 +314,7 @@ function LiveProjectEditorInner() {
           artistWebsite: '',
           projectTitle: title.trim(),
           oneSentence: shortDescription.trim(),
-          vision: overviewLead.trim(),
+          vision: [overviewLead.trim(), overviewBody.trim()].filter(Boolean).join('\n\n'),
           experience: experience.trim(),
           story: story.trim(),
           goals: goals.join('\n'),
@@ -730,7 +734,7 @@ function LiveProjectEditorInner() {
         </section>
 
         {/* Social & Custom Links for Project */}
-        <section style={{ padding: 'var(--space-6) 0', borderTop: '1px solid var(--color-border)' }}>
+        <section style={{ padding: 'var(--space-8) 0', background: 'rgba(1,105,111,0.03)', borderTop: '2px solid var(--color-primary)', borderBottom: '1px solid var(--color-border)' }}>
           <div className="container">
             <p className="section-label">Project Links & Social</p>
             {projectSocialLinks.length > 0 && (
