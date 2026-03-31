@@ -160,6 +160,7 @@ function ProjectPreviewInner() {
   let galleryPdfs: Array<{ url: string; title: string; thumbnail?: string }> = []
   let galleryLinks: Array<{ url: string; label: string; thumbnail?: string }> = []
   let projectSocialLinks: Array<{ platform: string; url: string }> = []
+  let projectDescription = ''
   if (project.gallery_images_data) {
     try {
       const parsed = JSON.parse(project.gallery_images_data)
@@ -170,6 +171,7 @@ function ProjectPreviewInner() {
         if (Array.isArray(parsed.pdfs)) galleryPdfs = parsed.pdfs
         if (Array.isArray(parsed.links)) galleryLinks = parsed.links
         if (Array.isArray(parsed.socialLinks)) projectSocialLinks = parsed.socialLinks
+        if (parsed.projectDescription) projectDescription = parsed.projectDescription
       }
     } catch {}
   }
@@ -330,6 +332,19 @@ function ProjectPreviewInner() {
             </section>
           )
         })()}
+
+        {/* Project Description */}
+        {projectDescription && (
+          <section className="project-experience">
+            <div className="container">
+              <p className="section-label">Project Description</p>
+              <h2>About This Project</h2>
+              {projectDescription.split('\n\n').map((p, i) => (
+                <p key={i} className="overview-body">{p}</p>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Experience */}
         {project.experience && (

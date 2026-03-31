@@ -7,7 +7,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
 import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components/profile/SmartGallery'
 
-type EditSection = 'hero' | 'overview' | 'gallery' | 'experience' | 'story' | 'goals' | 'classification' | 'team' | 'roles' | null
+type EditSection = 'hero' | 'overview' | 'gallery' | 'description' | 'experience' | 'story' | 'goals' | 'classification' | 'team' | 'roles' | null
 
 const DOMAINS = [
   'Architecture', 'Immersive Art', 'Ecological Design', 'Material Innovation',
@@ -81,6 +81,7 @@ function LiveProjectEditorInner() {
   const heroDragStartPos = useRef(50)
   const [overviewLead, setOverviewLead] = useState('')
   const [overviewBody, setOverviewBody] = useState('')
+  const [projectDescription, setProjectDescription] = useState('')
   const [experience, setExperience] = useState('')
   const [story, setStory] = useState('')
   const [goals, setGoals] = useState<string[]>([])
@@ -191,6 +192,7 @@ function LiveProjectEditorInner() {
                   if (Array.isArray(parsed.links)) setProjectLinks(parsed.links)
                   if (Array.isArray(parsed.socialLinks)) setProjectSocialLinks(parsed.socialLinks)
                   if (typeof parsed.heroPositionY === 'number') setHeroPositionY(parsed.heroPositionY)
+                  if (parsed.projectDescription) setProjectDescription(parsed.projectDescription)
                 }
               } catch { /* */ }
             }
@@ -265,8 +267,8 @@ function LiveProjectEditorInner() {
           specialNeeds: specialNeeds.trim(),
           heroImageData: heroImageUrl,
           galleryImagesData: (galleryImages.length > 0 || projectPdfs.length > 0 || projectLinks.length > 0 || projectSocialLinks.length > 0)
-            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks, heroPositionY })
-            : null,
+            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks, heroPositionY, projectDescription: projectDescription.trim() || undefined })
+            : (projectDescription.trim() ? JSON.stringify({ projectDescription: projectDescription.trim() }) : null),
           collaborationNeeds: rolesJson,
           collaborationRoleCount: collabRoles.filter(r => r.title || r.customTitle).length || null,
           teamMembers: collaborators.filter(c => c.name.trim()).map(c => ({ name: c.name.trim(), role: c.role.trim(), photo: c.photo })),
@@ -331,8 +333,8 @@ function LiveProjectEditorInner() {
           specialNeeds: specialNeeds.trim(),
           heroImageData: heroImageUrl,
           galleryImagesData: (galleryImages.length > 0 || projectPdfs.length > 0 || projectLinks.length > 0 || projectSocialLinks.length > 0)
-            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks, heroPositionY })
-            : null,
+            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks, heroPositionY, projectDescription: projectDescription.trim() || undefined })
+            : (projectDescription.trim() ? JSON.stringify({ projectDescription: projectDescription.trim() }) : null),
           collaborationNeeds: JSON.stringify(rolesData),
           collaborationRoleCount: rolesData.length || null,
           status: 'pending',
@@ -775,6 +777,21 @@ function LiveProjectEditorInner() {
           </div>
         </section>
 
+        {/* Project Description */}
+        <div className="editable-section" onClick={() => openPanel('description')}>
+          <section className="project-experience">
+            <div className="container">
+              <p className="section-label">Project Description</p>
+              <h2>About This Project</h2>
+              {projectDescription
+                ? projectDescription.split('\n\n').map((p, i) => <p key={i} className="overview-body">{p}</p>)
+                : <p style={{ opacity: 0.4, fontStyle: 'italic' }}>Describe your project in detail...</p>
+              }
+            </div>
+          </section>
+          <div className="editable-section__overlay"><span>Edit description</span></div>
+        </div>
+
         {/* Experience */}
         <div className="editable-section" onClick={() => openPanel('experience')}>
           <section className="project-experience">
@@ -938,6 +955,7 @@ function LiveProjectEditorInner() {
                 {activePanel === 'hero' && 'Hero Image & Title'}
                 {activePanel === 'overview' && 'Project Overview'}
                 {activePanel === 'gallery' && 'Gallery Images'}
+                {activePanel === 'description' && 'Project Description'}
                 {activePanel === 'experience' && 'The Experience'}
                 {activePanel === 'story' && 'The Story'}
                 {activePanel === 'goals' && 'Goals'}
@@ -1047,6 +1065,24 @@ function LiveProjectEditorInner() {
               )}
 
               {/* Gallery is now inline — no panel needed */}
+
+              {/* DESCRIPTION PANEL */}
+              {activePanel === 'description' && (
+                <div className="live-editor__panel-section">
+                  <div className="form-group">
+                    <label className="form-label">Project Description</label>
+                    <textarea
+                      className="form-textarea"
+                      value={projectDescription}
+                      onChange={e => { setProjectDescription(e.target.value); markDirty() }}
+                      rows={8}
+                      placeholder="Provide a detailed description of your project..."
+                      maxLength={5000}
+                    />
+                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 4 }}>{projectDescription.length}/5000</p>
+                  </div>
+                </div>
+              )}
 
               {/* EXPERIENCE PANEL */}
               {activePanel === 'experience' && (
