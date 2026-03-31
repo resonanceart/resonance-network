@@ -31,7 +31,7 @@ export default function MyProjectsPage() {
     fetch('/api/user/projects')
       .then(res => res.json())
       .then(data => {
-        setProjects(data.projects ?? [])
+        setProjects(data.submissions ?? data.projects ?? [])
       })
       .catch(err => {
         console.error('Failed to load projects:', err)

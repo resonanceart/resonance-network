@@ -38,7 +38,7 @@ export default function EditProjectPage() {
           })
         }
 
-        const projects = projectsData.projects || []
+        const projects = projectsData.submissions || projectsData.projects || []
         const project = projects.find((p: any) => p.id === projectId)
         if (project) {
           setProjectStatus(project.status || '')
