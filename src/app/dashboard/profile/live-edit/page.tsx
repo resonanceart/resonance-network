@@ -565,6 +565,7 @@ export default function LiveProfileEditor() {
           setAccentColor((ext.accent_color as string) || '#01696F')
           setLinks((ext.links as Array<{label: string; url: string; type?: string}>) || [])
           if (ext.section_order) setSectionOrder(ext.section_order as string[])
+          if (Array.isArray(ext.gallery_order)) setProfileGalleryOrder(ext.gallery_order as string[])
           if (ext.media_gallery) setMediaGallery(ext.media_gallery as GalleryItem[])
           setResumeUrl((ext.resume_url as string) || null)
           setPortfolioPdfUrl((ext.portfolio_pdf_url as string) || null)
@@ -642,6 +643,7 @@ export default function LiveProfileEditor() {
           links: links.length > 0 ? links : null,
           pdf_documents: pdfDocuments.length > 0 ? pdfDocuments : null,
           section_order: sectionOrder,
+          gallery_order: profileGalleryOrder.length > 0 ? profileGalleryOrder : null,
         }),
       })
       if (!res.ok) {
@@ -1174,35 +1176,6 @@ export default function LiveProfileEditor() {
           </div>
         </section>
 
-        {/* Row 3: Artist Statement | Philosophy (2-column) */}
-        <div ref={setSectionRef('bio')} className={`editable-section${activePanel === 'bio' ? ' editable-section--active' : ''}`} onClick={() => openPanel('bio')}>
-          <section className="profile-two-col-section">
-            <div className="container">
-              <div className="profile-two-col">
-                <div className="profile-two-col__block">
-                  <p className="section-label">Artist Statement</p>
-                  {artistStatement ? (
-                    <div className="profile-two-col__text">
-                      {artistStatement.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
-                    </div>
-                  ) : (
-                    <p className="live-editor__placeholder-text">Write your artist statement...</p>
-                  )}
-                </div>
-                <div className="profile-two-col__block">
-                  <p className="section-label">Philosophy</p>
-                  {philosophy ? (
-                    <div className="profile-two-col__text">{philosophy.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}</div>
-                  ) : (
-                    <p className="live-editor__placeholder-text">Share your philosophy...</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </section>
-          <div className="editable-section__overlay"><span>Edit about</span></div>
-        </div>
-
         {/* Media Gallery */}
         <section className="profile-media-grid-section">
           <div className="container">
@@ -1391,7 +1364,36 @@ export default function LiveProfileEditor() {
           </div>
         </section>
 
-        {/* Row 5: Milestones */}
+        {/* Artist Statement | Philosophy (below gallery) */}
+        <div ref={setSectionRef('bio')} className={`editable-section${activePanel === 'bio' ? ' editable-section--active' : ''}`} onClick={() => openPanel('bio')}>
+          <section className="profile-two-col-section">
+            <div className="container">
+              <div className="profile-two-col">
+                <div className="profile-two-col__block">
+                  <p className="section-label">Artist Statement</p>
+                  {artistStatement ? (
+                    <div className="profile-two-col__text">
+                      {artistStatement.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
+                    </div>
+                  ) : (
+                    <p className="live-editor__placeholder-text">Write your artist statement...</p>
+                  )}
+                </div>
+                <div className="profile-two-col__block">
+                  <p className="section-label">Philosophy</p>
+                  {philosophy ? (
+                    <div className="profile-two-col__text">{philosophy.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}</div>
+                  ) : (
+                    <p className="live-editor__placeholder-text">Share your philosophy...</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+          <div className="editable-section__overlay"><span>Edit about</span></div>
+        </div>
+
+        {/* Milestones */}
         <div ref={setSectionRef('timeline')} className={`editable-section${activePanel === 'timeline' ? ' editable-section--active' : ''}`} onClick={() => openPanel('timeline')}>
           <section className="profile-milestones-section">
             <div className="container">

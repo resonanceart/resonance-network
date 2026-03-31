@@ -328,6 +328,13 @@ export async function PUT(request: Request) {
     if (body.section_visibility !== undefined && typeof body.section_visibility === 'object') {
       extendedFields.section_visibility = body.section_visibility
     }
+    if (body.gallery_order !== undefined) {
+      if (body.gallery_order === null) {
+        extendedFields.gallery_order = null
+      } else if (Array.isArray(body.gallery_order)) {
+        extendedFields.gallery_order = body.gallery_order
+      }
+    }
     if (body.gallery_layout !== undefined) extendedFields.gallery_layout = sanitizeText(body.gallery_layout, 20)
     if (body.gallery_columns !== undefined) {
       const cols = parseInt(body.gallery_columns, 10)

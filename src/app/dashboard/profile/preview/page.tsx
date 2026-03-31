@@ -65,6 +65,7 @@ export default function ProfilePreviewPage() {
   const [socialLinks, setSocialLinks] = useState<Array<{id: string; platform: string; url: string; display_order: number}>>([])
   const [artistStatement, setArtistStatement] = useState('')
   const [philosophy, setPhilosophy] = useState('')
+  const [galleryOrder, setGalleryOrder] = useState<string[]>([])
   const [resumeUrl, setResumeUrl] = useState<string | null>(null)
   const [portfolioPdfUrl, setPortfolioPdfUrl] = useState<string | null>(null)
   const [mediaGallery, setMediaGallery] = useState<Array<{url: string; alt: string; type: string}>>([])
@@ -110,6 +111,7 @@ export default function ProfilePreviewPage() {
           setResumeUrl((ext.resume_url as string) || null)
           setPortfolioPdfUrl((ext.portfolio_pdf_url as string) || null)
           if (ext.media_gallery) setMediaGallery(ext.media_gallery as any[])
+          if (Array.isArray(ext.gallery_order)) setGalleryOrder(ext.gallery_order as string[])
           if (ext.media_links) setMediaLinks(ext.media_links as any[])
           if (ext.past_work) setPastWork(ext.past_work as any[])
           if (ext.pdf_documents) setPdfDocuments(ext.pdf_documents as any[])
@@ -210,7 +212,13 @@ export default function ProfilePreviewPage() {
       })
     })
 
-    return items
+    // Apply saved gallery order
+    if (galleryOrder.length > 0) {
+      const orderMap = new Map(galleryOrder.map((id, i) => [id, i]))
+      items.sort((a, b) => (orderMap.get(a.id) ?? 999) - (orderMap.get(b.id) ?? 999))
+    }
+
+    return items.map((item, i) => ({ ...item, order: i }))
   }
 
   async function handlePublish() {
@@ -346,7 +354,21 @@ export default function ProfilePreviewPage() {
           </div>
         </section>
 
-        {/* Statement / Philosophy */}
+        {/* Media Gallery */}
+        {(() => {
+          const items = buildGalleryItems()
+          if (items.length === 0) return null
+          return (
+            <section className="profile-media-grid-section">
+              <div className="container">
+                <p className="section-label">Gallery ({items.length} items)</p>
+                <SmartGallery items={items} editable={false} />
+              </div>
+            </section>
+          )
+        })()}
+
+        {/* Statement / Philosophy — below gallery */}
         {(artistStatement || philosophy) && (
           <section className="profile-two-col-section">
             <div className="container">
@@ -367,20 +389,6 @@ export default function ProfilePreviewPage() {
             </div>
           </section>
         )}
-
-        {/* Media Gallery */}
-        {(() => {
-          const items = buildGalleryItems()
-          if (items.length === 0) return null
-          return (
-            <section className="profile-media-grid-section">
-              <div className="container">
-                <p className="section-label">Gallery ({items.length} items)</p>
-                <SmartGallery items={items} editable={false} />
-              </div>
-            </section>
-          )
-        })()}
 
         {/* Milestones */}
         {timeline.length > 0 && (
