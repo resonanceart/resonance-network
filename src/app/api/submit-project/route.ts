@@ -165,9 +165,21 @@ export async function POST(request: Request) {
         )
       }
 
+      // For updates, only include fields that have actual values —
+      // don't overwrite existing data with null (prevents autosave from
+      // wiping collaboration_needs, gallery_images_data, etc.)
+      const updateData: Record<string, unknown> = {}
+      for (const [key, value] of Object.entries(submissionData)) {
+        if (value !== null && value !== undefined) {
+          updateData[key] = value
+        }
+      }
+      // Always include status (even if it's the same)
+      updateData.status = submissionData.status
+
       const { error: updateError } = await supabaseAdmin
         .from('project_submissions')
-        .update(submissionData)
+        .update(updateData)
         .eq('id', existingId)
 
       if (updateError) {

@@ -246,6 +246,8 @@ function LiveProjectEditorInner() {
     try {
       // Save ALL roles that have at least a title selected
       const filteredRoles = collabRoles.filter(r => r.title || r.customTitle?.trim())
+      // Only send collaborationNeeds if user actually has roles defined —
+      // undefined means "don't change" (prevents wiping existing data on autosave)
       const rolesJson = filteredRoles.length > 0
         ? JSON.stringify(filteredRoles.map(r => ({
             title: r.title === 'Other' ? r.customTitle.trim() : r.title,
@@ -254,7 +256,7 @@ function LiveProjectEditorInner() {
             skills: r.skills?.trim() || '',
             image_url: r.imageUrl,
           })))
-        : null
+        : undefined
       const res = await fetch('/api/submit-project', {
         method: 'POST',
         credentials: 'include',
@@ -315,10 +317,12 @@ function LiveProjectEditorInner() {
     setErrorMessage(null)
     try {
       const rolesData = collabRoles
-        .filter(r => (r.title === 'Other' ? r.customTitle.trim() : r.title) && r.description.trim())
+        .filter(r => r.title || r.customTitle?.trim())
         .map(r => ({
           title: r.title === 'Other' ? r.customTitle.trim() : r.title,
-          description: r.description.trim(),
+          customTitle: r.customTitle?.trim() || '',
+          description: r.description?.trim() || '',
+          skills: r.skills?.trim() || '',
           image_url: r.imageUrl,
         }))
       const res = await fetch('/api/submit-project', {
@@ -348,7 +352,7 @@ function LiveProjectEditorInner() {
           galleryImagesData: (galleryImages.length > 0 || projectPdfs.length > 0 || projectLinks.length > 0 || projectSocialLinks.length > 0)
             ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks, heroPositionY, projectDescription: projectDescription.trim() || undefined, inclusivityStatement: inclusivityStatement.trim() || undefined, materialsRegen: materialsRegen.trim() || undefined, galleryOrder: galleryOrder.length > 0 ? galleryOrder : undefined })
             : (projectDescription.trim() ? JSON.stringify({ projectDescription: projectDescription.trim() }) : null),
-          collaborationNeeds: JSON.stringify(rolesData),
+          collaborationNeeds: rolesData.length > 0 ? JSON.stringify(rolesData) : undefined,
           collaborationRoleCount: rolesData.length || null,
           status: 'pending',
         }),

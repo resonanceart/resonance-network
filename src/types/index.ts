@@ -52,6 +52,14 @@ export interface Project {
   location?: string
   source?: 'json' | 'supabase'
   supabaseId?: string
+  // Raw submission fields (passed through for Supabase projects)
+  materials?: string
+  specialNeeds?: string
+  collaborationNeeds?: string
+  collaborationRoleCount?: number
+  galleryImagesData?: string
+  teamMembers?: Array<{ name: string; role: string; photo: string | null }>
+  artistHeadshotData?: string
 }
 
 export interface ProfileProject {

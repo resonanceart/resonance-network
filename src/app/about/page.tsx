@@ -107,6 +107,29 @@ export default function AboutPage() {
             <blockquote className="about-pullquote about-pullquote--centered" style={{ marginTop: 'var(--space-6)' }}>
               <p>The message is never &quot;no.&quot; It is <em>&quot;not yet — and here&apos;s how to come back.&quot;</em></p>
             </blockquote>
+
+            {/* Full Scorecard CTA */}
+            <div style={{ marginTop: 'var(--space-8)', textAlign: 'center' }}>
+              <a
+                href="/assets/resonance-evaluation-framework.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                download
+                className="btn btn--primary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="12" y1="18" x2="12" y2="12"/>
+                  <polyline points="9 15 12 18 15 15"/>
+                </svg>
+                Download Full Scorecard
+              </a>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
+                PDF — 8 value domains, scoring criteria, and fit-level definitions
+              </p>
+            </div>
           </div>
         </div>
       </section>

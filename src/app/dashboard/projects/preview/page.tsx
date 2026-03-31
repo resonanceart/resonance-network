@@ -504,29 +504,39 @@ function ProjectPreviewInner() {
           </section>
         )}
 
-        {/* Collaboration */}
+        {/* Collaboration — task-card styling matching collaborate page */}
         {(collabRoles.length > 0 || collabPlainText) && (
           <section className="project-collab">
             <div className="container">
               <p className="section-label">Join This Project</p>
               <h2>Open Roles</h2>
               {collabRoles.length > 0 ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
+                <div className="task-grid">
                   {collabRoles.map((role, i) => (
-                    <div key={i} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                      {role.image_url && (
-                        <img src={role.image_url} alt={role.title} style={{ width: '100%', height: 140, objectFit: 'cover', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-2)' }} />
-                      )}
-                      <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: 0 }}>{role.title}</h3>
-                      {role.customTitle && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-primary)', margin: 0, fontWeight: 600 }}>{role.customTitle}</p>}
-                      {role.skills && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                          {role.skills.split(',').map((s: string, j: number) => (
-                            <span key={j} style={{ fontSize: 'var(--text-xs)', padding: '2px 8px', borderRadius: 12, background: 'rgba(1,105,111,0.15)', color: 'var(--color-primary)' }}>{s.trim()}</span>
-                          ))}
+                    <div key={i} className="task-card">
+                      {/* Banner — use project hero image */}
+                      {project.hero_image_data && (
+                        <div className="task-card__banner">
+                          <img src={project.hero_image_data} alt={project.project_title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
                       )}
-                      {role.description && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>{role.description}</p>}
+                      <div className="task-card__content">
+                        <div className="task-card__header">
+                          <Badge variant="open">Open</Badge>
+                        </div>
+                        <h3 className="task-card__title">{role.title}</h3>
+                        {role.customTitle && (
+                          <p className="task-card__meta-line">{role.customTitle}</p>
+                        )}
+                        {role.skills && (
+                          <div className="task-card__skills">
+                            {role.skills.split(',').map((s: string, j: number) => (
+                              <span key={j} className="skill-tag">{s.trim()}</span>
+                            ))}
+                          </div>
+                        )}
+                        {role.description && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>{role.description}</p>}
+                      </div>
                     </div>
                   ))}
                 </div>

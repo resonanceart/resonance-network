@@ -13,6 +13,24 @@ function mapSubmissionToProject(row: Record<string, unknown>): Project {
   const goalsStr = typeof row.goals === 'string' ? row.goals : ''
   const heroUrl = typeof row.hero_image_data === 'string' ? row.hero_image_data : '/assets/images/projects/money-shot.png'
 
+  // Parse gallery images data to extract images for the galleryImages array
+  let parsedGalleryImages: Array<{ url: string; alt: string }> = []
+  if (typeof row.gallery_images_data === 'string') {
+    try {
+      const parsed = JSON.parse(row.gallery_images_data)
+      if (Array.isArray(parsed)) {
+        parsedGalleryImages = parsed
+      } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.images)) {
+        parsedGalleryImages = parsed.images
+      }
+    } catch {}
+  }
+
+  // Parse team members
+  const teamMembers = Array.isArray(row.team_members)
+    ? (row.team_members as Array<{ name: string; role: string; photo: string | null }>)
+    : []
+
   return {
     id: String(row.id),
     slug: 'sub-' + slugify(String(row.project_title)) + '-' + String(row.id).substring(0, 8),
@@ -24,12 +42,13 @@ function mapSubmissionToProject(row: Record<string, unknown>): Project {
     domains,
     pathways,
     heroImage: { url: heroUrl, alt: String(row.project_title || '') },
-    galleryImages: [],
+    galleryImages: parsedGalleryImages.map(img => ({ url: img.url, alt: img.alt || '' })),
     overviewLead: row.vision ? String(row.vision) : undefined,
     overviewBody: row.experience ? String(row.experience) : undefined,
     leadArtistName: row.artist_name ? String(row.artist_name) : undefined,
     leadArtistBio: row.artist_bio ? String(row.artist_bio) : undefined,
-    collaborators: [],
+    leadArtistPhoto: typeof row.artist_headshot_data === 'string' ? row.artist_headshot_data : undefined,
+    collaborators: teamMembers.filter(m => m.name).map(m => ({ name: m.name, role: m.role || '' })),
     experience: row.experience ? String(row.experience) : undefined,
     artistStory: row.story ? String(row.story) : undefined,
     goals: goalsStr ? goalsStr.split('\n').filter(Boolean) : [],
@@ -38,6 +57,14 @@ function mapSubmissionToProject(row: Record<string, unknown>): Project {
     contactEmail: row.artist_email ? String(row.artist_email) : undefined,
     source: 'supabase',
     supabaseId: String(row.id),
+    // Raw submission fields for public page rendering
+    materials: typeof row.materials === 'string' ? row.materials : undefined,
+    specialNeeds: typeof row.special_needs === 'string' ? row.special_needs : undefined,
+    collaborationNeeds: typeof row.collaboration_needs === 'string' ? row.collaboration_needs : undefined,
+    collaborationRoleCount: typeof row.collaboration_role_count === 'number' ? row.collaboration_role_count : undefined,
+    galleryImagesData: typeof row.gallery_images_data === 'string' ? row.gallery_images_data : undefined,
+    teamMembers: teamMembers.length > 0 ? teamMembers : undefined,
+    artistHeadshotData: typeof row.artist_headshot_data === 'string' ? row.artist_headshot_data : undefined,
   }
 }
 
@@ -144,39 +171,42 @@ function mapUserProfileRow(
     status: 'published',
     source: 'supabase' as const,
     supabaseId: String(row.id),
-    ...(extended ? {
-      mediaGallery: extended.media_gallery || undefined,
-      timeline: extended.timeline || undefined,
-      toolsAndMaterials: extended.tools_and_materials || undefined,
-      availabilityStatus: extended.availability_status || undefined,
-      availabilityNote: extended.availability_note || undefined,
-      coverImage: extended.cover_image_url ? String(extended.cover_image_url) : undefined,
-      achievements: extended.achievements || undefined,
-      philosophy: extended.philosophy || undefined,
-      contentBlocks: extended.content_blocks || undefined,
-      // Enhanced profile fields
-      pronouns: extended.pronouns ? String(extended.pronouns) : undefined,
-      location_secondary: extended.location_secondary ? String(extended.location_secondary) : undefined,
-      artist_statement: extended.artist_statement ? String(extended.artist_statement) : undefined,
-      accent_color: extended.accent_color ? String(extended.accent_color) : undefined,
-      cover_position: extended.cover_position as { x: number; y: number; scale: number } | undefined,
-      availability_types: Array.isArray(extended.availability_types) ? extended.availability_types as string[] : undefined,
-      primary_website_url: extended.primary_website_url ? String(extended.primary_website_url) : undefined,
-      primary_website_label: extended.primary_website_label ? String(extended.primary_website_label) : undefined,
-      cta_primary_label: extended.cta_primary_label ? String(extended.cta_primary_label) : undefined,
-      cta_primary_action: extended.cta_primary_action as 'contact' | 'url' | 'booking' | undefined,
-      cta_primary_url: extended.cta_primary_url ? String(extended.cta_primary_url) : undefined,
-      cta_secondary_label: extended.cta_secondary_label ? String(extended.cta_secondary_label) : undefined,
-      cta_secondary_action: extended.cta_secondary_action ? String(extended.cta_secondary_action) : undefined,
-      cta_secondary_url: extended.cta_secondary_url ? String(extended.cta_secondary_url) : undefined,
-      section_order: Array.isArray(extended.section_order) ? extended.section_order as string[] : undefined,
-      section_visibility: extended.section_visibility as Record<string, boolean> | undefined,
-      resume_url: extended.resume_url ? String(extended.resume_url) : undefined,
-      portfolio_pdf_url: extended.portfolio_pdf_url ? String(extended.portfolio_pdf_url) : undefined,
-      media_links: Array.isArray(extended.media_links) ? extended.media_links as { label: string; url: string; type: 'website' | 'fundraiser' | 'other' }[] : undefined,
-      past_work: Array.isArray(extended.past_work) ? extended.past_work as { url: string; title: string; description?: string }[] : undefined,
-      pdf_documents: Array.isArray(extended.pdf_documents) ? extended.pdf_documents as { url: string; title: string }[] : undefined,
-    } : {}),
+    ...(extended ? (() => {
+      return {
+        // Pass media_gallery through as-is — ProfileSmartGallery handles both
+        // unified format (items with type/id/url/order) and legacy format
+        mediaGallery: extended.media_gallery || undefined,
+        timeline: extended.timeline || undefined,
+        toolsAndMaterials: extended.tools_and_materials || undefined,
+        availabilityStatus: extended.availability_status || undefined,
+        availabilityNote: extended.availability_note || undefined,
+        coverImage: extended.cover_image_url ? String(extended.cover_image_url) : undefined,
+        achievements: extended.achievements || undefined,
+        philosophy: extended.philosophy || undefined,
+        contentBlocks: extended.content_blocks || undefined,
+        pronouns: extended.pronouns ? String(extended.pronouns) : undefined,
+        location_secondary: extended.location_secondary ? String(extended.location_secondary) : undefined,
+        artist_statement: extended.artist_statement ? String(extended.artist_statement) : undefined,
+        accent_color: extended.accent_color ? String(extended.accent_color) : undefined,
+        cover_position: extended.cover_position as { x: number; y: number; scale: number } | undefined,
+        availability_types: Array.isArray(extended.availability_types) ? extended.availability_types as string[] : undefined,
+        primary_website_url: extended.primary_website_url ? String(extended.primary_website_url) : undefined,
+        primary_website_label: extended.primary_website_label ? String(extended.primary_website_label) : undefined,
+        cta_primary_label: extended.cta_primary_label ? String(extended.cta_primary_label) : undefined,
+        cta_primary_action: extended.cta_primary_action as 'contact' | 'url' | 'booking' | undefined,
+        cta_primary_url: extended.cta_primary_url ? String(extended.cta_primary_url) : undefined,
+        cta_secondary_label: extended.cta_secondary_label ? String(extended.cta_secondary_label) : undefined,
+        cta_secondary_action: extended.cta_secondary_action ? String(extended.cta_secondary_action) : undefined,
+        cta_secondary_url: extended.cta_secondary_url ? String(extended.cta_secondary_url) : undefined,
+        section_order: Array.isArray(extended.section_order) ? extended.section_order as string[] : undefined,
+        section_visibility: extended.section_visibility as Record<string, boolean> | undefined,
+        resume_url: extended.resume_url ? String(extended.resume_url) : undefined,
+        portfolio_pdf_url: extended.portfolio_pdf_url ? String(extended.portfolio_pdf_url) : undefined,
+        media_links: Array.isArray(extended.media_links) ? extended.media_links as { label: string; url: string; type: 'website' | 'fundraiser' | 'other' }[] : undefined,
+        past_work: Array.isArray(extended.past_work) ? extended.past_work as { url: string; title: string; description?: string }[] : undefined,
+        pdf_documents: Array.isArray(extended.pdf_documents) ? extended.pdf_documents as { url: string; title: string }[] : undefined,
+      }
+    })() : {}),
     // Related data from separate tables
     ...(relatedData ? {
       social_links: relatedData.social_links || undefined,
@@ -319,13 +349,29 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
       )
       const match = publishedMatch || anyMatch
       if (match) {
-        const { data: extended } = await supabaseAdmin
-          .from('profile_extended')
-          .select('*')
-          .eq('id', String(match.id))
-          .single()
+        const profileId = String(match.id)
 
-        return mapUserProfileRow(match as Record<string, unknown>, extended as Record<string, unknown> | null)
+        // Fetch all related data in parallel (matching getProfileBySlugEnhanced)
+        const [extResult, socialResult, skillsResult, toolsResult, projectsResult, workExpResult] = await Promise.all([
+          supabaseAdmin.from('profile_extended').select('*').eq('id', profileId).single(),
+          supabaseAdmin.from('profile_social_links').select('*').eq('profile_id', profileId).order('display_order'),
+          supabaseAdmin.from('profile_skills').select('*').eq('profile_id', profileId).order('display_order'),
+          supabaseAdmin.from('profile_tools').select('*').eq('profile_id', profileId).order('display_order'),
+          supabaseAdmin.from('portfolio_projects').select('*').eq('profile_id', profileId).eq('status', 'published').order('display_order'),
+          supabaseAdmin.from('work_experience').select('*').eq('profile_id', profileId).order('display_order'),
+        ])
+
+        return mapUserProfileRow(
+          match as Record<string, unknown>,
+          extResult.data as Record<string, unknown> | null,
+          {
+            social_links: (socialResult.data as Record<string, unknown>[]) || undefined,
+            skills: (skillsResult.data as Record<string, unknown>[]) || undefined,
+            tools: (toolsResult.data as Record<string, unknown>[]) || undefined,
+            portfolio_projects: (projectsResult.data as Record<string, unknown>[]) || undefined,
+            work_experience: (workExpResult.data as Record<string, unknown>[]) || undefined,
+          }
+        )
       }
     }
   } catch {

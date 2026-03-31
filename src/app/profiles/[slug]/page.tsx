@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
+// Using raw <img> tags instead of next/image for Supabase Storage URLs
 import { ProfileTimeline } from '@/components/profile/ProfileTimeline'
 import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabilityBadge'
 import { ProfileSmartGallery } from '@/components/profile/ProfileSmartGallery'
@@ -365,26 +365,82 @@ export default async function ProfilePage({ params }: { params: { slug: string }
         style={profile.coverImage ? undefined : { background: `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}cc 50%, ${accentColor}88 100%)` }}
       >
         {profile.coverImage && (
-          <Image src={profile.coverImage} alt={`Cover image for ${profile.name}`} fill priority sizes="100vw"
-            style={{ objectFit: 'cover', objectPosition: coverPositionStyle, transform: coverScale !== 1 ? `scale(${coverScale})` : undefined }} />
+          <img src={profile.coverImage} alt={`Cover image for ${profile.name}`}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: coverPositionStyle, transform: coverScale !== 1 ? `scale(${coverScale})` : undefined }} />
         )}
         <div className="profile-banner__overlay" />
       </section>
 
-      {/* Row 2: 3-Column Header Grid */}
+      {/* Row 2: 2-Column Header Grid (photo+meta left, info right) */}
       <section className="profile-header-grid-section">
         <div className="container">
           <div className="profile-header-grid">
-            {/* Col 1: Photo */}
-            <div className="profile-header-grid__photo" data-editable="avatar">
-              {profile.photo ? (
-                <Image src={profile.photo} alt={`Photo of ${profile.name}`} width={250} height={330} priority style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
-              ) : (
-                <div className="profile-header-grid__initials" style={{ backgroundColor: accentColor }}>{getInitials(profile.name)}</div>
-              )}
+            {/* Col 1: Photo + Skills/Location/Social underneath */}
+            <div>
+              <div className="profile-header-grid__photo" data-editable="avatar">
+                {profile.photo && profile.photo !== '/assets/images/team/placeholder.svg' ? (
+                  <img src={profile.photo} alt={profile.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <div className="profile-header-grid__initials" style={{ backgroundColor: accentColor }}>{getInitials(profile.name)}</div>
+                )}
+              </div>
+              {/* Skills, Location, Availability, Social — under the photo */}
+              <div style={{ marginTop: 'var(--space-3)', fontSize: 'var(--text-xs)' }}>
+                {locationDisplay && (
+                  <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.5 1 2.5 3 2.5 5.5C2.5 9 7 13 7 13s4.5-4 4.5-7.5C11.5 3 9.5 1 7 1z" stroke="currentColor" strokeWidth="1.2"/><circle cx="7" cy="5.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/></svg>
+                    {locationDisplay}
+                  </p>
+                )}
+                {profile.availabilityStatus && (
+                  <div style={{ marginBottom: 'var(--space-2)' }} data-editable="availability">
+                    <ProfileAvailabilityBadge status={profile.availabilityStatus} note={profile.availabilityNote} />
+                  </div>
+                )}
+                {profile.profile_skills && profile.profile_skills.length > 0 ? (
+                  <div style={{ marginBottom: 'var(--space-2)' }} data-editable="skills">
+                    <p className="profile-header-grid__sidebar-label">Skills</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                      {[...profile.profile_skills].sort((a, b) => a.display_order - b.display_order).map(skill => (
+                        <span key={skill.id} className="profile-skill-tag" style={{ fontSize: '0.65rem', padding: '2px 8px' }}>{skill.skill_name}</span>
+                      ))}
+                    </div>
+                  </div>
+                ) : profile.specialties.length > 0 ? (
+                  <div style={{ marginBottom: 'var(--space-2)' }} data-editable="skills">
+                    <p className="profile-header-grid__sidebar-label">Specialties</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                      {profile.specialties.map(s => <span key={s} className="profile-skill-tag" style={{ fontSize: '0.65rem', padding: '2px 8px' }}>{s}</span>)}
+                    </div>
+                  </div>
+                ) : null}
+                {profile.profile_tools && profile.profile_tools.length > 0 && (
+                  <div style={{ marginBottom: 'var(--space-2)' }}>
+                    <p className="profile-header-grid__sidebar-label">Tools</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                      {[...profile.profile_tools].sort((a, b) => a.display_order - b.display_order).map(tool => (
+                        <span key={tool.id} className="profile-skill-tag profile-skill-tag--tool" style={{ fontSize: '0.65rem', padding: '2px 8px' }}>{tool.tool_name}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {profile.social_links && profile.social_links.length > 0 && (
+                  <div style={{ marginTop: 'var(--space-2)' }} data-editable="links">
+                    <p className="profile-header-grid__sidebar-label">Social</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {[...profile.social_links].sort((a, b) => a.display_order - b.display_order).map(link => (
+                        <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" title={link.platform.charAt(0).toUpperCase() + link.platform.slice(1)}
+                          style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--color-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text)', textDecoration: 'none' }}>
+                          {getSocialIcon(link.platform)}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Col 2: Info + Links + Bio */}
+            {/* Col 2: Info (full remaining space) */}
             <div className="profile-header-grid__info" data-editable="identity">
               <h1 className="profile-header-grid__name">
                 {profile.name}
@@ -411,15 +467,6 @@ export default async function ProfilePage({ params }: { params: { slug: string }
                     Portfolio
                   </a>
                 )}
-                {profile.social_links && profile.social_links.length > 0 && (
-                  <div className="profile-link-btn--pill profile-link-btn--social-group" data-editable="links">
-                    {[...profile.social_links].sort((a, b) => a.display_order - b.display_order).map(link => (
-                      <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="profile-social-icon-sm" title={link.platform.charAt(0).toUpperCase() + link.platform.slice(1)} aria-label={link.platform}>
-                        {getSocialIcon(link.platform)}
-                      </a>
-                    ))}
-                  </div>
-                )}
               </div>
 
               {profile.bio && (
@@ -428,59 +475,14 @@ export default async function ProfilePage({ params }: { params: { slug: string }
                 </div>
               )}
             </div>
-
-            {/* Col 3: Skills + Location */}
-            <div className="profile-header-grid__sidebar" data-editable="skills">
-              {profile.profile_skills && profile.profile_skills.length > 0 ? (
-                <div className="profile-header-grid__skills">
-                  <p className="profile-header-grid__sidebar-label">Skills</p>
-                  <div className="profile-header-grid__skill-tags">
-                    {[...profile.profile_skills].sort((a, b) => a.display_order - b.display_order).map(skill => (
-                      <span key={skill.id} className="profile-skill-tag">{skill.skill_name}</span>
-                    ))}
-                  </div>
-                </div>
-              ) : profile.specialties.length > 0 ? (
-                <div className="profile-header-grid__skills">
-                  <p className="profile-header-grid__sidebar-label">Specialties</p>
-                  <div className="profile-header-grid__skill-tags">
-                    {profile.specialties.map(s => <span key={s} className="profile-skill-tag">{s}</span>)}
-                  </div>
-                </div>
-              ) : null}
-
-              {profile.profile_tools && profile.profile_tools.length > 0 && (
-                <div className="profile-header-grid__skills" style={{ marginTop: 'var(--space-4)' }}>
-                  <p className="profile-header-grid__sidebar-label">Tools</p>
-                  <div className="profile-header-grid__skill-tags">
-                    {[...profile.profile_tools].sort((a, b) => a.display_order - b.display_order).map(tool => (
-                      <span key={tool.id} className="profile-skill-tag profile-skill-tag--tool">{tool.tool_name}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {locationDisplay && (
-                <div className="profile-header-grid__location">
-                  <p className="profile-header-grid__sidebar-label">Location</p>
-                  <p className="profile-header-grid__location-text">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1C4.5 1 2.5 3 2.5 5.5C2.5 9 7 13 7 13s4.5-4 4.5-7.5C11.5 3 9.5 1 7 1z" stroke="currentColor" strokeWidth="1.2"/><circle cx="7" cy="5.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/></svg>
-                    {locationDisplay}
-                  </p>
-                </div>
-              )}
-
-              {profile.availabilityStatus && (
-                <div style={{ marginTop: 'var(--space-4)' }} data-editable="availability">
-                  <ProfileAvailabilityBadge status={profile.availabilityStatus} note={profile.availabilityNote} />
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Artist Statement — combined */}
+      {/* Media Gallery — before artist statement, matching preview */}
+      <ProfileSmartGallery profile={profile} />
+
+      {/* Artist Statement — after gallery, matching preview */}
       {(profile.artist_statement || profile.philosophy) && (
         <section className="profile-two-col-section">
           <div className="container">
@@ -492,9 +494,6 @@ export default async function ProfilePage({ params }: { params: { slug: string }
           </div>
         </section>
       )}
-
-      {/* Row 4: Media & Links Grid */}
-      <ProfileSmartGallery profile={profile} />
 
       {/* Row 5: Milestones */}
       {((profile.work_experience && profile.work_experience.length > 0) || (profile.timeline && profile.timeline.length > 0)) && (
