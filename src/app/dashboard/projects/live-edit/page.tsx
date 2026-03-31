@@ -518,7 +518,7 @@ function LiveProjectEditorInner() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn btn--ghost btn--sm"
-                onClick={async (e) => { if (hasChanges) { e.preventDefault(); await saveDraft(true); window.open(`/dashboard/projects/preview?id=${submissionId}`, '_blank') } }}
+                onClick={async (e) => { e.preventDefault(); await saveDraftRef.current(true); window.open(`/dashboard/projects/preview?id=${submissionId}`, '_blank') }}
               >
                 Preview
               </a>

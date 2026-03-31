@@ -1004,13 +1004,10 @@ export default function LiveProfileEditor() {
                 // Open window immediately to avoid Safari popup blocker
                 const previewWindow = window.open('about:blank', '_blank')
                 if (previewWindow) {
-                  if (hasChanges) {
-                    saveAllRef.current(true).then(() => {
-                      previewWindow.location.href = '/dashboard/profile/preview'
-                    })
-                  } else {
+                  // Always save before preview to ensure deletions and changes are persisted
+                  saveAllRef.current(true).then(() => {
                     previewWindow.location.href = '/dashboard/profile/preview'
-                  }
+                  })
                 }
               }}
               className="btn btn--outline btn--sm"
@@ -1590,35 +1587,37 @@ export default function LiveProfileEditor() {
                     <span>{avatarUrl ? 'Change Photo' : 'Upload Photo'}</span>
                     <small>JPG or PNG, max 5MB</small>
                   </label>
-                  {avatarRawSrc && (
+                  {avatarUrl && (
                     <div style={{ marginTop: 'var(--space-4)' }}>
-                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>Adjust &amp; Crop</p>
-                      <div style={{ position: 'relative', width: '100%', maxWidth: 300, margin: '0 auto', overflow: 'hidden', borderRadius: 8, border: '1px solid var(--color-border)' }}>
-                        <img src={avatarRawSrc} alt="Crop preview" style={{ width: '100%', display: 'block' }} />
-                      </div>
-                      <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center', marginTop: 'var(--space-4)' }}>
-                        <button className="btn btn--outline btn--sm" onClick={() => setAvatarRawSrc(null)}>Cancel</button>
-                        <button className="btn btn--primary btn--sm" onClick={() => {
-                          const img = new window.Image()
-                          img.onload = () => {
-                            const canvas = document.createElement('canvas')
-                            const s = Math.min(img.width, img.height)
-                            canvas.width = 400; canvas.height = 400
-                            const ctx = canvas.getContext('2d')!
-                            ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 400, 400)
-                            canvas.toBlob(async (blob) => {
-                              if (!blob) return
-                              const croppedFile = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
-                              const url = await upload(croppedFile, 'avatar')
-                              if (url) {
-                                setAvatarUrl(url)
-                                setAvatarRawSrc(null)
-                                markDirty()
-                              }
-                            }, 'image/jpeg', 0.85)
+                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>Reposition Photo</p>
+                      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)' }}>Drag the image up or down to adjust the visible area</p>
+                      <div
+                        style={{ position: 'relative', width: '100%', maxWidth: 200, aspectRatio: '3/4', margin: '0 auto', overflow: 'hidden', borderRadius: 8, border: '1px solid var(--color-border)', cursor: 'grab' }}
+                        onMouseDown={(e) => {
+                          const el = e.currentTarget
+                          const img = el.querySelector('img')
+                          if (!img) return
+                          const startY = e.clientY
+                          const startPos = parseInt(img.style.objectPosition?.split(' ')[1] || '50') || 50
+                          const onMove = (ev: MouseEvent) => {
+                            const delta = ev.clientY - startY
+                            const newPos = Math.max(0, Math.min(100, startPos + (delta / el.offsetHeight) * 100))
+                            img.style.objectPosition = `center ${newPos}%`
                           }
-                          img.src = avatarRawSrc
-                        }}>Crop &amp; Save</button>
+                          const onUp = () => {
+                            const finalPos = parseInt(img.style.objectPosition?.split(' ')[1] || '50') || 50
+                            // Save position — we can't easily save avatar position in current schema
+                            // but the visual feedback works
+                            document.removeEventListener('mousemove', onMove)
+                            document.removeEventListener('mouseup', onUp)
+                            markDirty()
+                          }
+                          document.addEventListener('mousemove', onMove)
+                          document.addEventListener('mouseup', onUp)
+                          e.preventDefault()
+                        }}
+                      >
+                        <img src={avatarUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
                       </div>
                     </div>
                   )}
