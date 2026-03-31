@@ -142,6 +142,7 @@ function ProjectPreviewInner() {
   let galleryImages: Array<{ url: string; alt: string }> = []
   let galleryPdfs: Array<{ url: string; title: string; thumbnail?: string }> = []
   let galleryLinks: Array<{ url: string; label: string; thumbnail?: string }> = []
+  let projectSocialLinks: Array<{ platform: string; url: string }> = []
   if (project.gallery_images_data) {
     try {
       const parsed = JSON.parse(project.gallery_images_data)
@@ -151,6 +152,7 @@ function ProjectPreviewInner() {
         if (Array.isArray(parsed.images)) galleryImages = parsed.images
         if (Array.isArray(parsed.pdfs)) galleryPdfs = parsed.pdfs
         if (Array.isArray(parsed.links)) galleryLinks = parsed.links
+        if (Array.isArray(parsed.socialLinks)) projectSocialLinks = parsed.socialLinks
       }
     } catch {}
   }
@@ -232,7 +234,17 @@ function ProjectPreviewInner() {
               <p className="section-label">The Vision</p>
               <div className="overview-grid">
                 <div>
-                  {project.vision && <p className="overview-lead">{project.vision}</p>}
+                  {project.vision && (() => {
+                    const parts = project.vision.split('\n\n')
+                    return (
+                      <>
+                        <p className="overview-lead">{parts[0]}</p>
+                        {parts.slice(1).map((p, i) => (
+                          <p key={i} className="overview-body">{p}</p>
+                        ))}
+                      </>
+                    )
+                  })()}
                 </div>
                 <aside className="overview-stats">
                   <div className="overview-stat">
@@ -261,6 +273,19 @@ function ProjectPreviewInner() {
                     <div className="overview-stat">
                       <p className="overview-stat__label">Pathways</p>
                       <p className="overview-stat__value">{pathways.join(' · ')}</p>
+                    </div>
+                  )}
+                  {projectSocialLinks.length > 0 && (
+                    <div className="overview-stat">
+                      <p className="overview-stat__label">Links</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                        {projectSocialLinks.map((link, i) => (
+                          <a key={i} href={link.url} target="_blank" rel="noopener noreferrer"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 16, background: 'rgba(255,255,255,0.08)', color: 'var(--color-text)', fontSize: 'var(--text-xs)', textDecoration: 'none', border: '1px solid var(--color-border)', textTransform: 'capitalize' }}>
+                            {link.platform}
+                          </a>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </aside>
