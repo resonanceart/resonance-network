@@ -364,13 +364,10 @@ function LiveProjectEditorInner() {
   async function uploadFileToStorage(file: File, type: string): Promise<string | null> {
     // Direct Supabase Storage upload (bypasses Next.js body limit)
     try {
-      const { createClient } = await import('@supabase/supabase-js')
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
+      const { createSupabaseBrowserClient } = await import('@/lib/supabase-auth')
+      const supabase = createSupabaseBrowserClient()
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setErrorMessage('Not authenticated'); return null }
+      if (!user) { setErrorMessage('Not authenticated. Please sign in again.'); return null }
 
       const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
       const path = `${user.id}/${type}/${Date.now()}.${ext}`
