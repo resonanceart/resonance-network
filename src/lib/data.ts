@@ -224,6 +224,7 @@ function mapUserProfileRow(
     specialties: skills,
     projects: [],
     links: typeof row.website === 'string' && row.website ? [{ label: 'Website', url: row.website, type: 'website' as const }] : [],
+    badges: Array.isArray(row.badges) ? row.badges as string[] : undefined,
     status: 'published',
     source: 'supabase' as const,
     supabaseId: String(row.id),

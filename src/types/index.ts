@@ -332,6 +332,7 @@ export interface Profile {
   work_experience?: WorkExperience[]
   past_work?: { url: string; title: string; description?: string }[]
   pdf_documents?: { url: string; title: string }[]
+  badges?: string[]
 }
 
 export interface UserProfile {
