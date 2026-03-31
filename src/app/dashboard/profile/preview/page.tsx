@@ -110,11 +110,27 @@ export default function ProfilePreviewPage() {
           setAccentColor((ext.accent_color as string) || '#01696F')
           setResumeUrl((ext.resume_url as string) || null)
           setPortfolioPdfUrl((ext.portfolio_pdf_url as string) || null)
-          if (ext.media_gallery) setMediaGallery(ext.media_gallery as any[])
-          if (Array.isArray(ext.gallery_order)) setGalleryOrder(ext.gallery_order as string[])
-          if (ext.media_links) setMediaLinks(ext.media_links as any[])
-          if (ext.past_work) setPastWork(ext.past_work as any[])
-          if (ext.pdf_documents) setPdfDocuments(ext.pdf_documents as any[])
+          if (ext.media_gallery && Array.isArray(ext.media_gallery)) {
+            const items = ext.media_gallery as Array<Record<string, unknown>>
+            if (items.length > 0 && items[0].type) {
+              // Unified format — items already have type/id/order
+              const imgs: any[] = [], pdfs: any[] = [], links: any[] = [], pw: any[] = []
+              items.forEach(item => {
+                if (item.type === 'image' && String(item.id || '').startsWith('pw-')) pw.push({ url: item.url, title: item.title })
+                else if (item.type === 'image') imgs.push({ url: item.url, alt: item.title, type: 'image', order: item.order })
+                else if (item.type === 'pdf') pdfs.push({ url: item.url, title: item.title, thumbnail: item.thumbnail })
+                else if (item.type === 'link') links.push({ url: item.url, label: item.title, type: 'website', thumbnail: item.thumbnail })
+              })
+              setMediaGallery(imgs); setPdfDocuments(pdfs); setMediaLinks(links); setPastWork(pw)
+              setGalleryOrder(items.map(i => String(i.id)))
+            } else {
+              setMediaGallery(items as any[])
+            }
+          }
+          // Legacy: separate arrays
+          if (!ext.media_gallery && ext.media_links) setMediaLinks(ext.media_links as any[])
+          if (!ext.media_gallery && ext.past_work) setPastWork(ext.past_work as any[])
+          if (!ext.media_gallery && ext.pdf_documents) setPdfDocuments(ext.pdf_documents as any[])
           if (ext.timeline) setTimeline(ext.timeline as any[])
         }
         if (data.profileSkills) setProfileSkills(data.profileSkills)

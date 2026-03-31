@@ -570,13 +570,43 @@ export default function LiveProfileEditor() {
           setAccentColor((ext.accent_color as string) || '#01696F')
           setLinks((ext.links as Array<{label: string; url: string; type?: string}>) || [])
           if (ext.section_order) setSectionOrder(ext.section_order as string[])
-          if (Array.isArray(ext.gallery_order)) setProfileGalleryOrder(ext.gallery_order as string[])
-          if (ext.media_gallery) setMediaGallery(ext.media_gallery as GalleryItem[])
+          // Load gallery — unified format (items with type field) or legacy separate arrays
+          if (ext.media_gallery && Array.isArray(ext.media_gallery)) {
+            const items = ext.media_gallery as Array<Record<string, unknown>>
+            if (items.length > 0 && items[0].type) {
+              // Unified format — split into separate arrays
+              const imgs: GalleryItem[] = []
+              const pdfs: Array<{url: string; title: string; thumbnail?: string}> = []
+              const links: Array<{label: string; url: string; type: 'website' | 'fundraiser' | 'other'; thumbnail?: string}> = []
+              const pw: PastWorkItem[] = []
+              items.forEach(item => {
+                if (item.type === 'image' && String(item.id || '').startsWith('pw-')) {
+                  pw.push({ url: String(item.url), title: String(item.title || '') })
+                } else if (item.type === 'image') {
+                  imgs.push({ url: String(item.url), alt: String(item.title || ''), type: 'image', order: Number(item.order || 0) })
+                } else if (item.type === 'pdf') {
+                  pdfs.push({ url: String(item.url), title: String(item.title || ''), thumbnail: item.thumbnail as string | undefined })
+                } else if (item.type === 'link') {
+                  links.push({ url: String(item.url), label: String(item.title || ''), type: 'website', thumbnail: item.thumbnail as string | undefined })
+                }
+              })
+              setMediaGallery(imgs)
+              setPdfDocuments(pdfs)
+              setMediaLinks(links)
+              setPastWork(pw)
+              // Set order from the unified array directly
+              setProfileGalleryOrder(items.map(item => String(item.id)))
+            } else {
+              // Legacy format — plain image array
+              setMediaGallery(items as unknown as GalleryItem[])
+            }
+          }
           setResumeUrl((ext.resume_url as string) || null)
           setPortfolioPdfUrl((ext.portfolio_pdf_url as string) || null)
-          if (ext.media_links) setMediaLinks(ext.media_links as Array<{label: string; url: string; type: 'website' | 'fundraiser' | 'other'}>)
-          if (ext.past_work) setPastWork(ext.past_work as PastWorkItem[])
-          if (ext.pdf_documents) setPdfDocuments(ext.pdf_documents as Array<{url: string; title: string}>)
+          // Legacy: load separate arrays if they exist (backward compat)
+          if (!ext.media_gallery && ext.media_links) setMediaLinks(ext.media_links as Array<{label: string; url: string; type: 'website' | 'fundraiser' | 'other'}>)
+          if (!ext.media_gallery && ext.past_work) setPastWork(ext.past_work as PastWorkItem[])
+          if (!ext.media_gallery && ext.pdf_documents) setPdfDocuments(ext.pdf_documents as Array<{url: string; title: string}>)
         }
         // Load related table data from top-level API response
         if (data.profileSkills) setProfileSkills(data.profileSkills as SkillEntry[])
@@ -640,15 +670,27 @@ export default function LiveProfileEditor() {
           achievements: achievements.length > 0 ? achievements : null,
           timeline: timeline.length > 0 ? timeline : null,
           accent_color: accentColor,
-          media_gallery: mediaGallery.length > 0 ? mediaGallery : null,
-          past_work: pastWork.length > 0 ? pastWork : null,
+          // Save all gallery items as unified array for consistent ordering
+          media_gallery: (() => {
+            const allItems = buildGalleryItems()
+            return allItems.length > 0 ? allItems.map(item => ({
+              id: item.id,
+              type: item.type,
+              url: item.url,
+              thumbnail: item.thumbnail,
+              title: item.title,
+              subtitle: item.subtitle,
+              order: item.order,
+            })) : null
+          })(),
+          past_work: null, // consolidated into media_gallery
           resume_url: resumeUrl,
           portfolio_pdf_url: portfolioPdfUrl,
-          media_links: mediaLinks.length > 0 ? mediaLinks : null,
+          media_links: null, // consolidated into media_gallery
           links: links.length > 0 ? links : null,
-          pdf_documents: pdfDocuments.length > 0 ? pdfDocuments : null,
+          pdf_documents: null, // consolidated into media_gallery
           section_order: sectionOrder,
-          gallery_order: profileGalleryOrder.length > 0 ? profileGalleryOrder : null,
+          gallery_order: null, // no longer needed — order is in media_gallery
         }),
       })
       if (!res.ok) {
@@ -1216,36 +1258,22 @@ export default function LiveProfileEditor() {
                 items={buildGalleryItems()}
                 editable={true}
                 onReorder={(reordered) => {
-                  // Store ordered ID list — enables cross-type reordering
                   setProfileGalleryOrder(reordered.map(item => item.id))
-                  markDirty()
-                  // Legacy: also rebuild arrays for backward compat
+                  // Also update the underlying arrays to match new order
                   const newImages: typeof mediaGallery = []
                   const newPdfs: typeof pdfDocuments = []
                   const newLinks: typeof mediaLinks = []
                   const newPastWork: typeof pastWork = []
-
                   reordered.forEach(item => {
-                    if (item.id.startsWith('img-')) {
-                      const idx = parseInt(item.id.split('-')[1])
-                      if (mediaGallery[idx]) newImages.push(mediaGallery[idx])
-                    } else if (item.id.startsWith('pdf-')) {
-                      const idx = parseInt(item.id.split('-')[1])
-                      if (pdfDocuments[idx]) newPdfs.push(pdfDocuments[idx])
-                    } else if (item.id.startsWith('link-')) {
-                      const idx = parseInt(item.id.split('-')[1])
-                      if (mediaLinks[idx]) newLinks.push(mediaLinks[idx])
-                    } else if (item.id.startsWith('pw-')) {
-                      const idx = parseInt(item.id.split('-')[1])
-                      if (pastWork[idx]) newPastWork.push(pastWork[idx])
-                    }
+                    if (item.id.startsWith('img-')) { const idx = parseInt(item.id.split('-')[1]); if (mediaGallery[idx]) newImages.push(mediaGallery[idx]) }
+                    else if (item.id.startsWith('pdf-')) { const idx = parseInt(item.id.split('-')[1]); if (pdfDocuments[idx]) newPdfs.push(pdfDocuments[idx]) }
+                    else if (item.id.startsWith('link-')) { const idx = parseInt(item.id.split('-')[1]); if (mediaLinks[idx]) newLinks.push(mediaLinks[idx]) }
+                    else if (item.id.startsWith('pw-')) { const idx = parseInt(item.id.split('-')[1]); if (pastWork[idx]) newPastWork.push(pastWork[idx]) }
                   })
-
-                  // Only update arrays that changed
-                  if (newImages.length > 0) setMediaGallery(newImages)
-                  if (newPdfs.length > 0) setPdfDocuments(newPdfs)
-                  if (newLinks.length > 0) setMediaLinks(newLinks)
-                  if (newPastWork.length > 0) setPastWork(newPastWork)
+                  if (newImages.length > 0 || mediaGallery.length > 0) setMediaGallery(newImages)
+                  if (newPdfs.length > 0 || pdfDocuments.length > 0) setPdfDocuments(newPdfs)
+                  if (newLinks.length > 0 || mediaLinks.length > 0) setMediaLinks(newLinks)
+                  if (newPastWork.length > 0 || pastWork.length > 0) setPastWork(newPastWork)
                   markDirty()
                 }}
                 onDelete={(id) => {
