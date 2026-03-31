@@ -385,6 +385,9 @@ export interface CollaborationTask {
   rewardDescription?: string | null
   contactEmail: string
   contactEmailSubject?: string
+  heroImageUrl?: string
+  projectSlug?: string
+  source?: 'json' | 'supabase'
 }
 
 export interface ProjectSubmission {
