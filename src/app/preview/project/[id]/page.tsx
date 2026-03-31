@@ -294,6 +294,14 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
             galleryItems.push({ id: `link-${i}`, type: 'link', url: link.url, thumbnail: link.thumbnail, title: link.label || 'Link', subtitle, order: order++ })
           })
 
+          // Apply saved gallery order
+          const savedOrder = !Array.isArray(parsed) && Array.isArray(parsed.galleryOrder) ? parsed.galleryOrder as string[] : []
+          if (savedOrder.length > 0) {
+            const orderMap = new Map(savedOrder.map((id: string, i: number) => [id, i]))
+            galleryItems.sort((a, b) => (orderMap.get(a.id) ?? 999) - (orderMap.get(b.id) ?? 999))
+            galleryItems.forEach((item, i) => { item.order = i })
+          }
+
           if (galleryItems.length === 0) return null
           return (
             <section style={{ padding: 'var(--space-8) 0' }}>

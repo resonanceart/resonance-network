@@ -163,6 +163,7 @@ function ProjectPreviewInner() {
   let projectDescription = ''
   let inclusivityStatement = ''
   let materialsRegen = ''
+  let savedGalleryOrder: string[] = []
   if (project.gallery_images_data) {
     try {
       const parsed = JSON.parse(project.gallery_images_data)
@@ -173,6 +174,7 @@ function ProjectPreviewInner() {
         if (Array.isArray(parsed.pdfs)) galleryPdfs = parsed.pdfs
         if (Array.isArray(parsed.links)) galleryLinks = parsed.links
         if (Array.isArray(parsed.socialLinks)) projectSocialLinks = parsed.socialLinks
+        if (Array.isArray(parsed.galleryOrder)) savedGalleryOrder = parsed.galleryOrder
         if (parsed.projectDescription) projectDescription = parsed.projectDescription
         if (parsed.inclusivityStatement) inclusivityStatement = parsed.inclusivityStatement
         if (parsed.materialsRegen) materialsRegen = parsed.materialsRegen
@@ -327,6 +329,12 @@ function ProjectPreviewInner() {
             try { subtitle = new URL(link.url).hostname } catch {}
             items.push({ id: `link-${i}`, type: 'link', url: link.url, thumbnail: link.thumbnail, title: link.label || 'Link', subtitle, order: order++ })
           })
+          // Apply saved gallery order
+          if (savedGalleryOrder.length > 0) {
+            const orderMap = new Map(savedGalleryOrder.map((id, i) => [id, i]))
+            items.sort((a, b) => (orderMap.get(a.id) ?? 999) - (orderMap.get(b.id) ?? 999))
+            items.forEach((item, i) => { item.order = i })
+          }
           return (
             <section style={{ padding: 'var(--space-8) 0' }}>
               <div className="container">
