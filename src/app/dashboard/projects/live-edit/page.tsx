@@ -100,6 +100,7 @@ function LiveProjectEditorInner() {
   const [contactEmail, setContactEmail] = useState('')
   const [leadArtistName, setLeadArtistName] = useState('')
   const [creatorAvatarUrl, setCreatorAvatarUrl] = useState<string | null>(null)
+  const [galleryOrder, setGalleryOrder] = useState<string[]>([]) // ordered list of item IDs for cross-type reordering
   const [showProjectAddLink, setShowProjectAddLink] = useState(false)
   const [newProjectLinkUrl, setNewProjectLinkUrl] = useState('')
   const [newProjectLinkLabel, setNewProjectLinkLabel] = useState('')
@@ -193,6 +194,7 @@ function LiveProjectEditorInner() {
                   if (Array.isArray(parsed.socialLinks)) setProjectSocialLinks(parsed.socialLinks)
                   if (typeof parsed.heroPositionY === 'number') setHeroPositionY(parsed.heroPositionY)
                   if (parsed.projectDescription) setProjectDescription(parsed.projectDescription)
+                  if (Array.isArray(parsed.galleryOrder)) setGalleryOrder(parsed.galleryOrder)
                 }
               } catch { /* */ }
             }
@@ -267,7 +269,7 @@ function LiveProjectEditorInner() {
           specialNeeds: specialNeeds.trim(),
           heroImageData: heroImageUrl,
           galleryImagesData: (galleryImages.length > 0 || projectPdfs.length > 0 || projectLinks.length > 0 || projectSocialLinks.length > 0)
-            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks, heroPositionY, projectDescription: projectDescription.trim() || undefined })
+            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks, heroPositionY, projectDescription: projectDescription.trim() || undefined, galleryOrder: galleryOrder.length > 0 ? galleryOrder : undefined })
             : (projectDescription.trim() ? JSON.stringify({ projectDescription: projectDescription.trim() }) : null),
           collaborationNeeds: rolesJson,
           collaborationRoleCount: collabRoles.filter(r => r.title || r.customTitle).length || null,
@@ -333,7 +335,7 @@ function LiveProjectEditorInner() {
           specialNeeds: specialNeeds.trim(),
           heroImageData: heroImageUrl,
           galleryImagesData: (galleryImages.length > 0 || projectPdfs.length > 0 || projectLinks.length > 0 || projectSocialLinks.length > 0)
-            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks, heroPositionY, projectDescription: projectDescription.trim() || undefined })
+            ? JSON.stringify({ images: galleryImages, pdfs: projectPdfs, links: projectLinks, socialLinks: projectSocialLinks, heroPositionY, projectDescription: projectDescription.trim() || undefined, galleryOrder: galleryOrder.length > 0 ? galleryOrder : undefined })
             : (projectDescription.trim() ? JSON.stringify({ projectDescription: projectDescription.trim() }) : null),
           collaborationNeeds: JSON.stringify(rolesData),
           collaborationRoleCount: rolesData.length || null,
@@ -406,20 +408,32 @@ function LiveProjectEditorInner() {
   }
 
   function buildProjectGalleryItems(): SmartGalleryItem[] {
-    const items: SmartGalleryItem[] = []
-    let order = 0
+    // Build all items with their IDs
+    const allItems: SmartGalleryItem[] = []
     galleryImages.forEach((img, i) => {
-      items.push({ id: `img-${i}`, type: 'image', url: img.url, title: img.alt || 'Gallery Image', order: order++ })
+      allItems.push({ id: `img-${i}`, type: 'image', url: img.url, title: img.alt || 'Gallery Image', order: 0 })
     })
     projectPdfs.forEach((doc, i) => {
-      items.push({ id: `pdf-${i}`, type: 'pdf', url: doc.url, thumbnail: doc.thumbnail, title: doc.title || 'Document', subtitle: 'PDF', order: order++ })
+      allItems.push({ id: `pdf-${i}`, type: 'pdf', url: doc.url, thumbnail: doc.thumbnail, title: doc.title || 'Document', subtitle: 'PDF', order: 0 })
     })
     projectLinks.forEach((link, i) => {
       let subtitle = 'website'
       try { subtitle = new URL(link.url).hostname } catch {}
-      items.push({ id: `link-${i}`, type: 'link', url: link.url, thumbnail: link.thumbnail, title: link.label || 'Link', subtitle, order: order++ })
+      allItems.push({ id: `link-${i}`, type: 'link', url: link.url, thumbnail: link.thumbnail, title: link.label || 'Link', subtitle, order: 0 })
     })
-    return items
+
+    // Apply custom order if we have one
+    if (galleryOrder.length > 0) {
+      const orderMap = new Map(galleryOrder.map((id, i) => [id, i]))
+      allItems.sort((a, b) => {
+        const oa = orderMap.get(a.id) ?? 999
+        const ob = orderMap.get(b.id) ?? 999
+        return oa - ob
+      })
+    }
+
+    // Set final order values
+    return allItems.map((item, i) => ({ ...item, order: i }))
   }
 
   function handlePhotoUpload(callback: (dataUrl: string) => void) {
@@ -645,24 +659,8 @@ function LiveProjectEditorInner() {
                 items={buildProjectGalleryItems()}
                 editable={true}
                 onReorder={(reordered) => {
-                  const newImages: typeof galleryImages = []
-                  const newPdfs: typeof projectPdfs = []
-                  const newLinks: typeof projectLinks = []
-                  reordered.forEach(item => {
-                    if (item.id.startsWith('img-')) {
-                      const idx = parseInt(item.id.split('-')[1])
-                      if (galleryImages[idx]) newImages.push(galleryImages[idx])
-                    } else if (item.id.startsWith('pdf-')) {
-                      const idx = parseInt(item.id.split('-')[1])
-                      if (projectPdfs[idx]) newPdfs.push(projectPdfs[idx])
-                    } else if (item.id.startsWith('link-')) {
-                      const idx = parseInt(item.id.split('-')[1])
-                      if (projectLinks[idx]) newLinks.push(projectLinks[idx])
-                    }
-                  })
-                  if (newImages.length > 0) setGalleryImages(newImages)
-                  if (newPdfs.length > 0) setProjectPdfs(newPdfs)
-                  if (newLinks.length > 0) setProjectLinks(newLinks)
+                  // Store the reordered ID list — this controls display order across ALL types
+                  setGalleryOrder(reordered.map(item => item.id))
                   markDirty()
                 }}
                 onDelete={(id) => {

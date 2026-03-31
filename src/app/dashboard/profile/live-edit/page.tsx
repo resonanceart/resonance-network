@@ -483,6 +483,7 @@ export default function LiveProfileEditor() {
   const [portfolioPdfUrl, setPortfolioPdfUrl] = useState<string | null>(null)
   const [mediaLinks, setMediaLinks] = useState<Array<{label: string; url: string; type: 'website' | 'fundraiser' | 'other'}>>([])
   const [pdfDocuments, setPdfDocuments] = useState<Array<{url: string; title: string}>>([])
+  const [profileGalleryOrder, setProfileGalleryOrder] = useState<string[]>([])
   const [showAddLink, setShowAddLink] = useState(false)
   const [newLinkUrl, setNewLinkUrl] = useState('')
   const [newLinkLabel, setNewLinkLabel] = useState('')
@@ -881,7 +882,17 @@ export default function LiveProfileEditor() {
       })
     })
 
-    return items
+    // Apply custom order if we have one (enables cross-type reordering)
+    if (profileGalleryOrder.length > 0) {
+      const orderMap = new Map(profileGalleryOrder.map((id, i) => [id, i]))
+      items.sort((a, b) => {
+        const oa = orderMap.get(a.id) ?? 999
+        const ob = orderMap.get(b.id) ?? 999
+        return oa - ob
+      })
+    }
+
+    return items.map((item, i) => ({ ...item, order: i }))
   }
 
   // Social icon renderer
@@ -1192,7 +1203,10 @@ export default function LiveProfileEditor() {
                 items={buildGalleryItems()}
                 editable={true}
                 onReorder={(reordered) => {
-                  // Rebuild arrays from reordered items preserving new order
+                  // Store ordered ID list — enables cross-type reordering
+                  setProfileGalleryOrder(reordered.map(item => item.id))
+                  markDirty()
+                  // Legacy: also rebuild arrays for backward compat
                   const newImages: typeof mediaGallery = []
                   const newPdfs: typeof pdfDocuments = []
                   const newLinks: typeof mediaLinks = []
