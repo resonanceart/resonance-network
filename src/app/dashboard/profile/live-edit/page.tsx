@@ -1090,19 +1090,64 @@ export default function LiveProfileEditor() {
         <section className="profile-header-grid-section">
           <div className="container">
             <div className="profile-header-grid">
-              {/* Col 1: Photo */}
-              <div ref={setSectionRef('avatar')} className={`editable-section profile-header-grid__photo${activePanel === 'avatar' ? ' editable-section--active' : ''}`} onClick={() => openPanel('avatar')}>
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <div className="profile-header-grid__initials" style={{ backgroundColor: accentColor }}>
-                    {initials || '?'}
-                  </div>
-                )}
-                <div className="editable-section__overlay"><span>Edit photo</span></div>
+              {/* Col 1: Photo + Skills/Social below */}
+              <div>
+                <div ref={setSectionRef('avatar')} className={`editable-section profile-header-grid__photo${activePanel === 'avatar' ? ' editable-section--active' : ''}`} onClick={() => openPanel('avatar')}>
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <div className="profile-header-grid__initials" style={{ backgroundColor: accentColor }}>
+                      {initials || '?'}
+                    </div>
+                  )}
+                  <div className="editable-section__overlay"><span>Edit photo</span></div>
+                </div>
+
+                {/* Skills, Location, Social — below photo */}
+                <div ref={setSectionRef('skills')} className={`editable-section${activePanel === 'skills' ? ' editable-section--active' : ''}`} onClick={() => openPanel('skills')} style={{ marginTop: 'var(--space-3)', fontSize: 'var(--text-xs)' }}>
+                  {profileSkills.length > 0 ? (
+                    <div style={{ marginBottom: 'var(--space-2)' }}>
+                      <p className="profile-header-grid__sidebar-label">Skills</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                        {profileSkills.map(s => <span key={s.id} className="profile-skill-tag" style={{ fontSize: '0.65rem', padding: '2px 8px' }}>{s.skill_name}</span>)}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="live-editor__placeholder-text" style={{ fontSize: 'var(--text-xs)', marginBottom: 'var(--space-2)' }}>Add your skills</p>
+                  )}
+                  {locationDisplay && (
+                    <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.5 1 2.5 3 2.5 5.5C2.5 9 7 13 7 13s4.5-4 4.5-7.5C11.5 3 9.5 1 7 1z" stroke="currentColor" strokeWidth="1.2"/><circle cx="7" cy="5.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/></svg>
+                      {locationDisplay}
+                    </p>
+                  )}
+                  {availabilityStatus && (
+                    <div style={{ marginBottom: 'var(--space-2)' }} onClick={(e) => { e.stopPropagation(); openPanel('availability') }}>
+                      <ProfileAvailabilityBadge status={availabilityStatus as 'open' | 'busy' | 'unavailable'} note={availabilityNote} />
+                    </div>
+                  )}
+                  {socialLinks.length > 0 && (
+                    <div ref={setSectionRef('social')} style={{ marginTop: 'var(--space-2)' }} onClick={(e) => { e.stopPropagation(); openPanel('social') }}>
+                      <p className="profile-header-grid__sidebar-label">Social</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {[...socialLinks].sort((a, b) => a.display_order - b.display_order).map(link => (
+                          <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="profile-social-icon-sm" title={link.platform} onClick={e => e.stopPropagation()}>
+                            {getSocialIconClean(link.platform)}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {socialLinks.length === 0 && (
+                    <div ref={setSectionRef('social')} onClick={(e) => { e.stopPropagation(); openPanel('social') }}>
+                      <p className="live-editor__placeholder-text" style={{ fontSize: 'var(--text-xs)' }}>Add social links</p>
+                    </div>
+                  )}
+                  <div className="editable-section__overlay"><span>Edit skills</span></div>
+                </div>
               </div>
 
-              {/* Col 2: Info */}
+              {/* Col 2: Info (full remaining width) */}
               <div ref={setSectionRef('identity')} className={`editable-section profile-header-grid__info${activePanel === 'identity' ? ' editable-section--active' : ''}`} onClick={() => openPanel('identity')}>
                 <h1 className="profile-header-grid__name">
                   {displayName || <span className="live-editor__placeholder-text">Your Name</span>}
@@ -1124,69 +1169,7 @@ export default function LiveProfileEditor() {
                 <div className="editable-section__overlay"><span>Edit info</span></div>
               </div>
 
-              {/* Col 3: Skills + Location */}
-              <div ref={setSectionRef('skills')} className={`editable-section profile-header-grid__sidebar${activePanel === 'skills' ? ' editable-section--active' : ''}`} onClick={() => openPanel('skills')}>
-                {profileSkills.length > 0 ? (
-                  <div className="profile-header-grid__skills">
-                    <p className="profile-header-grid__sidebar-label">Skills</p>
-                    <div className="profile-header-grid__skill-tags">
-                      {profileSkills.map(s => (
-                        <span key={s.id} className="profile-skill-tag">{s.skill_name}</span>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="profile-header-grid__skills">
-                    <p className="profile-header-grid__sidebar-label">Skills</p>
-                    <p className="live-editor__placeholder-text" style={{ fontSize: 'var(--text-sm)' }}>Add your skills</p>
-                  </div>
-                )}
-
-                {profileTools.length > 0 && (
-                  <div className="profile-header-grid__skills" style={{ marginTop: 'var(--space-4)' }}>
-                    <p className="profile-header-grid__sidebar-label">Tools</p>
-                    <div className="profile-header-grid__skill-tags">
-                      {profileTools.map(t => (
-                        <span key={t.id} className="profile-skill-tag profile-skill-tag--tool">{t.tool_name}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {locationDisplay && (
-                  <div className="profile-header-grid__location">
-                    <p className="profile-header-grid__sidebar-label">Location</p>
-                    <p className="profile-header-grid__location-text">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.5 1 2.5 3 2.5 5.5C2.5 9 7 13 7 13s4.5-4 4.5-7.5C11.5 3 9.5 1 7 1z" stroke="currentColor" strokeWidth="1.2"/><circle cx="7" cy="5.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/></svg>
-                      {locationDisplay}
-                    </p>
-                  </div>
-                )}
-
-                {availabilityStatus && (
-                  <div ref={setSectionRef('availability')} style={{ marginTop: 'var(--space-4)' }} onClick={(e) => { e.stopPropagation(); openPanel('availability') }}>
-                    <ProfileAvailabilityBadge status={availabilityStatus as 'open' | 'busy' | 'unavailable'} note={availabilityNote} />
-                  </div>
-                )}
-
-                {/* Social Links */}
-                <div ref={setSectionRef('social')} style={{ marginTop: 'var(--space-4)' }} onClick={(e) => { e.stopPropagation(); openPanel('social') }}>
-                  <p className="profile-header-grid__sidebar-label">Social</p>
-                  {socialLinks.length > 0 ? (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
-                      {[...socialLinks].sort((a, b) => a.display_order - b.display_order).map(link => (
-                        <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="profile-social-icon-sm" title={link.platform} onClick={e => e.stopPropagation()}>
-                          {getSocialIconClean(link.platform)}
-                        </a>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="live-editor__placeholder-text" style={{ fontSize: 'var(--text-sm)' }}>Add social links</p>
-                  )}
-                </div>
-
-                <div className="editable-section__overlay"><span>Edit skills</span></div>
-              </div>
+              {/* Skills/Social moved under photo card above */}
             </div>
           </div>
         </section>
