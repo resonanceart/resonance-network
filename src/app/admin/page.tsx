@@ -454,7 +454,7 @@ export default function AdminPage() {
                                   </>
                                 ) : (
                                   <>
-                                    <a href={`/dashboard/projects/preview?id=${item.id}`} target="_blank" className="admin-btn admin-btn--outline admin-btn--sm">Preview</a>
+                                    <a href={`/preview/project/${item.id}`} target="_blank" className="admin-btn admin-btn--outline admin-btn--sm">Preview</a>
                                     <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={() => handleAction('project', item.id, 'approve')}>Approve</button>
                                     <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleAction('project', item.id, 'reject')}>Reject</button>
                                   </>
@@ -551,7 +551,7 @@ export default function AdminPage() {
                           <td className="admin-table__date">{new Date(p.created_at).toLocaleDateString()}</td>
                           <td>
                             <div style={{display:'flex',gap:6}}>
-                              <a href={`/dashboard/projects/preview?id=${p.id}`} target="_blank" className="admin-btn admin-btn--outline admin-btn--sm">Preview</a>
+                              <a href={`/preview/project/${p.id}`} target="_blank" className="admin-btn admin-btn--outline admin-btn--sm">Preview</a>
                               {(p.status === 'new' || p.status === 'draft') && (
                                 <>
                                   <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={() => handleAction('project', p.id, 'approve')}>Approve</button>
