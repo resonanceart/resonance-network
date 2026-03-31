@@ -12672,7 +12672,7 @@ main {
 
 /* Row 2: 3-Column Header Grid */
 .profile-header-grid-section {
-  padding: var(--space-8) 0 var(--space-6);
+  padding: var(--space-3) 0 var(--space-6);
 }
 
 .profile-header-grid {
