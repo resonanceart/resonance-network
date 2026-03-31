@@ -618,11 +618,11 @@ function LiveProjectEditorInner() {
                       <p className="overview-stat__value">{location}</p>
                     </div>
                   )}
-                  {/* Social Links — editable inline */}
-                  <div className="overview-stat">
+                  {/* Social Links — spans full width */}
+                  <div className="overview-stat" style={{ gridColumn: '1 / -1' }}>
                     <p className="overview-stat__label">Links</p>
                     {projectSocialLinks.length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4, marginBottom: 8 }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4, marginBottom: 4 }}>
                         {projectSocialLinks.map((link, i) => (
                           <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 16, background: 'rgba(255,255,255,0.08)', fontSize: 'var(--text-xs)', border: '1px solid var(--color-border)', textTransform: 'capitalize' }}>
                             {link.platform}
