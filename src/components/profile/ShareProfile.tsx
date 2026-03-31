@@ -9,6 +9,7 @@ interface ShareProfileProps {
 
 export function ShareProfile({ slug, displayName }: ShareProfileProps) {
   const [copied, setCopied] = useState(false)
+  const [igCopied, setIgCopied] = useState(false)
 
   const profileUrl = `https://resonance.network/profiles/${slug}`
   const tweetText = encodeURIComponent(
@@ -83,6 +84,30 @@ export function ShareProfile({ slug, displayName }: ShareProfileProps) {
           </svg>
           <span>Facebook</span>
         </a>
+
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(`${shareText}\n${profileUrl}`).then(() => {
+              setIgCopied(true)
+              setTimeout(() => setIgCopied(false), 3000)
+              window.open('https://www.instagram.com/', '_blank')
+            })
+          }}
+          className="share-profile__btn share-profile__btn--instagram"
+        >
+          {igCopied ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <rect x="1.5" y="1.5" width="15" height="15" rx="4" stroke="currentColor" strokeWidth="1.3" />
+              <circle cx="9" cy="9" r="3.5" stroke="currentColor" strokeWidth="1.3" />
+              <circle cx="13" cy="5" r="1" fill="currentColor" />
+            </svg>
+          )}
+          <span>{igCopied ? 'Text copied! Paste on IG' : 'Instagram'}</span>
+        </button>
 
         <button
           onClick={copyLink}
