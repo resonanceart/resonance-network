@@ -157,9 +157,9 @@ export default function MyProjectsPage() {
                   className="my-projects-card__actions"
                   style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'auto', flexWrap: 'wrap' }}
                 >
-                  {(project.status === 'new' || project.status === 'pending') && (
+                  {(project.status === 'new' || project.status === 'pending' || project.status === 'draft') && (
                     <Link
-                      href={`/dashboard/projects/${project.id}/edit`}
+                      href={`/dashboard/projects/live-edit?id=${project.id}`}
                       className="btn btn--outline btn--sm"
                     >
                       Edit

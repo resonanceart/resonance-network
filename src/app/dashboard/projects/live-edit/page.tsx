@@ -128,14 +128,18 @@ function LiveProjectEditorInner() {
       })
       .catch(() => {})
 
-    if (existingId) {
-      // Fetch existing submission
-      fetch('/api/user/projects', { credentials: 'same-origin' })
+    // Always check for existing submissions — load most recent draft if no ID specified
+    {
+      fetch('/api/user/projects', { credentials: 'include' })
         .then(r => r.json())
         .then(data => {
           const submissions = data.submissions || []
-          const p = submissions.find((s: Record<string, unknown>) => s.id === existingId)
+          // If an ID was specified, load that one. Otherwise, load the most recent draft.
+          const p = existingId
+            ? submissions.find((s: Record<string, unknown>) => s.id === existingId)
+            : submissions.find((s: Record<string, unknown>) => s.status === 'draft') || submissions[0]
           if (p) {
+            setSubmissionId(p.id as string)
             setTitle(p.project_title || '')
             setShortDescription(p.one_sentence || '')
             setOverviewLead(p.vision || '')
