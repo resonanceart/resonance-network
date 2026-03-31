@@ -15,7 +15,7 @@ export function ProjectSmartGallery({ galleryImages, galleryPdfs, galleryLinks, 
   const items: GalleryItem[] = []
   let order = 0
 
-  galleryImages.filter(img => img.url).forEach((img, i) => {
+  galleryImages.filter(img => img.url?.trim()).forEach((img, i) => {
     items.push({ id: `img-${i}`, type: 'image', url: img.url, title: img.alt || 'Gallery', order: order++ })
   })
   galleryPdfs.forEach((doc, i) => {
