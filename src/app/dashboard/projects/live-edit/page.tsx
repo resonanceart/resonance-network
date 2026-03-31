@@ -362,20 +362,32 @@ function LiveProjectEditorInner() {
   }
 
   async function uploadFileToStorage(file: File, type: string): Promise<string | null> {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('type', type)
+    // Direct Supabase Storage upload (bypasses Next.js body limit)
     try {
-      const res = await fetch('/api/upload', { method: 'POST', credentials: 'same-origin', body: formData })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        setErrorMessage(err.error || 'Upload failed')
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { setErrorMessage('Not authenticated'); return null }
+
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+      const path = `${user.id}/${type}/${Date.now()}.${ext}`
+
+      const { data, error } = await supabase.storage
+        .from('profile-uploads')
+        .upload(path, file, { cacheControl: '3600', upsert: true, contentType: file.type })
+
+      if (error) {
+        setErrorMessage(`Upload failed: ${error.message}`)
         return null
       }
-      const data = await res.json()
-      return data.url || null
-    } catch {
-      setErrorMessage('Network error during upload')
+
+      const { data: urlData } = supabase.storage.from('profile-uploads').getPublicUrl(data.path)
+      return urlData.publicUrl
+    } catch (e) {
+      setErrorMessage('Upload failed. Please try again.')
       return null
     }
   }

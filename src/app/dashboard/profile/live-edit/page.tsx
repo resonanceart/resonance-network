@@ -415,19 +415,41 @@ function TimelinePanel({
 // ─── Upload Helper ───────────────────────────────────────────────
 
 async function uploadFile(file: File, type: string): Promise<{ url: string | null; error: string | null }> {
-  const formData = new FormData()
-  formData.append('file', file)
-  formData.append('type', type)
+  // Try direct Supabase Storage upload first (bypasses Next.js body limit)
+  // Falls back to API route for smaller files
   try {
-    const res = await fetch('/api/upload', { method: 'POST', credentials: 'same-origin', body: formData })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: 'Upload failed' }))
-      return { url: null, error: err.error || `Upload failed (${res.status})` }
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { url: null, error: 'Not authenticated. Please sign in again.' }
+
+    const ext = file.name.split('.').pop()?.toLowerCase() || (file.type.includes('pdf') ? 'pdf' : 'jpg')
+    const path = `${user.id}/${type}/${Date.now()}.${ext}`
+
+    const { data, error } = await supabase.storage
+      .from('profile-uploads')
+      .upload(path, file, {
+        cacheControl: '3600',
+        upsert: true,
+        contentType: file.type,
+      })
+
+    if (error) {
+      console.error('Direct upload error:', error.message)
+      return { url: null, error: `Upload failed: ${error.message}` }
     }
-    const data = await res.json()
-    return { url: data.url || null, error: null }
-  } catch {
-    return { url: null, error: 'Network error during upload. Please check your connection.' }
+
+    const { data: urlData } = supabase.storage
+      .from('profile-uploads')
+      .getPublicUrl(data.path)
+
+    return { url: urlData.publicUrl, error: null }
+  } catch (e) {
+    console.error('Upload error:', e)
+    return { url: null, error: 'Upload failed. Please try again.' }
   }
 }
 
