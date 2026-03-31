@@ -1192,7 +1192,7 @@ export default function LiveProfileEditor() {
                 <div className="profile-two-col__block">
                   <p className="section-label">Philosophy</p>
                   {philosophy ? (
-                    <blockquote className="profile-two-col__quote"><p>{philosophy}</p></blockquote>
+                    <div className="profile-two-col__text">{philosophy.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}</div>
                   ) : (
                     <p className="live-editor__placeholder-text">Share your philosophy...</p>
                   )}

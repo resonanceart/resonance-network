@@ -360,7 +360,7 @@ export default function ProfilePreviewPage() {
                 {philosophy && (
                   <div className="profile-two-col__block">
                     <p className="section-label">Philosophy</p>
-                    <blockquote className="profile-two-col__quote"><p>{philosophy}</p></blockquote>
+                    <div className="profile-two-col__text">{philosophy.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}</div>
                   </div>
                 )}
               </div>
