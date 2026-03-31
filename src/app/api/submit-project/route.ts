@@ -157,8 +157,8 @@ export async function POST(request: Request) {
         )
       }
 
-      // Only allow updates to drafts and new submissions (not approved/rejected)
-      if (existing.status !== 'draft' && existing.status !== 'new') {
+      // Only allow updates to drafts, new, and rejected submissions (not approved)
+      if (existing.status !== 'draft' && existing.status !== 'new' && existing.status !== 'rejected') {
         return NextResponse.json(
           { success: false, message: 'This submission can no longer be edited.' },
           { status: 400 }

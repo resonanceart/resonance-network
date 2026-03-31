@@ -71,6 +71,7 @@ function LiveProjectEditorInner() {
   const [activePanel, setActivePanel] = useState<EditSection>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [submissionId, setSubmissionId] = useState<string | null>(existingId)
+  const [submissionStatus, setSubmissionStatus] = useState<string>('draft')
 
   // Project fields — drive the live preview
   const [title, setTitle] = useState('')
@@ -147,6 +148,7 @@ function LiveProjectEditorInner() {
             : submissions.find((s: Record<string, unknown>) => s.status === 'draft') || submissions[0]
           if (p) {
             setSubmissionId(p.id as string)
+            if (p.status) setSubmissionStatus(p.status as string)
             setTitle(p.project_title || '')
             setShortDescription(p.one_sentence || '')
             // Split vision into lead (first paragraph) and body (rest)
@@ -371,6 +373,7 @@ function LiveProjectEditorInner() {
       }
       const data = await res.json()
       if (data.id) setSubmissionId(data.id)
+      setSubmissionStatus('new')
       setHasChanges(false)
       setSavedMessage(true)
       setTimeout(() => setSavedMessage(false), 3000)
@@ -525,9 +528,19 @@ function LiveProjectEditorInner() {
             <button onClick={() => saveDraft(false)} className="btn btn--primary btn--sm" disabled={saving || !hasChanges}>
               {saving ? 'Saving...' : 'Save Draft'}
             </button>
-            <button onClick={submitForReview} className="btn btn--outline btn--sm" disabled={saving || !title.trim()}>
-              Submit for Review
-            </button>
+            {submissionStatus === 'approved' ? (
+              <span className="btn btn--sm" style={{ background: 'var(--color-success, #22c55e)', color: 'white', cursor: 'default', opacity: 0.9 }}>
+                Approved
+              </span>
+            ) : submissionStatus === 'new' || submissionStatus === 'pending' ? (
+              <button className="btn btn--outline btn--sm" disabled style={{ opacity: 0.6 }}>
+                Submitted for Review
+              </button>
+            ) : (
+              <button onClick={submitForReview} className="btn btn--outline btn--sm" disabled={saving || !title.trim()}>
+                {submissionStatus === 'rejected' ? 'Resubmit for Review' : 'Submit for Review'}
+              </button>
+            )}
             {submissionId && (
               <button
                 className="btn btn--ghost btn--sm"
