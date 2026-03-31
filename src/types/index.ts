@@ -349,6 +349,11 @@ export interface UserProfile {
   collaborator_profile_id: string | null
   onboarding_complete: boolean
   profile_visibility?: 'draft' | 'pending' | 'published'
+  role_type?: 'artist' | 'curator' | 'collaborator' | null
+  collaborator_type?: string | null
+  goals?: string[] | null
+  fields_of_interest?: string[] | null
+  onboarding_completed?: boolean
 }
 
 export interface UserFollow {
