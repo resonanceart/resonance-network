@@ -172,20 +172,20 @@ export default function MyProjectsPage() {
                   className="my-projects-card__actions"
                   style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'auto', flexWrap: 'wrap' }}
                 >
-                  {(project.status === 'new' || project.status === 'pending' || project.status === 'draft') && (
-                    <Link
-                      href={`/dashboard/projects/live-edit?id=${project.id}`}
-                      className="btn btn--outline btn--sm"
-                    >
-                      Edit
-                    </Link>
-                  )}
                   <Link
-                    href={`/preview/project/${project.id}`}
+                    href={`/dashboard/projects/live-edit?id=${project.id}`}
                     className="btn btn--outline btn--sm"
                   >
-                    Preview
+                    {project.status === 'approved' ? 'Manage' : 'Edit'}
                   </Link>
+                  {project.status !== 'approved' && (
+                    <Link
+                      href={`/dashboard/projects/preview?id=${project.id}`}
+                      className="btn btn--outline btn--sm"
+                    >
+                      Preview
+                    </Link>
+                  )}
                   {project.status === 'approved' && (
                     <Link
                       href={`/projects/${projectSlug(project)}`}

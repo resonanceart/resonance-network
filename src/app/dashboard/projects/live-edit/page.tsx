@@ -514,7 +514,7 @@ function LiveProjectEditorInner() {
       {/* Toolbar */}
       <div className="live-editor__toolbar">
         <div className="live-editor__toolbar-inner container">
-          <span className="live-editor__toolbar-title">Building Your Project</span>
+          <span className="live-editor__toolbar-title">{submissionStatus === 'approved' ? 'Managing Your Live Project' : 'Building Your Project'}</span>
           <div className="live-editor__toolbar-actions">
             {errorMessage && (
               <div style={{ background: '#dc2626', color: 'white', padding: '8px 16px', borderRadius: 8, fontSize: '14px', display: 'flex', alignItems: 'center', gap: 8, maxWidth: 400 }}>
@@ -526,12 +526,12 @@ function LiveProjectEditorInner() {
             {hasChanges && !saving && !errorMessage && <span className="live-editor__unsaved">Unsaved changes</span>}
             {savedMessage && !saving && <span className="live-editor__saved">Saved!</span>}
             <button onClick={() => saveDraft(false)} className="btn btn--primary btn--sm" disabled={saving || !hasChanges}>
-              {saving ? 'Saving...' : 'Save Draft'}
+              {saving ? 'Saving...' : submissionStatus === 'approved' ? 'Save Changes' : 'Save Draft'}
             </button>
             {submissionStatus === 'approved' ? (
-              <span className="btn btn--sm" style={{ background: 'var(--color-success, #22c55e)', color: 'white', cursor: 'default', opacity: 0.9 }}>
-                Approved
-              </span>
+              <Link href={`/projects/sub-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}-${(submissionId || '').substring(0, 8)}`} className="btn btn--sm" style={{ background: 'var(--color-success, #22c55e)', color: 'white' }}>
+                View Live
+              </Link>
             ) : submissionStatus === 'new' || submissionStatus === 'pending' ? (
               <button className="btn btn--outline btn--sm" disabled style={{ opacity: 0.6 }}>
                 Submitted for Review
