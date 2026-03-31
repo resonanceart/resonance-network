@@ -371,8 +371,7 @@ function ProjectPreviewInner() {
           <section className="project-experience">
             <div className="container">
               <p className="section-label">Inclusivity Statement</p>
-              <h2>Inclusivity & Access</h2>
-              {inclusivityStatement.split('\n\n').map((p, i) => <p key={i} className="overview-body">{p}</p>)}
+                            {inclusivityStatement.split('\n\n').map((p, i) => <p key={i} className="overview-body">{p}</p>)}
             </div>
           </section>
         )}

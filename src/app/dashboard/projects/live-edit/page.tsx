@@ -815,8 +815,7 @@ function LiveProjectEditorInner() {
           <section className="project-experience">
             <div className="container">
               <p className="section-label">Inclusivity Statement</p>
-              <h2>Inclusivity & Access</h2>
-              {inclusivityStatement
+                            {inclusivityStatement
                 ? inclusivityStatement.split('\n\n').map((p, i) => <p key={i} className="overview-body">{p}</p>)
                 : <p style={{ opacity: 0.4, fontStyle: 'italic' }}>Describe how your project promotes inclusivity and access...</p>
               }
