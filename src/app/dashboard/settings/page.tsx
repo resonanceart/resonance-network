@@ -302,20 +302,18 @@ function SignOutAllSection({ supabase, router }: { supabase: ReturnType<typeof c
 }
 
 function DeleteAccountSection({ router }: { router: ReturnType<typeof useRouter> }) {
-  const [showConfirm, setShowConfirm] = useState(false)
+  const [step, setStep] = useState(0) // 0=hidden, 1=checkbox, 2=type DELETE, 3=final confirm
+  const [checked, setChecked] = useState(false)
   const [confirmText, setConfirmText] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   const handleDelete = async () => {
-    if (confirmText !== 'DELETE') return
-
+    if (confirmText !== 'DELETE' || !checked) return
     setLoading(true)
     setError('')
-
     try {
-      const res = await fetch('/api/user/profile', { method: 'DELETE' })
-
+      const res = await fetch('/api/user/profile', { method: 'DELETE', credentials: 'include' })
       if (res.ok) {
         router.push('/login')
       } else {
@@ -328,6 +326,8 @@ function DeleteAccountSection({ router }: { router: ReturnType<typeof useRouter>
       setLoading(false)
     }
   }
+
+  const reset = () => { setStep(0); setChecked(false); setConfirmText('') }
 
   return (
     <div className="settings-card settings-card--danger">
@@ -342,42 +342,61 @@ function DeleteAccountSection({ router }: { router: ReturnType<typeof useRouter>
         </div>
       )}
 
-      {!showConfirm ? (
-        <button
-          className="btn btn--sm settings-btn--danger"
-          onClick={() => setShowConfirm(true)}
-        >
+      {step === 0 && (
+        <button className="btn btn--sm settings-btn--danger" onClick={() => setStep(1)}>
           Delete My Account
         </button>
-      ) : (
-        <div>
-          <p className="settings-card__confirm-label">
-            Type DELETE to confirm:
+      )}
+
+      {step === 1 && (
+        <div style={{ marginTop: 'var(--space-3)' }}>
+          <p style={{ fontSize: 'var(--text-sm)', color: '#ff6b6b', fontWeight: 600, marginBottom: 'var(--space-3)' }}>
+            Step 1 of 3: Are you sure you want to delete your account?
           </p>
-          <input
-            className="form-input settings-card__confirm-input"
-            type="text"
-            value={confirmText}
-            onChange={(e) => setConfirmText(e.target.value)}
-            placeholder="DELETE"
-          />
-          <div className="settings-card__actions">
-            <button
-              className="btn btn--sm settings-btn--danger"
-              onClick={handleDelete}
-              disabled={confirmText !== 'DELETE' || loading}
-            >
-              {loading ? 'Deleting...' : 'Permanently Delete'}
-            </button>
-            <button
-              className="btn btn--outline btn--sm"
-              onClick={() => { setShowConfirm(false); setConfirmText('') }}
-            >
-              Cancel
-            </button>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }}>
+            This will permanently remove your profile, projects, gallery, messages, and all associated data. This cannot be undone.
+          </p>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-2)', cursor: 'pointer', marginBottom: 'var(--space-4)' }}>
+            <input type="checkbox" checked={checked} onChange={e => setChecked(e.target.checked)} style={{ marginTop: 3 }} />
+            <span style={{ fontSize: 'var(--text-sm)' }}>I understand that deleting my account is permanent and all my data will be lost forever.</span>
+          </label>
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button className="btn btn--sm settings-btn--danger" disabled={!checked} onClick={() => setStep(2)}>Continue</button>
+            <button className="btn btn--outline btn--sm" onClick={reset}>Cancel</button>
           </div>
         </div>
       )}
+
+      {step === 2 && (
+        <div style={{ marginTop: 'var(--space-3)' }}>
+          <p style={{ fontSize: 'var(--text-sm)', color: '#ff6b6b', fontWeight: 600, marginBottom: 'var(--space-3)' }}>
+            Step 2 of 3: Type DELETE to confirm
+          </p>
+          <input className="form-input" type="text" value={confirmText} onChange={e => setConfirmText(e.target.value)} placeholder="Type DELETE here" style={{ maxWidth: 300, marginBottom: 'var(--space-4)' }} />
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button className="btn btn--sm settings-btn--danger" disabled={confirmText !== 'DELETE'} onClick={() => setStep(3)}>Continue</button>
+            <button className="btn btn--outline btn--sm" onClick={reset}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div style={{ marginTop: 'var(--space-3)' }}>
+          <p style={{ fontSize: 'var(--text-sm)', color: '#ff6b6b', fontWeight: 600, marginBottom: 'var(--space-3)' }}>
+            Step 3 of 3: Final confirmation
+          </p>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>
+            This is your last chance. Click the button below to permanently delete your account. There is no way to recover your data after this.
+          </p>
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button className="btn btn--sm settings-btn--danger" onClick={handleDelete} disabled={loading}>
+              {loading ? 'Deleting...' : 'Yes, Permanently Delete My Account'}
+            </button>
+            <button className="btn btn--outline btn--sm" onClick={reset}>Cancel — Keep My Account</button>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
