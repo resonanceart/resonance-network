@@ -181,7 +181,7 @@ export function SmartGallery({ items, editable = false, onReorder, onDelete, onE
 
                 {/* Delete - top right */}
                 {onDelete && (
-                  <button className="smart-gallery__delete" onClick={(e) => { e.stopPropagation(); onDelete(item.id) }} title="Remove">
+                  <button className="smart-gallery__delete" onClick={(e) => { e.stopPropagation(); onDelete(item.id) }} title="Delete">
                     &times;
                   </button>
                 )}

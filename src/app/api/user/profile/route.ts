@@ -271,7 +271,9 @@ export async function PUT(request: Request) {
       }
     }
     if (body.media_links !== undefined) {
-      if (Array.isArray(body.media_links) && body.media_links.length <= 20) {
+      if (body.media_links === null) {
+        extendedFields.media_links = null
+      } else if (Array.isArray(body.media_links) && body.media_links.length <= 20) {
         extendedFields.media_links = body.media_links
       }
     }
@@ -341,7 +343,9 @@ export async function PUT(request: Request) {
       if (cols >= 1 && cols <= 6) extendedFields.gallery_columns = cols
     }
     if (body.past_work !== undefined) {
-      if (Array.isArray(body.past_work) && body.past_work.length <= 50) {
+      if (body.past_work === null) {
+        extendedFields.past_work = null
+      } else if (Array.isArray(body.past_work) && body.past_work.length <= 50) {
         extendedFields.past_work = body.past_work
       }
     }
