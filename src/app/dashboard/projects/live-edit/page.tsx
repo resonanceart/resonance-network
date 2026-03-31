@@ -829,7 +829,7 @@ function LiveProjectEditorInner() {
           <section className="project-experience">
             <div className="container">
               <p className="section-label">Materials & Regenerative Practices</p>
-              <h2>Materials & Sustainability</h2>
+
               {materialsRegen
                 ? materialsRegen.split('\n\n').map((p, i) => <p key={i} className="overview-body">{p}</p>)
                 : <p style={{ opacity: 0.4, fontStyle: 'italic' }}>Describe the materials and regenerative practices used...</p>

@@ -381,7 +381,7 @@ function ProjectPreviewInner() {
           <section className="project-experience">
             <div className="container">
               <p className="section-label">Materials & Regenerative Practices</p>
-              <h2>Materials & Sustainability</h2>
+
               {materialsRegen.split('\n\n').map((p, i) => <p key={i} className="overview-body">{p}</p>)}
             </div>
           </section>
