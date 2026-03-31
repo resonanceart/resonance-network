@@ -34,8 +34,9 @@ export default async function CollaboratePage() {
     getCollaborationTasksFromSupabase(),
   ])
 
-  // Supabase (real) tasks first, then static legacy tasks
-  const tasks = [...supabaseTasks, ...staticTasks]
+  // Tag static tasks as JSON source, then combine (Supabase first)
+  const taggedStaticTasks = staticTasks.map(t => ({ ...t, source: 'json' as const }))
+  const tasks = [...supabaseTasks, ...taggedStaticTasks]
 
   return <CommunityPage profiles={profiles} tasks={tasks} />
 }

@@ -63,8 +63,13 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
     }
   }
 
+  const isConcept = task.source !== 'supabase'
+
   return (
-    <div className="task-card">
+    <div className={`task-card${isConcept ? ' task-card--concept' : ''}`}>
+      {isConcept && (
+        <span className="task-card__concept-tooltip">AI Concept — developed by AI</span>
+      )}
       {/* Hero banner */}
       {heroImage && (
         <div className="task-card__banner">

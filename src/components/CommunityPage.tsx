@@ -326,20 +326,47 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
             </div>
           </section>
 
-          <section className="collab-grid">
-            <div className="container">
-              <div className="task-grid">
-                {filteredTasks.map(task => (
-                  <CollaborationTaskCard key={task.id} task={task} />
-                ))}
-                {filteredTasks.length === 0 && (
-                  <p style={{ gridColumn: '1/-1', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                    No roles match your current filters. Try broadening your search.
-                  </p>
+          {(() => {
+            const liveTasks = filteredTasks.filter(t => t.source === 'supabase')
+            const conceptTasks = filteredTasks.filter(t => t.source !== 'supabase')
+            return (
+              <>
+                {/* Live Roles */}
+                <section className="collab-grid">
+                  <div className="container">
+                    <p className="section-label">Live Roles</p>
+                    {liveTasks.length > 0 ? (
+                      <div className="task-grid">
+                        {liveTasks.map(task => (
+                          <CollaborationTaskCard key={task.id} task={task} />
+                        ))}
+                      </div>
+                    ) : (
+                      <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: 'var(--space-6) 0' }}>
+                        {filteredTasks.length === 0
+                          ? 'No roles match your current filters. Try broadening your search.'
+                          : 'No live roles yet. Be the first to submit a project with open roles.'}
+                      </p>
+                    )}
+                  </div>
+                </section>
+
+                {/* AI Concept Roles */}
+                {conceptTasks.length > 0 && (
+                  <section className="collab-grid" style={{ borderTop: '1px solid var(--color-border)' }}>
+                    <div className="container" style={{ paddingTop: 'var(--space-6)' }}>
+                      <p className="section-label">AI Concept Roles</p>
+                      <div className="task-grid">
+                        {conceptTasks.map(task => (
+                          <CollaborationTaskCard key={task.id} task={task} />
+                        ))}
+                      </div>
+                    </div>
+                  </section>
                 )}
-              </div>
-            </div>
-          </section>
+              </>
+            )
+          })()}
 
           {/* Offer Your Skills CTA */}
           <section className="collab-available">
