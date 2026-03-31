@@ -33,6 +33,19 @@ interface ProjectSubmission {
   status: string
 }
 
+function getSocialSvg(platform: string) {
+  const s = 16
+  switch (platform) {
+    case 'instagram': return <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+    case 'facebook': return <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+    case 'linkedin': return <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 11v6M7 7v.01M11 17v-4a2 2 0 014 0v4M15 11v6"/></svg>
+    case 'x': return <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    case 'youtube': return <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="4"/><polygon points="10 8 16 12 10 16" fill="currentColor" stroke="none"/></svg>
+    case 'tiktok': return <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 2v13a4 4 0 11-3-3.87"/><path d="M12 6c2 1.5 4 2 6 2"/></svg>
+    default: return <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+  }
+}
+
 export default function ProjectPreviewPage({ params }: { params: { id: string } }) {
   const { user } = useAuth()
   const [project, setProject] = useState<ProjectSubmission | null>(null)
@@ -304,14 +317,20 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
                     <p className="overview-stat__value">{project.location}</p>
                   </div>
                 )}
+                {project.pathways && project.pathways.length > 0 && (
+                  <div className="overview-stat">
+                    <p className="overview-stat__label">Pathways</p>
+                    <p className="overview-stat__value">{project.pathways.join(' · ')}</p>
+                  </div>
+                )}
                 {projectSocialLinks.length > 0 && (
                   <div className="overview-stat">
                     <p className="overview-stat__label">Links</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
                       {projectSocialLinks.map((link, i) => (
                         <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" title={link.platform}
-                          style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', color: 'var(--color-text)', textDecoration: 'none', border: '1px solid var(--color-border)' }}>
-                          {link.platform.charAt(0).toUpperCase()}
+                          style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', color: 'var(--color-text)', textDecoration: 'none', border: '1px solid var(--color-border)', transition: 'background 0.2s' }}>
+                          {getSocialSvg(link.platform)}
                         </a>
                       ))}
                     </div>
