@@ -227,6 +227,18 @@ export async function PUT(request: Request) {
       updates.skills = body.skills.map((s: unknown) => sanitizeText(s, 100)).filter(Boolean)
     }
     if (body.onboarding_complete !== undefined) updates.onboarding_complete = Boolean(body.onboarding_complete)
+    if (body.onboarding_completed !== undefined) updates.onboarding_completed = Boolean(body.onboarding_completed)
+    if (body.role_type !== undefined) {
+      const validRoleTypes = ['artist', 'curator', 'collaborator']
+      if (validRoleTypes.includes(body.role_type)) updates.role_type = body.role_type
+    }
+    if (body.collaborator_type !== undefined) updates.collaborator_type = sanitizeText(body.collaborator_type, 200)
+    if (body.goals !== undefined && Array.isArray(body.goals)) {
+      updates.goals = body.goals.map((g: unknown) => sanitizeText(g, 200)).filter(Boolean).slice(0, 20)
+    }
+    if (body.fields_of_interest !== undefined && Array.isArray(body.fields_of_interest)) {
+      updates.fields_of_interest = body.fields_of_interest.map((f: unknown) => sanitizeText(f, 200)).filter(Boolean).slice(0, 50)
+    }
     if (body.profile_visibility !== undefined) {
       const validVisibilities = ['draft', 'pending']
       // Users can only set draft or pending (not published — that requires admin)

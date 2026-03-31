@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
+import { OnboardingWizard } from '@/components/OnboardingWizard'
 
 export default function WelcomePage() {
   const { user, loading: authLoading } = useAuth()
@@ -10,6 +11,8 @@ export default function WelcomePage() {
   const [displayName, setDisplayName] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [showWizard, setShowWizard] = useState(false)
+  const [checkingStatus, setCheckingStatus] = useState(true)
 
   useEffect(() => {
     if (authLoading) return
@@ -21,6 +24,23 @@ export default function WelcomePage() {
     fetch('/api/auth/welcome', { method: 'POST' }).catch(() => {})
     // Link any existing submissions
     fetch('/api/user/link-submissions', { method: 'POST' }).catch(() => {})
+
+    // Check if onboarding was already completed or name already set
+    fetch('/api/user/onboarding', { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.onboarding_completed) {
+          router.push('/dashboard')
+          return
+        }
+        if (data.display_name) {
+          setDisplayName(data.display_name)
+          // Name already set — skip to wizard
+          if (data.display_name.trim()) setShowWizard(true)
+        }
+      })
+      .catch(() => {})
+      .finally(() => setCheckingStatus(false))
   }, [user, authLoading, router])
 
   async function handleContinue() {
@@ -37,14 +57,19 @@ export default function WelcomePage() {
         body: JSON.stringify({ display_name: displayName.trim() }),
       })
       if (!res.ok) throw new Error('Failed to save')
-      router.push('/dashboard/profile/live-edit')
+      setShowWizard(true)
     } catch {
       setError('Something went wrong. Please try again.')
+    } finally {
       setSaving(false)
     }
   }
 
-  if (authLoading) {
+  function handleWizardComplete() {
+    router.push('/dashboard')
+  }
+
+  if (authLoading || checkingStatus) {
     return (
       <div className="container" style={{ paddingTop: 'var(--space-16)', textAlign: 'center' }}>
         <p style={{ color: 'var(--color-text-muted)' }}>Loading...</p>
@@ -52,6 +77,12 @@ export default function WelcomePage() {
     )
   }
 
+  // Show the onboarding wizard after name is set
+  if (showWizard) {
+    return <OnboardingWizard onComplete={handleWizardComplete} />
+  }
+
+  // Name entry step
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-4)' }}>
       <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
@@ -91,11 +122,11 @@ export default function WelcomePage() {
           onClick={handleContinue}
           disabled={saving || !displayName.trim()}
         >
-          {saving ? 'Setting up...' : 'Continue to Your Profile'}
+          {saving ? 'Setting up...' : 'Continue'}
         </button>
 
         <p style={{ marginTop: 'var(--space-6)', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
-          You&apos;ll be able to add your photo, bio, skills, and more in the profile editor.
+          Next: a quick quiz to personalize your experience.
         </p>
       </div>
     </div>
