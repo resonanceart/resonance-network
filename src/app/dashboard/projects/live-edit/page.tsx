@@ -286,7 +286,9 @@ function LiveProjectEditorInner() {
             : (projectDescription.trim() ? JSON.stringify({ projectDescription: projectDescription.trim() }) : null),
           collaborationNeeds: rolesJson,
           collaborationRoleCount: collabRoles.filter(r => r.title || r.customTitle).length || null,
-          teamMembers: collaborators.filter(c => c.name.trim()).map(c => ({ name: c.name.trim(), role: c.role.trim(), photo: c.photo })),
+          teamMembers: collaborators.filter(c => c.name.trim()).length > 0
+            ? collaborators.filter(c => c.name.trim()).map(c => ({ name: c.name.trim(), role: c.role.trim(), photo: c.photo }))
+            : undefined,
           status: 'draft',
         }),
       })
