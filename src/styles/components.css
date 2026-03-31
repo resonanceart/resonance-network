@@ -12718,7 +12718,7 @@ main {
 /* Col 2: Info */
 .profile-header-grid__info {
   min-width: 0;
-  padding-top: var(--space-2);
+  padding-top: 0;
 }
 
 .profile-header-grid__name {

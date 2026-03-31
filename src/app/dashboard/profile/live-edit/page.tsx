@@ -699,7 +699,11 @@ export default function LiveProfileEditor() {
 
   async function handleResumeUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file || file.size > 5 * 1024 * 1024) return
+    if (!file) return
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError(`"${file.name}" is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum is 10MB.`)
+      return
+    }
     const url = await upload(file, 'resume')
     if (url) {
       setResumeUrl(url)
@@ -721,7 +725,11 @@ export default function LiveProfileEditor() {
 
   async function handlePortfolioPdfUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file || file.size > 5 * 1024 * 1024) return
+    if (!file) return
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError(`"${file.name}" is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum is 10MB.`)
+      return
+    }
     const url = await upload(file, 'portfolio')
     if (url) {
       setPortfolioPdfUrl(url)
