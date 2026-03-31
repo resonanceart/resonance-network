@@ -27,6 +27,7 @@ export function SmartGallery({ items, editable = false, onReorder, onDelete, onE
   const [editText, setEditText] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [thumbnailTargetId, setThumbnailTargetId] = useState<string | null>(null)
+  const [failedThumbnails, setFailedThumbnails] = useState<Set<string>>(new Set())
   const sorted = [...items].sort((a, b) => a.order - b.order)
 
   function handleDragStart(index: number) { setDragIndex(index) }
@@ -93,7 +94,9 @@ export function SmartGallery({ items, editable = false, onReorder, onDelete, onE
 
       {sorted.map((item, i) => {
         const isEditing = editingId === item.id
-        const hasThumbnail = !!(item.thumbnail || (item.type === 'image'))
+        const thumbFailed = failedThumbnails.has(item.id)
+        const hasWorkingThumb = !!(item.thumbnail && !thumbFailed)
+        const hasThumbnail = !!(hasWorkingThumb || (item.type === 'image'))
 
         return (
           <div
@@ -118,12 +121,13 @@ export function SmartGallery({ items, editable = false, onReorder, onDelete, onE
                 </svg>
               </div>
             )}
-            {item.type !== 'image' && item.thumbnail && (
-              <img src={item.thumbnail} alt={item.title} className="smart-gallery__tile-img" />
+            {item.type !== 'image' && hasWorkingThumb && (
+              <img src={item.thumbnail} alt={item.title} className="smart-gallery__tile-img"
+                onError={() => setFailedThumbnails(prev => new Set(prev).add(item.id))} />
             )}
 
-            {/* PDF icon overlay */}
-            {item.type === 'pdf' && !item.thumbnail && (
+            {/* PDF icon overlay — show when no thumbnail or thumbnail failed */}
+            {item.type === 'pdf' && !hasWorkingThumb && (
               <div className="smart-gallery__icon">
                 <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
@@ -135,8 +139,8 @@ export function SmartGallery({ items, editable = false, onReorder, onDelete, onE
               </div>
             )}
 
-            {/* Link icon overlay — only when no thumbnail */}
-            {item.type === 'link' && !item.thumbnail && (
+            {/* Link icon overlay — show when no thumbnail or thumbnail failed */}
+            {item.type === 'link' && !hasWorkingThumb && (
               <div className="smart-gallery__icon">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10"/>
