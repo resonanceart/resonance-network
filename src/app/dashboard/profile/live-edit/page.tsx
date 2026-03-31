@@ -1005,7 +1005,7 @@ export default function LiveProfileEditor() {
                 const previewWindow = window.open('about:blank', '_blank')
                 if (previewWindow) {
                   if (hasChanges) {
-                    saveAll(true).then(() => {
+                    saveAllRef.current(true).then(() => {
                       previewWindow.location.href = '/dashboard/profile/preview'
                     })
                   } else {
@@ -1018,6 +1018,35 @@ export default function LiveProfileEditor() {
             >
               Preview
             </button>
+            {profileVisibility !== 'published' && profileVisibility !== 'pending' && (
+              <button
+                onClick={async () => {
+                  await saveAllRef.current(true)
+                  // Set profile_visibility to pending
+                  try {
+                    const res = await fetch('/api/user/profile', {
+                      method: 'PUT',
+                      credentials: 'include',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ profile_visibility: 'pending' }),
+                    })
+                    if (res.ok) {
+                      setProfileVisibility('pending')
+                      setSavedMessage(true)
+                      setTimeout(() => setSavedMessage(false), 3000)
+                    }
+                  } catch {}
+                }}
+                className="btn btn--outline btn--sm"
+                disabled={saving || !displayName.trim() || !bio.trim()}
+                style={{ borderColor: '#4ade80', color: '#4ade80' }}
+              >
+                Submit for Review
+              </button>
+            )}
+            {profileVisibility === 'pending' && (
+              <span style={{ fontSize: 'var(--text-xs)', color: '#facc15', padding: '4px 12px', border: '1px solid #facc15', borderRadius: 20 }}>Pending Review</span>
+            )}
             {slug && profileVisibility === 'published' && (
               <a
                 href={`/profiles/${slug}`}
