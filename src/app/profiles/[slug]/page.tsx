@@ -448,26 +448,28 @@ export default async function ProfilePage({ params }: { params: { slug: string }
               </h1>
               <p className="profile-header-grid__title">{profile.title}</p>
 
-              <div className="profile-link-buttons">
-                {(profile.primary_website_url || profile.links.find(l => l.type === 'website')) && (
-                  <a href={profile.primary_website_url || profile.links.find(l => l.type === 'website')?.url} target="_blank" rel="noopener noreferrer" className="profile-link-btn--pill">
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3"><circle cx="8" cy="8" r="6.5"/><path d="M1.5 8h13M8 1.5c1.5 1.5 2.5 3.5 2.5 6.5s-1 5-2.5 6.5c-1.5-1.5-2.5-3.5-2.5-6.5s1-5 2.5-6.5z"/></svg>
-                    Website
-                  </a>
-                )}
-                {profile.resume_url && (
-                  <a href={profile.resume_url} target="_blank" rel="noopener noreferrer" className="profile-link-btn--pill" download>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                    Resume
-                  </a>
-                )}
-                {profile.portfolio_pdf_url && (
-                  <a href={profile.portfolio_pdf_url} target="_blank" rel="noopener noreferrer" className="profile-link-btn--pill" download>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-                    Portfolio
-                  </a>
-                )}
-              </div>
+              {(profile.primary_website_url || profile.links.find(l => l.type === 'website') || profile.resume_url || profile.portfolio_pdf_url) && (
+                <div className="profile-link-buttons">
+                  {(profile.primary_website_url || profile.links.find(l => l.type === 'website')) && (
+                    <a href={profile.primary_website_url || profile.links.find(l => l.type === 'website')?.url} target="_blank" rel="noopener noreferrer" className="profile-link-btn--pill">
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3"><circle cx="8" cy="8" r="6.5"/><path d="M1.5 8h13M8 1.5c1.5 1.5 2.5 3.5 2.5 6.5s-1 5-2.5 6.5c-1.5-1.5-2.5-3.5-2.5-6.5s1-5 2.5-6.5z"/></svg>
+                      Website
+                    </a>
+                  )}
+                  {profile.resume_url && (
+                    <a href={profile.resume_url} target="_blank" rel="noopener noreferrer" className="profile-link-btn--pill" download>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                      Resume
+                    </a>
+                  )}
+                  {profile.portfolio_pdf_url && (
+                    <a href={profile.portfolio_pdf_url} target="_blank" rel="noopener noreferrer" className="profile-link-btn--pill" download>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+                      Portfolio
+                    </a>
+                  )}
+                </div>
+              )}
 
               {profile.bio && (
                 <div className="profile-header-grid__bio" data-editable="bio">

@@ -969,17 +969,30 @@ function LiveProjectEditorInner() {
               <p className="section-label">Join This Project</p>
               <h2>Open Roles</h2>
               {collabRoles.some(r => r.title || r.customTitle) ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
+                <div className="task-grid">
                   {collabRoles.filter(r => r.title || r.customTitle).map((role, i) => (
-                    <div key={i} className="collab-role-card" style={{ cursor: 'default' }}>
-                      <div className="collab-role-card__header">
-                        <span className="collab-role-card__number">{getRoleDisplayTitle(role)}</span>
-                      </div>
-                      <div className="collab-role-card__body">
-                        {role.description && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', margin: 0 }}>{role.description}</p>}
-                        {role.imageUrl && (
-                          <img src={role.imageUrl} alt="" style={{ width: '100%', height: 100, objectFit: 'cover', borderRadius: 8, marginTop: 'var(--space-2)' }} />
+                    <div key={i} className="task-card" style={{ cursor: 'default' }}>
+                      {heroImageUrl && (
+                        <div className="task-card__banner">
+                          <img src={heroImageUrl} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                      )}
+                      <div className="task-card__content">
+                        <div className="task-card__header">
+                          <Badge variant="open">Open</Badge>
+                        </div>
+                        <h3 className="task-card__title">{getRoleDisplayTitle(role)}</h3>
+                        {role.customTitle && role.title !== 'Other' && (
+                          <p className="task-card__meta-line">{role.customTitle}</p>
                         )}
+                        {role.skills && (
+                          <div className="task-card__skills">
+                            {role.skills.split(',').map((s: string, j: number) => (
+                              <span key={j} className="skill-tag">{s.trim()}</span>
+                            ))}
+                          </div>
+                        )}
+                        {role.description && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>{role.description}</p>}
                       </div>
                     </div>
                   ))}
