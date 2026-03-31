@@ -595,12 +595,40 @@ function LiveProjectEditorInner() {
                       <p className="overview-stat__value">{location}</p>
                     </div>
                   )}
-                  {pathways.length > 0 && (
-                    <div className="overview-stat">
-                      <p className="overview-stat__label">Pathways</p>
-                      <p className="overview-stat__value">{pathways.join(' \u00b7 ')}</p>
-                    </div>
-                  )}
+                  {/* Social Links — editable inline */}
+                  <div className="overview-stat">
+                    <p className="overview-stat__label">Links</p>
+                    {projectSocialLinks.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4, marginBottom: 8 }}>
+                        {projectSocialLinks.map((link, i) => (
+                          <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 16, background: 'rgba(255,255,255,0.08)', fontSize: 'var(--text-xs)', border: '1px solid var(--color-border)', textTransform: 'capitalize' }}>
+                            {link.platform}
+                            <button onClick={(e) => { e.stopPropagation(); setProjectSocialLinks(prev => prev.filter((_, j) => j !== i)); markDirty() }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: 12, padding: 0 }}>&times;</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {showAddProjectSocial ? (
+                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 4 }} onClick={e => e.stopPropagation()}>
+                        <select className="form-input" value={newSocialPlatform} onChange={e => setNewSocialPlatform(e.target.value)} style={{ width: 'auto', minWidth: 100, fontSize: 'var(--text-xs)', padding: '4px 6px' }}>
+                          {['instagram', 'linkedin', 'facebook', 'x', 'youtube', 'tiktok', 'behance', 'github', 'vimeo', 'soundcloud', 'spotify', 'linktree', 'website', 'fundraiser'].map(p => (
+                            <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+                          ))}
+                        </select>
+                        <input className="form-input" value={newSocialUrl} onChange={e => setNewSocialUrl(e.target.value)} placeholder="https://..." style={{ flex: 1, minWidth: 100, fontSize: 'var(--text-xs)', padding: '4px 6px' }} />
+                        <button className="btn btn--primary btn--sm" style={{ fontSize: 'var(--text-xs)', padding: '4px 8px' }} onClick={(e) => {
+                          e.stopPropagation()
+                          if (newSocialUrl.trim()) {
+                            setProjectSocialLinks(prev => [...prev, { platform: newSocialPlatform, url: newSocialUrl.trim() }])
+                            markDirty(); setNewSocialUrl(''); setShowAddProjectSocial(false)
+                          }
+                        }}>Add</button>
+                        <button className="btn btn--ghost btn--sm" style={{ fontSize: 'var(--text-xs)', padding: '4px 8px' }} onClick={(e) => { e.stopPropagation(); setShowAddProjectSocial(false) }}>Cancel</button>
+                      </div>
+                    ) : (
+                      <button className="btn btn--ghost btn--sm" style={{ fontSize: 'var(--text-xs)', padding: '4px 8px', marginTop: 4 }} onClick={(e) => { e.stopPropagation(); setShowAddProjectSocial(true) }}>+ Add Link</button>
+                    )}
+                  </div>
                 </aside>
               </div>
             </div>
@@ -739,43 +767,7 @@ function LiveProjectEditorInner() {
           </div>
         </section>
 
-        {/* Social & Custom Links for Project */}
-        <section style={{ padding: 'var(--space-8) 0', background: 'rgba(1,105,111,0.03)', borderTop: '2px solid var(--color-primary)', borderBottom: '1px solid var(--color-border)' }}>
-          <div className="container">
-            <p className="section-label">Project Links & Social</p>
-            {projectSocialLinks.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
-                {projectSocialLinks.map((link, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 20, padding: '4px 12px', fontSize: 'var(--text-sm)' }}>
-                    <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{link.platform}</span>
-                    <button onClick={() => { setProjectSocialLinks(prev => prev.filter((_, j) => j !== i)); markDirty() }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: 14, padding: '0 2px' }}>&times;</button>
-                  </div>
-                ))}
-              </div>
-            )}
-            {showAddProjectSocial ? (
-              <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-end', flexWrap: 'wrap', marginBottom: 'var(--space-3)' }}>
-                <select className="form-input" value={newSocialPlatform} onChange={e => setNewSocialPlatform(e.target.value)} style={{ width: 'auto', minWidth: 130 }}>
-                  {['instagram', 'linkedin', 'facebook', 'x', 'youtube', 'tiktok', 'behance', 'github', 'vimeo', 'soundcloud', 'spotify', 'linktree', 'website', 'fundraiser'].map(p => (
-                    <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
-                  ))}
-                </select>
-                <input className="form-input" value={newSocialUrl} onChange={e => setNewSocialUrl(e.target.value)} placeholder="https://..." style={{ flex: 1, minWidth: 150 }} />
-                <button className="btn btn--primary btn--sm" onClick={() => {
-                  if (newSocialUrl.trim()) {
-                    setProjectSocialLinks(prev => [...prev, { platform: newSocialPlatform, url: newSocialUrl.trim() }])
-                    markDirty()
-                    setNewSocialUrl('')
-                    setShowAddProjectSocial(false)
-                  }
-                }}>Add</button>
-                <button className="btn btn--ghost btn--sm" onClick={() => setShowAddProjectSocial(false)}>Cancel</button>
-              </div>
-            ) : (
-              <button className="btn btn--outline btn--sm" onClick={() => setShowAddProjectSocial(true)}>+ Add Social / Website Link</button>
-            )}
-          </div>
-        </section>
+        {/* Social links moved to overview sidebar above */}
 
         {/* Project Description */}
         <div className="editable-section" onClick={() => openPanel('description')}>
