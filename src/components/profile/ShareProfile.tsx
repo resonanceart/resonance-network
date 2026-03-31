@@ -12,8 +12,10 @@ export function ShareProfile({ slug, displayName }: ShareProfileProps) {
 
   const profileUrl = `https://resonance.network/profiles/${slug}`
   const tweetText = encodeURIComponent(
-    `I just created my profile on @ResonanceNetwork — connecting community through passion and purpose. Check it out: ${profileUrl}`
+    `I just created my profile on @ResonanceNetwork — a curated guild for immersive and regenerative art projects. Check it out and apply to join the network! ${profileUrl}`
   )
+
+  const shareText = `I just created my profile on Resonance Network — a curated guild for immersive and regenerative art projects. Check it out and apply to join the network!`
 
   function copyLink() {
     navigator.clipboard.writeText(profileUrl).then(() => {
@@ -21,6 +23,14 @@ export function ShareProfile({ slug, displayName }: ShareProfileProps) {
       setTimeout(() => setCopied(false), 2500)
     })
   }
+
+  async function nativeShare() {
+    try {
+      await navigator.share({ title: `${displayName} on Resonance Network`, text: shareText, url: profileUrl })
+    } catch {}
+  }
+
+  const hasNativeShare = typeof window !== 'undefined' && !!navigator.share
 
   return (
     <div className="share-profile">
@@ -33,8 +43,8 @@ export function ShareProfile({ slug, displayName }: ShareProfileProps) {
           <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
         </svg>
       </div>
-      <h3 className="share-profile__heading">Share Your Profile</h3>
-      <p className="share-profile__text">Let your network know you&apos;re on Resonance Network.</p>
+      <h3 className="share-profile__heading">Share This Profile</h3>
+      <p className="share-profile__text">Share {displayName}&apos;s profile with your network.</p>
 
       <div className="share-profile__buttons">
         <a
@@ -90,6 +100,20 @@ export function ShareProfile({ slug, displayName }: ShareProfileProps) {
           )}
           <span>{copied ? 'Copied!' : 'Copy Link'}</span>
         </button>
+
+        {hasNativeShare && (
+          <button
+            onClick={nativeShare}
+            className="share-profile__btn share-profile__btn--copy"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+            <span>Share</span>
+          </button>
+        )}
       </div>
     </div>
   )
