@@ -174,9 +174,15 @@ export async function POST(request: Request) {
         if (Array.isArray(value) && value.length === 0 && key !== 'domains' && key !== 'pathways') continue
         updateData[key] = value
       }
-      // Always include status and user_id
-      updateData.status = submissionData.status
+      // Always include user_id
       updateData.user_id = submissionData.user_id
+      // Status logic: draft saves preserve existing status (don't regress "new" → "draft");
+      // explicit submissions (non-draft) always set status to "new"
+      if (isDraft) {
+        updateData.status = existing.status
+      } else {
+        updateData.status = 'new'
+      }
 
       const { error: updateError } = await supabaseAdmin
         .from('project_submissions')

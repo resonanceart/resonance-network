@@ -49,10 +49,25 @@ export default function MyProjectsPage() {
 
   if (!user) return null
 
+  function statusLabel(status: string): string {
+    switch (status) {
+      case 'new': return 'Under Review'
+      case 'draft': return 'Draft'
+      case 'approved': return 'Live'
+      case 'rejected': return 'Changes Requested'
+      default: return status.charAt(0).toUpperCase() + status.slice(1)
+    }
+  }
+
   function badgeVariant(status: string): string {
     if (status === 'approved') return 'stage'
     if (status === 'rejected') return 'domain'
     return 'pathway'
+  }
+
+  function projectSlug(project: Project): string {
+    const slug = project.project_title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+    return `sub-${slug}-${project.id.substring(0, 8)}`
   }
 
   function formatDate(dateStr: string): string {
@@ -140,7 +155,7 @@ export default function MyProjectsPage() {
                   style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}
                 >
                   <Badge variant={badgeVariant(project.status)}>
-                    {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+                    {statusLabel(project.status)}
                   </Badge>
                   <time style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
                     {formatDate(project.created_at)}
@@ -173,7 +188,7 @@ export default function MyProjectsPage() {
                   </Link>
                   {project.status === 'approved' && (
                     <Link
-                      href={`/projects/${project.id}`}
+                      href={`/projects/${projectSlug(project)}`}
                       className="btn btn--outline btn--sm"
                     >
                       View Live
