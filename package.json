@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "dev:test": "bash scripts/dev-test.sh",
-    "test:smoke": "npx playwright test tests/smoke.spec.ts"
+    "test:smoke": "npx playwright test tests/smoke.spec.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "@supabase/ssr": "^0.9.0",
@@ -20,11 +21,12 @@
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.0",
     "@types/node": "^20",
     "@types/nodemailer": "^7.0.11",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@playwright/test": "^1.49.0",
+    "husky": "^9.1.7",
     "typescript": "^5"
   }
 }

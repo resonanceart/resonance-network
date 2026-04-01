@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Get the branch being pushed
+branch=$(git symbolic-ref HEAD 2>/dev/null | sed 's|refs/heads/||')
+
+# Skip build check for draft branches (WIP pushes)
+if echo "$branch" | grep -q "^draft/"; then
+  echo "Skipping build check for draft branch: $branch"
+  exit 0
+fi
+
+echo "Running build check before push..."
+npm run build
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "========================================="
+  echo "Build failed! Fix errors before pushing."
+  echo "========================================="
+  echo ""
+  echo "Tip: Push to a draft/ branch to skip this check."
+  exit 1
+fi
+
+echo "Build passed. Pushing..."
