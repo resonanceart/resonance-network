@@ -4859,6 +4859,11 @@ main {
   background: var(--color-surface-alt);
 }
 
+.dashboard-message__header:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
 .dashboard-message__dot {
   width: 8px;
   height: 8px;
@@ -5407,7 +5412,7 @@ main {
 }
 
 .messages-filter {
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-4);
   font-size: var(--text-sm);
   font-weight: 500;
   color: var(--color-text-muted);
@@ -5415,12 +5420,20 @@ main {
   border: 1px solid var(--color-border);
   border-radius: 999px;
   cursor: pointer;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   transition: all var(--duration-fast) var(--ease-out);
 }
 
 .messages-filter:hover {
   border-color: var(--color-primary);
   color: var(--color-text);
+}
+
+.messages-filter:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .messages-filter--active {
