@@ -81,14 +81,14 @@ export default function AdminReviewPage() {
       </div>
 
       {actionMsg && (
-        <p style={{ padding: '8px 16px', background: '#111', border: '1px solid #222', borderRadius: 8, marginBottom: 16, fontSize: 13, color: '#14b8a6' }}>
+        <p style={{ padding: '8px 16px', background: 'var(--color-surface, #111)', border: '1px solid var(--color-border, #222)', borderRadius: 8, marginBottom: 16, fontSize: 13, color: 'var(--color-primary, #14b8a6)' }}>
           {actionMsg}
         </p>
       )}
 
       {projects.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '48px 16px', color: '#666' }}>
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ margin: '0 auto 16px', display: 'block', color: '#22c55e' }}>
+        <div style={{ textAlign: 'center', padding: '48px 16px', color: 'var(--color-text-muted, #666)' }}>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ margin: '0 auto 16px', display: 'block', color: 'var(--color-success, #22c55e)' }}>
             <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
             <polyline points="22 4 12 14.01 9 11.01"/>
           </svg>
@@ -97,17 +97,17 @@ export default function AdminReviewPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {projects.map(p => (
-            <div key={p.id} style={{ background: '#111', border: '1px solid #222', borderRadius: 12, padding: 20 }}>
+            <div key={p.id} style={{ background: 'var(--color-surface, #111)', border: '1px solid var(--color-border, #222)', borderRadius: 12, padding: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
                 <div style={{ flex: 1, minWidth: 200 }}>
                   <h3 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 600 }}>{p.project_title}</h3>
-                  <p style={{ margin: '0 0 8px', fontSize: 13, color: '#999' }}>
+                  <p style={{ margin: '0 0 8px', fontSize: 13, color: 'var(--color-text-muted, #999)' }}>
                     by {p.artist_name} &middot; {p.artist_email}
                   </p>
                   {p.one_sentence && (
-                    <p style={{ margin: '0 0 8px', fontSize: 14, color: '#bbb', lineHeight: 1.5 }}>{p.one_sentence}</p>
+                    <p style={{ margin: '0 0 8px', fontSize: 14, color: 'var(--color-text-secondary, #bbb)', lineHeight: 1.5 }}>{p.one_sentence}</p>
                   )}
-                  <div style={{ display: 'flex', gap: 12, fontSize: 12, color: '#666' }}>
+                  <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--color-text-muted, #666)' }}>
                     {p.stage && <span>Stage: {p.stage}</span>}
                     {p.location && <span>Location: {p.location}</span>}
                     <span>Submitted: {new Date(p.created_at).toLocaleDateString()}</span>

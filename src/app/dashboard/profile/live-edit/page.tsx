@@ -1083,13 +1083,13 @@ export default function LiveProfileEditor() {
                 }}
                 className="btn btn--outline btn--sm"
                 disabled={saving || !displayName.trim() || !bio.trim()}
-                style={{ borderColor: '#4ade80', color: '#4ade80' }}
+                style={{ borderColor: 'var(--color-success, #4ade80)', color: 'var(--color-success, #4ade80)' }}
               >
                 Submit for Review
               </button>
             )}
             {profileVisibility === 'pending' && (
-              <span style={{ fontSize: 'var(--text-xs)', color: '#facc15', padding: '4px 12px', border: '1px solid #facc15', borderRadius: 20 }}>Pending Review</span>
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-warning, #facc15)', padding: '4px 12px', border: '1px solid var(--color-warning, #facc15)', borderRadius: 20 }}>Pending Review</span>
             )}
             {slug && profileVisibility === 'published' && (
               <a
@@ -1335,9 +1335,9 @@ export default function LiveProfileEditor() {
             )}
             {/* Upload status and errors — visible in the gallery area */}
             {uploadError && (
-              <div style={{ background: 'rgba(220,38,38,0.15)', color: '#ff6b6b', padding: '10px 16px', borderRadius: 8, marginTop: 'var(--space-3)', fontSize: 'var(--text-sm)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid rgba(220,38,38,0.3)' }}>
+              <div style={{ background: 'rgba(220,38,38,0.15)', color: 'var(--color-error, #ef4444)', padding: '10px 16px', borderRadius: 8, marginTop: 'var(--space-3)', fontSize: 'var(--text-sm)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid rgba(220,38,38,0.3)' }}>
                 <span>{uploadError}</span>
-                <button onClick={() => setUploadError(null)} style={{ background: 'none', border: 'none', color: '#ff6b6b', cursor: 'pointer', fontSize: 18, padding: '0 4px', lineHeight: 1 }}>&times;</button>
+                <button onClick={() => setUploadError(null)} style={{ background: 'none', border: 'none', color: 'var(--color-error, #ef4444)', cursor: 'pointer', fontSize: 18, padding: '0 4px', lineHeight: 1 }}>&times;</button>
               </div>
             )}
             {galleryUploading && (
@@ -1529,9 +1529,9 @@ export default function LiveProfileEditor() {
             </div>
             <div className="live-editor__panel-body">
               {uploadError && (
-                <div style={{ background: 'rgba(220,38,38,0.1)', color: '#dc2626', padding: '8px 12px', borderRadius: 8, marginBottom: 12, fontSize: 'var(--text-sm)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ background: 'rgba(220,38,38,0.1)', color: 'var(--color-error, #dc2626)', padding: '8px 12px', borderRadius: 8, marginBottom: 12, fontSize: 'var(--text-sm)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span>{uploadError}</span>
-                  <button onClick={() => setUploadError(null)} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: 16, padding: '0 4px' }}>&times;</button>
+                  <button onClick={() => setUploadError(null)} style={{ background: 'none', border: 'none', color: 'var(--color-error, #dc2626)', cursor: 'pointer', fontSize: 16, padding: '0 4px' }}>&times;</button>
                 </div>
               )}
               {/* COVER PANEL */}

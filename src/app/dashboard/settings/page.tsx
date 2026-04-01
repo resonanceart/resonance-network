@@ -350,7 +350,7 @@ function DeleteAccountSection({ router }: { router: ReturnType<typeof useRouter>
 
       {step === 1 && (
         <div style={{ marginTop: 'var(--space-3)' }}>
-          <p style={{ fontSize: 'var(--text-sm)', color: '#ff6b6b', fontWeight: 600, marginBottom: 'var(--space-3)' }}>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-error, #ef4444)', fontWeight: 600, marginBottom: 'var(--space-3)' }}>
             Step 1 of 3: Are you sure you want to delete your account?
           </p>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }}>
@@ -369,7 +369,7 @@ function DeleteAccountSection({ router }: { router: ReturnType<typeof useRouter>
 
       {step === 2 && (
         <div style={{ marginTop: 'var(--space-3)' }}>
-          <p style={{ fontSize: 'var(--text-sm)', color: '#ff6b6b', fontWeight: 600, marginBottom: 'var(--space-3)' }}>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-error, #ef4444)', fontWeight: 600, marginBottom: 'var(--space-3)' }}>
             Step 2 of 3: Type DELETE to confirm
           </p>
           <input className="form-input" type="text" value={confirmText} onChange={e => setConfirmText(e.target.value)} placeholder="Type DELETE here" style={{ maxWidth: 300, marginBottom: 'var(--space-4)' }} />
@@ -382,7 +382,7 @@ function DeleteAccountSection({ router }: { router: ReturnType<typeof useRouter>
 
       {step === 3 && (
         <div style={{ marginTop: 'var(--space-3)' }}>
-          <p style={{ fontSize: 'var(--text-sm)', color: '#ff6b6b', fontWeight: 600, marginBottom: 'var(--space-3)' }}>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-error, #ef4444)', fontWeight: 600, marginBottom: 'var(--space-3)' }}>
             Step 3 of 3: Final confirmation
           </p>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>

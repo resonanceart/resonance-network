@@ -124,14 +124,14 @@ export default function AdminProjectsPage() {
 
       {/* Action message */}
       {actionMsg && (
-        <p style={{ padding: '8px 16px', background: '#111', border: '1px solid #222', borderRadius: 8, marginBottom: 16, fontSize: 13, color: '#14b8a6' }}>
+        <p style={{ padding: '8px 16px', background: 'var(--color-surface, #111)', border: '1px solid var(--color-border, #222)', borderRadius: 8, marginBottom: 16, fontSize: 13, color: 'var(--color-primary, #14b8a6)' }}>
           {actionMsg}
         </p>
       )}
 
       {/* Table */}
       {filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '48px 16px', color: '#666' }}>
+        <div style={{ textAlign: 'center', padding: '48px 16px', color: 'var(--color-text-muted, #666)' }}>
           <p style={{ fontSize: 15 }}>No projects found{statusFilter !== 'all' ? ` with status "${statusFilter}"` : ''}.</p>
         </div>
       ) : (
