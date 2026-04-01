@@ -1257,3 +1257,41 @@
     padding: 8px 10px;
   }
 }
+
+/* Placeholder pages */
+.admin-placeholder {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
+}
+
+.admin-placeholder__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+  margin-bottom: 24px;
+}
+
+.admin-placeholder__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+  text-transform: capitalize;
+}
+
+.admin-placeholder__desc {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+  max-width: 300px;
+}

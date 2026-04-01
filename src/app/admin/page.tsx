@@ -287,7 +287,7 @@ export default function AdminPage() {
 
   // Auth screen
   if (!isAuthenticated) {
-    if (checkingRole) return <div className="admin-auth"><p style={{color:'#555'}}>Checking access...</p></div>
+    if (checkingRole) return <div className="admin-auth"><p style={{color:'var(--color-text-muted)'}}>Checking access...</p></div>
     return (
       <div className="admin-auth">
         <div className="admin-auth__card">
@@ -352,7 +352,7 @@ export default function AdminPage() {
         </div>
 
         <div className="admin-content">
-          {loading ? <p style={{color:'#555'}}>Loading data...</p> : (
+          {loading ? <p style={{color:'var(--color-text-muted)'}}>Loading data...</p> : (
             <>
               {/* OVERVIEW */}
               {activeView === 'overview' && (
@@ -376,7 +376,7 @@ export default function AdminPage() {
                       <div className="admin-stat-card__label">Active Projects</div>
                     </div>
                     <div className="admin-stat-card">
-                      <div className="admin-stat-card__value" style={{color: pendingCount > 0 ? '#f59e0b' : '#22c55e'}}>{pendingCount}</div>
+                      <div className="admin-stat-card__value" style={{color: pendingCount > 0 ? 'var(--color-warning, #f59e0b)' : 'var(--color-success, #22c55e)'}}>{pendingCount}</div>
                       <div className="admin-stat-card__label">Pending Review</div>
                     </div>
                     <div className="admin-stat-card">
@@ -423,7 +423,7 @@ export default function AdminPage() {
                     <h1 className="admin-content__title">Review Queue</h1>
                     <p className="admin-content__subtitle">{reviewQueue.length} items need your attention</p>
                   </div>
-                  {actionMsg && <p style={{padding:'8px 16px', background:'#111', border:'1px solid #222', borderRadius:8, marginBottom:16, fontSize:13, color:'#14b8a6'}}>{actionMsg}</p>}
+                  {actionMsg && <p style={{padding:'8px 16px', background:'var(--color-surface, #111)', border:'1px solid var(--color-border, #222)', borderRadius:8, marginBottom:16, fontSize:13, color:'var(--color-primary, #14b8a6)'}}>{actionMsg}</p>}
                   {reviewQueue.length === 0 ? (
                     <div className="admin-empty">
                       <div className="admin-empty__icon">{'\u2705'}</div>
@@ -484,7 +484,7 @@ export default function AdminPage() {
                       <option value="published">Published</option>
                     </select>
                   </div>
-                  {actionMsg && <p style={{padding:'8px 16px', background:'#111', border:'1px solid #222', borderRadius:8, marginBottom:16, fontSize:13, color:'#14b8a6'}}>{actionMsg}</p>}
+                  {actionMsg && <p style={{padding:'8px 16px', background:'var(--color-surface, #111)', border:'1px solid var(--color-border, #222)', borderRadius:8, marginBottom:16, fontSize:13, color:'var(--color-primary, #14b8a6)'}}>{actionMsg}</p>}
                   <table className="admin-table">
                     <thead><tr><th>User</th><th>Email</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
                     <tbody>
@@ -536,7 +536,7 @@ export default function AdminPage() {
                       <option value="rejected">Rejected</option>
                     </select>
                   </div>
-                  {actionMsg && <p style={{padding:'8px 16px', background:'#111', border:'1px solid #222', borderRadius:8, marginBottom:16, fontSize:13, color:'#14b8a6'}}>{actionMsg}</p>}
+                  {actionMsg && <p style={{padding:'8px 16px', background:'var(--color-surface, #111)', border:'1px solid var(--color-border, #222)', borderRadius:8, marginBottom:16, fontSize:13, color:'var(--color-primary, #14b8a6)'}}>{actionMsg}</p>}
                   <table className="admin-table">
                     <thead><tr><th>Project</th><th>Creator</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
                     <tbody>
@@ -574,7 +574,7 @@ export default function AdminPage() {
                     <h1 className="admin-content__title">User Accounts</h1>
                     <p className="admin-content__subtitle">{users.length} registered users</p>
                   </div>
-                  {actionMsg && <p style={{padding:'8px 16px', background:'#111', border:'1px solid #222', borderRadius:8, marginBottom:16, fontSize:13, color:'#14b8a6'}}>{actionMsg}</p>}
+                  {actionMsg && <p style={{padding:'8px 16px', background:'var(--color-surface, #111)', border:'1px solid var(--color-border, #222)', borderRadius:8, marginBottom:16, fontSize:13, color:'var(--color-primary, #14b8a6)'}}>{actionMsg}</p>}
                   <table className="admin-table">
                     <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
                     <tbody>

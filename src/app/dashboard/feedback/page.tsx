@@ -58,7 +58,7 @@ export default function FeedbackPage() {
       ) : (
         <form onSubmit={handleSubmit}>
           {error && (
-            <div style={{ padding: 'var(--space-3)', background: 'rgba(220,38,38,0.1)', color: '#ff6b6b', borderRadius: 8, marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>
+            <div style={{ padding: 'var(--space-3)', background: 'rgba(220,38,38,0.1)', color: 'var(--color-error, #ef4444)', borderRadius: 8, marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>
               {error}
             </div>
           )}
