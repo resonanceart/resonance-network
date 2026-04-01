@@ -148,7 +148,7 @@ export default function ProjectPreviewPage({ params }: { params: { id: string } 
   if (notFound || !project) {
     return (
       <div className="container" style={{ padding: 'var(--space-16) 0', textAlign: 'center' }}>
-        <h1>Preview Not Found</h1>
+        <h2>Preview Not Found</h2>
         <p style={{ color: 'var(--color-text-muted)' }}>This submission may not exist or has been removed.</p>
       </div>
     )
