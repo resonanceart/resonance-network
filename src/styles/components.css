@@ -273,11 +273,7 @@ main {
 }
 
 .nav-mobile__links a:last-child {
-<<<<<<< HEAD
   /* CTA buttons are now in separate .nav-mobile__cta section */
-=======
-  /* No special styling — CTA buttons are now separate */
->>>>>>> fix/mobile-content-ux-auth
 }
 
 .nav-mobile__links a:hover {
