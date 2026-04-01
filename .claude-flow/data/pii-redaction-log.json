@@ -1,0 +1,1102 @@
+[
+  {
+    "timestamp": "2026-04-01T16:24:52.217Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 198
+  },
+  {
+    "timestamp": "2026-04-01T16:24:26.803Z",
+    "tool": "edit",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 555
+  },
+  {
+    "timestamp": "2026-04-01T16:24:15.643Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 132
+  },
+  {
+    "timestamp": "2026-04-01T16:24:11.031Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 206
+  },
+  {
+    "timestamp": "2026-04-01T16:24:07.268Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 210
+  },
+  {
+    "timestamp": "2026-04-01T16:24:02.637Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 189
+  },
+  {
+    "timestamp": "2026-04-01T16:23:54.807Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 402
+  },
+  {
+    "timestamp": "2026-04-01T16:23:43.158Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 221
+  },
+  {
+    "timestamp": "2026-04-01T16:21:30.002Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 266
+  },
+  {
+    "timestamp": "2026-04-01T16:19:29.362Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 717
+  },
+  {
+    "timestamp": "2026-04-01T16:19:19.309Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 258
+  },
+  {
+    "timestamp": "2026-04-01T16:17:08.242Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 264
+  },
+  {
+    "timestamp": "2026-04-01T16:14:57.537Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 264
+  },
+  {
+    "timestamp": "2026-04-01T16:14:51.803Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 206
+  },
+  {
+    "timestamp": "2026-04-01T16:12:39.618Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 264
+  },
+  {
+    "timestamp": "2026-04-01T16:12:32.822Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 967
+  },
+  {
+    "timestamp": "2026-04-01T16:10:17.027Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 265
+  },
+  {
+    "timestamp": "2026-04-01T16:10:07.912Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 2303
+  },
+  {
+    "timestamp": "2026-04-01T16:09:57.149Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 2147
+  },
+  {
+    "timestamp": "2026-04-01T16:09:47.547Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 2154
+  },
+  {
+    "timestamp": "2026-04-01T16:09:37.262Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 2042
+  },
+  {
+    "timestamp": "2026-04-01T16:09:19.333Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 374
+  },
+  {
+    "timestamp": "2026-04-01T15:45:30.777Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 232
+  },
+  {
+    "timestamp": "2026-04-01T15:45:24.664Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 357
+  },
+  {
+    "timestamp": "2026-04-01T15:45:02.323Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 301
+  },
+  {
+    "timestamp": "2026-04-01T15:44:55.346Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 188
+  },
+  {
+    "timestamp": "2026-04-01T15:43:16.109Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 210
+  },
+  {
+    "timestamp": "2026-04-01T15:41:36.370Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 346
+  },
+  {
+    "timestamp": "2026-04-01T15:39:51.326Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 200
+  },
+  {
+    "timestamp": "2026-04-01T15:39:50.113Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 114
+  },
+  {
+    "timestamp": "2026-04-01T15:37:38.043Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 264
+  },
+  {
+    "timestamp": "2026-04-01T15:35:28.608Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 264
+  },
+  {
+    "timestamp": "2026-04-01T15:34:55.492Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 230
+  },
+  {
+    "timestamp": "2026-04-01T15:34:50.353Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 318
+  },
+  {
+    "timestamp": "2026-04-01T15:34:45.882Z",
+    "tool": "write",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 231
+  },
+  {
+    "timestamp": "2026-04-01T15:34:26.839Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 147
+  },
+  {
+    "timestamp": "2026-04-01T15:33:47.731Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 263
+  },
+  {
+    "timestamp": "2026-04-01T15:33:41.259Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 861
+  },
+  {
+    "timestamp": "2026-04-01T15:33:23.668Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 163
+  },
+  {
+    "timestamp": "2026-04-01T15:31:41.532Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 255
+  },
+  {
+    "timestamp": "2026-04-01T15:31:30.282Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 1956
+  },
+  {
+    "timestamp": "2026-04-01T15:31:22.165Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 2282
+  },
+  {
+    "timestamp": "2026-04-01T15:30:16.462Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 296
+  },
+  {
+    "timestamp": "2026-04-01T15:30:04.380Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 547
+  },
+  {
+    "timestamp": "2026-04-01T15:29:55.037Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 447
+  },
+  {
+    "timestamp": "2026-04-01T15:29:53.230Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 372
+  },
+  {
+    "timestamp": "2026-04-01T15:29:44.804Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 393
+  },
+  {
+    "timestamp": "2026-04-01T15:12:48.018Z",
+    "tool": "edit",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 271
+  },
+  {
+    "timestamp": "2026-04-01T15:12:32.416Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 243
+  },
+  {
+    "timestamp": "2026-04-01T15:07:50.152Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 879
+  },
+  {
+    "timestamp": "2026-04-01T15:07:42.859Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 493
+  },
+  {
+    "timestamp": "2026-04-01T15:07:40.720Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 555
+  },
+  {
+    "timestamp": "2026-04-01T15:07:38.670Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 642
+  },
+  {
+    "timestamp": "2026-04-01T14:56:07.962Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 154
+  },
+  {
+    "timestamp": "2026-04-01T14:55:54.668Z",
+    "tool": "edit",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 350
+  },
+  {
+    "timestamp": "2026-04-01T14:30:10.861Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 205
+  },
+  {
+    "timestamp": "2026-04-01T14:16:11.954Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 512
+  },
+  {
+    "timestamp": "2026-04-01T14:13:59.903Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 242
+  },
+  {
+    "timestamp": "2026-04-01T14:11:12.355Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 410
+  },
+  {
+    "timestamp": "2026-04-01T14:11:06.797Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 227
+  },
+  {
+    "timestamp": "2026-04-01T14:10:59.477Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 151
+  },
+  {
+    "timestamp": "2026-04-01T14:09:51.077Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 193
+  },
+  {
+    "timestamp": "2026-04-01T14:09:47.226Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 682
+  },
+  {
+    "timestamp": "2026-04-01T14:09:37.765Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 197
+  },
+  {
+    "timestamp": "2026-04-01T14:09:16.792Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 161
+  },
+  {
+    "timestamp": "2026-04-01T14:07:33.673Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 226
+  },
+  {
+    "timestamp": "2026-04-01T14:07:25.463Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 202
+  },
+  {
+    "timestamp": "2026-04-01T14:07:19.195Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 209
+  },
+  {
+    "timestamp": "2026-04-01T14:06:04.584Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 255
+  },
+  {
+    "timestamp": "2026-04-01T14:04:21.775Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 259
+  },
+  {
+    "timestamp": "2026-04-01T14:04:14.779Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 1588
+  },
+  {
+    "timestamp": "2026-04-01T14:04:08.113Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 1966
+  },
+  {
+    "timestamp": "2026-04-01T14:03:58.418Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 1961
+  },
+  {
+    "timestamp": "2026-04-01T14:03:41.621Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 304
+  },
+  {
+    "timestamp": "2026-04-01T14:03:40.396Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 372
+  },
+  {
+    "timestamp": "2026-04-01T14:03:35.475Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 337
+  },
+  {
+    "timestamp": "2026-04-01T13:39:51.415Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 274
+  },
+  {
+    "timestamp": "2026-04-01T13:39:45.350Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 354
+  },
+  {
+    "timestamp": "2026-04-01T13:39:42.808Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 211
+  },
+  {
+    "timestamp": "2026-04-01T13:39:19.090Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 132
+  },
+  {
+    "timestamp": "2026-04-01T13:39:17.705Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 190
+  },
+  {
+    "timestamp": "2026-04-01T13:39:05.836Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 157
+  },
+  {
+    "timestamp": "2026-04-01T13:37:23.656Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 247
+  },
+  {
+    "timestamp": "2026-04-01T13:35:41.129Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 254
+  },
+  {
+    "timestamp": "2026-04-01T13:35:36.146Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 1601
+  },
+  {
+    "timestamp": "2026-04-01T13:34:10.835Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 261
+  },
+  {
+    "timestamp": "2026-04-01T13:32:59.849Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 261
+  },
+  {
+    "timestamp": "2026-04-01T13:31:48.317Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 261
+  },
+  {
+    "timestamp": "2026-04-01T13:30:38.514Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 261
+  },
+  {
+    "timestamp": "2026-04-01T13:29:29.885Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 271
+  },
+  {
+    "timestamp": "2026-04-01T13:28:18.468Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 263
+  },
+  {
+    "timestamp": "2026-04-01T13:28:11.067Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 1929
+  },
+  {
+    "timestamp": "2026-04-01T13:28:06.615Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 1902
+  },
+  {
+    "timestamp": "2026-04-01T13:27:46.657Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 201
+  },
+  {
+    "timestamp": "2026-04-01T13:27:44.991Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 234
+  },
+  {
+    "timestamp": "2026-04-01T13:27:38.591Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 180
+  },
+  {
+    "timestamp": "2026-04-01T12:33:54.755Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 1322
+  },
+  {
+    "timestamp": "2026-04-01T12:33:44.293Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 198
+  },
+  {
+    "timestamp": "2026-04-01T12:33:30.425Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 333
+  },
+  {
+    "timestamp": "2026-04-01T12:33:18.481Z",
+    "tool": "bash",
+    "redacted": [
+      {
+        "type": "Possible Mnemonic Seed",
+        "count": 1
+      }
+    ],
+    "inputLength": 202
+  }
+]

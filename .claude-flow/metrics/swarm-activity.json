@@ -1,0 +1,23 @@
+{
+  "swarm": {
+    "active": true,
+    "agent_count": 2,
+    "topology": "hierarchical",
+    "task": "I'm really confused. Can you tell me what project you're working on in this agen",
+    "agents": [
+      {
+        "id": "researcher-1775056047541-0",
+        "type": "researcher",
+        "status": "spawning",
+        "startedAt": "2026-04-01T15:07:27.542Z"
+      },
+      {
+        "id": "coder-1775056047542-1",
+        "type": "coder",
+        "status": "spawning",
+        "startedAt": "2026-04-01T15:07:27.542Z"
+      }
+    ]
+  },
+  "ts": "2026-04-01T15:07:27.542Z"
+}
