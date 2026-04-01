@@ -50,6 +50,7 @@ export function MobileNav({ isOpen, onClose }: Props) {
       className={`nav-mobile${isOpen ? ' active' : ''}`}
       aria-label="Mobile navigation"
       aria-hidden={!isOpen}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
       {/* Logo at top */}
       <div className="nav-mobile__logo">
@@ -67,12 +68,22 @@ export function MobileNav({ isOpen, onClose }: Props) {
         <Link href="/#projects" onClick={onClose}>Projects</Link>
         <Link href="/collaborate" onClick={onClose}>Community</Link>
         <Link href="/about" onClick={onClose}>About</Link>
-        <Link href="/join" onClick={onClose}>Join the Network</Link>
+        <Link href="/resources" onClick={onClose}>Resources</Link>
+      </div>
+
+      {/* CTA links */}
+      <div className="nav-mobile__cta">
         {!authLoading && (
           user ? (
-            <Link href="/dashboard" onClick={onClose}>Dashboard</Link>
+            <>
+              <Link href="/dashboard" onClick={onClose} className="btn btn--primary nav-mobile__cta-btn">Dashboard</Link>
+              <Link href="/dashboard/projects/new" onClick={onClose} className="btn btn--outline nav-mobile__cta-btn">Submit Project</Link>
+            </>
           ) : (
-            <Link href="/login" onClick={onClose}>Log In</Link>
+            <>
+              <Link href="/join" onClick={onClose} className="btn btn--primary nav-mobile__cta-btn">Join the Network</Link>
+              <Link href="/login" onClick={onClose} className="btn btn--outline nav-mobile__cta-btn">Log In</Link>
+            </>
           )
         )}
       </div>

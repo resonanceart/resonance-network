@@ -168,7 +168,7 @@ main {
 .hamburger {
   width: 44px;
   height: 44px;
-  display: none;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -273,12 +273,27 @@ main {
 }
 
 .nav-mobile__links a:last-child {
-  color: var(--color-primary);
-  font-weight: 600;
+  /* No special styling — CTA buttons are now separate */
 }
 
 .nav-mobile__links a:hover {
   color: var(--color-primary);
+}
+
+.nav-mobile__cta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  width: 100%;
+  max-width: 280px;
+}
+
+.nav-mobile__cta-btn {
+  width: 100%;
+  justify-content: center;
+  min-height: 48px;
+  font-size: var(--text-base);
 }
 
 .nav-mobile__footer {
