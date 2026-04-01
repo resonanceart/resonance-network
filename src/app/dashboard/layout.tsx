@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { DashboardNav } from '@/components/DashboardNav'
-import { OnboardingCheck } from '@/components/OnboardingCheck'
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -14,7 +13,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="dashboard-layout__content">
         {children}
       </div>
-      <OnboardingCheck />
     </div>
   )
 }
