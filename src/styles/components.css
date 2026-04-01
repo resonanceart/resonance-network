@@ -13167,6 +13167,92 @@ main {
   }
 }
 
+/* Profile page: small mobile refinements (375px) */
+@media (max-width: 480px) {
+  .profile-banner {
+    height: 220px;
+  }
+  .profile-header-grid-section {
+    padding: 0 0 var(--space-4);
+  }
+  .profile-header-grid {
+    gap: var(--space-3);
+    padding: var(--space-4) 0;
+  }
+  .profile-header-grid__photo {
+    width: 160px;
+    height: 210px;
+    margin: -50px auto 0;
+  }
+  .profile-header-grid__name {
+    font-size: var(--text-xl);
+    gap: var(--space-1);
+    justify-content: center;
+  }
+  .profile-header-grid__bio {
+    font-size: var(--text-base);
+    line-height: 1.65;
+  }
+  .profile-header-grid__bio p {
+    margin-bottom: var(--space-3);
+  }
+  /* Touch-friendly pill buttons */
+  .profile-link-btn--pill {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: var(--text-sm);
+  }
+  /* Touch-friendly share buttons */
+  .share-profile__btn {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+  .share-profile {
+    padding: var(--space-6) var(--space-4);
+    margin: var(--space-6) auto;
+  }
+  /* Profile badge sizing */
+  .profile-badge {
+    font-size: 0.65rem;
+    padding: 3px 10px;
+  }
+  /* Milestones section */
+  .profile-milestones-section {
+    padding: var(--space-6) 0;
+  }
+  .profile-two-col-section {
+    padding: var(--space-6) 0;
+  }
+  .profile-two-col__text {
+    font-size: var(--text-base);
+  }
+  /* Work experience: prevent overflow on narrow screens */
+  .we-public-entry {
+    gap: var(--space-3);
+    margin-left: 14px;
+    padding-left: var(--space-2);
+  }
+  .we-public-entry__icon {
+    width: 32px;
+    height: 32px;
+    margin-left: calc(-1 * var(--space-2) - 17px);
+  }
+  .we-public-entry__initials {
+    font-size: 10px;
+  }
+  .we-public-entry__title {
+    font-size: var(--text-sm);
+  }
+  .we-public-entry__desc {
+    font-size: var(--text-xs);
+  }
+  /* Profile tabs: touch-friendly */
+  .profile-tabs__tab {
+    padding: var(--space-3) var(--space-3);
+    min-height: 44px;
+  }
+}
+
 /* ─── Row 3: Two-Column Statement / Philosophy ─── */
 .profile-two-col-section {
   padding: var(--space-8) 0;

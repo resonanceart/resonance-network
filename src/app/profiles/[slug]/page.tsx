@@ -431,7 +431,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                       {[...profile.social_links].sort((a, b) => a.display_order - b.display_order).map(link => (
                         <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" title={link.platform.charAt(0).toUpperCase() + link.platform.slice(1)}
-                          style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--color-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text)', textDecoration: 'none' }}>
+                          style={{ width: 36, height: 36, minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--color-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text)', textDecoration: 'none' }}>
                           {getSocialIcon(link.platform)}
                         </a>
                       ))}
