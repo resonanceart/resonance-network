@@ -108,7 +108,7 @@ export default function ProfilePreviewPage({ params }: { params: { id: string } 
   if (notFound || !profile) {
     return (
       <div className="container" style={{ padding: 'var(--space-16) 0', textAlign: 'center' }}>
-        <h1>Preview Not Found</h1>
+        <h2>Preview Not Found</h2>
         <p style={{ color: 'var(--color-text-muted)' }}>This profile may not exist or has been removed.</p>
       </div>
     )

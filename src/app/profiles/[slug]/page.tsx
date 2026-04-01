@@ -35,14 +35,14 @@ export async function generateMetadata({
       title: `${profile.name} — ${profile.title}`,
       description: profile.shortBio,
       url: `https://resonance.network/profiles/${profile.slug}`,
-      images: profile.photo ? [{ url: profile.photo }] : [],
+      images: profile.photo ? [{ url: profile.photo }] : [{ url: '/og-image.jpg' }],
       type: 'profile',
     },
     twitter: {
       card: 'summary_large_image',
       title: `${profile.name} — ${profile.title}`,
       description: profile.shortBio,
-      images: profile.photo ? [profile.photo] : [],
+      images: profile.photo ? [profile.photo] : ['/og-image.jpg'],
     },
   }
 }

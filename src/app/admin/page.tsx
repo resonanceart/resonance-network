@@ -343,7 +343,7 @@ export default function AdminPage() {
           <span className="admin-topbar__title">{activeView === 'overview' ? 'Dashboard' : activeView.charAt(0).toUpperCase() + activeView.slice(1).replace('_', ' ')}</span>
           <input type="text" className="admin-topbar__search" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} />
           <div className="admin-topbar__actions">
-            <a href="/" target="_blank" className="admin-btn admin-btn--outline admin-btn--sm">View Site</a>
+            <a href="/" target="_blank" rel="noopener noreferrer" className="admin-btn admin-btn--outline admin-btn--sm">View Site</a>
             <button className="admin-topbar__icon-btn" title="Notifications">
               {'\uD83D\uDD14'}
               {pendingCount > 0 && <span className="admin-topbar__notification-dot" />}
@@ -392,8 +392,8 @@ export default function AdminPage() {
                   {/* Quick actions */}
                   <div className="admin-quick-actions">
                     {pendingCount > 0 && <button className="admin-btn admin-btn--primary" onClick={() => setActiveView('review')}>Review {pendingCount} Pending Items</button>}
-                    <a href="/dashboard/profile/live-edit" target="_blank" className="admin-btn admin-btn--outline">Profile Builder</a>
-                    <a href="/dashboard/projects/live-edit" target="_blank" className="admin-btn admin-btn--outline">Project Builder</a>
+                    <a href="/dashboard/profile/live-edit" target="_blank" rel="noopener noreferrer" className="admin-btn admin-btn--outline">Profile Builder</a>
+                    <a href="/dashboard/projects/live-edit" target="_blank" rel="noopener noreferrer" className="admin-btn admin-btn--outline">Project Builder</a>
                   </div>
 
                   {/* Recent activity mini-feed */}
@@ -454,7 +454,7 @@ export default function AdminPage() {
                                   </>
                                 ) : (
                                   <>
-                                    <a href={`/preview/project/${item.id}`} target="_blank" className="admin-btn admin-btn--outline admin-btn--sm">Preview</a>
+                                    <a href={`/preview/project/${item.id}`} target="_blank" rel="noopener noreferrer" className="admin-btn admin-btn--outline admin-btn--sm">Preview</a>
                                     <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={() => handleAction('project', item.id, 'approve')}>Approve</button>
                                     <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleAction('project', item.id, 'reject')}>Reject</button>
                                   </>
@@ -501,7 +501,7 @@ export default function AdminPage() {
                           <td className="admin-table__date">{new Date(up.created_at).toLocaleDateString()}</td>
                           <td>
                             <div style={{display:'flex',gap:6}}>
-                              <a href={`/profiles/${up.display_name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}?preview=1`} target="_blank" className="admin-btn admin-btn--outline admin-btn--sm">View</a>
+                              <a href={`/profiles/${up.display_name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}?preview=1`} target="_blank" rel="noopener noreferrer" className="admin-btn admin-btn--outline admin-btn--sm">View</a>
                               {up.profile_visibility === 'pending' && (
                                 <>
                                   <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={() => handleUserProfileAction(up.id, 'approve')}>Publish</button>
@@ -551,7 +551,7 @@ export default function AdminPage() {
                           <td className="admin-table__date">{new Date(p.created_at).toLocaleDateString()}</td>
                           <td>
                             <div style={{display:'flex',gap:6}}>
-                              <a href={`/preview/project/${p.id}`} target="_blank" className="admin-btn admin-btn--outline admin-btn--sm">Preview</a>
+                              <a href={`/preview/project/${p.id}`} target="_blank" rel="noopener noreferrer" className="admin-btn admin-btn--outline admin-btn--sm">Preview</a>
                               {(p.status === 'new' || p.status === 'draft') && (
                                 <>
                                   <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={() => handleAction('project', p.id, 'approve')}>Approve</button>
