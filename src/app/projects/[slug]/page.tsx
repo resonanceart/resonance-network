@@ -256,7 +256,7 @@ export default async function ProjectPage({ params }: { params: { slug: string }
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
                       {projectSocialLinks.map((link, i) => (
                         <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" title={link.platform}
-                          style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', color: 'var(--color-text)', textDecoration: 'none', border: '1px solid var(--color-border)', transition: 'background 0.2s' }}>
+                          style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--color-surface)', color: 'var(--color-text)', textDecoration: 'none', border: '1px solid var(--color-border)', transition: 'background 0.2s' }}>
                           {getSocialSvg(link.platform)}
                         </a>
                       ))}

@@ -32,8 +32,8 @@ export function SubmitPageContent() {
         <div style={{
           padding: 'var(--space-6)',
           borderRadius: 'var(--radius-lg)',
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)',
           textAlign: 'center',
           maxWidth: '600px',
           margin: '0 auto',

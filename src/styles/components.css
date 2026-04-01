@@ -2303,6 +2303,11 @@ main {
   transition: border-color var(--duration-fast) var(--ease-out);
 }
 
+[data-theme="dark"] .collab-filters select,
+[data-theme="dark"] .collab-filters .collab-filter-select {
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%239A9894' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
 .collab-filters select:focus,
 .collab-filters .collab-filter-select:focus {
   border-color: var(--color-primary);
@@ -3252,6 +3257,10 @@ main {
   cursor: pointer;
 }
 
+[data-theme="dark"] .profiles-filter-bar__select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239A9894' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+}
+
 .profiles-filter-bar__select:focus {
   border-color: var(--color-primary);
 }
@@ -3476,11 +3485,17 @@ main {
   border-color: var(--color-primary);
   color: #fff;
 }
+[data-theme="dark"] .profiles-type-tab--active {
+  color: #111110;
+}
 
 .profiles-type-tab--active:hover {
   background: var(--color-primary-hover);
   border-color: var(--color-primary-hover);
   color: #fff;
+}
+[data-theme="dark"] .profiles-type-tab--active:hover {
+  color: #111110;
 }
 
 /* =========================
@@ -4246,6 +4261,9 @@ main {
 
 .join-card:hover {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+[data-theme="dark"] .join-card:hover {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
 }
 
 .join-card--project {
@@ -7251,6 +7269,9 @@ main {
 .eval-fit-card__icon--full {
   color: #f59e0b;
 }
+[data-theme="dark"] .eval-fit-card__icon--full {
+  color: #fbbf24;
+}
 
 .eval-fit-card strong {
   display: block;
@@ -7317,10 +7338,13 @@ main {
   height: 36px;
   border-radius: 50%;
   background: var(--color-primary);
-  color: white;
+  color: #fff;
   font-weight: 700;
   font-size: var(--text-sm);
   margin-bottom: var(--space-2);
+}
+[data-theme="dark"] .collab-step__number {
+  color: #111110;
 }
 
 .collab-step strong {
@@ -13901,6 +13925,9 @@ main {
   border-radius: 50%;
   background: var(--color-primary);
   color: #fff;
+}
+[data-theme="dark"] .collab-step--pill .collab-step__number {
+  color: #111110;
   display: inline-flex;
   align-items: center;
   justify-content: center;
