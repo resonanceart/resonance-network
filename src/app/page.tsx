@@ -7,13 +7,13 @@ import { getProjects } from '@/lib/data'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Resonance Network — Connecting Community Through Passion and Purpose',
+  title: 'Immersive Art Collaboration Platform',
   description: 'Resonance Network connects creators, collaborators, and communities at the intersection of immersive art, regenerative design, and ecological innovation.',
   alternates: {
     canonical: 'https://resonance.network',
   },
   openGraph: {
-    title: 'Resonance Network — Connecting Community Through Passion and Purpose',
+    title: 'Immersive Art Collaboration Platform',
     description: 'Resonance Network connects creators, collaborators, and communities at the intersection of immersive art, regenerative design, and ecological innovation.',
     url: 'https://resonance.network',
     type: 'website',
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Resonance Network — Connecting Community Through Passion and Purpose',
+    title: 'Immersive Art Collaboration Platform',
     description: 'Resonance Network connects creators, collaborators, and communities at the intersection of immersive art, regenerative design, and ecological innovation.',
     images: [{ url: '/og-image.jpg' }],
   },

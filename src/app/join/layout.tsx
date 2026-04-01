@@ -2,13 +2,13 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Join the Network',
-  description: 'Join Resonance Network as a project creator or skilled collaborator. Submit your ambitious project or offer your expertise to creative work in art and ecology.',
+  description: 'Join Resonance Network as a project creator or skilled collaborator. Submit your ambitious project or offer expertise in immersive art and ecology.',
   alternates: {
     canonical: 'https://resonance.network/join',
   },
   openGraph: {
     title: 'Join Resonance Network',
-    description: 'Whether you bring a project or offer expertise, there is a place for you here.',
+    description: 'Whether you bring an ambitious project or offer expertise, there is a place for you in our community of immersive art creators and collaborators.',
     url: 'https://resonance.network/join',
     type: 'website',
     images: [{ url: '/og-image.jpg' }],
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Join Resonance Network',
-    description: 'Submit a project or join as a collaborator on ambitious creative work.',
+    description: 'Submit a project or join as a collaborator on ambitious immersive art, regenerative design, and ecological innovation work.',
     images: [{ url: '/og-image.jpg' }],
   },
 }

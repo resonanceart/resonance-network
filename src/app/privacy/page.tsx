@@ -3,12 +3,18 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'Resonance Network privacy policy — how we collect, use, and protect your data.',
+  description: 'Resonance Network privacy policy — how we collect, use, and protect your personal data when you use our art collaboration platform and services.',
   alternates: { canonical: 'https://resonance.network/privacy' },
   openGraph: {
     title: 'Privacy Policy — Resonance Network',
-    description: 'How we collect, use, and protect your data.',
+    description: 'How we collect, use, and protect your personal data on the Resonance Network platform.',
     url: 'https://resonance.network/privacy',
+    images: [{ url: '/og-image.jpg' }],
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Privacy Policy — Resonance Network',
+    description: 'How we collect, use, and protect your personal data on the Resonance Network platform.',
   },
 }
 

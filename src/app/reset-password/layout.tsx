@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Reset Password — Resonance Network',
-  description: 'Reset your Resonance Network account password.',
+  title: 'Reset Password',
+  description: 'Reset your Resonance Network account password. Enter your email to receive a password reset link and regain access to your profile and projects.',
+  alternates: { canonical: 'https://resonance.network/reset-password' },
+  robots: { index: false, follow: false },
 }
 
 export default function ResetPasswordLayout({ children }: { children: React.ReactNode }) {

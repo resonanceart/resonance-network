@@ -10,7 +10,7 @@ import { CookieConsent } from '@/components/CookieConsent'
 export const metadata: Metadata = {
   metadataBase: new URL('https://resonance.network'),
   title: {
-    default: 'Resonance Network — A Curated Guild for Immersive and Regenerative Projects',
+    default: 'Resonance Network — Immersive Art Collaboration',
     template: '%s — Resonance Network',
   },
   description:
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   publisher: 'Resonance Network',
   formatDetection: { telephone: false },
   openGraph: {
-    title: 'Resonance Network — A Curated Guild for Immersive and Regenerative Projects',
+    title: 'Resonance Network — Immersive Art Collaboration',
     description:
       'Between proposal and build — we surround serious spatial projects with aligned collaborators and the momentum to get built.',
     url: 'https://resonance.network',
@@ -127,6 +127,11 @@ const websiteJsonLd = {
   publisher: {
     '@type': 'Organization',
     name: 'Resonance Network',
+  },
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: 'https://resonance.network/collaborate?q={search_term_string}',
+    'query-input': 'required name=search_term_string',
   },
 }
 
