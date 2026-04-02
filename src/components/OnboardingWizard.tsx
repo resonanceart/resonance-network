@@ -104,10 +104,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
         }),
       })
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError(data.error || 'Failed to save. Please try again.')
-        setSaving(false)
-        return
+        // Save failed but don't block — let user proceed to dashboard
+        console.error('Onboarding save failed, proceeding anyway')
       }
       onComplete()
     } catch {
