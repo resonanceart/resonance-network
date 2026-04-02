@@ -4,9 +4,10 @@ import { useState } from 'react'
 
 const COLLABORATOR_TYPES = [
   'Structural Engineer', 'Electrical Engineer', 'Software Engineer',
-  'Architect', 'Landscape Architect',
-  'Lighting Designer', 'Sound Designer', 'Industrial Designer', 'Graphic Designer',
-  'Fabricator', 'Project Manager', 'Producer',
+  'Architect', 'Lighting Designer', 'Sound Designer',
+  'Industrial Designer', 'Graphic Designer', 'Fabricator',
+  'Builder', 'Project Manager', 'Welder',
+  'Sculptor', 'Rigger', 'AV Technician',
 ]
 
 const GOALS = [
@@ -33,7 +34,7 @@ interface OnboardingWizardProps {
 
 export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const [step, setStep] = useState(1)
-  const [roleType, setRoleType] = useState<string>('')
+  const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set())
   const [collaboratorType, setCollaboratorType] = useState<string>('')
   const [customCollabType, setCustomCollabType] = useState('')
   const [selectedGoals, setSelectedGoals] = useState<Set<string>>(new Set())
@@ -69,8 +70,17 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     }
   }
 
+  function toggleRole(id: string) {
+    setSelectedRoles(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
   function canProceed(): boolean {
-    if (step === 1) return !!roleType && (roleType !== 'collaborator' || !!collaboratorType)
+    if (step === 1) return selectedRoles.size > 0 && (!selectedRoles.has('collaborator') || !!collaboratorType)
     if (step === 2) return selectedGoals.size > 0
     if (step === 3) return selectedFields.size > 0
     return true
@@ -81,13 +91,14 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     setError('')
     try {
       const finalCollabType = collaboratorType === 'Other' ? customCollabType.trim() || 'Other' : collaboratorType
+      const roles = Array.from(selectedRoles)
       const res = await fetch('/api/user/onboarding', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          role_type: roleType,
-          collaborator_type: roleType === 'collaborator' ? finalCollabType : undefined,
+          role_type: roles.join(','),
+          collaborator_type: selectedRoles.has('collaborator') ? finalCollabType : undefined,
           goals: Array.from(selectedGoals),
           fields_of_interest: Array.from(selectedFields),
         }),
@@ -119,7 +130,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
         {step === 1 && (
           <div className="onboarding__step">
             <h2 className="onboarding__title">Let&apos;s get you started</h2>
-            <p className="onboarding__subtitle">Define your role</p>
+            <p className="onboarding__subtitle">Define your role — select all that apply</p>
 
             <div className="onboarding__role-grid">
               {[
@@ -129,8 +140,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
               ].map(role => (
                 <button
                   key={role.id}
-                  className={`onboarding__role-card${roleType === role.id ? ' onboarding__role-card--selected' : ''}`}
-                  onClick={() => { setRoleType(role.id); setCollaboratorType('') }}
+                  className={`onboarding__role-card${selectedRoles.has(role.id) ? ' onboarding__role-card--selected' : ''}`}
+                  onClick={() => toggleRole(role.id)}
                 >
                   <span className="onboarding__role-label">{role.label}</span>
                   <span className="onboarding__role-desc">{role.desc}</span>
@@ -138,7 +149,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
               ))}
             </div>
 
-            {roleType === 'collaborator' && (
+            {selectedRoles.has('collaborator') && (
               <div className="onboarding__collab-section">
                 <p className="onboarding__collab-prompt">What type of collaborator are you?</p>
                 <div className="onboarding__collab-grid">
@@ -235,7 +246,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
               <div className="onboarding__summary-row">
                 <span className="onboarding__summary-label">Role</span>
                 <span className="onboarding__summary-value">
-                  {roleType.charAt(0).toUpperCase() + roleType.slice(1)}
+                  {Array.from(selectedRoles).map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')}
                   {collaboratorType && ` — ${collaboratorType === 'Other' ? customCollabType || 'Other' : collaboratorType}`}
                 </span>
               </div>

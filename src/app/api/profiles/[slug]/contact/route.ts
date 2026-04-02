@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { sanitizeText, validateEmail, getClientIp } from '@/lib/sanitize'
 import { validateCsrf } from '@/lib/csrf'
+import { sendEmail } from '@/lib/gmail'
 
 // Stricter rate limit for contact form: 5 per hour per IP
 const contactRateMap = new Map<string, number[]>()
@@ -78,6 +79,7 @@ export async function POST(
       return NextResponse.json({ error: 'Message is required.' }, { status: 400 })
     }
 
+    // Save to dashboard messages
     const { error } = await supabaseAdmin
       .from('profile_messages')
       .insert({
@@ -91,6 +93,43 @@ export async function POST(
     if (error) {
       console.error('Profile message insert error:', error.message)
       return NextResponse.json({ error: 'Failed to send message.' }, { status: 500 })
+    }
+
+    // Send email notification to the profile owner
+    try {
+      // Get contact_email from profile_extended, fall back to auth email
+      const { data: extended } = await supabaseAdmin
+        .from('profile_extended')
+        .select('contact_email')
+        .eq('profile_id', match.id)
+        .single()
+
+      const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(match.id)
+
+      const recipientEmail = extended?.contact_email || authUser?.user?.email
+      if (recipientEmail) {
+        const subjectLine = `New ${subject_type} message from ${from_name} — Resonance Network`
+        await sendEmail({
+          to: recipientEmail,
+          subject: subjectLine,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a19;">
+              <h2 style="color: #01696F; margin-bottom: 16px;">New Message on Resonance Network</h2>
+              <p><strong>From:</strong> ${from_name} (${from_email})</p>
+              <p><strong>Type:</strong> ${subject_type.charAt(0).toUpperCase() + subject_type.slice(1)}</p>
+              <div style="margin: 20px 0; padding: 16px; background: #f5f3ee; border-radius: 8px;">
+                <p style="white-space: pre-wrap; margin: 0;">${message}</p>
+              </div>
+              <p style="color: #666; font-size: 14px;">You can reply directly to ${from_email} or view this message in your <a href="https://resonance.network/dashboard/messages" style="color: #01696F;">dashboard</a>.</p>
+              <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 24px 0;" />
+              <p style="color: #999; font-size: 12px;">Resonance Network &mdash; Connecting Community Through Passion and Purpose</p>
+            </div>
+          `,
+        })
+      }
+    } catch (emailErr) {
+      // Don't fail the request if email fails — message is already saved
+      console.error('Contact email notification error:', emailErr)
     }
 
     return NextResponse.json({ success: true }, { status: 201 })
