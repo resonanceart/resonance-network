@@ -208,8 +208,11 @@ main {
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--color-surface);
-  z-index: 999;
+  width: 100%;
+  height: 100%;
+  background: #EEECE6;
+  background: var(--color-surface, #EEECE6);
+  z-index: 9999;
   padding: var(--space-12) var(--gutter);
   display: flex;
   flex-direction: column;
@@ -220,6 +223,13 @@ main {
   visibility: hidden;
   transition: opacity var(--duration-normal) var(--ease-out),
               visibility var(--duration-normal) var(--ease-out);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+[data-theme="dark"] .nav-mobile {
+  background: #1A1918;
+  background: var(--color-surface, #1A1918);
 }
 
 .nav-mobile.active {
