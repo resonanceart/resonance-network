@@ -299,6 +299,7 @@ export async function PUT(request: Request) {
       }
     }
     if (body.availability_note !== undefined) extendedFields.availability_note = sanitizeText(body.availability_note, 500)
+    if (body.contact_email !== undefined) extendedFields.contact_email = sanitizeText(body.contact_email, 320)
     if (body.content_blocks !== undefined) {
       if (Array.isArray(body.content_blocks) && body.content_blocks.length <= 50) {
         extendedFields.content_blocks = body.content_blocks

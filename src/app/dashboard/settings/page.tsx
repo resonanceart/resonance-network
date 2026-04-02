@@ -37,6 +37,7 @@ export default function SettingsPage() {
 
         <h1 className="settings-title">Account Settings</h1>
 
+        <ContactEmailSection userEmail={user.email || ''} />
         <ChangePasswordSection supabase={supabase} />
         <EmailPreferencesSection />
 
@@ -53,6 +54,74 @@ export default function SettingsPage() {
         <DeleteAccountSection router={router} />
       </div>
     </section>
+  )
+}
+
+function ContactEmailSection({ userEmail }: { userEmail: string }) {
+  const [contactEmail, setContactEmail] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch('/api/user/profile')
+        if (res.ok) {
+          const data = await res.json()
+          setContactEmail(data.extendedProfile?.contact_email || '')
+        }
+      } catch {}
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    setMessage('')
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contact_email: contactEmail }),
+      })
+      if (res.ok) setMessage('Contact email saved.')
+    } catch {}
+    setSaving(false)
+  }
+
+  return (
+    <div className="settings-card">
+      <h2 className="settings-card__title">Contact Email</h2>
+      <p className="settings-card__desc">
+        When someone contacts you through your profile, messages will be sent to this email
+        and saved to your dashboard messages. Leave blank to use your account email ({userEmail}).
+      </p>
+
+      {message && <div className="settings-success">{message}</div>}
+
+      {loading ? (
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>Loading...</p>
+      ) : (
+        <>
+          <div className="form-group">
+            <label className="form-label" htmlFor="contactEmail">Preferred Contact Email</label>
+            <input
+              id="contactEmail"
+              className="form-input"
+              type="email"
+              value={contactEmail}
+              onChange={(e) => setContactEmail(e.target.value)}
+              placeholder={userEmail}
+            />
+          </div>
+          <button className="btn btn--primary btn--sm" onClick={handleSave} disabled={saving}>
+            {saving ? 'Saving...' : 'Save Contact Email'}
+          </button>
+        </>
+      )}
+    </div>
   )
 }
 
