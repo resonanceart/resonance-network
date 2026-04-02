@@ -5,6 +5,7 @@ import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabili
 import { ProfileSmartGallery } from '@/components/profile/ProfileSmartGallery'
 import { ProfileEditOverlay } from '@/components/profile/ProfileEditOverlay'
 import { ShareProfile } from '@/components/profile/ShareProfile'
+import { ProfileBadges } from '@/components/profile/ProfileBadges'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { getProfiles, getProfileBySlug } from '@/lib/data'
 import type { Profile, WorkExperience } from '@/types'
@@ -448,15 +449,10 @@ export default async function ProfilePage({ params }: { params: { slug: string }
                   {profile.name}
                   {profile.pronouns && <span className="profile-header-grid__pronouns"> ({profile.pronouns})</span>}
                 </span>
-                {profile.badges && profile.badges.length > 0 && profile.badges.map(b => (
-                  <span key={b} className={`profile-badge profile-badge--${b}`}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    {b.charAt(0).toUpperCase() + b.slice(1)}
-                  </span>
-                ))}
               </h1>
+              {profile.richBadges && profile.richBadges.length > 0 && (
+                <ProfileBadges badges={profile.richBadges} />
+              )}
               <p className="profile-header-grid__title">{profile.title}</p>
 
               {(profile.primary_website_url || profile.links.find(l => l.type === 'website') || profile.resume_url || profile.portfolio_pdf_url) && (

@@ -1,23 +1,35 @@
 {
   "swarm": {
     "active": true,
-    "agent_count": 2,
+    "agent_count": 4,
     "topology": "hierarchical",
-    "task": "I'm really confused. Can you tell me what project you're working on in this agen",
+    "task": "Okay, great, now I want to build some new features on the test URL.\n1. Badges: I",
     "agents": [
       {
-        "id": "researcher-1775056047541-0",
-        "type": "researcher",
+        "id": "planner-1775099082157-0",
+        "type": "planner",
         "status": "spawning",
-        "startedAt": "2026-04-01T15:07:27.542Z"
+        "startedAt": "2026-04-02T03:04:42.157Z"
       },
       {
-        "id": "coder-1775056047542-1",
+        "id": "coder-1775099082157-1",
         "type": "coder",
         "status": "spawning",
-        "startedAt": "2026-04-01T15:07:27.542Z"
+        "startedAt": "2026-04-02T03:04:42.157Z"
+      },
+      {
+        "id": "reviewer-1775099082157-2",
+        "type": "reviewer",
+        "status": "spawning",
+        "startedAt": "2026-04-02T03:04:42.157Z"
+      },
+      {
+        "id": "tester-1775099082157-3",
+        "type": "tester",
+        "status": "spawning",
+        "startedAt": "2026-04-02T03:04:42.157Z"
       }
     ]
   },
-  "ts": "2026-04-01T15:07:27.542Z"
+  "ts": "2026-04-02T03:04:42.157Z"
 }
