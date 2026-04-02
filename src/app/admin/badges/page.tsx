@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 
 interface BadgeType {
   id: string
@@ -155,11 +154,9 @@ export default function AdminBadgesPage() {
   }
 
   return (
-    <section className="dashboard">
-      <div className="container" style={{ maxWidth: 960 }}>
+    <div style={{ maxWidth: 960, padding: 'var(--space-4)' }}>
         <div style={{ marginBottom: 'var(--space-6)' }}>
-          <Link href="/admin" style={{ color: 'var(--color-primary)', fontSize: 'var(--text-sm)' }}>&larr; Back to Admin</Link>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-2xl)', fontWeight: 700, marginTop: 'var(--space-2)' }}>Badge Management</h1>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-2xl)', fontWeight: 700 }}>Badge Management</h1>
         </div>
 
         {/* Tabs */}
@@ -331,7 +328,6 @@ export default function AdminBadgesPage() {
             </div>
           </div>
         )}
-      </div>
-    </section>
+    </div>
   )
 }
