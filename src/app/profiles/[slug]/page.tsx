@@ -439,6 +439,12 @@ export default async function ProfilePage({ params }: { params: { slug: string }
                     </div>
                   </div>
                 )}
+                {profile.richBadges && profile.richBadges.length > 0 && (
+                  <div style={{ marginTop: 'var(--space-3)' }}>
+                    <p className="profile-header-grid__sidebar-label">Badges</p>
+                    <ProfileBadges badges={profile.richBadges} />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -450,7 +456,6 @@ export default async function ProfilePage({ params }: { params: { slug: string }
                   {profile.pronouns && <span className="profile-header-grid__pronouns"> ({profile.pronouns})</span>}
                 </span>
               </h1>
-              {/* Badges hidden from public profiles for now — admin-only via /admin/badges */}
               <p className="profile-header-grid__title">{profile.title}</p>
 
               {(profile.primary_website_url || profile.links.find(l => l.type === 'website') || profile.resume_url || profile.portfolio_pdf_url) && (

@@ -56,7 +56,9 @@ export function ProfileBadges({ badges, badgeTypes }: ProfileBadgesProps) {
     <div className="profile-badges">
       {visible.map((badge, i) => {
         const type = getType(badge)
-        const symbol = type?.symbol || '●'
+        // Use SVG icons for badges instead of text symbols
+        const badgeId = badge.badge_type
+        const symbolText = type?.symbol || '●'
         const label = badge.label || type?.label || badge.badge_type
         const description = badge.description || type?.description || ''
         const projectNote = badge.project_name ? ` — ${badge.project_name}` : ''
@@ -75,7 +77,21 @@ export function ProfileBadges({ badges, badgeTypes }: ProfileBadgesProps) {
             tabIndex={0}
             aria-label={label}
           >
-            <span className="profile-badge__symbol">{symbol}</span>
+            <span className="profile-badge__symbol">
+              {badgeId === 'founder' ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              ) : badgeId === 'project_collaborator' ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="12" r="4"/><circle cx="15" cy="12" r="4"/></svg>
+              ) : badgeId === 'project_lead' ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              ) : badgeId === 'pioneer' ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5z"/></svg>
+              ) : badgeId === 'featured' ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z"/></svg>
+              ) : (
+                <span style={{ fontSize: 14 }}>{symbolText}</span>
+              )}
+            </span>
 
             {hoveredIndex === i && (
               <div className="profile-badge__tooltip">
