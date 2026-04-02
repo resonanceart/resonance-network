@@ -230,7 +230,9 @@ export async function PUT(request: Request) {
     if (body.onboarding_completed !== undefined) updates.onboarding_completed = Boolean(body.onboarding_completed)
     if (body.role_type !== undefined) {
       const validRoleTypes = ['artist', 'curator', 'collaborator']
-      if (validRoleTypes.includes(body.role_type)) updates.role_type = body.role_type
+      // Accept single role or comma-separated multiple roles
+      const roles = String(body.role_type).split(',').map(r => r.trim()).filter(r => validRoleTypes.includes(r))
+      if (roles.length > 0) updates.role_type = roles.join(',')
     }
     if (body.collaborator_type !== undefined) updates.collaborator_type = sanitizeText(body.collaborator_type, 200)
     if (body.goals !== undefined && Array.isArray(body.goals)) {

@@ -61,7 +61,7 @@ export default function DashboardPage() {
 
       if (profileRes.ok) {
         const data = await profileRes.json()
-        if (data.profile && data.profile.onboarding_completed === false) {
+        if (data.profile && data.profile.onboarding_completed === false && data.profile.role !== 'admin') {
           router.push('/dashboard/welcome')
           return
         }
