@@ -501,7 +501,7 @@ export default function AdminPage() {
                           <td className="admin-table__date">{new Date(up.created_at).toLocaleDateString()}</td>
                           <td>
                             <div style={{display:'flex',gap:6}}>
-                              <a href={`/profiles/${up.display_name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}?preview=1`} target="_blank" rel="noopener noreferrer" className="admin-btn admin-btn--outline admin-btn--sm">View</a>
+                              <a href={`/profiles/${up.display_name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}?preview=1`} target="_blank" rel="noopener noreferrer" className="admin-btn admin-btn--outline admin-btn--sm">View</a>
                               {up.profile_visibility === 'pending' && (
                                 <>
                                   <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={() => handleUserProfileAction(up.id, 'approve')}>Publish</button>
