@@ -227,7 +227,7 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
                         {profile.name}
                         {profile.badges && profile.badges.length > 0 && profile.badges.map(b => (
                           <span key={b} className="profile-card__badge" title={b.charAt(0).toUpperCase() + b.slice(1)}>
-                            {b === 'Founder' ? (
+                            {b.toLowerCase() === 'founder' ? (
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                             ) : (
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
