@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { getClientIp, sanitizeText } from '@/lib/sanitize'
 import { rateLimit } from '@/lib/rate-limit'
+import { sendEmail } from '@/lib/gmail'
 
 // Badge types are stored in profile_extended as a JSON field on a special "system" row
 // User badges are stored in profile_extended.badges as an array on each user's row
@@ -103,12 +104,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'profile_id and badge_type are required.' }, { status: 400 })
     }
 
-    // Get current user badges
+    // Get current user badges — handle case where profile_extended row doesn't exist
     const { data: ext } = await supabaseAdmin
       .from('profile_extended')
       .select('badges')
       .eq('id', profile_id)
-      .single()
+      .maybeSingle()
 
     const currentBadges = (ext?.badges as Array<Record<string, unknown>>) || []
 
@@ -130,13 +131,68 @@ export async function POST(request: Request) {
 
     const updatedBadges = [...currentBadges, newBadge]
 
-    const { error } = await supabaseAdmin
-      .from('profile_extended')
-      .upsert({ id: profile_id, badges: updatedBadges }, { onConflict: 'id' })
+    // Use upsert — creates row if doesn't exist, updates if it does
+    let saveError = null
+    if (ext) {
+      // Row exists — update
+      const { error } = await supabaseAdmin
+        .from('profile_extended')
+        .update({ badges: updatedBadges })
+        .eq('id', profile_id)
+      saveError = error
+    } else {
+      // Row doesn't exist — insert
+      const { error } = await supabaseAdmin
+        .from('profile_extended')
+        .insert({ id: profile_id, badges: updatedBadges })
+      saveError = error
+    }
 
-    if (error) {
-      console.error('Award badge error:', error.message)
-      return NextResponse.json({ error: 'Failed to award badge.' }, { status: 500 })
+    if (saveError) {
+      console.error('Award badge error:', saveError.message)
+      return NextResponse.json({ error: 'Failed to award badge. ' + saveError.message }, { status: 500 })
+    }
+
+    // Send email notification to the user
+    try {
+      const { data: userProfile } = await supabaseAdmin
+        .from('user_profiles')
+        .select('display_name')
+        .eq('id', profile_id)
+        .single()
+
+      const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(profile_id)
+      const recipientEmail = authUser?.user?.email
+
+      // Get badge type info for the email
+      const badgeTypeInfo = DEFAULT_BADGE_TYPES.find(t => t.id === badge_type)
+      const badgeLabel = custom_label || badgeTypeInfo?.label || badge_type
+      const badgeSymbol = badgeTypeInfo?.symbol || '🏅'
+      const badgeDesc = custom_description || badgeTypeInfo?.description || ''
+
+      if (recipientEmail) {
+        await sendEmail({
+          to: recipientEmail,
+          subject: `You earned a badge: ${badgeLabel} ${badgeSymbol} — Resonance Network`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a19;">
+              <h2 style="color: #01696F;">Congratulations, ${userProfile?.display_name || 'there'}! ${badgeSymbol}</h2>
+              <p>You've earned a new badge on Resonance Network:</p>
+              <div style="margin: 20px 0; padding: 20px; background: #f5f3ee; border-radius: 12px; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 8px;">${badgeSymbol}</div>
+                <h3 style="margin: 0 0 4px; color: #01696F;">${badgeLabel}</h3>
+                ${project_name ? `<p style="margin: 0 0 4px; color: #666;">Project: ${project_name}</p>` : ''}
+                <p style="margin: 0; color: #888; font-size: 14px;">${badgeDesc}</p>
+              </div>
+              <p>View your profile on <a href="https://resonance.network/dashboard" style="color: #01696F;">Resonance Network</a>.</p>
+              <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 24px 0;" />
+              <p style="color: #999; font-size: 12px;">Resonance Network — Connecting Community Through Passion and Purpose</p>
+            </div>
+          `,
+        })
+      }
+    } catch (emailErr) {
+      console.error('Badge notification email error:', emailErr)
     }
 
     return NextResponse.json({ success: true, badges: updatedBadges })
