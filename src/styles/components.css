@@ -3167,7 +3167,7 @@ main {
   position: fixed;
   bottom: var(--space-8);
   right: var(--space-8);
-  z-index: 1000;
+  z-index: 10000;
   width: 56px;
   height: 56px;
   border-radius: 50%;
