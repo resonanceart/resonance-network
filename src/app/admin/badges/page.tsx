@@ -56,17 +56,11 @@ export default function AdminBadgesPage() {
 
   async function loadData() {
     try {
-      const [badgesRes, usersRes] = await Promise.all([
-        fetch('/api/admin/badges'),
-        fetch('/api/admin/users'),
-      ])
+      const badgesRes = await fetch('/api/admin/badges')
       if (badgesRes.ok) {
         const data = await badgesRes.json()
         setBadgeTypes(data.badgeTypes || [])
         setAwardedBadges(data.awardedBadges || [])
-      }
-      if (usersRes.ok) {
-        const data = await usersRes.json()
         setUsers(data.users || [])
       }
     } catch {}

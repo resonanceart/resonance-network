@@ -77,7 +77,14 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.json({ badgeTypes, awardedBadges })
+  // Include users list for the award dropdown
+  const usersList = (profiles || []).map((p: Record<string, unknown>) => ({
+    id: p.id,
+    display_name: p.display_name,
+    avatar_url: p.avatar_url,
+  }))
+
+  return NextResponse.json({ badgeTypes, awardedBadges, users: usersList })
 }
 
 // POST — award a badge or manage badge types
