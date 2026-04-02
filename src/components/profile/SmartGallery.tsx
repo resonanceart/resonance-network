@@ -1,6 +1,23 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  rectSortingStrategy,
+  useSortable,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 export interface GalleryItem {
   id: string
@@ -21,8 +38,161 @@ interface SmartGalleryProps {
   onEditThumbnail?: (id: string, thumbnailUrl: string) => void
 }
 
+interface SortableTileProps {
+  item: GalleryItem
+  index: number
+  editable: boolean
+  editingId: string | null
+  editText: string
+  failedThumbnails: Set<string>
+  onEditText: (text: string) => void
+  onStartEdit: (e: React.MouseEvent, item: GalleryItem) => void
+  onSaveEdit: () => void
+  onCancelEdit: () => void
+  onClick: (item: GalleryItem) => void
+  onDelete?: (id: string) => void
+  onEditTitle?: (id: string, newTitle: string) => void
+  onEditThumbnail?: (id: string, thumbnailUrl: string) => void
+  onThumbnailUpload: (e: React.MouseEvent, itemId: string) => void
+  onThumbnailError: (id: string) => void
+}
+
+function SortableTile({
+  item, editable, editingId, editText, failedThumbnails,
+  onEditText, onStartEdit, onSaveEdit, onCancelEdit, onClick,
+  onDelete, onEditTitle, onEditThumbnail, onThumbnailUpload, onThumbnailError,
+}: SortableTileProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id, disabled: !editable || editingId === item.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : undefined,
+  }
+
+  const isEditing = editingId === item.id
+  const thumbFailed = failedThumbnails.has(item.id)
+  const hasWorkingThumb = !!(item.thumbnail && !thumbFailed)
+  const hasThumbnail = !!(hasWorkingThumb || (item.type === 'image'))
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`smart-gallery__tile smart-gallery__tile--${item.type}${hasThumbnail && item.type !== 'image' ? ' smart-gallery__tile--has-thumb' : ''}${isDragging ? ' smart-gallery__tile--dragging' : ''}`}
+      onClick={() => onClick(item)}
+    >
+      {/* Background image — for images and tiles with thumbnails */}
+      {item.type === 'image' && item.url ? (
+        <img src={item.url} alt={item.title} className="smart-gallery__tile-img" />
+      ) : item.type === 'image' && (
+        <div className="smart-gallery__icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </div>
+      )}
+      {item.type !== 'image' && hasWorkingThumb && (
+        <img src={item.thumbnail} alt={item.title} className="smart-gallery__tile-img"
+          onError={() => onThumbnailError(item.id)} />
+      )}
+
+      {/* PDF icon overlay */}
+      {item.type === 'pdf' && !hasWorkingThumb && (
+        <div className="smart-gallery__icon">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <line x1="10" y1="9" x2="8" y2="9"/>
+          </svg>
+        </div>
+      )}
+
+      {/* Link icon overlay */}
+      {item.type === 'link' && !hasWorkingThumb && (
+        <div className="smart-gallery__icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+          </svg>
+        </div>
+      )}
+
+      {/* Title overlay */}
+      <div className="smart-gallery__tile-body">
+        {item.subtitle && <p className="smart-gallery__tile-subtitle">{item.subtitle}</p>}
+        {isEditing ? (
+          <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: 6, alignItems: 'center', pointerEvents: 'auto' }}>
+            <input
+              type="text" value={editText}
+              onChange={e => onEditText(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') onSaveEdit(); if (e.key === 'Escape') onCancelEdit() }}
+              autoFocus
+              style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 4, color: 'white', padding: '6px 10px', fontSize: '0.9rem', fontWeight: 700, width: '100%', textAlign: 'center' }}
+            />
+            <button onClick={onSaveEdit} style={{ background: '#01696F', color: 'white', border: 'none', borderRadius: 4, padding: '6px 12px', cursor: 'pointer', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Save</button>
+          </div>
+        ) : (
+          <h3 className="smart-gallery__tile-title">{item.title}</h3>
+        )}
+      </div>
+
+      {/* Edit controls */}
+      {editable && !isEditing && (
+        <>
+          {/* Drag handle - top left */}
+          <div
+            ref={setActivatorNodeRef}
+            {...attributes}
+            {...listeners}
+            className="smart-gallery__drag-handle"
+            title="Drag to reorder"
+            style={{ touchAction: 'none' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="5" cy="3" r="1.5"/><circle cx="11" cy="3" r="1.5"/><circle cx="5" cy="8" r="1.5"/><circle cx="11" cy="8" r="1.5"/><circle cx="5" cy="13" r="1.5"/><circle cx="11" cy="13" r="1.5"/></svg>
+          </div>
+
+          {/* Edit buttons - bottom left */}
+          <div className="smart-gallery__edit-buttons">
+            {onEditTitle && (
+              <button onClick={(e) => onStartEdit(e, item)} title="Edit title">
+                ✎ Title
+              </button>
+            )}
+            {onEditThumbnail && (item.type === 'pdf' || item.type === 'link') && (
+              <button onClick={(e) => onThumbnailUpload(e, item.id)} title="Add/change preview image">
+                🖼 Image
+              </button>
+            )}
+          </div>
+
+          {/* Delete - top right */}
+          {onDelete && (
+            <button className="smart-gallery__delete" onClick={(e) => { e.stopPropagation(); onDelete(item.id) }} title="Delete">
+              &times;
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
 export function SmartGallery({ items, editable = false, onReorder, onDelete, onEditTitle, onEditThumbnail }: SmartGalleryProps) {
-  const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editText, setEditText] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -30,15 +200,24 @@ export function SmartGallery({ items, editable = false, onReorder, onDelete, onE
   const [failedThumbnails, setFailedThumbnails] = useState<Set<string>>(new Set())
   const sorted = [...items].sort((a, b) => a.order - b.order)
 
-  function handleDragStart(index: number) { setDragIndex(index) }
-  function handleDragOver(e: React.DragEvent) { e.preventDefault() }
-  function handleDrop(index: number) {
-    if (dragIndex === null || dragIndex === index || !onReorder) return
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id || !onReorder) return
+
+    const oldIndex = sorted.findIndex(item => item.id === active.id)
+    const newIndex = sorted.findIndex(item => item.id === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+
     const reordered = [...sorted]
-    const [moved] = reordered.splice(dragIndex, 1)
-    reordered.splice(index, 0, moved)
+    const [moved] = reordered.splice(oldIndex, 1)
+    reordered.splice(newIndex, 0, moved)
     onReorder(reordered.map((item, i) => ({ ...item, order: i })))
-    setDragIndex(null)
   }
 
   function handleClick(item: GalleryItem) {
@@ -70,7 +249,6 @@ export function SmartGallery({ items, editable = false, onReorder, onDelete, onE
   async function handleThumbnailFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file || !thumbnailTargetId || !onEditThumbnail) return
-    // Upload via /api/upload
     const formData = new FormData()
     formData.append('file', file)
     formData.append('type', 'gallery')
@@ -87,121 +265,41 @@ export function SmartGallery({ items, editable = false, onReorder, onDelete, onE
 
   if (sorted.length === 0) return null
 
+  const content = sorted.map((item, i) => (
+    <SortableTile
+      key={item.id}
+      item={item}
+      index={i}
+      editable={editable}
+      editingId={editingId}
+      editText={editText}
+      failedThumbnails={failedThumbnails}
+      onEditText={setEditText}
+      onStartEdit={startEdit}
+      onSaveEdit={saveEdit}
+      onCancelEdit={() => setEditingId(null)}
+      onClick={handleClick}
+      onDelete={onDelete}
+      onEditTitle={onEditTitle}
+      onEditThumbnail={onEditThumbnail}
+      onThumbnailUpload={startThumbnailUpload}
+      onThumbnailError={(id) => setFailedThumbnails(prev => new Set(prev).add(id))}
+    />
+  ))
+
   return (
     <div className="smart-gallery">
-      {/* Hidden file input for thumbnail uploads */}
       <input ref={fileInputRef} type="file" accept="image/*" onChange={handleThumbnailFile} style={{ display: 'none' }} />
 
-      {sorted.map((item, i) => {
-        const isEditing = editingId === item.id
-        const thumbFailed = failedThumbnails.has(item.id)
-        const hasWorkingThumb = !!(item.thumbnail && !thumbFailed)
-        const hasThumbnail = !!(hasWorkingThumb || (item.type === 'image'))
-
-        return (
-          <div
-            key={item.id}
-            className={`smart-gallery__tile smart-gallery__tile--${item.type}${hasThumbnail && item.type !== 'image' ? ' smart-gallery__tile--has-thumb' : ''}${dragIndex === i ? ' smart-gallery__tile--dragging' : ''}`}
-            onClick={() => handleClick(item)}
-            draggable={editable && !isEditing}
-            onDragStart={() => handleDragStart(i)}
-            onDragOver={handleDragOver}
-            onDrop={() => handleDrop(i)}
-            onDragEnd={() => setDragIndex(null)}
-          >
-            {/* Background image — for images and tiles with thumbnails */}
-            {item.type === 'image' && item.url ? (
-              <img src={item.url} alt={item.title} className="smart-gallery__tile-img" />
-            ) : item.type === 'image' && (
-              <div className="smart-gallery__icon">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                  <circle cx="8.5" cy="8.5" r="1.5"/>
-                  <polyline points="21 15 16 10 5 21"/>
-                </svg>
-              </div>
-            )}
-            {item.type !== 'image' && hasWorkingThumb && (
-              <img src={item.thumbnail} alt={item.title} className="smart-gallery__tile-img"
-                onError={() => setFailedThumbnails(prev => new Set(prev).add(item.id))} />
-            )}
-
-            {/* PDF icon overlay — show when no thumbnail or thumbnail failed */}
-            {item.type === 'pdf' && !hasWorkingThumb && (
-              <div className="smart-gallery__icon">
-                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                  <line x1="16" y1="13" x2="8" y2="13"/>
-                  <line x1="16" y1="17" x2="8" y2="17"/>
-                  <line x1="10" y1="9" x2="8" y2="9"/>
-                </svg>
-              </div>
-            )}
-
-            {/* Link icon overlay — show when no thumbnail or thumbnail failed */}
-            {item.type === 'link' && !hasWorkingThumb && (
-              <div className="smart-gallery__icon">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="2" y1="12" x2="22" y2="12"/>
-                  <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
-                </svg>
-              </div>
-            )}
-
-            {/* Hover overlay with title — always visible bottom gradient */}
-            <div className="smart-gallery__tile-body">
-              {item.subtitle && <p className="smart-gallery__tile-subtitle">{item.subtitle}</p>}
-              {isEditing ? (
-                <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: 6, alignItems: 'center', pointerEvents: 'auto' }}>
-                  <input
-                    type="text" value={editText}
-                    onChange={e => setEditText(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') setEditingId(null) }}
-                    autoFocus
-                    style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 4, color: 'white', padding: '6px 10px', fontSize: '0.9rem', fontWeight: 700, width: '100%', textAlign: 'center' }}
-                  />
-                  <button onClick={saveEdit} style={{ background: '#01696F', color: 'white', border: 'none', borderRadius: 4, padding: '6px 12px', cursor: 'pointer', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Save</button>
-                </div>
-              ) : (
-                <h3 className="smart-gallery__tile-title">{item.title}</h3>
-              )}
-            </div>
-
-            {/* Edit controls — visible on hover */}
-            {editable && !isEditing && (
-              <>
-                {/* Drag handle - top left */}
-                <div className="smart-gallery__drag-handle" title="Drag to reorder">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="5" cy="3" r="1.5"/><circle cx="11" cy="3" r="1.5"/><circle cx="5" cy="8" r="1.5"/><circle cx="11" cy="8" r="1.5"/><circle cx="5" cy="13" r="1.5"/><circle cx="11" cy="13" r="1.5"/></svg>
-                </div>
-
-                {/* Edit buttons - bottom left */}
-                <div className="smart-gallery__edit-buttons">
-                  {onEditTitle && (
-                    <button onClick={(e) => startEdit(e, item)} title="Edit title">
-                      ✎ Title
-                    </button>
-                  )}
-                  {onEditThumbnail && (item.type === 'pdf' || item.type === 'link') && (
-                    <button onClick={(e) => startThumbnailUpload(e, item.id)} title="Add/change preview image">
-                      🖼 Image
-                    </button>
-                  )}
-                </div>
-
-                {/* Delete - top right */}
-                {onDelete && (
-                  <button className="smart-gallery__delete" onClick={(e) => { e.stopPropagation(); onDelete(item.id) }} title="Delete">
-                    &times;
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        )
-      })}
+      {editable ? (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={sorted.map(item => item.id)} strategy={rectSortingStrategy}>
+            {content}
+          </SortableContext>
+        </DndContext>
+      ) : (
+        content
+      )}
     </div>
   )
 }
