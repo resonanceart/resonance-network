@@ -439,12 +439,6 @@ export default async function ProfilePage({ params }: { params: { slug: string }
                     </div>
                   </div>
                 )}
-                {profile.richBadges && profile.richBadges.length > 0 && (
-                  <div style={{ marginTop: 'var(--space-3)' }}>
-                    <p className="profile-header-grid__sidebar-label">Badges</p>
-                    <ProfileBadges badges={profile.richBadges} />
-                  </div>
-                )}
               </div>
             </div>
 
@@ -455,6 +449,9 @@ export default async function ProfilePage({ params }: { params: { slug: string }
                   {profile.name}
                   {profile.pronouns && <span className="profile-header-grid__pronouns"> ({profile.pronouns})</span>}
                 </span>
+                {profile.richBadges && profile.richBadges.length > 0 && (
+                  <ProfileBadges badges={profile.richBadges} />
+                )}
               </h1>
               <p className="profile-header-grid__title">{profile.title}</p>
 

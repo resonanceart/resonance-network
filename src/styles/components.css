@@ -3400,22 +3400,19 @@ main {
   margin: 0;
 }
 
-.profile-card__badges {
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-  margin-top: 4px;
-}
-
 .profile-card__badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: var(--color-primary, #01696F);
   color: #fff;
+  margin-left: 4px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
 }
 
 .profile-card__title {
@@ -15064,11 +15061,12 @@ main {
    =========================================================== */
 
 .profile-badges {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
   align-items: center;
-  margin-top: var(--space-2);
+  margin-left: var(--space-2);
+  vertical-align: middle;
 }
 
 .profile-badge {
