@@ -333,6 +333,7 @@ export interface Profile {
   past_work?: { url: string; title: string; description?: string }[]
   pdf_documents?: { url: string; title: string }[]
   badges?: string[]
+  richBadges?: { badge_type: string; label?: string; description?: string; project_name?: string; awarded_at: string }[]
 }
 
 export interface UserProfile {

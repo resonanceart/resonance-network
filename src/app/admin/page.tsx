@@ -326,6 +326,10 @@ export default function AdminPage() {
               {item.badge ? <span className="admin-sidebar__badge">{item.badge}</span> : null}
             </button>
           ))}
+          <a href="/admin/badges" className="admin-sidebar__link" style={{ marginTop: 'var(--space-4)', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 'var(--space-4)' }}>
+            <span>🏅</span>
+            Badges
+          </a>
         </nav>
         <div className="admin-sidebar__user">
           <div className="admin-sidebar__user-avatar">A</div>

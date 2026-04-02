@@ -1,0 +1,26 @@
+[
+  {
+    "id": "empty-catch",
+    "severity": "WARN",
+    "description": "Empty catch block swallows errors silently",
+    "file": "page.tsx",
+    "filePath": "/Users/resonanceartcollective/resonance-network/src/app/admin/badges/page.tsx",
+    "timestamp": "2026-04-02T03:20:24.372Z"
+  },
+  {
+    "id": "empty-catch",
+    "severity": "WARN",
+    "description": "Empty catch block swallows errors silently",
+    "file": "page.tsx",
+    "filePath": "/Users/resonanceartcollective/resonance-network/src/app/dashboard/settings/page.tsx",
+    "timestamp": "2026-04-02T02:17:57.234Z"
+  },
+  {
+    "id": "empty-catch",
+    "severity": "WARN",
+    "description": "Empty catch block swallows errors silently",
+    "file": "SmartGallery.tsx",
+    "filePath": "/Users/resonanceartcollective/resonance-network/src/components/profile/SmartGallery.tsx",
+    "timestamp": "2026-04-02T01:58:05.550Z"
+  }
+]

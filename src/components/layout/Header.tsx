@@ -10,6 +10,7 @@ const navLinks = [
   { href: '/#projects', label: 'Projects' },
   { href: '/collaborate', label: 'Community' },
   { href: '/about', label: 'About' },
+  { href: '/resources', label: 'Resources' },
 ]
 
 export function Header() {
@@ -124,8 +125,10 @@ export function Header() {
           </div>
         </div>
 
-        <MobileNav isOpen={isMobileNavOpen} onClose={() => { setIsMobileNavOpen(false); hamburgerRef.current?.focus() }} />
       </header>
+
+      {/* Mobile nav — rendered OUTSIDE header to escape its stacking context */}
+      <MobileNav isOpen={isMobileNavOpen} onClose={() => { setIsMobileNavOpen(false); hamburgerRef.current?.focus() }} />
 
       {/* Floating Action Button — mobile only */}
       <button
