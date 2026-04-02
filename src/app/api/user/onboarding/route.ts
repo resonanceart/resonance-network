@@ -66,26 +66,26 @@ export async function POST(request: Request) {
       fields_of_interest,
     } = body
 
-    // Validate role_type
+    // Validate role_type — now supports comma-separated multiple roles
     const validRoles = ['artist', 'curator', 'collaborator']
-    if (!role_type || !validRoles.includes(role_type)) {
+    if (!role_type || typeof role_type !== 'string') {
+      return NextResponse.json({ error: 'Invalid role type.' }, { status: 400 })
+    }
+    const roles = role_type.split(',').map((r: string) => r.trim()).filter((r: string) => validRoles.includes(r))
+    if (roles.length === 0) {
       return NextResponse.json({ error: 'Invalid role type.' }, { status: 400 })
     }
 
-    // Map role_type to the legacy role column
-    const roleMapping: Record<string, string> = {
-      artist: 'creator',
-      curator: 'creator',
-      collaborator: 'collaborator',
-    }
+    // Map to legacy role column — prefer 'creator' if artist or curator is selected
+    const legacyRole = roles.includes('artist') || roles.includes('curator') ? 'creator' : 'collaborator'
 
     const updates: Record<string, unknown> = {
-      role: roleMapping[role_type] || 'collaborator',
-      role_type,
+      role: legacyRole,
+      role_type: roles.join(','),
       onboarding_completed: true,
     }
 
-    if (collaborator_type && role_type === 'collaborator') {
+    if (collaborator_type && roles.includes('collaborator')) {
       updates.collaborator_type = String(collaborator_type).slice(0, 200)
     }
 
