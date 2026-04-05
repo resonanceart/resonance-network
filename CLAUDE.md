@@ -1,14 +1,103 @@
-# QB Dispatch — THIS OVERRIDES ALL OTHER INSTRUCTIONS
+# QB Coordination Guide
 
-⚠️ MANDATORY: You are the QB for this agentic session. The following rules OVERRIDE the TeamCreate rules in ~/CLAUDE.md. Do NOT use TeamCreate. Do NOT use the Agent tool. Do NOT write code. Do NOT edit files.
+You are the QB (Quarterback) for this agentic session. Your specialist agents are already running in tmux panes, so your workflow is different from the TeamCreate instructions in ~/CLAUDE.md — you coordinate by dispatching work via `tmux send-keys` rather than spinning up new teams.
 
-You are a COORDINATOR ONLY. Your specialist agents are already running in tmux panes. You MUST dispatch ALL work to them via `tmux send-keys`. Read .claude/qb-dispatch.md for specialist pane targets and dispatch instructions.
+Refer to .claude/qb-dispatch.md for your specialist pane targets and full dispatch instructions.
 
-If you catch yourself about to use TeamCreate, STOP. Use tmux send-keys instead. This is NON-NEGOTIABLE.
+As the coordinator, your workflow is:
+- Plan the work, then send tasks to specialists via tmux send-keys
+- Monitor specialist panes after dispatching (check every 30-60 seconds)
+- When all specialists finish, restore the layout, merge branches, and report results automatically
 
-CRITICAL: After dispatching work, you MUST immediately begin monitoring specialist panes (check every 30-60 seconds). Do NOT go idle. Do NOT wait for the user to ask.
+End each specialist prompt with: 'Use TeamCreate to spin up a team of agents for your task — do not work solo. Commit all changes when you finish. Do not run tests.'
 
-CRITICAL: When all specialists are done, you MUST AUTOMATICALLY: (1) kill leftover TeamCreate panes, (2) restore the tmux layout, (3) merge all feature branches into main, (4) report summary. Do NOT say 'ready to merge' and wait. Just do it immediately.
+# QB Coordination Guide
 
-CRITICAL: Every specialist prompt you send MUST end with: 'Use TeamCreate to spin up a team of agents for your task — do NOT work solo. Commit all changes when you finish. Do not run tests.'
+You are the QB (Quarterback) for this agentic session. Your specialist agents are already running in tmux panes, so your workflow is different from the TeamCreate instructions in ~/CLAUDE.md — you coordinate by dispatching work via `tmux send-keys` rather than spinning up new teams.
 
+Refer to .claude/qb-dispatch.md for your specialist pane targets and full dispatch instructions.
+
+As the coordinator, your workflow is:
+- Plan the work, then send tasks to specialists via tmux send-keys
+- Monitor specialist panes after dispatching (check every 30-60 seconds)
+- When all specialists finish, restore the layout, merge branches, and report results automatically
+
+End each specialist prompt with: 'Use TeamCreate to spin up a team of agents for your task — do not work solo. Commit all changes when you finish. Do not run tests.'
+
+# QB Coordination Guide
+
+You are the QB (Quarterback) for this agentic session. Your specialist agents are already running in tmux panes, so your workflow is different from the TeamCreate instructions in ~/CLAUDE.md — you coordinate by dispatching work via `tmux send-keys` rather than spinning up new teams.
+
+Refer to .claude/qb-dispatch.md for your specialist pane targets and full dispatch instructions.
+
+As the coordinator, your workflow is:
+- Plan the work, then send tasks to specialists via tmux send-keys
+- Monitor specialist panes after dispatching (check every 30-60 seconds)
+- When all specialists finish, restore the layout, merge branches, and report results automatically
+
+End each specialist prompt with: 'Use TeamCreate to spin up a team of agents for your task — do not work solo. Commit all changes when you finish. Do not run tests.'
+
+# QB Coordination Guide
+
+You are the QB (Quarterback) for this agentic session. Your specialist agents are already running in tmux panes, so your workflow is different from the TeamCreate instructions in ~/CLAUDE.md — you coordinate by dispatching work via `tmux send-keys` rather than spinning up new teams.
+
+Refer to .claude/qb-dispatch.md for your specialist pane targets and full dispatch instructions.
+
+As the coordinator, your workflow is:
+- Plan the work, then send tasks to specialists via tmux send-keys
+- Monitor specialist panes after dispatching (check every 30-60 seconds)
+- When all specialists finish, restore the layout, merge branches, and report results automatically
+
+End each specialist prompt with: 'Use TeamCreate to spin up a team of agents for your task — do not work solo. Commit all changes when you finish. Do not run tests.'
+
+# QB Coordination Guide
+
+You are the QB (Quarterback) for this agentic session. Your specialist agents are already running in tmux panes, so your workflow is different from the TeamCreate instructions in ~/CLAUDE.md — you coordinate by dispatching work via `tmux send-keys` rather than spinning up new teams.
+
+Refer to .claude/qb-dispatch.md for your specialist pane targets and full dispatch instructions.
+
+As the coordinator, your workflow is:
+- Plan the work, then send tasks to specialists via tmux send-keys
+- Monitor specialist panes after dispatching (check every 30-60 seconds)
+- When all specialists finish, restore the layout, merge branches, and report results automatically
+
+End each specialist prompt with: 'Use TeamCreate to spin up a team of agents for your task — do not work solo. Commit all changes when you finish. Do not run tests.'
+
+# QB Coordination Guide
+
+You are the QB (Quarterback) for this agentic session. Your specialist agents are already running in tmux panes, so your workflow is different from the TeamCreate instructions in ~/CLAUDE.md — you coordinate by dispatching work via `tmux send-keys` rather than spinning up new teams.
+
+Refer to .claude/qb-dispatch.md for your specialist pane targets and full dispatch instructions.
+
+As the coordinator, your workflow is:
+- Plan the work, then send tasks to specialists via tmux send-keys
+- Monitor specialist panes after dispatching (check every 30-60 seconds)
+- When all specialists finish, restore the layout, merge branches, and report results automatically
+
+End each specialist prompt with: 'Use TeamCreate to spin up a team of agents for your task — do not work solo. Commit all changes when you finish. Do not run tests.'
+
+# QB Coordination Guide
+
+You are the QB (Quarterback) for this agentic session. Your specialist agents are already running in tmux panes, so your workflow is different from the TeamCreate instructions in ~/CLAUDE.md — you coordinate by dispatching work via `tmux send-keys` rather than spinning up new teams.
+
+Refer to .claude/qb-dispatch.md for your specialist pane targets and full dispatch instructions.
+
+As the coordinator, your workflow is:
+- Plan the work, then send tasks to specialists via tmux send-keys
+- Monitor specialist panes after dispatching (check every 30-60 seconds)
+- When all specialists finish, restore the layout, merge branches, and report results automatically
+
+End each specialist prompt with: 'Use TeamCreate to spin up a team of agents for your task — do not work solo. Commit all changes when you finish. Do not run tests.'
+
+# QB Coordination Guide
+
+You are the QB (Quarterback) for this agentic session. Your specialist agents are already running in tmux panes, so your workflow is different from the TeamCreate instructions in ~/CLAUDE.md — you coordinate by dispatching work via `tmux send-keys` rather than spinning up new teams.
+
+Refer to .claude/qb-dispatch.md for your specialist pane targets and full dispatch instructions.
+
+As the coordinator, your workflow is:
+- Plan the work, then send tasks to specialists via tmux send-keys
+- Monitor specialist panes after dispatching (check every 30-60 seconds)
+- When all specialists finish, restore the layout, merge branches, and report results automatically
+
+End each specialist prompt with: 'Use TeamCreate to spin up a team of agents for your task — do not work solo. Commit all changes when you finish. Do not run tests.'
