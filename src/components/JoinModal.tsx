@@ -75,11 +75,9 @@ export function JoinModal() {
             <span className="join-modal__path-cta">Get Started</span>
           </Link>
 
-          <div className="join-modal__divider" />
-
           <Link href="/login?tab=signup&redirect=/dashboard/welcome" className="join-modal__path join-modal__path--help">
             <h2>Help Build Art</h2>
-            <p>You&apos;re a maker ready to work on projects that matter.</p>
+            <p>You&apos;re a maker ready to work on meaningful projects.</p>
             <span className="join-modal__path-cta">Get Started</span>
           </Link>
         </div>

@@ -15216,40 +15216,56 @@ main {
 }
 
 .join-modal__paths {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin-bottom: var(--space-8);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
 }
 
 .join-modal__path {
   display: flex;
   flex-direction: column;
-  padding: var(--space-8) var(--space-6);
+  padding: var(--space-6) var(--space-5);
   text-decoration: none;
   color: inherit;
-  transition: background 0.2s;
+  border: 2px solid;
+  border-radius: 16px;
   cursor: pointer;
-  border-radius: var(--radius-lg);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 
 .join-modal__path:hover {
-  background: rgba(128, 128, 128, 0.06);
+  transform: translateY(-3px);
 }
 
-.join-modal__divider {
-  height: 1px;
-  background: var(--color-border);
-  margin: 0 var(--space-6);
+/* Share Art — teal card */
+.join-modal__path--share {
+  border-color: rgba(20, 184, 166, 0.35);
+  background: rgba(20, 184, 166, 0.06);
+}
+
+.join-modal__path--share:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 12px 32px rgba(20, 184, 166, 0.2);
+}
+
+/* Help Build Art — gold card */
+.join-modal__path--help {
+  border-color: rgba(234, 179, 8, 0.35);
+  background: rgba(234, 179, 8, 0.06);
+}
+
+.join-modal__path--help:hover {
+  border-color: rgba(234, 179, 8, 0.8);
+  box-shadow: 0 12px 32px rgba(234, 179, 8, 0.15);
 }
 
 .join-modal__path h2 {
   font-family: var(--font-display);
-  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
   font-weight: 700;
-  color: var(--color-text);
   line-height: 1.1;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
   letter-spacing: -0.02em;
 }
 
@@ -15258,39 +15274,46 @@ main {
 }
 
 .join-modal__path--help h2 {
-  color: rgba(234, 179, 8, 0.9);
+  color: rgba(234, 179, 8, 0.95);
 }
 
 .join-modal__path p {
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
   line-height: 1.5;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
+  flex-grow: 1;
 }
 
 .join-modal__path-cta {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  justify-content: center;
+  padding: var(--space-3) var(--space-5);
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--color-text-muted);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  transition: color 0.15s, gap 0.2s;
+  border-radius: var(--radius-md);
+  transition: all 0.15s;
+  width: 100%;
+  min-height: 44px;
 }
 
-.join-modal__path-cta::after {
-  content: '→';
-  transition: transform 0.2s;
+.join-modal__path--share .join-modal__path-cta {
+  background: var(--color-primary);
+  color: #fff;
 }
 
-.join-modal__path:hover .join-modal__path-cta {
-  color: var(--color-text);
+.join-modal__path--share:hover .join-modal__path-cta {
+  background: var(--color-primary-hover, #145755);
 }
 
-.join-modal__path:hover .join-modal__path-cta::after {
-  transform: translateX(4px);
+.join-modal__path--help .join-modal__path-cta {
+  background: rgba(234, 179, 8, 0.9);
+  color: #111;
+}
+
+.join-modal__path--help:hover .join-modal__path-cta {
+  background: rgba(234, 179, 8, 1);
 }
 
 .join-modal__signin {
@@ -15314,6 +15337,14 @@ main {
   box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8);
 }
 
+[data-theme="dark"] .join-modal__path--share {
+  background: rgba(20, 184, 166, 0.08);
+}
+
+[data-theme="dark"] .join-modal__path--help {
+  background: rgba(234, 179, 8, 0.08);
+}
+
 /* Mobile */
 @media (max-width: 520px) {
   .join-modal__overlay {
@@ -15322,16 +15353,21 @@ main {
   }
 
   .join-modal__card {
-    padding: var(--space-8) var(--space-6) var(--space-6);
+    padding: var(--space-8) var(--space-5) var(--space-6);
     border-radius: 24px 24px 0 0;
-    max-height: 90vh;
+    max-height: 92vh;
+  }
+
+  .join-modal__paths {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
   }
 
   .join-modal__path {
-    padding: var(--space-6) var(--space-4);
+    padding: var(--space-5);
   }
 
   .join-modal__path h2 {
-    font-size: clamp(1.5rem, 6vw, 2rem);
+    font-size: 1.5rem;
   }
 }
