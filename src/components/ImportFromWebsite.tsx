@@ -27,8 +27,8 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
 
   // Mode-specific theme colors
   const modeAccent = mode === 'project'
-    ? { bg: 'rgba(1, 105, 111, 0.08)', border: 'rgba(1, 105, 111, 0.25)', text: '#01696F', label: 'Project Import' }
-    : { bg: 'rgba(139, 92, 246, 0.08)', border: 'rgba(139, 92, 246, 0.25)', text: '#8B5CF6', label: 'Profile Import' }
+    ? { bg: 'rgba(1, 105, 111, 0.08)', border: 'rgba(1, 105, 111, 0.25)', text: '#01696F', label: 'Project Page' }
+    : { bg: 'rgba(139, 92, 246, 0.08)', border: 'rgba(139, 92, 246, 0.25)', text: '#8B5CF6', label: 'Artist Profile' }
 
   async function handleScrape() {
     if (!url.trim()) return
@@ -46,7 +46,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
       })
 
       const json = await res.json()
-      if (!res.ok) throw new Error(json.error || 'Scraping failed')
+      if (!res.ok) throw new Error(json.error || 'Could not read that page. Please check the URL and try again.')
 
       setProgress('Done!')
 
@@ -68,7 +68,8 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     if (user) {
       router.push('/dashboard/projects/live-edit?import=true')
     } else {
-      router.push('/login?tab=signup&redirect=/dashboard/projects/live-edit?import=true')
+      const redirectPath = encodeURIComponent('/dashboard/projects/live-edit?import=true')
+      router.push(`/login?tab=signup&redirect=${redirectPath}`)
     }
   }
 
@@ -78,7 +79,8 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     if (user) {
       router.push('/dashboard/profile/live-edit?import=profile')
     } else {
-      router.push('/login?tab=signup&redirect=/dashboard/profile/live-edit?import=profile')
+      const redirectPath = encodeURIComponent('/dashboard/profile/live-edit?import=profile')
+      router.push(`/login?tab=signup&redirect=${redirectPath}`)
     }
   }
 
@@ -89,10 +91,10 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
       </Link>
 
       <h1 style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-2)', fontSize: 'clamp(1.5rem, 4vw, 2rem)' }}>
-        Import from Website
+        Create Your Page
       </h1>
       <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', fontSize: 'var(--text-base)' }}>
-        Paste a URL and we&apos;ll auto-generate your page. You can edit everything before publishing.
+        Paste your project website and we&apos;ll build your page automatically. You can edit everything before publishing.
       </p>
 
       {/* Mode Toggle — visually distinct cards */}
@@ -182,7 +184,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
               disabled={!url.trim()}
               className="btn btn--primary"
             >
-              Scan Website
+              Build My Page
             </button>
           </div>
           {step === 'error' && (
@@ -202,7 +204,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
           <div className="dashboard-spinner" style={{ margin: '0 auto var(--space-4)' }} />
           <p style={{ color: 'var(--color-text-muted)' }}>{progress}</p>
           <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)' }}>
-            Scanning {url}
+            Reading {url}
           </p>
         </div>
       )}
@@ -346,7 +348,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
                 ))}
               </div>
               <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
-                Click to scan another project from this artist
+                Click to import another project from this artist
               </p>
             </div>
           )}
@@ -355,7 +357,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
           {projectData.sections.length > 0 && (
             <details style={{ marginBottom: 'var(--space-5)' }}>
               <summary style={{ cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-3)' }}>
-                View all scraped sections ({projectData.sections.length})
+                View all imported sections ({projectData.sections.length})
               </summary>
               {projectData.sections.map((s, i) => (
                 <div key={i} style={{ padding: 'var(--space-3)', background: 'var(--color-surface)', borderRadius: '8px', marginBottom: 'var(--space-2)', border: '1px solid var(--color-border)' }}>
@@ -372,7 +374,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
               {user ? 'Use in Page Builder' : 'Sign Up & Build Your Page'}
             </button>
             <button onClick={() => { setStep('input'); setProjectData(null) }} className="btn btn--outline">
-              Scan Different URL
+              Try a Different URL
             </button>
           </div>
 
@@ -480,7 +482,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
 
           <details style={{ marginBottom: 'var(--space-5)' }}>
             <summary style={{ cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-3)' }}>
-              View all scraped sections ({profileData.sections.length})
+              View all imported sections ({profileData.sections.length})
             </summary>
             {profileData.sections.map((s, i) => (
               <div key={i} style={{ padding: 'var(--space-3)', background: 'var(--color-surface)', borderRadius: '8px', marginBottom: 'var(--space-2)', border: '1px solid var(--color-border)' }}>
@@ -506,7 +508,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
               {user ? 'Apply to My Profile' : 'Sign Up & Build Your Profile'}
             </button>
             <button onClick={() => { setStep('input'); setProfileData(null) }} className="btn btn--outline">
-              Scan Different URL
+              Try a Different URL
             </button>
           </div>
 

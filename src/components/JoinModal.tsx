@@ -69,9 +69,9 @@ export function JoinModal() {
         </button>
 
         <div className="join-modal__paths">
-          <Link href="/login?tab=signup&redirect=/dashboard/welcome" onClick={handleDismiss} className="join-modal__path join-modal__path--share">
+          <Link href="/import" onClick={handleDismiss} className="join-modal__path join-modal__path--share">
             <h2>Share Art</h2>
-            <p>You have a project and need collaborators.</p>
+            <p>Import your project in seconds.</p>
             <span className="join-modal__path-cta">Get Started</span>
           </Link>
 
