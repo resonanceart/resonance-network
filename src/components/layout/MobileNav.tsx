@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useTheme } from '@/components/ThemeProvider'
 import { useAuth } from '@/components/AuthProvider'
@@ -13,6 +13,17 @@ export function MobileNav({ isOpen, onClose }: Props) {
   const navRef = useRef<HTMLElement>(null)
   const { theme, toggleTheme } = useTheme()
   const { user, loading: authLoading } = useAuth()
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    if (!user) return
+    fetch('/api/user/profile', { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.profile?.role === 'admin') setIsAdmin(true)
+      })
+      .catch(() => {})
+  }, [user])
 
   useEffect(() => {
     if (!isOpen) return
@@ -78,6 +89,11 @@ export function MobileNav({ isOpen, onClose }: Props) {
             <>
               <Link href="/dashboard" onClick={onClose} className="btn btn--primary nav-mobile__cta-btn">Dashboard</Link>
               <Link href="/dashboard/projects/new" onClick={onClose} className="btn btn--outline nav-mobile__cta-btn">Submit Project</Link>
+              {isAdmin && (
+                <Link href="/admin" onClick={onClose} className="btn btn--outline nav-mobile__cta-btn" style={{ color: '#f59e0b', borderColor: '#f59e0b' }}>
+                  Admin
+                </Link>
+              )}
             </>
           ) : (
             <>
