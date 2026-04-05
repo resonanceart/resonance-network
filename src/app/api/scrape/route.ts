@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { validateScrapeUrl } from '@/lib/scraper/url-validator'
 import { scrapeProjectPage, scrapeProfilePage } from '@/lib/scraper'
 import { validateCsrf } from '@/lib/csrf'
@@ -12,17 +11,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 })
     }
 
-    // Rate limit: 10 scrapes per minute per IP
+    // Rate limit — no auth required, but rate-limit by IP to prevent abuse
     const ip = getClientIp(request)
     if (!rateLimit(ip)) {
       return NextResponse.json({ error: 'Too many requests. Please wait a moment.' }, { status: 429 })
-    }
-
-    // Auth required
-    const supabase = await createSupabaseServerClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Authentication required.' }, { status: 401 })
     }
 
     const body = await request.json()

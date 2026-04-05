@@ -67,8 +67,8 @@ export default function ImportFromWebsitePage() {
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-10)', maxWidth: '800px' }}>
-      <Link href="/dashboard/projects" style={{ color: 'var(--color-accent)', textDecoration: 'none', fontSize: 'var(--text-sm)' }}>
-        &larr; Back to My Projects
+      <Link href="/" style={{ color: 'var(--color-accent)', textDecoration: 'none', fontSize: 'var(--text-sm)' }}>
+        &larr; Back to Home
       </Link>
 
       <h1 style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-2)', fontSize: 'clamp(1.5rem, 4vw, 2rem)' }}>
