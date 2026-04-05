@@ -528,16 +528,16 @@ main {
 }
 
 .site-hero__tagline {
-  font-family: var(--font-display);
-  font-size: clamp(2.25rem, 6vw, 4.25rem);
-  font-weight: 600;
-  font-style: italic;
-  color: #fff;
-  max-width: 18ch;
+  font-family: var(--font-body);
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 400;
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 36ch;
   margin: 0 auto var(--space-8);
-  line-height: 1.1;
-  letter-spacing: -0.025em;
-  text-shadow: 0 2px 30px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.2);
+  line-height: 1.4;
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 12px rgba(0,0,0,0.3);
 }
 
 .site-hero__sub {
@@ -556,10 +556,11 @@ main {
 }
 
 .site-hero__actions .btn {
-  padding: var(--space-3) var(--space-8);
-  font-size: var(--text-base);
+  padding: var(--space-4) var(--space-12);
+  font-size: var(--text-lg);
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
+  border-radius: var(--radius-lg);
 }
 
 /* Hero CTA buttons — solid fill visible on any background */
@@ -619,9 +620,10 @@ main {
     padding-bottom: var(--space-10);
   }
   .site-hero__actions .btn {
-    padding: var(--space-3) var(--space-6);
+    padding: var(--space-4) var(--space-8);
+    font-size: var(--text-base);
     width: 100%;
-    max-width: 280px;
+    max-width: 320px;
     justify-content: center;
   }
 }
