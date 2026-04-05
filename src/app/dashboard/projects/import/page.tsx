@@ -247,6 +247,15 @@ export default function ImportFromWebsitePage() {
             </div>
           )}
 
+          {/* Key quote */}
+          {projectData.keyQuote && (
+            <div style={{ marginBottom: 'var(--space-5)', padding: 'var(--space-5)', borderLeft: '3px solid var(--color-accent)', background: 'var(--color-surface)', borderRadius: '0 12px 12px 0' }}>
+              <p style={{ fontStyle: 'italic', fontSize: 'var(--text-lg)', lineHeight: 1.6, color: 'var(--color-text-secondary)', margin: 0 }}>
+                &ldquo;{projectData.keyQuote}&rdquo;
+              </p>
+            </div>
+          )}
+
           {/* Social links */}
           {projectData.socialLinks.length > 0 && (
             <div style={{ marginBottom: 'var(--space-5)' }}>
@@ -258,6 +267,28 @@ export default function ImportFromWebsitePage() {
                   </span>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Other projects by same artist */}
+          {projectData.otherProjects.length > 0 && (
+            <div style={{ marginBottom: 'var(--space-5)' }}>
+              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>Other Projects by This Artist</h3>
+              <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                {projectData.otherProjects.map(p => (
+                  <button
+                    key={p.url}
+                    onClick={() => { setUrl(p.url); setStep('input') }}
+                    className="badge badge--outline"
+                    style={{ fontSize: 'var(--text-sm)', cursor: 'pointer', border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
+                  >
+                    {p.title}
+                  </button>
+                ))}
+              </div>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
+                Click to scan another project from this artist
+              </p>
             </div>
           )}
 
@@ -305,9 +336,23 @@ export default function ImportFromWebsitePage() {
             )}
             <div>
               <h2 style={{ fontSize: 'clamp(1.25rem, 3vw, 1.75rem)', fontWeight: 700, margin: 0 }}>{profileData.name}</h2>
+              {profileData.titles.length > 0 && (
+                <p style={{ color: 'var(--color-accent)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-1)' }}>{profileData.titles.join(' · ')}</p>
+              )}
               <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-1)' }}>{profileData.website}</p>
             </div>
           </div>
+
+          {profileData.education.length > 0 && (
+            <div style={{ marginBottom: 'var(--space-5)' }}>
+              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>Education</h3>
+              <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                {profileData.education.map((ed, i) => (
+                  <span key={i} className="badge badge--outline" style={{ fontSize: 'var(--text-sm)' }}>{ed}</span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {profileData.bio && (
             <div style={{ marginBottom: 'var(--space-5)' }}>
@@ -339,6 +384,28 @@ export default function ImportFromWebsitePage() {
                   </span>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Other projects by this artist */}
+          {profileData.otherProjects.length > 0 && (
+            <div style={{ marginBottom: 'var(--space-5)' }}>
+              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>Projects</h3>
+              <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                {profileData.otherProjects.map(p => (
+                  <button
+                    key={p.url}
+                    onClick={() => { setUrl(p.url); setMode('project'); setStep('input'); setProfileData(null) }}
+                    className="badge badge--outline"
+                    style={{ fontSize: 'var(--text-sm)', cursor: 'pointer', border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
+                  >
+                    {p.title}
+                  </button>
+                ))}
+              </div>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
+                Click to import a project page
+              </p>
             </div>
           )}
 
