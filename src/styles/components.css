@@ -15390,13 +15390,13 @@ main {
 /* Mobile */
 @media (max-width: 520px) {
   .join-modal__overlay {
-    padding: 0;
-    align-items: flex-end;
+    padding: var(--space-4);
+    align-items: center;
   }
 
   .join-modal__card {
     padding: var(--space-5) var(--space-4) var(--space-4);
-    border-radius: 24px 24px 0 0;
+    border-radius: 24px;
     max-height: 90vh;
   }
 

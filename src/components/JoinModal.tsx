@@ -69,13 +69,13 @@ export function JoinModal() {
         </button>
 
         <div className="join-modal__paths">
-          <Link href="/login?tab=signup&redirect=/dashboard/welcome" className="join-modal__path join-modal__path--share">
+          <Link href="/login?tab=signup&redirect=/dashboard/welcome" onClick={handleDismiss} className="join-modal__path join-modal__path--share">
             <h2>Share Art</h2>
             <p>You have a project and need collaborators.</p>
             <span className="join-modal__path-cta">Get Started</span>
           </Link>
 
-          <Link href="/login?tab=signup&redirect=/dashboard/welcome" className="join-modal__path join-modal__path--help">
+          <Link href="/login?tab=signup&redirect=/dashboard/welcome" onClick={handleDismiss} className="join-modal__path join-modal__path--help">
             <h2>Help Build Art</h2>
             <p>You&apos;re a maker ready to work on meaningful projects.</p>
             <span className="join-modal__path-cta">Get Started</span>
@@ -84,7 +84,7 @@ export function JoinModal() {
 
         <p className="join-modal__signin">
           Already a member?{' '}
-          <Link href="/login">Sign in</Link>
+          <Link href="/login" onClick={handleDismiss}>Sign in</Link>
         </p>
       </div>
     </div>
