@@ -110,7 +110,7 @@ function extractProjectLinks($: cheerio.CheerioAPI, baseUrl: string, currentPath
     const text = $(el).text().trim()
     if (!text || text.length > 80) return
     // Skip common non-project links
-    if (/about|contact|home|blog|shop|cart/i.test(text)) return
+    if (/about|contact|home|blog|shop|cart|skip|menu|close|search/i.test(text)) return
     if (href === '/' || href === '#' || href === currentPath) return
     // Must be internal link
     const resolved = resolveUrl(href, baseUrl)
@@ -127,9 +127,9 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
   const images: Array<{ url: string; alt: string }> = []
   const seen = new Set<string>()
 
-  // Get og:image first — highest quality hero candidate
+  // Get og:image first — highest quality hero candidate (skip site-wide defaults)
   const ogImage = $('meta[property="og:image"]').attr('content')
-  if (ogImage) {
+  if (ogImage && !/untitled-111|default|placeholder|logo/i.test(ogImage)) {
     const resolved = resolveUrl(ogImage, baseUrl)
     seen.add(resolved)
     images.push({ url: resolved, alt: 'Hero image' })
@@ -191,15 +191,25 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
   return images.slice(0, 20) // cap at 20 images
 }
 
-/** Extract a notable quote from marquee blocks or blockquotes */
+/** Extract a notable quote from marquee blocks, blockquotes, or standalone short paragraphs */
 function extractKeyQuote($: cheerio.CheerioAPI): string {
-  // Squarespace marquee blocks
-  const marquee = $('.sqs-block-marquee, .marquee, [class*="marquee"]').text().trim()
+  // Squarespace marquee blocks — try multiple selectors
+  const marqueeSelectors = '.sqs-block-marquee, .marquee, [class*="marquee"], .sqs-block-marquee p, [data-block-type="52"] p'
+  const marquee = $(marqueeSelectors).first().text().trim()
   if (marquee && marquee.length > 10 && marquee.length < 300) return marquee
 
   // Blockquotes
   const blockquote = $('blockquote').first().text().trim()
   if (blockquote && blockquote.length > 10) return blockquote.slice(0, 300)
+
+  // Fallback: look for short, impactful standalone paragraphs (likely pull-quotes)
+  // These are often in large text blocks with emphasis
+  $('em, strong, .sqs-block-html h2, .sqs-block-html h3').each((_, el) => {
+    const text = $(el).text().trim()
+    if (text.length > 20 && text.length < 200 && /not|is|are|will|can/.test(text.toLowerCase())) {
+      if (!marquee && !blockquote) return text
+    }
+  })
 
   return ''
 }
@@ -336,27 +346,33 @@ function suggestScale(allText: string): string {
 
 function suggestStage(allText: string): string {
   const lower = allText.toLowerCase()
-  if (/completed|premiered|exhibited|installed|shown at|built in/i.test(lower)) return 'Production'
+  if (/completed|premiered|exhibited|installed|shown at|built in|debuted|launched at|presented at/i.test(lower)) return 'Production'
   if (/fundrais|kickstarter|seeking fund|crowdfund/i.test(lower)) return 'Fundraising'
-  if (/engineered|fabricat|under construction|being built/i.test(lower)) return 'Engineering'
-  if (/design development|detailed design|prototyp/i.test(lower)) return 'Design Development'
+  if (/engineered|fabricat|under construction|being built|engineering precision|\d{2,}[- ]?foot/i.test(lower)) return 'Engineering'
+  if (/design development|detailed design|prototyp|rendering|concept art/i.test(lower)) return 'Design Development'
   return 'Concept'
 }
 
 /** Extract artist titles/roles from bio text (e.g. "Artist Engineer, Immersive Technologist") */
 function extractTitles(text: string): string[] {
-  // Look for comma-separated role lists with keywords
-  const rolePatterns = /(?:is\s+(?:an?\s+)?|as\s+(?:an?\s+)?)((?:[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:,\s*(?:and\s+)?)?)+)/g
+  // Look for comma-separated role lists preceded by "is a/an" or "as a/an"
+  const rolePatterns = /(?:is\s+(?:an?\s+)?)((?:[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:,\s*(?:and\s+)?[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)*))/g
   const matches = text.match(rolePatterns)
   if (!matches) return []
 
+  // Known role-like keywords to validate extracted titles
+  const roleKeywords = /artist|designer|engineer|technolog|composer|architect|director|producer|curator|fabricat|developer|manager|scientist|researcher|writer|musician|filmmaker|photographer|sculptor/i
+
   const titles: string[] = []
   for (const match of matches) {
-    const cleaned = match.replace(/^(?:is\s+(?:an?\s+)?|as\s+(?:an?\s+)?)/, '').trim()
+    const cleaned = match.replace(/^(?:is\s+(?:an?\s+)?)/, '').trim()
     const parts = cleaned.split(/,\s*(?:and\s+)?/)
     for (const part of parts) {
       const trimmed = part.trim()
-      if (trimmed.length > 3 && trimmed.length < 80) titles.push(trimmed)
+      // Must be 3-80 chars AND contain a role-like keyword
+      if (trimmed.length > 3 && trimmed.length < 80 && roleKeywords.test(trimmed)) {
+        titles.push(trimmed)
+      }
     }
   }
   return titles
@@ -365,11 +381,22 @@ function extractTitles(text: string): string[] {
 /** Extract education from bio text */
 function extractEducation(text: string): string[] {
   const education: string[] = []
+  // Require word boundary and case-sensitive degree abbreviations to avoid "ms of light" etc.
   const patterns = [
-    /(?:BS|BA|BSc|B\.S\.|B\.A\.)\s+(?:in\s+)?[\w\s]+/gi,
-    /(?:MS|MA|MSc|M\.S\.|M\.A\.)\s+(?:in\s+)?[\w\s]+/gi,
-    /(?:MFA|M\.F\.A\.)\s+(?:in\s+)?[\w\s]+/gi,
-    /(?:PhD|Ph\.D\.)\s+(?:in\s+)?[\w\s]+/gi,
+    /\bBS\s+in\s+[\w\s]{3,40}/g,
+    /\bBA\s+in\s+[\w\s]{3,40}/g,
+    /\bBSc\s+in\s+[\w\s]{3,40}/g,
+    /\bB\.S\.\s+in\s+[\w\s]{3,40}/g,
+    /\bB\.A\.\s+in\s+[\w\s]{3,40}/g,
+    /\bMS\s+in\s+[\w\s]{3,40}/g,
+    /\bMSc\s+in\s+[\w\s]{3,40}/g,
+    /\bMA\s+in\s+[\w\s]{3,40}/g,
+    /\bM\.S\.\s+in\s+[\w\s]{3,40}/g,
+    /\bM\.A\.\s+in\s+[\w\s]{3,40}/g,
+    /\bMFA\s+in\s+[\w\s]{3,40}/g,
+    /\bM\.F\.A\.\s+in\s+[\w\s]{3,40}/g,
+    /\bPhD\s+in\s+[\w\s]{3,40}/g,
+    /\bPh\.D\.\s+in\s+[\w\s]{3,40}/g,
   ]
   for (const pattern of patterns) {
     const matches = text.match(pattern)
@@ -406,8 +433,8 @@ export async function scrapeProjectPage(url: string): Promise<ScrapedProject> {
   let title = h1 || ogTitle || pageTitle || 'Untitled'
   title = title.split('—')[0].split('|')[0].split('–')[0].trim()
 
-  // Best description
-  const shortDescription = ogDesc || metaDesc || ''
+  // Best description — may be derived from content later if empty
+  let shortDescription = ogDesc || metaDesc || ''
 
   // Extract all content
   const sections = extractSections($)
@@ -446,8 +473,9 @@ export async function scrapeProjectPage(url: string): Promise<ScrapedProject> {
     const headingLower = section.heading.toLowerCase()
     const contentLower = section.content.toLowerCase()
 
-    // Skip very short or navigational sections
+    // Skip very short, navigational, or bloated sections (likely nav/footer noise)
     if (section.content.length < 30) continue
+    if (section.content.length > 15000) continue
 
     // Artist story / about sections
     if (headingLower.includes('about') || headingLower.includes('artist') ||
@@ -456,11 +484,22 @@ export async function scrapeProjectPage(url: string): Promise<ScrapedProject> {
       if (!artistStory) artistStory = section.content
       else if (!leadArtistBio) leadArtistBio = section.content
     }
-    // Materials / technical specs
+    // Goals / mission / why it matters — CHECK BEFORE materials to prevent misclassification
+    else if (headingLower.includes('goal') || headingLower.includes('mission') ||
+             headingLower.includes('matter') || headingLower.includes('why it')) {
+      // Split on double-newline for paragraph-style content, single newline for bullet points
+      const paragraphs = section.content.split(/\n\n+/).filter(l => l.trim().length > 10)
+      if (paragraphs.length > 0) {
+        goals.push(...paragraphs.slice(0, 5))
+      } else {
+        const lines = section.content.split('\n').filter(l => l.trim().length > 10)
+        goals.push(...lines.slice(0, 5))
+      }
+    }
+    // Materials / technical specs (heading-based only, not content-based to avoid false positives)
     else if (headingLower.includes('material') || headingLower.includes('technical') ||
              headingLower.includes('spec') || headingLower.includes('crown') ||
-             contentLower.includes('microcontroller') || contentLower.includes('sensor') ||
-             contentLower.includes('modular')) {
+             headingLower.includes('construction') || headingLower.includes('fabricat')) {
       if (!materialsText) materialsText = section.content
       else materialsText += '\n\n' + section.content
     }
@@ -471,15 +510,26 @@ export async function scrapeProjectPage(url: string): Promise<ScrapedProject> {
              headingLower.includes('speak through') || headingLower.includes('light')) {
       experience += (experience ? '\n\n' : '') + (section.heading !== 'Content' ? `**${section.heading}:** ` : '') + section.content
     }
-    // Goals / mission / vision / why it matters
-    else if (headingLower.includes('goal') || headingLower.includes('mission') ||
-             headingLower.includes('matter') || headingLower.includes('why it')) {
-      const lines = section.content.split('\n').filter(l => l.trim().length > 10)
-      goals.push(...lines.slice(0, 5))
-    }
     // From Vision to Reality (common Squarespace heading)
     else if (headingLower.includes('vision') || headingLower.includes('from vision')) {
       if (!overviewBody) overviewBody = section.content
+    }
+    // For generic "Content" headings, use content-based classification
+    else if (headingLower === 'content') {
+      // Try to classify by content keywords
+      if (!materialsText && (contentLower.includes('microcontroller') || contentLower.includes('sensor') ||
+          contentLower.includes('steel') || contentLower.includes('fabricat'))) {
+        materialsText = section.content
+      } else if (!experience && (contentLower.includes('interactive') || contentLower.includes('immersive') ||
+          contentLower.includes('respond') || contentLower.includes('react'))) {
+        experience = section.content
+      } else if (!overviewLead) {
+        overviewLead = section.content.split('\n\n')[0] || section.content
+        const rest = section.content.split('\n\n').slice(1).join('\n\n')
+        if (rest) overviewBody = rest
+      } else if (!overviewBody) {
+        overviewBody = section.content
+      }
     }
     // First substantial text = overview
     else if (!overviewLead) {
@@ -491,9 +541,22 @@ export async function scrapeProjectPage(url: string): Promise<ScrapedProject> {
     }
   }
 
+  // Fallback: if overviewLead is still empty, use first section content
+  if (!overviewLead && sections.length > 0) {
+    const firstSubstantial = sections.find(s => s.content.length > 50 && s.content.length < 15000)
+    if (firstSubstantial) {
+      overviewLead = firstSubstantial.content.split('\n\n')[0] || firstSubstantial.content
+    }
+  }
+
   // If no overview was found, use short description
   if (!overviewLead && shortDescription) {
     overviewLead = shortDescription
+  }
+
+  // Derive shortDescription from overviewLead if missing
+  if (!shortDescription && overviewLead) {
+    shortDescription = overviewLead.slice(0, 300)
   }
 
   // If we have a key quote and no goals, use it
