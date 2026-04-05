@@ -25,6 +25,35 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
   const [projectData, setProjectData] = useState<ScrapedProject | null>(null)
   const [profileData, setProfileData] = useState<ScrapedProfile | null>(null)
 
+  function renderSocialIcon(platform: string) {
+    switch (platform) {
+      case 'instagram':
+        return <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="1.5" y="1.5" width="15" height="15" rx="4" stroke="currentColor" strokeWidth="1.3"/><circle cx="9" cy="9" r="3.5" stroke="currentColor" strokeWidth="1.3"/><circle cx="13.5" cy="4.5" r="1" fill="currentColor"/></svg>
+      case 'linkedin':
+        return <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="1.5" y="1.5" width="15" height="15" rx="2" stroke="currentColor" strokeWidth="1.3"/><path d="M5.5 8v4.5M5.5 5.5v.01M8 12.5V9.5c0-1.2.6-1.8 1.7-1.8 1.1 0 1.6.6 1.6 1.8v3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+      case 'behance':
+        return <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2 5h4c1.7 0 2.5 1 2.5 2.2 0 .9-.5 1.5-1.2 1.8 1 .3 1.5 1.1 1.5 2.1 0 1.5-1 2.4-2.8 2.4H2V5z" stroke="currentColor" strokeWidth="1.3"/><path d="M10.5 10.5h5c0-1.7-1-3-2.5-3s-2.5 1.3-2.5 3c0 1.7 1 3 2.5 3 1 0 1.8-.5 2.2-1.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M10.5 5.5h4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+      case 'github':
+        return <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 1.5C4.9 1.5 1.5 4.9 1.5 9c0 3.3 2.1 6.1 5.1 7.1.4.1.5-.2.5-.4v-1.3c-2.1.5-2.5-1-2.5-1-.3-.8-.8-1.1-.8-1.1-.7-.5.1-.5.1-.5.7.1 1.1.7 1.1.7.6 1.1 1.7.8 2.1.6.1-.5.3-.8.5-.9-1.7-.2-3.4-.8-3.4-3.8 0-.8.3-1.5.7-2-.1-.2-.3-1 .1-2 0 0 .6-.2 2 .7.6-.2 1.2-.3 1.8-.3s1.2.1 1.8.3c1.4-.9 2-.7 2-.7.4 1 .2 1.8.1 2 .5.5.7 1.2.7 2 0 3-1.7 3.6-3.4 3.8.3.2.5.7.5 1.4v2.1c0 .2.1.5.5.4 3-1 5.1-3.8 5.1-7.1C16.5 4.9 13.1 1.5 9 1.5z" stroke="currentColor" strokeWidth="1.1"/></svg>
+      case 'vimeo':
+        return <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2 7c.2 2 1.5 3.8 2.5 4.8C6 13.3 8 15 10 15c2 0 3.5-1.5 4.5-4.5 1-3 1-4.5.5-5.5s-1.5-1.5-3-1c-1 .3-1.8 1.2-2 2.5.5-.3 1-.4 1.5-.2.5.2.5.7.3 1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+      case 'youtube':
+        return <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="1.5" y="3.5" width="15" height="11" rx="3" stroke="currentColor" strokeWidth="1.3"/><path d="M7.5 6.5l4 2.5-4 2.5V6.5z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/></svg>
+      case 'x':
+        return <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2.5 2.5l5.2 7L2.5 15.5h1.3l4.5-5.2 3.7 5.2h4.5L11 8.2l4.5-5.7h-1.3L10.3 7.2 7 2.5H2.5z" stroke="currentColor" strokeWidth="1.1"/></svg>
+      case 'tiktok':
+        return <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M10 2v9a3 3 0 11-2.5-2.96" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M10 5c1 1 2.5 1.5 4 1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+      case 'spotify':
+        return <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="1.3"/><path d="M5 7.5c2.5-1 5.5-.8 8 .5M5.5 10c2-0.8 4.5-.6 6.5.4M6 12.5c1.5-.6 3.5-.5 5 .3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+      case 'soundcloud':
+        return <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M1.5 11V9M3.5 12V8M5.5 13V7M7.5 13V6M9.5 13V5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M11 5c2.5 0 4.5 1.8 4.5 4s-2 4-4.5 4" stroke="currentColor" strokeWidth="1.3"/></svg>
+      case 'facebook':
+        return <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M16.5 9a7.5 7.5 0 10-8.67 7.41v-5.24H5.98V9h1.85V7.34c0-1.83 1.09-2.84 2.76-2.84.8 0 1.63.14 1.63.14v1.8h-.92c-.9 0-1.19.56-1.19 1.14V9h2.03l-.32 2.17h-1.71v5.24A7.5 7.5 0 0016.5 9z" stroke="currentColor" strokeWidth="1.1"/></svg>
+      default:
+        return <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="1.3"/><path d="M2 9h14M9 2c2 2 3 4.5 3 7s-1 5-3 7c-2-2-3-4.5-3-7s1-5 3-7z" stroke="currentColor" strokeWidth="1.3"/></svg>
+    }
+  }
+
   // Mode-specific theme colors
   const modeAccent = mode === 'project'
     ? { bg: 'rgba(1, 105, 111, 0.08)', border: 'rgba(1, 105, 111, 0.25)', text: '#01696F', label: 'Project Page' }
@@ -85,7 +114,8 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
   }
 
   return (
-    <div className="container" style={{ paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-10)', maxWidth: '800px' }}>
+    <div style={{ paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-10)' }}>
+      <div className="container" style={{ maxWidth: '800px' }}>
       <Link href={backLink.href} style={{ color: 'var(--color-accent)', textDecoration: 'none', fontSize: 'var(--text-sm)' }}>
         &larr; {backLink.label}
       </Link>
@@ -208,10 +238,11 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
           </p>
         </div>
       )}
+      </div>{/* end .container for input/scraping steps */}
 
       {/* STEP: Preview — Project */}
       {step === 'preview' && mode === 'project' && projectData && (
-        <div className="import-preview">
+        <div className="import-preview container" style={{ maxWidth: '800px' }}>
           {/* Hero preview */}
           {projectData.heroImageUrl && (
             <div style={{ borderRadius: '16px', overflow: 'hidden', marginBottom: 'var(--space-5)', aspectRatio: '16/9', position: 'relative' }}>
@@ -384,137 +415,199 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
         </div>
       )}
 
-      {/* STEP: Preview — Profile */}
+      {/* STEP: Preview — Profile (matches real profile page layout) */}
       {step === 'preview' && mode === 'profile' && profileData && (
         <div className="import-preview">
-          {/* Profile header with purple accent */}
-          <div style={{
-            display: 'flex',
-            gap: 'var(--space-4)',
-            alignItems: 'center',
-            marginBottom: 'var(--space-5)',
-            padding: 'var(--space-5)',
-            background: 'var(--color-surface)',
-            borderRadius: '16px',
-            border: '2px solid rgba(139, 92, 246, 0.25)',
-          }}>
-            {profileData.avatarUrl && (
-              <img
-                src={profileData.avatarUrl}
-                alt={profileData.name}
-                style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(139, 92, 246, 0.3)' }}
-              />
-            )}
-            <div>
-              <h2 style={{ fontSize: 'clamp(1.25rem, 3vw, 1.75rem)', fontWeight: 700, margin: 0 }}>{profileData.name}</h2>
-              {profileData.titles.length > 0 && (
-                <p style={{ color: '#8B5CF6', fontSize: 'var(--text-sm)', marginTop: 'var(--space-1)' }}>{profileData.titles.join(' \u00B7 ')}</p>
-              )}
-              <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-1)' }}>{profileData.website}</p>
-            </div>
-          </div>
-
-          {profileData.education.length > 0 && (
-            <div style={{ marginBottom: 'var(--space-5)' }}>
-              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>Education</h3>
-              <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-                {profileData.education.map((ed, i) => (
-                  <span key={i} className="badge badge--outline" style={{ fontSize: 'var(--text-sm)' }}>{ed}</span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {profileData.bio && (
-            <div style={{ marginBottom: 'var(--space-5)' }}>
-              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>Bio</h3>
-              <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{profileData.bio.slice(0, 2000)}</p>
-            </div>
-          )}
-
-          {profileData.galleryImages.length > 0 && (
-            <div style={{ marginBottom: 'var(--space-5)' }}>
-              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-3)' }}>Portfolio ({profileData.galleryImages.length} images)</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 'var(--space-3)' }}>
-                {profileData.galleryImages.slice(0, 12).map((img, i) => (
-                  <div key={i} style={{ borderRadius: '10px', overflow: 'hidden', aspectRatio: '4/3', background: 'var(--color-surface)' }}>
-                    <img src={img.url} alt={img.alt || `Image ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {profileData.socialLinks.length > 0 && (
-            <div style={{ marginBottom: 'var(--space-5)' }}>
-              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>Social Links</h3>
-              <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-                {profileData.socialLinks.map(link => (
-                  <span key={link.platform} className="badge badge--outline" style={{ fontSize: 'var(--text-sm)', textTransform: 'capitalize' }}>
-                    {link.platform}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Other projects by this artist */}
-          {profileData.otherProjects.length > 0 && (
-            <div style={{ marginBottom: 'var(--space-5)' }}>
-              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>Projects</h3>
-              <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-                {profileData.otherProjects.map(p => (
-                  <button
-                    key={p.url}
-                    onClick={() => { setUrl(p.url); setMode('project'); setStep('input'); setProfileData(null) }}
-                    className="badge badge--outline"
-                    style={{ fontSize: 'var(--text-sm)', cursor: 'pointer', border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
-                  >
-                    {p.title}
-                  </button>
-                ))}
-              </div>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
-                Click to import a project page
-              </p>
-            </div>
-          )}
-
-          <details style={{ marginBottom: 'var(--space-5)' }}>
-            <summary style={{ cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-3)' }}>
-              View all imported sections ({profileData.sections.length})
-            </summary>
-            {profileData.sections.map((s, i) => (
-              <div key={i} style={{ padding: 'var(--space-3)', background: 'var(--color-surface)', borderRadius: '8px', marginBottom: 'var(--space-2)', border: '1px solid var(--color-border)' }}>
-                <strong style={{ fontSize: 'var(--text-sm)' }}>{s.heading}</strong>
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-1)', whiteSpace: 'pre-wrap' }}>{s.content.slice(0, 300)}{s.content.length > 300 ? '...' : ''}</p>
-              </div>
-            ))}
-          </details>
-
-          {/* Action buttons — profile CTA with purple accent */}
-          <div style={{ display: 'flex', gap: 'var(--space-3)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
-            <button
-              onClick={handleApplyToProfile}
-              className="btn"
-              style={{
-                flex: 1,
-                background: '#8B5CF6',
-                color: '#fff',
-                border: 'none',
-                fontWeight: 600,
-              }}
+          <article className="profile-page">
+            {/* Banner — use hero image or gradient */}
+            <section
+              className="profile-banner"
+              style={profileData.heroImageUrl
+                ? undefined
+                : { background: 'linear-gradient(135deg, #8B5CF6 0%, #8B5CF6cc 50%, #8B5CF688 100%)' }
+              }
             >
-              {user ? 'Apply to My Profile' : 'Sign Up & Build Your Profile'}
-            </button>
-            <button onClick={() => { setStep('input'); setProfileData(null) }} className="btn btn--outline">
-              Try a Different URL
-            </button>
-          </div>
+              {profileData.heroImageUrl && (
+                <img
+                  src={profileData.heroImageUrl}
+                  alt={`Cover for ${profileData.name}`}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              )}
+              <div className="profile-banner__overlay" />
+            </section>
 
-          <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)', marginTop: 'var(--space-3)' }}>
-            All content is editable in the Profile Editor. This is just a preview of what was found.
-          </p>
+            {/* 2-Column Header Grid */}
+            <section className="profile-header-grid-section">
+              <div className="container">
+                <div className="profile-header-grid">
+                  {/* Col 1: Photo + meta */}
+                  <div>
+                    <div className="profile-header-grid__photo">
+                      {profileData.avatarUrl ? (
+                        <img src={profileData.avatarUrl} alt={profileData.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <div className="profile-header-grid__initials" style={{ backgroundColor: '#8B5CF6' }}>
+                          {profileData.name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ marginTop: 'var(--space-3)', fontSize: 'var(--text-xs)' }}>
+                      {/* Education as skill tags */}
+                      {profileData.education.length > 0 && (
+                        <div style={{ marginBottom: 'var(--space-2)' }}>
+                          <p className="profile-header-grid__sidebar-label">Education</p>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                            {profileData.education.map((ed, i) => (
+                              <span key={i} className="profile-skill-tag" style={{ fontSize: '0.65rem', padding: '2px 8px' }}>{ed}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Social icons */}
+                      {profileData.socialLinks.length > 0 && (
+                        <div style={{ marginTop: 'var(--space-2)' }}>
+                          <p className="profile-header-grid__sidebar-label">Social</p>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                            {profileData.socialLinks.map(link => (
+                              <a
+                                key={link.platform}
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={link.platform.charAt(0).toUpperCase() + link.platform.slice(1)}
+                                style={{
+                                  width: 36, height: 36, minWidth: 44, minHeight: 44,
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  borderRadius: '50%', background: 'var(--color-surface)',
+                                  border: '1px solid var(--color-border)', color: 'var(--color-text)',
+                                  textDecoration: 'none',
+                                }}
+                              >
+                                {renderSocialIcon(link.platform)}
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Col 2: Name, title, bio */}
+                  <div className="profile-header-grid__info">
+                    <h1 className="profile-header-grid__name">{profileData.name}</h1>
+                    {profileData.titles.length > 0 && (
+                      <p className="profile-header-grid__title">{profileData.titles.join(' · ')}</p>
+                    )}
+
+                    {/* Website button */}
+                    {profileData.website && (
+                      <div className="profile-link-buttons">
+                        <a href={profileData.website} target="_blank" rel="noopener noreferrer" className="profile-link-btn--pill">
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3"><circle cx="8" cy="8" r="6.5"/><path d="M1.5 8h13M8 1.5c1.5 1.5 2.5 3.5 2.5 6.5s-1 5-2.5 6.5c-1.5-1.5-2.5-3.5-2.5-6.5s1-5 2.5-6.5z"/></svg>
+                          Website
+                        </a>
+                      </div>
+                    )}
+
+                    {/* Bio */}
+                    {profileData.bio && (
+                      <div className="profile-header-grid__bio">
+                        {profileData.bio.slice(0, 2000).split('\n\n').map((paragraph, i) => (
+                          <p key={i}>{paragraph}</p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Gallery — matching the smart gallery layout */}
+            {profileData.galleryImages.length > 0 && (
+              <section style={{ padding: 'var(--space-6) 0' }}>
+                <div className="container">
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                    gap: 'var(--space-3)',
+                  }}>
+                    {profileData.galleryImages.slice(0, 12).map((img, i) => (
+                      <div key={i} style={{
+                        borderRadius: '12px', overflow: 'hidden', aspectRatio: '4/3',
+                        background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+                      }}>
+                        <img src={img.url} alt={img.alt || `Portfolio ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* Artist Statement from sections */}
+            {profileData.sections.length > 0 && (
+              <section className="profile-two-col-section">
+                <div className="container">
+                  <p className="section-label">About</p>
+                  <div className="profile-two-col__text">
+                    {profileData.sections.slice(0, 3).map((s, i) => (
+                      <div key={i}>
+                        {s.heading !== 'Content' && <h3 style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>{s.heading}</h3>}
+                        {s.content.slice(0, 800).split('\n\n').map((p, j) => <p key={j}>{p}</p>)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* Other projects by this artist */}
+            {profileData.otherProjects.length > 0 && (
+              <section style={{ padding: 'var(--space-4) 0' }}>
+                <div className="container">
+                  <p className="section-label">Projects</p>
+                  <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', marginTop: 'var(--space-3)' }}>
+                    {profileData.otherProjects.map(p => (
+                      <button
+                        key={p.url}
+                        onClick={() => { setUrl(p.url); setMode('project'); setStep('input'); setProfileData(null) }}
+                        className="profile-link-btn--pill"
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {p.title}
+                      </button>
+                    ))}
+                  </div>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
+                    Click to import a project page
+                  </p>
+                </div>
+              </section>
+            )}
+          </article>
+
+          {/* Action buttons */}
+          <div className="container" style={{ maxWidth: '800px' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-3)', paddingTop: 'var(--space-5)', borderTop: '1px solid var(--color-border)', marginTop: 'var(--space-4)' }}>
+              <button
+                onClick={handleApplyToProfile}
+                className="btn"
+                style={{ flex: 1, background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600 }}
+              >
+                {user ? 'Apply to My Profile' : 'Sign Up & Build Your Profile'}
+              </button>
+              <button onClick={() => { setStep('input'); setProfileData(null) }} className="btn btn--outline">
+                Try a Different URL
+              </button>
+            </div>
+
+            <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)', marginTop: 'var(--space-3)' }}>
+              All content is editable in the Profile Editor. This is just a preview of what was found.
+            </p>
+          </div>
         </div>
       )}
     </div>
