@@ -108,8 +108,8 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     if (user) {
       router.push('/dashboard/profile/live-edit?import=profile')
     } else {
-      const redirectPath = encodeURIComponent('/dashboard/profile/live-edit?import=profile')
-      router.push(`/login?tab=signup&redirect=${redirectPath}`)
+      // Show the profile builder preview (no login required)
+      router.push('/import/profile-builder')
     }
   }
 
@@ -225,6 +225,13 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
               </button>
             </div>
           )}
+
+          <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)', marginTop: 'var(--space-4)' }}>
+            Don&apos;t have a website?{' '}
+            <Link href="/login?tab=signup&redirect=/dashboard/welcome" style={{ color: 'var(--color-accent)', textDecoration: 'underline' }}>
+              Skip and create your page from scratch
+            </Link>
+          </p>
         </div>
       )}
 
