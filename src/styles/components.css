@@ -15182,29 +15182,22 @@ main {
 }
 
 .join-modal__card {
-  background: rgba(30, 30, 28, 0.85);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #1a1918;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 28px;
   padding: var(--space-10);
   max-width: 640px;
   width: 100%;
   position: relative;
-  box-shadow:
-    0 40px 80px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  animation: contactModalSlideUp 0.4s var(--ease-out, ease-out);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+  animation: contactModalSlideUp 0.35s var(--ease-out, ease-out);
 }
 
-/* Light mode override */
 [data-theme="light"] .join-modal__card,
 :root:not([data-theme="dark"]) .join-modal__card {
-  background: rgba(245, 243, 238, 0.92);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow:
-    0 40px 80px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.2);
 }
 
 .join-modal__close {
@@ -15260,52 +15253,45 @@ main {
   border-radius: 20px;
   cursor: pointer;
   transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  min-height: 240px;
+  min-height: 260px;
 }
 
 .join-modal__path:hover {
   transform: translateY(-4px);
 }
 
-/* Share Art — teal glassmorphic card */
+/* Share Art — teal card */
 .join-modal__path--share {
-  border-color: rgba(20, 184, 166, 0.4);
-  background: rgba(20, 184, 166, 0.08);
-  box-shadow: inset 0 1px 0 rgba(20, 184, 166, 0.15);
+  border-color: rgba(20, 184, 166, 0.5);
+  background: rgba(20, 184, 166, 0.1);
 }
 
 .join-modal__path--share:hover {
-  border-color: rgba(20, 184, 166, 0.8);
-  box-shadow:
-    0 16px 40px rgba(20, 184, 166, 0.2),
-    0 0 0 1px rgba(20, 184, 166, 0.15),
-    inset 0 1px 0 rgba(20, 184, 166, 0.2);
+  border-color: rgba(20, 184, 166, 0.9);
+  background: rgba(20, 184, 166, 0.14);
+  box-shadow: 0 16px 40px rgba(20, 184, 166, 0.15);
 }
 
-/* Help Build Art — gold glassmorphic card */
+/* Help Build Art — gold card */
 .join-modal__path--help {
-  border-color: rgba(234, 179, 8, 0.4);
-  background: rgba(234, 179, 8, 0.08);
-  box-shadow: inset 0 1px 0 rgba(234, 179, 8, 0.15);
+  border-color: rgba(234, 179, 8, 0.5);
+  background: rgba(234, 179, 8, 0.1);
 }
 
 .join-modal__path--help:hover {
-  border-color: rgba(234, 179, 8, 0.8);
-  box-shadow:
-    0 16px 40px rgba(234, 179, 8, 0.15),
-    0 0 0 1px rgba(234, 179, 8, 0.15),
-    inset 0 1px 0 rgba(234, 179, 8, 0.2);
+  border-color: rgba(234, 179, 8, 0.9);
+  background: rgba(234, 179, 8, 0.14);
+  box-shadow: 0 16px 40px rgba(234, 179, 8, 0.12);
 }
 
 .join-modal__path h2 {
   font-family: var(--font-display);
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
   font-weight: 700;
-  line-height: 1.05;
-  margin-bottom: var(--space-4);
-  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: var(--space-3);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 .join-modal__path--share h2 {
@@ -15313,10 +15299,9 @@ main {
 }
 
 .join-modal__path--help h2 {
-  color: #f59e0b;
+  color: #fbbf24;
 }
 
-/* Light mode title colors — slightly darker for contrast */
 [data-theme="light"] .join-modal__path--share h2,
 :root:not([data-theme="dark"]) .join-modal__path--share h2 {
   color: var(--color-primary);
@@ -15328,9 +15313,9 @@ main {
 }
 
 .join-modal__path p {
-  font-size: var(--text-base);
-  color: rgba(255, 255, 255, 0.6);
-  line-height: 1.5;
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.6;
   margin-bottom: auto;
   padding-bottom: var(--space-6);
 }
