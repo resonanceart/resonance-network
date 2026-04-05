@@ -15170,9 +15170,9 @@ main {
 .join-modal__overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   z-index: 9998;
   display: flex;
   align-items: center;
@@ -15182,167 +15182,225 @@ main {
 }
 
 .join-modal__card {
-  background: var(--color-surface-raised, var(--color-surface));
-  border-radius: 24px;
-  padding: var(--space-10) var(--space-10) var(--space-8);
-  max-width: 540px;
+  background: rgba(30, 30, 28, 0.85);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  padding: var(--space-10);
+  max-width: 640px;
   width: 100%;
   position: relative;
-  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
-  animation: contactModalSlideUp 0.35s var(--ease-out, ease-out);
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  animation: contactModalSlideUp 0.4s var(--ease-out, ease-out);
+}
+
+/* Light mode override */
+[data-theme="light"] .join-modal__card,
+:root:not([data-theme="dark"]) .join-modal__card {
+  background: rgba(245, 243, 238, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .join-modal__close {
   position: absolute;
-  top: var(--space-4);
-  right: var(--space-4);
-  background: rgba(128, 128, 128, 0.1);
-  border: none;
-  color: var(--color-text-muted);
+  top: var(--space-5);
+  right: var(--space-5);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: all 0.15s;
+  transition: all 0.2s;
   z-index: 1;
 }
 
+[data-theme="light"] .join-modal__close,
+:root:not([data-theme="dark"]) .join-modal__close {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: rgba(0, 0, 0, 0.4);
+}
+
 .join-modal__close:hover {
-  background: rgba(128, 128, 128, 0.2);
-  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="light"] .join-modal__close:hover,
+:root:not([data-theme="dark"]) .join-modal__close:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.7);
 }
 
 .join-modal__paths {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-5);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-8);
 }
 
 .join-modal__path {
   display: flex;
   flex-direction: column;
-  padding: var(--space-6) var(--space-5);
+  padding: var(--space-8) var(--space-6);
   text-decoration: none;
   color: inherit;
-  border: 2px solid;
-  border-radius: 16px;
+  border: 1.5px solid;
+  border-radius: 20px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  min-height: 240px;
 }
 
 .join-modal__path:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
 }
 
-/* Share Art — teal card */
+/* Share Art — teal glassmorphic card */
 .join-modal__path--share {
-  border-color: rgba(20, 184, 166, 0.35);
-  background: rgba(20, 184, 166, 0.06);
+  border-color: rgba(20, 184, 166, 0.4);
+  background: rgba(20, 184, 166, 0.08);
+  box-shadow: inset 0 1px 0 rgba(20, 184, 166, 0.15);
 }
 
 .join-modal__path--share:hover {
-  border-color: var(--color-primary);
-  box-shadow: 0 12px 32px rgba(20, 184, 166, 0.2);
+  border-color: rgba(20, 184, 166, 0.8);
+  box-shadow:
+    0 16px 40px rgba(20, 184, 166, 0.2),
+    0 0 0 1px rgba(20, 184, 166, 0.15),
+    inset 0 1px 0 rgba(20, 184, 166, 0.2);
 }
 
-/* Help Build Art — gold card */
+/* Help Build Art — gold glassmorphic card */
 .join-modal__path--help {
-  border-color: rgba(234, 179, 8, 0.35);
-  background: rgba(234, 179, 8, 0.06);
+  border-color: rgba(234, 179, 8, 0.4);
+  background: rgba(234, 179, 8, 0.08);
+  box-shadow: inset 0 1px 0 rgba(234, 179, 8, 0.15);
 }
 
 .join-modal__path--help:hover {
   border-color: rgba(234, 179, 8, 0.8);
-  box-shadow: 0 12px 32px rgba(234, 179, 8, 0.15);
+  box-shadow:
+    0 16px 40px rgba(234, 179, 8, 0.15),
+    0 0 0 1px rgba(234, 179, 8, 0.15),
+    inset 0 1px 0 rgba(234, 179, 8, 0.2);
 }
 
 .join-modal__path h2 {
   font-family: var(--font-display);
-  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
   font-weight: 700;
-  line-height: 1.1;
-  margin-bottom: var(--space-3);
-  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin-bottom: var(--space-4);
+  letter-spacing: -0.03em;
 }
 
 .join-modal__path--share h2 {
-  color: var(--color-primary);
+  color: #2dd4bf;
 }
 
 .join-modal__path--help h2 {
-  color: rgba(234, 179, 8, 0.95);
+  color: #f59e0b;
+}
+
+/* Light mode title colors — slightly darker for contrast */
+[data-theme="light"] .join-modal__path--share h2,
+:root:not([data-theme="dark"]) .join-modal__path--share h2 {
+  color: var(--color-primary);
+}
+
+[data-theme="light"] .join-modal__path--help h2,
+:root:not([data-theme="dark"]) .join-modal__path--help h2 {
+  color: #d97706;
 }
 
 .join-modal__path p {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
+  font-size: var(--text-base);
+  color: rgba(255, 255, 255, 0.6);
   line-height: 1.5;
-  margin-bottom: var(--space-5);
-  flex-grow: 1;
+  margin-bottom: auto;
+  padding-bottom: var(--space-6);
+}
+
+[data-theme="light"] .join-modal__path p,
+:root:not([data-theme="dark"]) .join-modal__path p {
+  color: var(--color-text-secondary);
 }
 
 .join-modal__path-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-3) var(--space-5);
+  padding: var(--space-3) var(--space-6);
   font-size: var(--text-sm);
   font-weight: 600;
-  border-radius: var(--radius-md);
-  transition: all 0.15s;
+  border-radius: 12px;
+  transition: all 0.2s;
   width: 100%;
-  min-height: 44px;
+  min-height: 48px;
+  letter-spacing: 0.01em;
+  border: none;
 }
 
 .join-modal__path--share .join-modal__path-cta {
-  background: var(--color-primary);
+  background: rgba(20, 184, 166, 0.9);
   color: #fff;
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.25);
 }
 
 .join-modal__path--share:hover .join-modal__path-cta {
-  background: var(--color-primary-hover, #145755);
+  background: rgba(20, 184, 166, 1);
+  box-shadow: 0 6px 20px rgba(20, 184, 166, 0.35);
 }
 
 .join-modal__path--help .join-modal__path-cta {
   background: rgba(234, 179, 8, 0.9);
   color: #111;
+  box-shadow: 0 4px 12px rgba(234, 179, 8, 0.2);
 }
 
 .join-modal__path--help:hover .join-modal__path-cta {
   background: rgba(234, 179, 8, 1);
+  box-shadow: 0 6px 20px rgba(234, 179, 8, 0.3);
 }
 
 .join-modal__signin {
   text-align: center;
   font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+[data-theme="light"] .join-modal__signin,
+:root:not([data-theme="dark"]) .join-modal__signin {
   color: var(--color-text-muted);
 }
 
 .join-modal__signin a {
-  color: var(--color-primary);
+  color: #2dd4bf;
   text-decoration: none;
   font-weight: 500;
 }
 
+[data-theme="light"] .join-modal__signin a,
+:root:not([data-theme="dark"]) .join-modal__signin a {
+  color: var(--color-primary);
+}
+
 .join-modal__signin a:hover {
   text-decoration: underline;
-}
-
-/* Dark mode */
-[data-theme="dark"] .join-modal__card {
-  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8);
-}
-
-[data-theme="dark"] .join-modal__path--share {
-  background: rgba(20, 184, 166, 0.08);
-}
-
-[data-theme="dark"] .join-modal__path--help {
-  background: rgba(234, 179, 8, 0.08);
 }
 
 /* Mobile */
@@ -15354,7 +15412,7 @@ main {
 
   .join-modal__card {
     padding: var(--space-8) var(--space-5) var(--space-6);
-    border-radius: 24px 24px 0 0;
+    border-radius: 28px 28px 0 0;
     max-height: 92vh;
   }
 
@@ -15364,10 +15422,15 @@ main {
   }
 
   .join-modal__path {
-    padding: var(--space-5);
+    padding: var(--space-6) var(--space-5);
+    min-height: auto;
   }
 
   .join-modal__path h2 {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
+  }
+
+  .join-modal__path p {
+    padding-bottom: var(--space-4);
   }
 }
