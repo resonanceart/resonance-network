@@ -15184,9 +15184,9 @@ main {
 .join-modal__card {
   background: #1a1918;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 28px;
-  padding: var(--space-10);
-  max-width: 640px;
+  border-radius: 24px;
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  max-width: 580px;
   width: 100%;
   position: relative;
   box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
@@ -15202,8 +15202,8 @@ main {
 
 .join-modal__close {
   position: absolute;
-  top: var(--space-5);
-  right: var(--space-5);
+  top: var(--space-3);
+  right: var(--space-3);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.5);
@@ -15239,25 +15239,24 @@ main {
 .join-modal__paths {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-5);
-  margin-bottom: var(--space-8);
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
 .join-modal__path {
   display: flex;
   flex-direction: column;
-  padding: var(--space-8) var(--space-6);
+  padding: var(--space-5) var(--space-5) var(--space-4);
   text-decoration: none;
   color: inherit;
   border: 1.5px solid;
-  border-radius: 20px;
+  border-radius: 16px;
   cursor: pointer;
   transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
-  min-height: 260px;
 }
 
 .join-modal__path:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
 }
 
 /* Share Art — teal card */
@@ -15315,9 +15314,8 @@ main {
 .join-modal__path p {
   font-size: var(--text-sm);
   color: rgba(255, 255, 255, 0.55);
-  line-height: 1.6;
-  margin-bottom: auto;
-  padding-bottom: var(--space-6);
+  line-height: 1.5;
+  margin-bottom: var(--space-4);
 }
 
 [data-theme="light"] .join-modal__path p,
@@ -15329,15 +15327,16 @@ main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-3) var(--space-6);
+  padding: var(--space-3) var(--space-5);
   font-size: var(--text-sm);
   font-weight: 600;
-  border-radius: 12px;
+  border-radius: 10px;
   transition: all 0.2s;
   width: 100%;
-  min-height: 48px;
+  min-height: 44px;
   letter-spacing: 0.01em;
   border: none;
+  margin-top: auto;
 }
 
 .join-modal__path--share .join-modal__path-cta {
@@ -15396,26 +15395,21 @@ main {
   }
 
   .join-modal__card {
-    padding: var(--space-8) var(--space-5) var(--space-6);
-    border-radius: 28px 28px 0 0;
-    max-height: 92vh;
+    padding: var(--space-5) var(--space-4) var(--space-4);
+    border-radius: 24px 24px 0 0;
+    max-height: 90vh;
   }
 
   .join-modal__paths {
     grid-template-columns: 1fr;
-    gap: var(--space-4);
+    gap: var(--space-3);
   }
 
   .join-modal__path {
-    padding: var(--space-6) var(--space-5);
-    min-height: auto;
+    padding: var(--space-4);
   }
 
   .join-modal__path h2 {
-    font-size: 1.75rem;
-  }
-
-  .join-modal__path p {
-    padding-bottom: var(--space-4);
+    font-size: 1.5rem;
   }
 }
