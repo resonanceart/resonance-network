@@ -340,10 +340,24 @@ function extractSections($: cheerio.CheerioAPI): Array<{ heading: string; conten
     })
   }
 
+  // Filter out garbage content (JSON configs, CSS rules, form metadata)
+  const filtered = sections.filter(s => {
+    const c = s.content
+    // Skip sections with JSON-like content
+    if (/\{"type":\s*"/.test(c) || /\{"identifier"/.test(c)) return false
+    // Skip sections with CSS rules
+    if (/\{[^}]*:\s*[^}]*;\s*\}/.test(c) && c.split('{').length > 3) return false
+    // Skip sections with code/config noise
+    if (/box-shadow:|border-radius:|font-family:|\.sqs-/.test(c)) return false
+    // Skip very long sections (likely full-page scrapes with nav/footer noise)
+    if (c.length > 15000) return false
+    return true
+  })
+
   // Deduplicate sections with similar content
   const unique: Array<{ heading: string; content: string }> = []
   const seenContent = new Set<string>()
-  for (const s of sections) {
+  for (const s of filtered) {
     const key = s.content.slice(0, 200)
     if (!seenContent.has(key)) {
       seenContent.add(key)
