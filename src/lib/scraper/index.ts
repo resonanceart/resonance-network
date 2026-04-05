@@ -123,16 +123,61 @@ function extractProjectLinks($: cheerio.CheerioAPI, baseUrl: string, currentPath
   return projects
 }
 
-function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: string; alt: string }> {
-  const images: Array<{ url: string; alt: string }> = []
+/** Check if a URL looks like a site-wide default/logo rather than real content */
+function isLikelySiteDefault(url: string): boolean {
+  return /untitled-111|default|placeholder|logo|favicon|site-?icon|brand|header-?logo|nav-?logo|og-?image|social-?share|share-?image|twitter-?card|fb-?image/i.test(url)
+}
+
+/** Score an image for hero candidacy — higher is better */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function scoreImageForHero(el: any | null, $: cheerio.CheerioAPI, url: string): number {
+  let score = 0
+
+  // Penalize images that look like site defaults
+  if (isLikelySiteDefault(url)) score -= 50
+
+  if (!el) return score
+
+  // Check specified dimensions — larger is better for hero
+  const width = parseInt($(el).attr('width') || '0')
+  const height = parseInt($(el).attr('height') || '0')
+  if (width > 600) score += 20
+  if (width > 1000) score += 10
+  if (height > 400) score += 15
+  if (height > 800) score += 10
+  // Small specified dimensions = probably not hero material
+  if (width > 0 && width < 200) score -= 30
+  if (height > 0 && height < 200) score -= 30
+
+  // Check if image is inside main content area (not header/nav/footer)
+  const parent = $(el).closest('main, article, [role="main"], .page-content, .content, section[data-section-id], .page-section, .sqs-section')
+  if (parent.length > 0) score += 25
+
+  // Penalize images inside header, nav, or footer
+  const navParent = $(el).closest('header, nav, footer, .header, .nav, .footer, .header-nav')
+  if (navParent.length > 0) score -= 40
+
+  // Bonus for images with descriptive alt text (real content images tend to have alts)
+  const alt = $(el).attr('alt') || ''
+  if (alt.length > 5) score += 10
+
+  // Bonus for images with srcset (usually real content images)
+  if ($(el).attr('srcset')) score += 5
+
+  return score
+}
+
+function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: string; alt: string; heroScore: number }> {
+  const images: Array<{ url: string; alt: string; heroScore: number }> = []
   const seen = new Set<string>()
 
-  // Get og:image first — highest quality hero candidate (skip site-wide defaults)
+  // Get og:image — but only add it if it does NOT look like a site-wide default
   const ogImage = $('meta[property="og:image"]').attr('content')
-  if (ogImage && !/untitled-111|default|placeholder|logo/i.test(ogImage)) {
+  if (ogImage && !isLikelySiteDefault(ogImage)) {
     const resolved = resolveUrl(ogImage, baseUrl)
     seen.add(resolved)
-    images.push({ url: resolved, alt: 'Hero image' })
+    // og:image gets a moderate baseline score — real content images from main area can beat it
+    images.push({ url: resolved, alt: 'Hero image', heroScore: 10 })
   }
 
   // Get all img tags — check src, data-src (lazy load), srcset
@@ -162,7 +207,8 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
     if ((width > 0 && width < 50) || (height > 0 && height < 50)) return
 
     seen.add(resolved)
-    images.push({ url: resolved, alt: $(el).attr('alt') || '' })
+    const heroScore = scoreImageForHero(el, $, resolved)
+    images.push({ url: resolved, alt: $(el).attr('alt') || '', heroScore })
   })
 
   // Squarespace-specific: data-image attributes on containers
@@ -172,7 +218,7 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
     const resolved = resolveUrl(src, baseUrl)
     if (seen.has(resolved)) return
     seen.add(resolved)
-    images.push({ url: resolved, alt: '' })
+    images.push({ url: resolved, alt: '', heroScore: scoreImageForHero(null, $, resolved) })
   })
 
   // Squarespace-specific: background images in inline styles
@@ -183,7 +229,7 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
       const resolved = resolveUrl(match[1], baseUrl)
       if (!seen.has(resolved)) {
         seen.add(resolved)
-        images.push({ url: resolved, alt: '' })
+        images.push({ url: resolved, alt: '', heroScore: scoreImageForHero(null, $, resolved) })
       }
     }
   })
@@ -565,9 +611,26 @@ export async function scrapeProjectPage(url: string): Promise<ScrapedProject> {
     goals.push(keyQuote)
   }
 
-  // Hero image = first image (og:image prioritized in extractImages)
-  const heroImageUrl = images.length > 0 ? images[0].url : null
-  const galleryImages = images.slice(1)
+  // Hero image = pick the image with the highest hero score, not just the first
+  let heroImageUrl: string | null = null
+  let galleryImages: Array<{ url: string; alt: string }> = []
+
+  if (images.length > 0) {
+    // Find the best hero candidate by score
+    let bestIdx = 0
+    let bestScore = images[0].heroScore
+    for (let i = 1; i < images.length; i++) {
+      if (images[i].heroScore > bestScore) {
+        bestScore = images[i].heroScore
+        bestIdx = i
+      }
+    }
+    heroImageUrl = images[bestIdx].url
+    // Gallery = all other images (preserving original order)
+    galleryImages = images
+      .filter((_, i) => i !== bestIdx)
+      .map(({ url, alt }) => ({ url, alt }))
+  }
 
   return {
     title,
@@ -653,7 +716,7 @@ export async function scrapeProfilePage(url: string): Promise<ScrapedProfile> {
     } else if (!heroImageUrl) {
       heroImageUrl = img.url
     } else {
-      galleryImages.push(img)
+      galleryImages.push({ url: img.url, alt: img.alt })
     }
   }
 
