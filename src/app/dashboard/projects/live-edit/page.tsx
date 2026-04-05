@@ -220,8 +220,38 @@ function LiveProjectEditorInner() {
         .catch(() => {})
     }
 
+    // Check for imported data from website scraper
+    try {
+      const importParam = new URLSearchParams(window.location.search).get('import')
+      if (importParam === 'true') {
+        const raw = sessionStorage.getItem('resonance_import_data')
+        if (raw) {
+          const imported = JSON.parse(raw)
+          if (imported.title) setTitle(imported.title)
+          if (imported.shortDescription) setShortDescription(imported.shortDescription)
+          if (imported.overviewLead) setOverviewLead(imported.overviewLead)
+          if (imported.overviewBody) setOverviewBody(imported.overviewBody)
+          if (imported.experience) setExperience(imported.experience)
+          if (imported.artistStory) setStory(imported.artistStory)
+          if (imported.materials) setMaterials(imported.materials)
+          if (imported.goals?.length) setGoals(imported.goals)
+          if (imported.suggestedDomains?.length) setDomains(imported.suggestedDomains)
+          if (imported.suggestedPathways?.length) setPathways(imported.suggestedPathways)
+          if (imported.suggestedStage) setStage(imported.suggestedStage)
+          if (imported.suggestedScale) setScale(imported.suggestedScale)
+          if (imported.leadArtistName) setLeadArtistName(imported.leadArtistName)
+          if (imported.leadArtistBio) setStory(imported.leadArtistBio)
+          if (imported.heroImageUrl) setHeroImageUrl(imported.heroImageUrl)
+          if (imported.galleryImages?.length) setGalleryImages(imported.galleryImages)
+          if (imported.socialLinks?.length) setProjectSocialLinks(imported.socialLinks)
+          markDirty()
+          sessionStorage.removeItem('resonance_import_data')
+        }
+      }
+    } catch { /* ignore import errors */ }
+
     setLoading(false)
-  }, [user, authLoading, existingId])
+  }, [user, authLoading, existingId, markDirty])
 
   // Keep a ref to the latest saveDraft function to avoid stale closures
   const saveDraftRef = useRef(saveDraft)

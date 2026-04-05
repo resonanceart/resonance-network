@@ -83,9 +83,14 @@ export default function MyProjectsPage() {
       <div className="container" style={{ paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-10)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-6)' }}>
           <h1 style={{ margin: 0 }}>My Projects</h1>
-          <Link href="/dashboard/projects/new" className="btn btn--primary">
-            Submit New Project
-          </Link>
+          <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+            <Link href="/dashboard/projects/import" className="btn btn--outline">
+              Import from Website
+            </Link>
+            <Link href="/dashboard/projects/new" className="btn btn--primary">
+              Submit New Project
+            </Link>
+          </div>
         </div>
 
         {projects.length === 0 ? (
