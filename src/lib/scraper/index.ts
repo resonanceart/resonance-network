@@ -203,15 +203,16 @@ function extractKeyQuote($: cheerio.CheerioAPI): string {
   if (blockquote && blockquote.length > 10) return blockquote.slice(0, 300)
 
   // Fallback: look for short, impactful standalone paragraphs (likely pull-quotes)
-  // These are often in large text blocks with emphasis
+  let fallbackQuote = ''
   $('em, strong, .sqs-block-html h2, .sqs-block-html h3').each((_, el) => {
+    if (fallbackQuote) return
     const text = $(el).text().trim()
     if (text.length > 20 && text.length < 200 && /not|is|are|will|can/.test(text.toLowerCase())) {
-      if (!marquee && !blockquote) return text
+      fallbackQuote = text
     }
   })
 
-  return ''
+  return fallbackQuote
 }
 
 function extractSections($: cheerio.CheerioAPI): Array<{ heading: string; content: string }> {
