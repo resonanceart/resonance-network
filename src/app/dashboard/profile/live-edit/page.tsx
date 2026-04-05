@@ -617,6 +617,63 @@ export default function LiveProfileEditor() {
         if (!p?.avatar_url && !p?.bio) {
           setShowWelcome(true)
         }
+
+        // Apply imported profile data from website scraper
+        const params = new URLSearchParams(window.location.search)
+        if (params.get('import') === 'profile') {
+          try {
+            const raw = sessionStorage.getItem('resonance_profile_import')
+            if (raw) {
+              const imported = JSON.parse(raw) as {
+                name?: string; bio?: string; titles?: string[]; education?: string[];
+                avatarUrl?: string | null; galleryImages?: Array<{ url: string; alt: string }>;
+                socialLinks?: Array<{ platform: string; url: string }>; website?: string;
+              }
+              // Only fill empty fields — don't overwrite existing data
+              if (imported.name && !p?.display_name) setDisplayName(imported.name)
+              if (imported.bio && !p?.bio) setBio(imported.bio)
+              if (imported.titles && imported.titles.length > 0 && !(ext?.professional_title)) {
+                setProfessionalTitle(imported.titles[0])
+              }
+              if (imported.website && !p?.website) setWebsite(imported.website)
+              if (imported.avatarUrl && !p?.avatar_url) setAvatarUrl(imported.avatarUrl)
+              if (imported.galleryImages && imported.galleryImages.length > 0) {
+                setMediaGallery(prev => {
+                  if (prev.length > 0) return prev
+                  return imported.galleryImages!.map((img, i) => ({
+                    url: img.url, alt: img.alt || '', type: 'image' as const,
+                    order: i, isFeatured: i === 0,
+                  }))
+                })
+              }
+              if (imported.socialLinks && imported.socialLinks.length > 0) {
+                setSocialLinks(prev => {
+                  if (prev.length > 0) return prev
+                  return imported.socialLinks!.map((link, i) => ({
+                    id: `import-${Date.now()}-${i}`,
+                    platform: link.platform as SocialEntry['platform'],
+                    url: link.url,
+                    display_order: i,
+                  }))
+                })
+              }
+              if (imported.education && imported.education.length > 0) {
+                setTimeline(prev => {
+                  if (prev.length > 0) return prev
+                  return imported.education!.map((ed, i) => ({
+                    year: '', title: ed, category: 'education',
+                    organization: '', description: '',
+                  }))
+                })
+              }
+              setHasChanges(true)
+              lastChangeTime.current = Date.now()
+              sessionStorage.removeItem('resonance_profile_import')
+            }
+          } catch (e) {
+            console.error('Failed to apply imported profile data:', e)
+          }
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false))
