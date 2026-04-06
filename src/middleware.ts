@@ -48,7 +48,9 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Protect dashboard and admin routes — require authentication
-  if ((request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/admin')) && !user) {
+  // Allow demo mode for profile preview (no auth needed to see the editor preview)
+  const isDemoProfilePreview = request.nextUrl.pathname === '/dashboard/profile/live-edit' && request.nextUrl.searchParams.get('demo') === 'true'
+  if ((request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/admin')) && !user && !isDemoProfilePreview) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
