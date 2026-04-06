@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import Link from 'next/link'
 import type { ScrapedProject, ScrapedProfile } from '@/lib/scraper'
+import { saveImportData } from '@/lib/import-store'
 
 type ScrapeMode = 'project' | 'profile'
 type Step = 'input' | 'scraping' | 'preview' | 'error'
@@ -98,39 +99,16 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     }
   }
 
-  // Save data to sessionStorage, stripping base64 images if over quota
-  function safeSessionSave(key: string, data: Record<string, unknown>) {
+  async function saveProjectData() {
+    if (!projectData) return
     try {
-      sessionStorage.setItem(key, JSON.stringify(data))
+      await saveImportData('resonance_import_data', projectData)
     } catch {
-      // sessionStorage quota exceeded — strip base64 gallery images and retry
-      const lite = { ...data }
-      if (Array.isArray(lite.galleryImages)) {
-        lite.galleryImages = (lite.galleryImages as Array<{ url: string; alt: string }>)
-          .filter(img => !img.url.startsWith('data:'))
-          .slice(0, 4)
-      }
-      // Keep hero but cap at 500KB
-      if (typeof lite.heroImageUrl === 'string' && lite.heroImageUrl.length > 500_000) {
-        lite.heroImageUrl = null
-      }
+      // IndexedDB unavailable — fallback to sessionStorage without images
       try {
-        sessionStorage.setItem(key, JSON.stringify(lite))
-      } catch {
-        // Still too big — strip all images
-        lite.galleryImages = []
-        lite.heroImageUrl = null
-        if ('avatarUrl' in lite && typeof lite.avatarUrl === 'string' && lite.avatarUrl.length > 100_000) {
-          lite.avatarUrl = null
-        }
-        try { sessionStorage.setItem(key, JSON.stringify(lite)) } catch { /* give up */ }
-      }
-    }
-  }
-
-  function saveProjectData() {
-    if (projectData) {
-      safeSessionSave('resonance_import_data', projectData as unknown as Record<string, unknown>)
+        const lite = { ...projectData, heroImageUrl: null, galleryImages: [] }
+        sessionStorage.setItem('resonance_import_data', JSON.stringify(lite))
+      } catch { /* give up */ }
     }
   }
 
@@ -138,9 +116,15 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     ? '/dashboard/projects/live-edit?import=true'
     : '/dashboard/projects/live-edit?demo=true'
 
-  function saveProfileData() {
-    if (profileData) {
-      safeSessionSave('resonance_profile_import', profileData as unknown as Record<string, unknown>)
+  async function saveProfileData() {
+    if (!profileData) return
+    try {
+      await saveImportData('resonance_profile_import', profileData)
+    } catch {
+      try {
+        const lite = { ...profileData, heroImageUrl: null, avatarUrl: null, galleryImages: [] }
+        sessionStorage.setItem('resonance_profile_import', JSON.stringify(lite))
+      } catch { /* give up */ }
     }
   }
 
@@ -445,7 +429,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
           <div style={{ display: 'flex', gap: 'var(--space-3)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
             <a
               href={projectEditorUrl}
-              onClick={saveProjectData}
+              onClick={async (e) => { e.preventDefault(); await saveProjectData(); window.location.href = projectEditorUrl }}
               className="btn btn--primary"
               style={{ flex: 1, textAlign: 'center', textDecoration: 'none' }}
             >
@@ -479,7 +463,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
               <a
                 href={profileEditorUrl}
-                onClick={saveProfileData}
+                onClick={async (e) => { e.preventDefault(); await saveProfileData(); window.location.href = profileEditorUrl }}
                 className="btn btn--sm"
                 style={{ background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, textDecoration: 'none', pointerEvents: 'auto', position: 'relative', zIndex: 1 }}
               >
@@ -667,7 +651,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
             <div style={{ display: 'flex', gap: 'var(--space-3)', paddingTop: 'var(--space-5)', borderTop: '1px solid var(--color-border)', marginTop: 'var(--space-4)' }}>
               <a
                 href={profileEditorUrl}
-                onClick={saveProfileData}
+                onClick={async (e) => { e.preventDefault(); await saveProfileData(); window.location.href = profileEditorUrl }}
                 className="btn"
                 style={{ flex: 1, background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, textAlign: 'center', textDecoration: 'none' }}
               >
