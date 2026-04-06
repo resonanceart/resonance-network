@@ -88,8 +88,11 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
 
       if (mode === 'project') {
         setProjectData(json.data)
+        // Save immediately so it's available when navigating to editor
+        sessionStorage.setItem('resonance_import_data', JSON.stringify(json.data))
       } else {
         setProfileData(json.data)
+        sessionStorage.setItem('resonance_profile_import', JSON.stringify(json.data))
       }
       setStep('preview')
     } catch (err) {

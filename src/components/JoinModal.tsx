@@ -16,8 +16,8 @@ export function JoinModal() {
   useEffect(() => {
     if (authLoading) return
     if (user) return
-    // Don't show modal on import/join pages — user is already in the funnel
-    if (pathname?.startsWith('/import') || pathname?.startsWith('/join') || pathname?.startsWith('/login')) return
+    // Don't show modal on import/join/dashboard pages — user is already in the funnel
+    if (pathname?.startsWith('/import') || pathname?.startsWith('/join') || pathname?.startsWith('/login') || pathname?.startsWith('/dashboard')) return
 
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
