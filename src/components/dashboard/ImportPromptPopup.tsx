@@ -200,13 +200,13 @@ export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
       )}
 
       {/* Skip link */}
-      <p style={{ margin: 0, marginTop: 'var(--space-3)', fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+      <p style={{ margin: 0, marginTop: 'var(--space-3)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>
         No website?{' '}
         <a
           href={activeTab === 'project' ? '/dashboard/projects/new' : '/dashboard/profile'}
-          style={{ color: 'var(--color-accent, #6366f1)', textDecoration: 'underline' }}
+          style={{ color: 'var(--color-accent, #6366f1)', textDecoration: 'underline', fontWeight: 500 }}
         >
-          Start from scratch
+          Start from scratch instead
         </a>
       </p>
     </div>

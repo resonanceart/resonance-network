@@ -245,12 +245,24 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
             </div>
           )}
 
-          <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)', marginTop: 'var(--space-4)' }}>
-            Don&apos;t have a website?{' '}
-            <Link href="/login?tab=signup&redirect=/dashboard/welcome" style={{ color: 'var(--color-accent)', textDecoration: 'underline' }}>
-              Skip and create your page from scratch
+          <div style={{
+            textAlign: 'center',
+            marginTop: 'var(--space-5)',
+            padding: 'var(--space-4) var(--space-5)',
+            borderRadius: '10px',
+            border: '1px solid var(--color-border)',
+            background: 'var(--color-surface)',
+          }}>
+            <p style={{ margin: 0, marginBottom: 'var(--space-2)', fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--color-text)' }}>
+              Don&apos;t have a website?
+            </p>
+            <p style={{ margin: 0, marginBottom: 'var(--space-3)', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+              No problem — you can build your page from scratch using our editor.
+            </p>
+            <Link href="/login?tab=signup&redirect=/dashboard/welcome" className="btn btn--outline btn--sm">
+              Create from scratch
             </Link>
-          </p>
+          </div>
         </div>
       )}
 
