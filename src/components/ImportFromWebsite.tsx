@@ -88,11 +88,8 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
 
       if (mode === 'project') {
         setProjectData(json.data)
-        // Save immediately so it's available when navigating to editor
-        sessionStorage.setItem('resonance_import_data', JSON.stringify(json.data))
       } else {
         setProfileData(json.data)
-        sessionStorage.setItem('resonance_profile_import', JSON.stringify(json.data))
       }
       setStep('preview')
     } catch (err) {
@@ -101,9 +98,39 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     }
   }
 
+  // Save data to sessionStorage, stripping base64 images if over quota
+  function safeSessionSave(key: string, data: Record<string, unknown>) {
+    try {
+      sessionStorage.setItem(key, JSON.stringify(data))
+    } catch {
+      // sessionStorage quota exceeded — strip base64 gallery images and retry
+      const lite = { ...data }
+      if (Array.isArray(lite.galleryImages)) {
+        lite.galleryImages = (lite.galleryImages as Array<{ url: string; alt: string }>)
+          .filter(img => !img.url.startsWith('data:'))
+          .slice(0, 4)
+      }
+      // Keep hero but cap at 500KB
+      if (typeof lite.heroImageUrl === 'string' && lite.heroImageUrl.length > 500_000) {
+        lite.heroImageUrl = null
+      }
+      try {
+        sessionStorage.setItem(key, JSON.stringify(lite))
+      } catch {
+        // Still too big — strip all images
+        lite.galleryImages = []
+        lite.heroImageUrl = null
+        if ('avatarUrl' in lite && typeof lite.avatarUrl === 'string' && lite.avatarUrl.length > 100_000) {
+          lite.avatarUrl = null
+        }
+        try { sessionStorage.setItem(key, JSON.stringify(lite)) } catch { /* give up */ }
+      }
+    }
+  }
+
   function saveProjectData() {
     if (projectData) {
-      sessionStorage.setItem('resonance_import_data', JSON.stringify(projectData))
+      safeSessionSave('resonance_import_data', projectData as unknown as Record<string, unknown>)
     }
   }
 
@@ -113,7 +140,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
 
   function saveProfileData() {
     if (profileData) {
-      sessionStorage.setItem('resonance_profile_import', JSON.stringify(profileData))
+      safeSessionSave('resonance_profile_import', profileData as unknown as Record<string, unknown>)
     }
   }
 
