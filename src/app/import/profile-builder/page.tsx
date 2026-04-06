@@ -66,8 +66,12 @@ export default function ProfileBuilderPreview() {
 
   function handleCreateAccount() {
     // Keep sessionStorage intact so profile editor picks it up after signup
-    const redirectPath = encodeURIComponent('/dashboard/profile/live-edit?import=profile')
-    router.push(`/login?tab=signup&redirect=${redirectPath}`)
+    if (user) {
+      router.push('/dashboard/profile/live-edit?import=profile')
+    } else {
+      // Route to demo mode of the real profile editor
+      window.location.href = '/dashboard/profile/live-edit?demo=true'
+    }
   }
 
   if (loading) {

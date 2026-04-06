@@ -115,9 +115,8 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     if (user) {
       router.push('/dashboard/profile/live-edit?import=profile')
     } else {
-      // Show the profile builder preview (no login required)
-      // Use window.location for reliable cross-page navigation with sessionStorage
-      window.location.href = '/import/profile-builder'
+      // Demo mode: show the real profile editor pre-filled, no login required
+      window.location.href = '/dashboard/profile/live-edit?demo=true'
     }
   }
 
