@@ -8,6 +8,7 @@ import ProfileSettingsPanel from '@/components/dashboard/ProfileSettingsPanel'
 import { AvatarCropModal } from '@/components/dashboard/AvatarCropModal'
 import { CoverImageEditor } from '@/components/dashboard/CoverImageEditor'
 import { AvailabilityModal } from '@/components/dashboard/AvailabilityModal'
+import ImportPromptPopup from '@/components/dashboard/ImportPromptPopup'
 import type { UserProfile, ContentBlock } from '@/types'
 
 function generateBlocksFromLegacy(
@@ -766,6 +767,13 @@ export default function ProfileEditPage() {
           border: `1px solid ${message.type === 'success' ? 'var(--color-primary)' : 'var(--color-error, #ef4444)'}`,
         }}>
           {message.text}
+        </div>
+      )}
+
+      {/* Import prompt for empty profiles */}
+      {!displayName && !bio && !avatarUrl && (
+        <div style={{ padding: '0 var(--space-6)' }}>
+          <ImportPromptPopup mode="profile" />
         </div>
       )}
 

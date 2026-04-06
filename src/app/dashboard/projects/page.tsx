@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
 import Link from 'next/link'
+import ImportPromptPopup from '@/components/dashboard/ImportPromptPopup'
 
 interface Project {
   id: string
@@ -92,6 +93,8 @@ export default function MyProjectsPage() {
             </Link>
           </div>
         </div>
+
+        {projects.length === 0 && <ImportPromptPopup mode="both" />}
 
         {projects.length === 0 ? (
           <div
