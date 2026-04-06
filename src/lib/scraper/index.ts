@@ -710,11 +710,16 @@ export async function scrapeProfilePage(url: string): Promise<ScrapedProfile> {
   const titles = extractTitles(allText)
   const education = extractEducation(allText)
 
-  // Combine sections as bio — skip very short ones and contact-form-related
+  // Combine sections as bio — skip very short ones, contact forms, and CSS/JSON noise
   const bio = sections
     .filter(s => s.content.length > 30 && !/thank you|submit|required/i.test(s.content))
     .map(s => s.content)
     .join('\n\n')
+    // Strip any remaining CSS rules or JSON fragments
+    .replace(/\.[a-zA-Z_#][\w-]*\s*\{[^}]*\}/g, '')
+    .replace(/\{"type":[^}]*\}/g, '')
+    .replace(/\s{3,}/g, '\n\n')
+    .trim()
     .slice(0, 5000)
 
   // For profile pages: first content image = avatar, og:image or next = hero
