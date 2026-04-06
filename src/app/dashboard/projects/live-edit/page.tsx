@@ -64,6 +64,7 @@ function LiveProjectEditorInner() {
   const existingId = searchParams.get('id')
 
   const [loading, setLoading] = useState(true)
+  const [demoMode, setDemoMode] = useState(false)
   const [saving, setSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
   const [savedMessage, setSavedMessage] = useState(false)
@@ -122,6 +123,37 @@ function LiveProjectEditorInner() {
   // Fetch existing project if editing
   useEffect(() => {
     if (authLoading) return
+
+    // Demo mode — load from sessionStorage without auth
+    if (!user && searchParams.get('demo') === 'true') {
+      setDemoMode(true)
+      try {
+        const raw = sessionStorage.getItem('resonance_import_data')
+        if (raw) {
+          const imported = JSON.parse(raw)
+          if (imported.title) setTitle(imported.title)
+          if (imported.shortDescription) setShortDescription(imported.shortDescription)
+          if (imported.overviewLead) setOverviewLead(imported.overviewLead)
+          if (imported.overviewBody) setOverviewBody(imported.overviewBody)
+          if (imported.experience) setExperience(imported.experience)
+          if (imported.artistStory) setStory(imported.artistStory)
+          if (imported.materials) setMaterials(imported.materials)
+          if (imported.goals?.length) setGoals(imported.goals)
+          if (imported.suggestedDomains?.length) setDomains(imported.suggestedDomains)
+          if (imported.suggestedPathways?.length) setPathways(imported.suggestedPathways)
+          if (imported.suggestedStage) setStage(imported.suggestedStage)
+          if (imported.suggestedScale) setScale(imported.suggestedScale)
+          if (imported.leadArtistName) setLeadArtistName(imported.leadArtistName)
+          if (imported.leadArtistBio) setStory(imported.leadArtistBio)
+          if (imported.heroImageUrl) setHeroImageUrl(imported.heroImageUrl)
+          if (imported.galleryImages?.length) setGalleryImages(imported.galleryImages)
+          if (imported.socialLinks?.length) setProjectSocialLinks(imported.socialLinks)
+        }
+      } catch { /* ignore */ }
+      setLoading(false)
+      return
+    }
+
     if (!user) { window.location.href = '/login'; return }
 
     // Get user profile for defaults
@@ -259,7 +291,7 @@ function LiveProjectEditorInner() {
 
   // Autosave every 5s with 2s debounce after last change
   useEffect(() => {
-    if (!hasChanges) return
+    if (!hasChanges || demoMode) return
     const timer = setInterval(() => {
       if (Date.now() - lastChangeTime.current < 2000) return
       saveDraftRef.current(true)
@@ -269,6 +301,7 @@ function LiveProjectEditorInner() {
   }, [hasChanges])
 
   async function saveDraft(silent = false) {
+    if (demoMode) return // Demo mode — no saving
     if (!title.trim()) {
       if (!silent) alert('Please enter a project title.')
       return
@@ -537,13 +570,27 @@ function LiveProjectEditorInner() {
       </div>
     )
   }
-  if (!user) return null
+  if (!user && !demoMode) return null
 
   return (
     <div className="live-editor">
       {/* Toolbar */}
       <div className="live-editor__toolbar">
         <div className="live-editor__toolbar-inner container">
+          {demoMode ? (
+            <>
+              <span className="live-editor__toolbar-title">Project Preview — {title || 'Untitled'}</span>
+              <div className="live-editor__toolbar-actions">
+                <a href="/login?tab=signup&redirect=/dashboard/projects/live-edit?import=true" className="btn btn--sm" style={{ background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, textDecoration: 'none' }}>
+                  Create Account to Save
+                </a>
+                <a href="/import" className="btn btn--outline btn--sm" style={{ textDecoration: 'none' }}>
+                  Back to Import
+                </a>
+              </div>
+            </>
+          ) : (
+          <>
           <span className="live-editor__toolbar-title">{submissionStatus === 'approved' ? 'Managing Your Live Project' : 'Building Your Project'}</span>
           <div className="live-editor__toolbar-actions">
             {errorMessage && (
@@ -593,6 +640,8 @@ function LiveProjectEditorInner() {
             </button>
             <Link href="/dashboard" className="btn btn--ghost btn--sm">Back</Link>
           </div>
+          </>
+          )}
         </div>
       </div>
 

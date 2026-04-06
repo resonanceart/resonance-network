@@ -49,8 +49,11 @@ export async function middleware(request: NextRequest) {
 
   // Protect dashboard and admin routes — require authentication
   // Allow demo mode for profile preview (no auth needed to see the editor preview)
-  const isDemoProfilePreview = request.nextUrl.pathname === '/dashboard/profile/live-edit' && request.nextUrl.searchParams.get('demo') === 'true'
-  if ((request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/admin')) && !user && !isDemoProfilePreview) {
+  const isDemoPreview = (
+    request.nextUrl.pathname === '/dashboard/profile/live-edit' ||
+    request.nextUrl.pathname === '/dashboard/projects/live-edit'
+  ) && request.nextUrl.searchParams.get('demo') === 'true'
+  if ((request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/admin')) && !user && !isDemoPreview) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 

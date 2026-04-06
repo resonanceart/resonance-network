@@ -98,16 +98,15 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     }
   }
 
-  function handleUseInEditor() {
-    if (!projectData) return
-    sessionStorage.setItem('resonance_import_data', JSON.stringify(projectData))
-    if (user) {
-      router.push('/dashboard/projects/live-edit?import=true')
-    } else {
-      const redirectPath = encodeURIComponent('/dashboard/projects/live-edit?import=true')
-      router.push(`/login?tab=signup&redirect=${redirectPath}`)
+  function saveProjectData() {
+    if (projectData) {
+      sessionStorage.setItem('resonance_import_data', JSON.stringify(projectData))
     }
   }
+
+  const projectEditorUrl = user
+    ? '/dashboard/projects/live-edit?import=true'
+    : '/dashboard/projects/live-edit?demo=true'
 
   function saveProfileData() {
     if (profileData) {
@@ -414,9 +413,14 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
 
           {/* Action buttons */}
           <div style={{ display: 'flex', gap: 'var(--space-3)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
-            <button onClick={handleUseInEditor} className="btn btn--primary" style={{ flex: 1 }}>
-              {user ? 'Use in Page Builder' : 'Sign Up & Build Your Page'}
-            </button>
+            <a
+              href={projectEditorUrl}
+              onClick={saveProjectData}
+              className="btn btn--primary"
+              style={{ flex: 1, textAlign: 'center', textDecoration: 'none' }}
+            >
+              {user ? 'Use in Page Builder' : 'Build This Project'}
+            </a>
             <button onClick={() => { setStep('input'); setProjectData(null) }} className="btn btn--outline">
               Try a Different URL
             </button>
