@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import Link from 'next/link'
 import type { ScrapedProject, ScrapedProfile } from '@/lib/scraper'
@@ -16,9 +16,16 @@ interface ImportFromWebsiteProps {
 export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) {
   const { user } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const [url, setUrl] = useState('')
   const [mode, setMode] = useState<ScrapeMode>('project')
+
+  // Read ?mode=profile from URL to pre-select profile mode
+  useEffect(() => {
+    const modeParam = searchParams.get('mode')
+    if (modeParam === 'profile') setMode('profile')
+  }, [searchParams])
   const [step, setStep] = useState<Step>('input')
   const [error, setError] = useState('')
   const [progress, setProgress] = useState('')

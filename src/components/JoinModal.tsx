@@ -75,9 +75,9 @@ export function JoinModal() {
             <span className="join-modal__path-cta">Get Started</span>
           </Link>
 
-          <Link href="/login?tab=signup&redirect=/dashboard/welcome" onClick={handleDismiss} className="join-modal__path join-modal__path--help">
+          <Link href="/import?mode=profile" onClick={handleDismiss} className="join-modal__path join-modal__path--help">
             <h2>Help Build Art</h2>
-            <p>You&apos;re a maker ready to work on meaningful projects.</p>
+            <p>Import your portfolio and join as a collaborator.</p>
             <span className="join-modal__path-cta">Get Started</span>
           </Link>
         </div>
