@@ -10,6 +10,7 @@ import { ProfileToolsDisplay } from '@/components/profile/ProfileToolsDisplay'
 import { ProfileChecklist } from '@/components/profile/ProfileChecklist'
 import { ShareProfile } from '@/components/profile/ShareProfile'
 import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components/profile/SmartGallery'
+import { loadImportData, clearImportData } from '@/lib/import-store'
 import type { ProfileSkill, ProfileTool, ProfileSocialLink } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -535,15 +536,20 @@ export default function LiveProfileEditor() {
     const params = new URLSearchParams(window.location.search)
     if (!user && params.get('demo') === 'true') {
       setDemoMode(true)
-      try {
-        const raw = sessionStorage.getItem('resonance_profile_import')
-        if (raw) {
-          const imported = JSON.parse(raw) as {
-            name?: string; bio?: string; titles?: string[]; education?: string[];
-            avatarUrl?: string | null; heroImageUrl?: string | null;
-            galleryImages?: Array<{ url: string; alt: string }>;
-            socialLinks?: Array<{ platform: string; url: string }>; website?: string;
-          }
+      loadImportData<{
+        name?: string; bio?: string; titles?: string[]; education?: string[];
+        avatarUrl?: string | null; heroImageUrl?: string | null;
+        galleryImages?: Array<{ url: string; alt: string }>;
+        socialLinks?: Array<{ platform: string; url: string }>; website?: string;
+      }>('resonance_profile_import').then(imported => {
+        if (!imported) {
+          // Fallback to sessionStorage for smaller payloads
+          try {
+            const raw = sessionStorage.getItem('resonance_profile_import')
+            if (raw) imported = JSON.parse(raw)
+          } catch {}
+        }
+        if (imported) {
           if (imported.name) setDisplayName(imported.name)
           if (imported.bio) setBio(imported.bio)
           if (imported.titles && imported.titles.length > 0) setProfessionalTitle(imported.titles[0])
@@ -577,10 +583,8 @@ export default function LiveProfileEditor() {
               .replace(/[^a-z0-9-]/g, '')
           )
         }
-      } catch (e) {
-        console.error('Failed to load demo profile data:', e)
-      }
-      setLoading(false)
+        setLoading(false)
+      }).catch(() => setLoading(false))
       return
     }
 
@@ -678,14 +682,19 @@ export default function LiveProfileEditor() {
         // Apply imported profile data from website scraper
         const params = new URLSearchParams(window.location.search)
         if (params.get('import') === 'profile') {
-          try {
-            const raw = sessionStorage.getItem('resonance_profile_import')
-            if (raw) {
-              const imported = JSON.parse(raw) as {
-                name?: string; bio?: string; titles?: string[]; education?: string[];
-                avatarUrl?: string | null; galleryImages?: Array<{ url: string; alt: string }>;
-                socialLinks?: Array<{ platform: string; url: string }>; website?: string;
-              }
+          loadImportData<{
+            name?: string; bio?: string; titles?: string[]; education?: string[];
+            avatarUrl?: string | null; galleryImages?: Array<{ url: string; alt: string }>;
+            socialLinks?: Array<{ platform: string; url: string }>; website?: string;
+          }>('resonance_profile_import').then(imported => {
+            if (!imported) {
+              // Fallback to sessionStorage for smaller payloads
+              try {
+                const raw = sessionStorage.getItem('resonance_profile_import')
+                if (raw) imported = JSON.parse(raw)
+              } catch {}
+            }
+            if (imported) {
               // Only fill empty fields — don't overwrite existing data
               if (imported.name && !p?.display_name) setDisplayName(imported.name)
               if (imported.bio && !p?.bio) setBio(imported.bio)
@@ -717,7 +726,7 @@ export default function LiveProfileEditor() {
               if (imported.education && imported.education.length > 0) {
                 setTimeline(prev => {
                   if (prev.length > 0) return prev
-                  return imported.education!.map((ed, i) => ({
+                  return imported.education!.map((ed) => ({
                     year: '', title: ed, category: 'education',
                     organization: '', description: '',
                   }))
@@ -725,11 +734,12 @@ export default function LiveProfileEditor() {
               }
               setHasChanges(true)
               lastChangeTime.current = Date.now()
-              sessionStorage.removeItem('resonance_profile_import')
+              clearImportData('resonance_profile_import').catch(() => {})
+              try { sessionStorage.removeItem('resonance_profile_import') } catch {}
             }
-          } catch (e) {
+          }).catch(e => {
             console.error('Failed to apply imported profile data:', e)
-          }
+          })
         }
       })
       .catch(() => {})
