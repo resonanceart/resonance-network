@@ -109,16 +109,15 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     }
   }
 
-  function handleApplyToProfile() {
-    if (!profileData) return
-    sessionStorage.setItem('resonance_profile_import', JSON.stringify(profileData))
-    if (user) {
-      router.push('/dashboard/profile/live-edit?import=profile')
-    } else {
-      // Demo mode: show the real profile editor pre-filled, no login required
-      window.location.href = '/dashboard/profile/live-edit?demo=true'
+  function saveProfileData() {
+    if (profileData) {
+      sessionStorage.setItem('resonance_profile_import', JSON.stringify(profileData))
     }
   }
+
+  const profileEditorUrl = user
+    ? '/dashboard/profile/live-edit?import=profile'
+    : '/dashboard/profile/live-edit?demo=true'
 
   return (
     <div style={{ paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-10)' }}>
@@ -432,6 +431,32 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
       {/* STEP: Preview — Profile (matches real profile page layout) */}
       {step === 'preview' && mode === 'profile' && profileData && (
         <div className="import-preview">
+          {/* Sticky CTA bar at top */}
+          <div style={{
+            position: 'sticky', top: 64, zIndex: 100,
+            background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)',
+            padding: 'var(--space-3) var(--space-4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: 'var(--space-3)', flexWrap: 'wrap',
+          }}>
+            <span style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>
+              Preview for {profileData.name}
+            </span>
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <a
+                href={profileEditorUrl}
+                onClick={saveProfileData}
+                className="btn btn--sm"
+                style={{ background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, textDecoration: 'none' }}
+              >
+                {user ? 'Open in Editor' : 'Build This Profile'}
+              </a>
+              <button onClick={() => { setStep('input'); setProfileData(null) }} className="btn btn--outline btn--sm">
+                New URL
+              </button>
+            </div>
+          </div>
+
           <article className="profile-page">
             {/* Banner — use hero image or gradient */}
             <section
@@ -606,13 +631,14 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
           {/* Action buttons */}
           <div className="container" style={{ maxWidth: '800px' }}>
             <div style={{ display: 'flex', gap: 'var(--space-3)', paddingTop: 'var(--space-5)', borderTop: '1px solid var(--color-border)', marginTop: 'var(--space-4)' }}>
-              <button
-                onClick={handleApplyToProfile}
+              <a
+                href={profileEditorUrl}
+                onClick={saveProfileData}
                 className="btn"
-                style={{ flex: 1, background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600 }}
+                style={{ flex: 1, background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, textAlign: 'center', textDecoration: 'none' }}
               >
                 {user ? 'Apply to My Profile' : 'Sign Up & Build Your Profile'}
-              </button>
+              </a>
               <button onClick={() => { setStep('input'); setProfileData(null) }} className="btn btn--outline">
                 Try a Different URL
               </button>
