@@ -433,7 +433,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
         <div className="import-preview">
           {/* Sticky CTA bar at top */}
           <div style={{
-            position: 'sticky', top: 64, zIndex: 100,
+            position: 'sticky', top: 64, zIndex: 10010,
             background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)',
             padding: 'var(--space-3) var(--space-4)',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -447,7 +447,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
                 href={profileEditorUrl}
                 onClick={saveProfileData}
                 className="btn btn--sm"
-                style={{ background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, textDecoration: 'none' }}
+                style={{ background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, textDecoration: 'none', pointerEvents: 'auto', position: 'relative', zIndex: 1 }}
               >
                 {user ? 'Open in Editor' : 'Build This Profile'}
               </a>

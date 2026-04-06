@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/components/AuthProvider'
 
@@ -9,11 +10,14 @@ const DISMISS_EXPIRY_DAYS = 7
 
 export function JoinModal() {
   const { user, loading: authLoading } = useAuth()
+  const pathname = usePathname()
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
     if (authLoading) return
     if (user) return
+    // Don't show modal on import/join pages — user is already in the funnel
+    if (pathname?.startsWith('/import') || pathname?.startsWith('/join') || pathname?.startsWith('/login')) return
 
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
@@ -28,7 +32,7 @@ export function JoinModal() {
 
     const timer = setTimeout(() => setVisible(true), 1500)
     return () => clearTimeout(timer)
-  }, [user, authLoading])
+  }, [user, authLoading, pathname])
 
   useEffect(() => {
     if (!visible) return
