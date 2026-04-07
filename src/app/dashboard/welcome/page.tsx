@@ -66,7 +66,7 @@ export default function WelcomePage() {
   }
 
   function handleWizardComplete() {
-    router.push('/dashboard')
+    router.push('/dashboard?onboarded=1')
   }
 
   if (authLoading || checkingStatus) {

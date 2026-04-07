@@ -43,6 +43,7 @@ interface Message {
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
+  const [justOnboarded] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('onboarded') === '1')
 
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [submissions, setSubmissions] = useState<Submission[]>([])
@@ -61,7 +62,7 @@ export default function DashboardPage() {
 
       if (profileRes.ok) {
         const data = await profileRes.json()
-        if (data.profile && data.profile.onboarding_completed === false && data.profile.role !== 'admin' && data.profile.onboarding_completed !== null) {
+        if (!justOnboarded && data.profile && data.profile.onboarding_completed === false && data.profile.role !== 'admin' && data.profile.onboarding_completed !== null) {
           router.push('/dashboard/welcome')
           return
         }
