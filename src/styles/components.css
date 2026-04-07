@@ -3665,7 +3665,7 @@ main {
 
 @media (max-width: 767px) {
   .profile-banner {
-    height: 280px;
+    height: 200px;
   }
   .profile-header__avatar {
     width: 160px;
@@ -10532,6 +10532,10 @@ main {
   background: var(--color-surface);
 }
 
+@media (max-width: 767px) {
+  .profile-checklist { width: 100%; max-width: 100%; }
+}
+
 /* Collapsed pill */
 .profile-checklist--collapsed {
   width: auto;
@@ -11638,6 +11642,10 @@ main {
   background: var(--color-surface-alt);
 }
 
+@media (max-width: 640px) {
+  .inline-editor__close { width: 44px; height: 44px; font-size: 1.5rem; }
+}
+
 .inline-editor__title {
   font-family: var(--font-display);
   font-size: var(--text-2xl);
@@ -12168,6 +12176,11 @@ main {
   background: var(--color-surface);
 }
 
+@media (max-width: 640px) {
+  .live-editor__panel { width: 100vw; }
+  .live-editor__panel-body { padding: var(--space-3); }
+}
+
 .live-editor__panel-header {
   display: flex;
   align-items: center;
@@ -12501,6 +12514,10 @@ main {
   .live-editor__panel select {
     font-size: 16px;
   }
+}
+
+@media (max-width: 640px) {
+  .live-editor .form-select { width: 100% !important; min-width: unset !important; }
 }
 
 @media (max-width: 480px) {
@@ -14588,6 +14605,13 @@ main {
   opacity: 1;
 }
 
+@media (max-width: 640px) {
+  .smart-gallery__tile-body {
+    opacity: 1;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  }
+}
+
 .smart-gallery__tile-subtitle {
   font-size: 0.7rem;
   font-weight: 600;
@@ -14707,6 +14731,11 @@ main {
   background: #dc2626;
 }
 
+@media (max-width: 640px) {
+  .smart-gallery__delete { width: 36px; height: 36px; min-width: 44px; min-height: 44px; }
+  .live-editor__gallery-remove { width: 36px; height: 36px; min-width: 44px; min-height: 44px; }
+}
+
 /* Edit buttons group — bottom left, show on hover */
 .smart-gallery__edit-buttons {
   position: absolute;
@@ -14721,6 +14750,10 @@ main {
 }
 .smart-gallery__tile:hover .smart-gallery__edit-buttons {
   opacity: 1;
+}
+@media (max-width: 640px) {
+  .smart-gallery__edit-buttons { opacity: 1; }
+  .smart-gallery__drag-handle { opacity: 0.5; }
 }
 .smart-gallery__edit-buttons button {
   background: rgba(0,0,0,0.7);
