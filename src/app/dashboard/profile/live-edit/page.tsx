@@ -2583,8 +2583,30 @@ export default function LiveProfileEditor() {
             width: 100%;
             justify-content: flex-end;
           }
+          .live-editor__toolbar-actions .btn--ghost.btn--sm {
+            padding: 5px 6px;
+          }
           .live-editor__panel {
             height: 90vh;
+          }
+        }
+
+        @media (max-width: 390px) {
+          .live-editor__toolbar-title {
+            font-size: 11px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .live-editor__toolbar-actions .btn--sm {
+            font-size: 10px;
+            padding: 4px 6px;
+            min-height: 32px;
+          }
+          .live-editor__unsaved,
+          .live-editor__saved,
+          .live-editor__autosave {
+            display: none;
           }
         }
 
