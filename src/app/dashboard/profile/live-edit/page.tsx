@@ -414,6 +414,53 @@ function TimelinePanel({
   )
 }
 
+// ─── Image Resize Helper ────────────────────────────────────────
+
+function resizeImageFile(file: File, maxDimension: number, quality: number = 0.85): Promise<File> {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/')) {
+      resolve(file)
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => {
+      const img = new Image()
+      img.onload = () => {
+        if (img.width <= maxDimension && img.height <= maxDimension) {
+          resolve(file)
+          return
+        }
+        const canvas = document.createElement('canvas')
+        let w = img.width
+        let h = img.height
+        if (w > h) {
+          if (w > maxDimension) { h = Math.round(h * (maxDimension / w)); w = maxDimension }
+        } else {
+          if (h > maxDimension) { w = Math.round(w * (maxDimension / h)); h = maxDimension }
+        }
+        canvas.width = w
+        canvas.height = h
+        const ctx = canvas.getContext('2d')
+        if (!ctx) { resolve(file); return }
+        ctx.drawImage(img, 0, 0, w, h)
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) { resolve(file); return }
+            const resized = new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() })
+            resolve(resized)
+          },
+          'image/jpeg',
+          quality
+        )
+      }
+      img.onerror = () => resolve(file)
+      img.src = reader.result as string
+    }
+    reader.onerror = () => resolve(file)
+    reader.readAsDataURL(file)
+  })
+}
+
 // ─── Upload Helper ───────────────────────────────────────────────
 
 async function uploadFile(file: File, type: string, displayName?: string): Promise<{ url: string | null; error: string | null }> {
@@ -524,6 +571,7 @@ export default function LiveProfileEditor() {
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const lastChangeTime = useRef(0)
   const profileFetchedRef = useRef(false)
+  const savingRef = useRef(false)
 
   // Track changes
   const markDirty = useCallback(() => {
@@ -732,6 +780,8 @@ export default function LiveProfileEditor() {
   }, [hasChanges])
 
   async function saveAll(silent = false) {
+    if (savingRef.current) return // Prevent concurrent saves
+    savingRef.current = true
     setSaving(true)
     setErrorMessage(null)
     try {
@@ -807,6 +857,7 @@ export default function LiveProfileEditor() {
       }
     }
     setSaving(false)
+    savingRef.current = false
   }
 
   function openPanel(section: EditSection) {
@@ -841,9 +892,10 @@ export default function LiveProfileEditor() {
       if (file) setUploadError('Image must be under 5MB')
       return
     }
-    // Upload immediately to Supabase Storage
+    // Resize and upload to Supabase Storage
     setUploadError(null)
-    const url = await upload(file, 'avatar')
+    const resized = await resizeImageFile(file, 400, 0.85)
+    const url = await upload(resized, 'avatar')
     if (url) {
       setAvatarUrl(url)
       markDirty()
@@ -875,7 +927,8 @@ export default function LiveProfileEditor() {
     const file = e.target.files?.[0]
     if (!file || file.size > 10 * 1024 * 1024) return
     setSaving(true)
-    const url = await upload(file, 'cover')
+    const resized = await resizeImageFile(file, 1600)
+    const url = await upload(resized, 'cover')
     if (url) {
       setCoverImageUrl(url)
       markDirty()
@@ -919,7 +972,8 @@ export default function LiveProfileEditor() {
         setUploadError(`"${file.name}" is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 10MB.`)
         continue
       }
-      const url = await upload(file, 'gallery')
+      const resized = await resizeImageFile(file, 1600)
+      const url = await upload(resized, 'gallery')
       if (url) {
         setMediaGallery(prev => [...prev, {
           url,

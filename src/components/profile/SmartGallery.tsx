@@ -93,7 +93,7 @@ function SortableTile({
     >
       {/* Background image — for images and tiles with thumbnails */}
       {item.type === 'image' && item.url ? (
-        <img src={item.url} alt={item.title} className="smart-gallery__tile-img" />
+        <img src={item.url} alt={item.title} className="smart-gallery__tile-img" loading="lazy" />
       ) : item.type === 'image' && (
         <div className="smart-gallery__icon">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
@@ -104,7 +104,7 @@ function SortableTile({
         </div>
       )}
       {item.type !== 'image' && hasWorkingThumb && (
-        <img src={item.thumbnail} alt={item.title} className="smart-gallery__tile-img"
+        <img src={item.thumbnail} alt={item.title} className="smart-gallery__tile-img" loading="lazy"
           onError={() => onThumbnailError(item.id)} />
       )}
 
