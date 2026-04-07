@@ -1533,8 +1533,8 @@ export default function LiveProfileEditor() {
               Accepted: JPG, PNG, WebP, GIF, HEIC, AVIF, BMP, TIFF, SVG (max 10MB) · PDF (max 10MB) · Drag tiles to reorder
             </p>
             {/* Add buttons */}
-            <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-2)', flexWrap: 'wrap' }}>
-              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer' }}>
+            <div className="live-editor__gallery-controls" style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-2)', flexWrap: 'wrap' }}>
+              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer', flex: '1 1 auto' }}>
                 <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,image/avif,image/bmp,image/tiff,image/svg+xml" multiple onChange={async (e) => {
                   setGalleryUploading(true)
                   setUploadError(null)
@@ -1543,7 +1543,7 @@ export default function LiveProfileEditor() {
                 }} style={{ display: 'none' }} />
                 {galleryUploading ? 'Uploading...' : '+ Add Images'}
               </label>
-              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer', position: 'relative' }}>
+              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer', position: 'relative', flex: '1 1 auto' }}>
                 <input type="file" accept=".pdf,application/pdf" multiple onChange={async (e) => {
                   const files = e.target.files
                   if (!files || files.length === 0) return
@@ -1567,7 +1567,7 @@ export default function LiveProfileEditor() {
               </label>
               {showAddLink ? (
                 <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-end', flexWrap: 'wrap', flex: 1 }}>
-                  <div className="form-group" style={{ margin: 0, flex: 1, minWidth: 120 }}>
+                  <div className="form-group" style={{ margin: 0, flex: '1 1 120px', minWidth: 0 }}>
                     <label className="form-label" style={{ fontSize: 'var(--text-xs)' }}>URL</label>
                     <input className="form-input" value={newLinkUrl} onChange={e => setNewLinkUrl(e.target.value)} placeholder="https://..." style={{ fontSize: 'var(--text-sm)' }} />
                   </div>
@@ -1600,7 +1600,7 @@ export default function LiveProfileEditor() {
                   <button className="btn btn--ghost btn--sm" onClick={() => { setShowAddLink(false); setNewLinkThumbnail(null) }}>Cancel</button>
                 </div>
               ) : (
-                <button className="btn btn--outline btn--sm" onClick={() => setShowAddLink(true)}>+ Add Link</button>
+                <button className="btn btn--outline btn--sm" style={{ flex: '1 1 auto' }} onClick={() => setShowAddLink(true)}>+ Add Link</button>
               )}
             </div>
           </div>
@@ -2101,7 +2101,7 @@ export default function LiveProfileEditor() {
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                         <input type="text" className="form-input" placeholder="Label (e.g. Studio, Fundraiser)" value={link.label} onChange={e => updateMediaLink(i, 'label', e.target.value)} />
                         <input type="url" className="form-input" placeholder="https://..." value={link.url} onChange={e => updateMediaLink(i, 'url', e.target.value)} />
-                        <select className="form-input" value={link.type} onChange={e => updateMediaLink(i, 'type', e.target.value)} style={{ width: '160px', maxWidth: '100%' }}>
+                        <select className="form-input" value={link.type} onChange={e => updateMediaLink(i, 'type', e.target.value)} style={{ width: 'auto', minWidth: 0, flex: '0 1 160px', maxWidth: '100%' }}>
                           <option value="website">Website</option>
                           <option value="fundraiser">Fundraiser</option>
                           <option value="other">Other</option>
@@ -2516,8 +2516,17 @@ export default function LiveProfileEditor() {
           background: rgba(1, 105, 111, 0.08) !important;
         }
 
+        /* ── Mobile text toggle utilities ─────────────────── */
+        .show-mobile { display: none; }
+        .hide-mobile { display: inline; }
+
         /* ── Mobile responsive ────────────────────────────── */
         @media (max-width: 767px) {
+          .show-mobile { display: inline; }
+          .hide-mobile { display: none; }
+          .live-editor__gallery-controls {
+            flex-direction: column;
+          }
           .live-editor__toolbar {
             height: auto;
             min-height: 48px;
