@@ -2036,7 +2036,7 @@ export default function LiveProfileEditor() {
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                         <input type="text" className="form-input" placeholder="Label (e.g. Studio, Fundraiser)" value={link.label} onChange={e => updateMediaLink(i, 'label', e.target.value)} />
                         <input type="url" className="form-input" placeholder="https://..." value={link.url} onChange={e => updateMediaLink(i, 'url', e.target.value)} />
-                        <select className="form-input" value={link.type} onChange={e => updateMediaLink(i, 'type', e.target.value)} style={{ width: '160px' }}>
+                        <select className="form-input" value={link.type} onChange={e => updateMediaLink(i, 'type', e.target.value)} style={{ width: '160px', maxWidth: '100%' }}>
                           <option value="website">Website</option>
                           <option value="fundraiser">Fundraiser</option>
                           <option value="other">Other</option>
