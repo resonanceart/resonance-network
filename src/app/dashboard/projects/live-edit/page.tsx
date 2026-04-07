@@ -153,55 +153,16 @@ function LiveProjectEditorInner() {
       if (imported.suggestedScale) setScale(imported.suggestedScale as string)
       if (imported.leadArtistName) setLeadArtistName(imported.leadArtistName as string)
       if (imported.leadArtistBio) setStory(imported.leadArtistBio as string)
-      // Upload base64 hero image to Supabase Storage
+      // Set hero image URL (already uploaded to Supabase Storage by scrape API)
       if (imported.heroImageUrl) {
-        const heroUrl = imported.heroImageUrl as string
-        if (heroUrl.startsWith('data:')) {
-          setImportProgress('Uploading hero image...')
-          try {
-            const blob = await fetch(heroUrl).then(r => r.blob())
-            const file = new File([blob], `hero-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-            const url = await uploadFileToStorage(file, 'hero')
-            if (url) { setHeroImageUrl(url); markDirty() }
-            else { console.error('Hero image upload returned no URL'); setErrorMessage('Hero image failed to upload. You can add one manually.') }
-          } catch (err) {
-            console.error('Hero image upload failed:', err)
-            setErrorMessage('Hero image failed to upload. You can add one manually.')
-          }
-        } else {
-          setHeroImageUrl(heroUrl)
-        }
+        setHeroImageUrl(imported.heroImageUrl as string)
+        markDirty()
       }
-      // Upload base64 gallery images to Storage
+      // Set gallery images (already uploaded to Supabase Storage by scrape API)
       if (imported.galleryImages && Array.isArray(imported.galleryImages) && imported.galleryImages.length) {
         const galleryImgs = imported.galleryImages as Array<{ url: string; alt: string }>
-        const hasBase64 = galleryImgs.some(img => img.url.startsWith('data:'))
-        if (hasBase64) {
-          setImportProgress(`Uploading gallery images (0/${galleryImgs.length})...`)
-          let uploadedCount = 0
-          const results = await Promise.all(galleryImgs.map(async (img) => {
-            if (img.url.startsWith('data:')) {
-              try {
-                const blob = await fetch(img.url).then(r => r.blob())
-                const file = new File([blob], `gallery-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-                const url = await uploadFileToStorage(file, 'gallery')
-                uploadedCount++
-                setImportProgress(`Uploading gallery images (${uploadedCount}/${galleryImgs.length})...`)
-                return url ? { url, alt: img.alt } : null
-              } catch { return null }
-            }
-            uploadedCount++
-            return img
-          }))
-          const uploaded = results.filter(Boolean) as Array<{ url: string; alt: string }>
-          if (uploaded.length > 0) { setGalleryImages(uploaded); markDirty() }
-          const failedCount = galleryImgs.length - uploaded.length
-          if (failedCount > 0) {
-            setErrorMessage(`${failedCount} gallery image(s) failed to upload.`)
-          }
-        } else {
-          setGalleryImages(galleryImgs)
-        }
+        setGalleryImages(galleryImgs)
+        markDirty()
       }
       if (imported.socialLinks && Array.isArray(imported.socialLinks) && imported.socialLinks.length) {
         setProjectSocialLinks(imported.socialLinks as Array<{platform: string; url: string}>)
