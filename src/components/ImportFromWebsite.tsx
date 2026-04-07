@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import Link from 'next/link'
 import type { ScrapedProject, ScrapedProfile } from '@/lib/scraper'
-import { saveImportData } from '@/lib/import-store'
 
 type ScrapeMode = 'project' | 'profile'
 type Step = 'input' | 'scraping' | 'preview' | 'error'
@@ -73,20 +72,13 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     setError('')
     setProgress('Fetching page...')
 
-    // Auto-prepend https:// if user typed a bare domain (e.g. "example.com/about")
-    let cleanUrl = url.trim()
-    if (!/^https?:\/\//i.test(cleanUrl)) {
-      cleanUrl = 'https://' + cleanUrl
-      setUrl(cleanUrl)
-    }
-
     try {
       setProgress('Analyzing content...')
       const res = await fetch('/api/scrape', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ url: cleanUrl, type: mode }),
+        body: JSON.stringify({ url: url.trim(), type: mode }),
       })
 
       const json = await res.json()
@@ -106,38 +98,26 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     }
   }
 
-  async function saveProjectData() {
+  function handleUseInEditor() {
     if (!projectData) return
-    try {
-      await saveImportData('resonance_import_data', projectData)
-    } catch {
-      // IndexedDB unavailable — fallback to sessionStorage without images
-      try {
-        const lite = { ...projectData, heroImageUrl: null, galleryImages: [] }
-        sessionStorage.setItem('resonance_import_data', JSON.stringify(lite))
-      } catch { /* give up */ }
+    sessionStorage.setItem('resonance_import_data', JSON.stringify(projectData))
+    if (user) {
+      router.push('/dashboard/projects/live-edit?import=true')
+    } else {
+      const redirectPath = encodeURIComponent('/dashboard/projects/live-edit?import=true')
+      router.push(`/login?tab=signup&redirect=${redirectPath}`)
     }
   }
 
-  const projectEditorUrl = user
-    ? '/dashboard/projects/live-edit?import=true'
-    : '/login?tab=signup&redirect=' + encodeURIComponent('/dashboard/projects/live-edit?import=true')
-
-  async function saveProfileData() {
-    if (!profileData) return
-    try {
-      await saveImportData('resonance_profile_import', profileData)
-    } catch {
-      try {
-        const lite = { ...profileData, heroImageUrl: null, avatarUrl: null, galleryImages: [] }
-        sessionStorage.setItem('resonance_profile_import', JSON.stringify(lite))
-      } catch { /* give up */ }
+  function saveProfileData() {
+    if (profileData) {
+      sessionStorage.setItem('resonance_profile_import', JSON.stringify(profileData))
     }
   }
 
   const profileEditorUrl = user
     ? '/dashboard/profile/live-edit?import=profile'
-    : '/login?tab=signup&redirect=' + encodeURIComponent('/dashboard/profile/live-edit?import=profile')
+    : '/dashboard/profile/live-edit?demo=true'
 
   return (
     <div style={{ paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-10)' }}>
@@ -252,24 +232,12 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
             </div>
           )}
 
-          <div style={{
-            textAlign: 'center',
-            marginTop: 'var(--space-5)',
-            padding: 'var(--space-4) var(--space-5)',
-            borderRadius: '10px',
-            border: '1px solid var(--color-border)',
-            background: 'var(--color-surface)',
-          }}>
-            <p style={{ margin: 0, marginBottom: 'var(--space-2)', fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--color-text)' }}>
-              Don&apos;t have a website?
-            </p>
-            <p style={{ margin: 0, marginBottom: 'var(--space-3)', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
-              No problem — you can build your page from scratch using our editor.
-            </p>
-            <Link href="/login?tab=signup&redirect=/dashboard/welcome" className="btn btn--outline btn--sm">
-              Create from scratch
+          <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)', marginTop: 'var(--space-4)' }}>
+            Don&apos;t have a website?{' '}
+            <Link href="/login?tab=signup&redirect=/dashboard/welcome" style={{ color: 'var(--color-accent)', textDecoration: 'underline' }}>
+              Skip and create your page from scratch
             </Link>
-          </div>
+          </p>
         </div>
       )}
 
@@ -446,14 +414,9 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
 
           {/* Action buttons */}
           <div style={{ display: 'flex', gap: 'var(--space-3)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
-            <a
-              href={projectEditorUrl}
-              onClick={async (e) => { e.preventDefault(); await saveProjectData(); window.location.href = projectEditorUrl }}
-              className="btn btn--primary"
-              style={{ flex: 1, textAlign: 'center', textDecoration: 'none' }}
-            >
-              {user ? 'Use in Page Builder' : 'Build This Project'}
-            </a>
+            <button onClick={handleUseInEditor} className="btn btn--primary" style={{ flex: 1 }}>
+              {user ? 'Use in Page Builder' : 'Sign Up & Build Your Page'}
+            </button>
             <button onClick={() => { setStep('input'); setProjectData(null) }} className="btn btn--outline">
               Try a Different URL
             </button>
@@ -470,7 +433,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
         <div className="import-preview">
           {/* Sticky CTA bar at top */}
           <div style={{
-            position: 'sticky', top: 64, zIndex: 10010,
+            position: 'sticky', top: 64, zIndex: 100,
             background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)',
             padding: 'var(--space-3) var(--space-4)',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -482,9 +445,9 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
               <a
                 href={profileEditorUrl}
-                onClick={async (e) => { e.preventDefault(); await saveProfileData(); window.location.href = profileEditorUrl }}
+                onClick={saveProfileData}
                 className="btn btn--sm"
-                style={{ background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, textDecoration: 'none', pointerEvents: 'auto', position: 'relative', zIndex: 1 }}
+                style={{ background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, textDecoration: 'none' }}
               >
                 {user ? 'Open in Editor' : 'Build This Profile'}
               </a>
@@ -670,7 +633,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
             <div style={{ display: 'flex', gap: 'var(--space-3)', paddingTop: 'var(--space-5)', borderTop: '1px solid var(--color-border)', marginTop: 'var(--space-4)' }}>
               <a
                 href={profileEditorUrl}
-                onClick={async (e) => { e.preventDefault(); await saveProfileData(); window.location.href = profileEditorUrl }}
+                onClick={saveProfileData}
                 className="btn"
                 style={{ flex: 1, background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, textAlign: 'center', textDecoration: 'none' }}
               >

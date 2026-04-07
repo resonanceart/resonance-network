@@ -42,7 +42,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const totalSteps = 5
+  const totalSteps = 4
 
   function toggleGoal(id: string) {
     setSelectedGoals(prev => {
@@ -81,9 +81,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
 
   function canProceed(): boolean {
     if (step === 1) return selectedRoles.size > 0 && (!selectedRoles.has('collaborator') || !!collaboratorType)
-    if (step === 2) return true // Import step — always optional
-    if (step === 3) return selectedGoals.size > 0
-    if (step === 4) return selectedFields.size > 0
+    if (step === 2) return selectedGoals.size > 0
+    if (step === 3) return selectedFields.size > 0
     return true
   }
 
@@ -93,29 +92,24 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     try {
       const finalCollabType = collaboratorType === 'Other' ? customCollabType.trim() || 'Other' : collaboratorType
       const roles = Array.from(selectedRoles)
-      // Default to 'artist' if user skipped role selection
-      const roleType = roles.length > 0 ? roles.join(',') : 'artist'
       const res = await fetch('/api/user/onboarding', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          role_type: roleType,
+          role_type: roles.join(','),
           collaborator_type: selectedRoles.has('collaborator') ? finalCollabType : undefined,
           goals: Array.from(selectedGoals),
           fields_of_interest: Array.from(selectedFields),
         }),
       })
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        console.error('Onboarding save failed:', data.error || res.status)
+        // Save failed but don't block — let user proceed to dashboard
+        console.error('Onboarding save failed, proceeding anyway')
       }
       onComplete()
     } catch {
-      // Network error — still try to proceed so user isn't stuck
-      console.error('Onboarding network error, proceeding anyway')
-      onComplete()
-    } finally {
+      setError('Network error. Please try again.')
       setSaving(false)
     }
   }
@@ -188,34 +182,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           </div>
         )}
 
-        {/* Step 2: Import existing content */}
+        {/* Step 2: Goals */}
         {step === 2 && (
-          <div className="onboarding__step">
-            <h2 className="onboarding__title">Have an existing website or portfolio?</h2>
-            <p className="onboarding__subtitle">We can import your content to pre-build your profile — saving you time.</p>
-
-            <div className="onboarding__role-grid" style={{ marginTop: 'var(--space-6)' }}>
-              <a
-                href={selectedRoles.has('artist') || selectedRoles.has('curator') ? '/import' : '/import?mode=profile'}
-                className="onboarding__role-card"
-                style={{ textDecoration: 'none', cursor: 'pointer' }}
-              >
-                <span className="onboarding__role-label">Import from Website</span>
-                <span className="onboarding__role-desc">Paste a URL and we&apos;ll pull in your content automatically</span>
-              </a>
-              <button
-                className="onboarding__role-card"
-                onClick={() => setStep(3)}
-              >
-                <span className="onboarding__role-label">Start Fresh</span>
-                <span className="onboarding__role-desc">I&apos;ll build my profile from scratch</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Goals */}
-        {step === 3 && (
           <div className="onboarding__step">
             <h2 className="onboarding__title">Let&apos;s define some goals</h2>
             <p className="onboarding__subtitle">What would you like to achieve? Select all that apply.</p>
@@ -235,8 +203,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           </div>
         )}
 
-        {/* Step 4: Fields of Interest */}
-        {step === 4 && (
+        {/* Step 3: Fields of Interest */}
+        {step === 3 && (
           <div className="onboarding__step">
             <h2 className="onboarding__title">Which fields are you interested in?</h2>
             <p className="onboarding__subtitle">Select all that apply.</p>
@@ -260,8 +228,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           </div>
         )}
 
-        {/* Step 5: Complete */}
-        {step === 5 && (
+        {/* Step 4: Complete */}
+        {step === 4 && (
           <div className="onboarding__step onboarding__step--complete">
             <div className="onboarding__check-icon">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -302,13 +270,13 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
 
         {/* Navigation */}
         <div className="onboarding__nav">
-          {step > 1 && step < 5 && step !== 2 && (
-            <button className="btn btn--ghost" onClick={() => setStep(s => s === 3 ? 2 : s - 1)}>
+          {step > 1 && step < 4 && (
+            <button className="btn btn--ghost" onClick={() => setStep(s => s - 1)}>
               Back
             </button>
           )}
           <div style={{ flex: 1 }} />
-          {step < 5 && step !== 2 && (
+          {step < 4 && (
             <button
               className="btn btn--primary"
               disabled={!canProceed()}
@@ -317,7 +285,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
               Next
             </button>
           )}
-          {step === 5 && (
+          {step === 4 && (
             <button
               className="btn btn--primary btn--large"
               onClick={handleComplete}
@@ -329,10 +297,10 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
         </div>
 
         {/* Skip link */}
-        {step < 5 && (
+        {step < 4 && (
           <button
             className="onboarding__skip"
-            onClick={() => setStep(5)}
+            onClick={() => setStep(4)}
           >
             Skip for now
           </button>

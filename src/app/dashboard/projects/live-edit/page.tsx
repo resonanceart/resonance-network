@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
-import { loadImportData, clearImportData } from '@/lib/import-store'
 import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components/profile/SmartGallery'
 
 type EditSection = 'hero' | 'overview' | 'gallery' | 'description' | 'experience' | 'inclusivity' | 'materials_regen' | 'story' | 'goals' | 'classification' | 'team' | 'roles' | null
@@ -120,17 +119,10 @@ function LiveProjectEditorInner() {
   const lastChangeTime = useRef(0)
   const markDirty = useCallback(() => { setHasChanges(true); lastChangeTime.current = Date.now() }, [])
 
-  // Fetch existing project if editing (auth required — middleware redirects unauthenticated users)
+  // Fetch existing project if editing
   useEffect(() => {
     if (authLoading) return
-    if (!user) return
-
-    // Only clear stale import data if this is NOT an import flow
-    const importParam = new URLSearchParams(window.location.search).get('import')
-    if (importParam !== 'true') {
-      clearImportData('resonance_import_data').catch(() => {})
-      try { sessionStorage.removeItem('resonance_import_data') } catch {}
-    }
+    if (!user) { window.location.href = '/login'; return }
 
     // Get user profile for defaults
     fetch('/api/user/profile', { credentials: 'same-origin' })
@@ -228,40 +220,33 @@ function LiveProjectEditorInner() {
         .catch(() => {})
     }
 
-    // Check for imported data from website scraper (IndexedDB first, sessionStorage fallback)
+    // Check for imported data from website scraper
     try {
       const importParam = new URLSearchParams(window.location.search).get('import')
       if (importParam === 'true') {
-        loadImportData<Record<string, unknown>>('resonance_import_data').then(imported => {
-          if (!imported) {
-            try {
-              const raw = sessionStorage.getItem('resonance_import_data')
-              if (raw) imported = JSON.parse(raw)
-            } catch { /* ignore */ }
-          }
-          if (imported) {
-            if (imported.title) setTitle(imported.title as string)
-            if (imported.shortDescription) setShortDescription(imported.shortDescription as string)
-            if (imported.overviewLead) setOverviewLead(imported.overviewLead as string)
-            if (imported.overviewBody) setOverviewBody(imported.overviewBody as string)
-            if (imported.experience) setExperience(imported.experience as string)
-            if (imported.artistStory) setStory(imported.artistStory as string)
-            if (imported.materials) setMaterials(imported.materials as string)
-            if (imported.goals && Array.isArray(imported.goals) && imported.goals.length) setGoals(imported.goals as string[])
-            if (imported.suggestedDomains && Array.isArray(imported.suggestedDomains) && imported.suggestedDomains.length) setDomains(imported.suggestedDomains as string[])
-            if (imported.suggestedPathways && Array.isArray(imported.suggestedPathways) && imported.suggestedPathways.length) setPathways(imported.suggestedPathways as string[])
-            if (imported.suggestedStage) setStage(imported.suggestedStage as string)
-            if (imported.suggestedScale) setScale(imported.suggestedScale as string)
-            if (imported.leadArtistName) setLeadArtistName(imported.leadArtistName as string)
-            if (imported.leadArtistBio) setStory(imported.leadArtistBio as string)
-            if (imported.heroImageUrl) setHeroImageUrl(imported.heroImageUrl as string)
-            if (imported.galleryImages && Array.isArray(imported.galleryImages) && imported.galleryImages.length) setGalleryImages(imported.galleryImages as Array<{ url: string; alt: string }>)
-            if (imported.socialLinks && Array.isArray(imported.socialLinks) && imported.socialLinks.length) setProjectSocialLinks(imported.socialLinks as Array<{platform: string; url: string}>)
-            markDirty()
-            clearImportData('resonance_import_data').catch(() => {})
-            sessionStorage.removeItem('resonance_import_data')
-          }
-        }).catch(() => {})
+        const raw = sessionStorage.getItem('resonance_import_data')
+        if (raw) {
+          const imported = JSON.parse(raw)
+          if (imported.title) setTitle(imported.title)
+          if (imported.shortDescription) setShortDescription(imported.shortDescription)
+          if (imported.overviewLead) setOverviewLead(imported.overviewLead)
+          if (imported.overviewBody) setOverviewBody(imported.overviewBody)
+          if (imported.experience) setExperience(imported.experience)
+          if (imported.artistStory) setStory(imported.artistStory)
+          if (imported.materials) setMaterials(imported.materials)
+          if (imported.goals?.length) setGoals(imported.goals)
+          if (imported.suggestedDomains?.length) setDomains(imported.suggestedDomains)
+          if (imported.suggestedPathways?.length) setPathways(imported.suggestedPathways)
+          if (imported.suggestedStage) setStage(imported.suggestedStage)
+          if (imported.suggestedScale) setScale(imported.suggestedScale)
+          if (imported.leadArtistName) setLeadArtistName(imported.leadArtistName)
+          if (imported.leadArtistBio) setStory(imported.leadArtistBio)
+          if (imported.heroImageUrl) setHeroImageUrl(imported.heroImageUrl)
+          if (imported.galleryImages?.length) setGalleryImages(imported.galleryImages)
+          if (imported.socialLinks?.length) setProjectSocialLinks(imported.socialLinks)
+          markDirty()
+          sessionStorage.removeItem('resonance_import_data')
+        }
       }
     } catch { /* ignore import errors */ }
 
