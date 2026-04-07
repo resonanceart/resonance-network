@@ -696,10 +696,12 @@ function LiveProjectEditorInner() {
           <Link href="/dashboard">Dashboard</Link> <span>/</span> <span>{title || 'New Project'}</span>
         </nav>
 
-        {/* Import from website prompt */}
-        <div className="container" style={{ marginTop: 'var(--space-3)' }}>
-          <ImportPromptPopup mode="project" />
-        </div>
+        {/* Import from website prompt — only show for new projects, not when editing existing */}
+        {!submissionId && (
+          <div className="container" style={{ marginTop: 'var(--space-3)' }}>
+            <ImportPromptPopup mode="project" />
+          </div>
+        )}
 
         {importProgress && (
           <div className="container" style={{ marginTop: 'var(--space-2)' }}>

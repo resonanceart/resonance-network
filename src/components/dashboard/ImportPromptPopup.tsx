@@ -58,7 +58,7 @@ export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
 
       if (activeTab === 'project') {
         await saveImportData('resonance_import_data', data)
-        window.location.href = '/dashboard/projects/live-edit?import=true'
+        window.location.href = '/dashboard/projects/live-edit?new=true&import=true'
       } else {
         await saveImportData('resonance_profile_import', data)
         window.location.href = '/dashboard/profile/live-edit?import=profile'
@@ -208,7 +208,7 @@ export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
       <p style={{ margin: 0, marginTop: 'var(--space-3)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>
         No website?{' '}
         <a
-          href={activeTab === 'project' ? '/dashboard/projects/live-edit' : '/dashboard/profile/live-edit'}
+          href={activeTab === 'project' ? '/dashboard/projects/live-edit?new=true' : '/dashboard/profile/live-edit'}
           style={{ color: 'var(--color-accent, #6366f1)', textDecoration: 'underline', fontWeight: 500 }}
         >
           Start from scratch instead
