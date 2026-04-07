@@ -15,9 +15,10 @@ export interface MediaItem {
 interface MediaGalleryEditorProps {
   items: MediaItem[];
   onChange: (items: MediaItem[]) => void;
+  onUpload?: (file: File, type: string) => Promise<string | null>;
 }
 
-export default function MediaGalleryEditor({ items, onChange }: MediaGalleryEditorProps) {
+export default function MediaGalleryEditor({ items, onChange, onUpload }: MediaGalleryEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sorted = [...items].sort((a, b) => a.order - b.order);
@@ -53,7 +54,7 @@ export default function MediaGalleryEditor({ items, onChange }: MediaGalleryEdit
     if (!file) return;
 
     const img = new Image();
-    img.onload = () => {
+    img.onload = async () => {
       const maxWidth = 1200;
       let width = img.width;
       let height = img.height;
@@ -70,10 +71,25 @@ export default function MediaGalleryEditor({ items, onChange }: MediaGalleryEdit
       if (!ctx) return;
 
       ctx.drawImage(img, 0, 0, width, height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
 
       const nextOrder = sorted.length > 0 ? sorted[sorted.length - 1].order + 1 : 0;
-      onChange([...sorted, { url: dataUrl, alt: '', type: 'image', order: nextOrder }]);
+
+      if (onUpload) {
+        // Upload resized image to Storage instead of keeping as base64
+        const blob = await new Promise<Blob | null>(resolve =>
+          canvas.toBlob(resolve, 'image/jpeg', 0.85)
+        );
+        if (!blob) return;
+        const resizedFile = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
+        const url = await onUpload(resizedFile, 'gallery');
+        if (url) {
+          onChange([...sorted, { url, alt: '', type: 'image', order: nextOrder }]);
+        }
+      } else {
+        // Fallback: use base64 data URL
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        onChange([...sorted, { url: dataUrl, alt: '', type: 'image', order: nextOrder }]);
+      }
     };
 
     img.src = URL.createObjectURL(file);
