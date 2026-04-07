@@ -5,9 +5,11 @@ import type { ScrapedProject, ScrapedProfile } from '@/lib/scraper'
 import { validateCsrf } from '@/lib/csrf'
 import { getClientIp } from '@/lib/sanitize'
 import { rateLimit } from '@/lib/rate-limit'
+import { supabaseAdmin } from '@/lib/supabase'
+import path from 'path'
 
-/** Download an image URL and return as base64 data URL (retries once on failure) */
-async function imageToBase64(url: string): Promise<string | null> {
+/** Download an image and upload it to Supabase Storage, returning the public URL (retries once on failure) */
+async function uploadImageToStorage(url: string, type: string): Promise<{ url: string; byteSize: number } | null> {
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const origin = new URL(url).origin
@@ -29,25 +31,40 @@ async function imageToBase64(url: string): Promise<string | null> {
       if (!contentType.startsWith('image/')) return null
 
       const buffer = await response.arrayBuffer()
-      if (buffer.byteLength < 2000 || buffer.byteLength > 10_000_000) return null
+      const byteSize = buffer.byteLength
+      if (byteSize < 2000 || byteSize > 10_000_000) return null
 
-      const base64 = Buffer.from(buffer).toString('base64')
-      return `data:${contentType};base64,${base64}`
+      // Derive extension from content type or original URL
+      const extMap: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'image/svg+xml': 'svg' }
+      const ext = extMap[contentType] || path.extname(new URL(url).pathname).replace('.', '') || 'jpg'
+      const filename = `${crypto.randomUUID()}.${ext}`
+      const timestamp = Date.now()
+      const storagePath = `imports/${timestamp}/${type}/${filename}`
+
+      const { error } = await supabaseAdmin.storage
+        .from('profile-uploads')
+        .upload(storagePath, Buffer.from(buffer), {
+          contentType,
+          upsert: false,
+        })
+
+      if (error) {
+        if (attempt === 0) { await new Promise(r => setTimeout(r, 3000)); continue }
+        console.error('Supabase upload error:', error.message)
+        return null
+      }
+
+      const { data: publicUrlData } = supabaseAdmin.storage
+        .from('profile-uploads')
+        .getPublicUrl(storagePath)
+
+      return { url: publicUrlData.publicUrl, byteSize }
     } catch {
       if (attempt === 0) { await new Promise(r => setTimeout(r, 3000)); continue }
       return null
     }
   }
   return null
-}
-
-/** Get the byte size of a base64 data URL */
-function base64ByteSize(dataUrl: string): number {
-  const base64Part = dataUrl.split(',')[1]
-  if (!base64Part) return 0
-  // base64 encodes 3 bytes per 4 chars, minus padding
-  const padding = (base64Part.match(/=+$/) || [''])[0].length
-  return Math.floor((base64Part.length * 3) / 4) - padding
 }
 
 /** Image download metadata */
@@ -58,64 +75,60 @@ interface ImageDownloadMeta {
   heroSource: 'original' | 'gallery-swap' | 'fallback' | 'none'
 }
 
-/** Download hero + gallery images, converting external URLs to base64 */
+/** Download hero + gallery images, uploading to Supabase Storage and returning public URLs */
 async function downloadImages(data: ScrapedProject | ScrapedProfile): Promise<ImageDownloadMeta> {
   let imagesFound = 0
   let imagesDownloaded = 0
   let imagesFailed = 0
   let heroSource: ImageDownloadMeta['heroSource'] = 'none'
 
-  // Download hero image
-  let heroBase64: string | null = null
+  // Upload hero image
   let heroSize = 0
   if (data.heroImageUrl) {
     imagesFound++
-    heroBase64 = await imageToBase64(data.heroImageUrl)
-    if (heroBase64) {
-      heroSize = base64ByteSize(heroBase64)
-      data.heroImageUrl = heroBase64
+    const result = await uploadImageToStorage(data.heroImageUrl, 'hero')
+    if (result) {
+      heroSize = result.byteSize
+      data.heroImageUrl = result.url
       heroSource = 'original'
       imagesDownloaded++
     } else {
-      // Hero download failed — clear it so we can fallback to gallery later
       data.heroImageUrl = null
       imagesFailed++
     }
   }
 
-  // Download avatar for profiles
+  // Upload avatar for profiles
   if ('avatarUrl' in data && data.avatarUrl) {
     imagesFound++
-    const base64 = await imageToBase64(data.avatarUrl)
-    if (base64) {
-      data.avatarUrl = base64
+    const result = await uploadImageToStorage(data.avatarUrl, 'avatar')
+    if (result) {
+      data.avatarUrl = result.url
       imagesDownloaded++
     } else {
       imagesFailed++
     }
   }
 
-  // Download gallery images in parallel (max 8 to keep response time reasonable)
+  // Upload gallery images in parallel (max 8 to keep response time reasonable)
   const galleryToDownload = data.galleryImages.slice(0, 8)
   imagesFound += galleryToDownload.length
   const results = await Promise.allSettled(
     galleryToDownload.map(async (img) => {
-      const base64 = await imageToBase64(img.url)
-      return { ...img, url: base64 || img.url, byteSize: base64 ? base64ByteSize(base64) : 0 }
+      const result = await uploadImageToStorage(img.url, 'gallery')
+      return { alt: img.alt, url: result?.url || '', byteSize: result?.byteSize || 0, uploaded: !!result }
     })
   )
 
   const downloadedGallery = results
-    .filter((r): r is PromiseFulfilledResult<{ url: string; alt: string; byteSize: number }> => r.status === 'fulfilled')
+    .filter((r): r is PromiseFulfilledResult<{ url: string; alt: string; byteSize: number; uploaded: boolean }> => r.status === 'fulfilled')
     .map(r => r.value)
-    .filter(img => img.url.startsWith('data:')) // only keep successfully downloaded ones
+    .filter(img => img.uploaded)
 
   imagesDownloaded += downloadedGallery.length
   imagesFailed += galleryToDownload.length - downloadedGallery.length
 
   // Check if any gallery image is significantly larger than the hero — if so, swap it in as hero
-  // This catches cases where the scraper's HTML-based scoring picked a small logo/screenshot
-  // but a real project image is much larger by actual file size
   if (downloadedGallery.length > 0) {
     const largestGallery = downloadedGallery.reduce((best, img) =>
       img.byteSize > best.byteSize ? img : best
@@ -124,13 +137,11 @@ async function downloadImages(data: ScrapedProject | ScrapedProfile): Promise<Im
     // Swap if: no hero was downloaded, OR the largest gallery image is at least 2x the hero size
     if (!data.heroImageUrl || (largestGallery.byteSize > heroSize * 2 && largestGallery.byteSize > 50_000)) {
       heroSource = 'gallery-swap'
-      // Current hero (if any) goes back into gallery
       const oldHero = data.heroImageUrl
       data.heroImageUrl = largestGallery.url
       const newGallery = downloadedGallery
         .filter(img => img.url !== largestGallery.url)
         .map(({ url, alt }) => ({ url, alt }))
-      // Put old hero at the end of gallery if it existed
       if (oldHero) {
         newGallery.push({ url: oldHero, alt: '' })
       }
