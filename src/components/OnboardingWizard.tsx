@@ -102,7 +102,9 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
         throw new Error(err.error || `Import failed (${res.status})`)
       }
       const { data } = await res.json()
-      await saveImportData('resonance_profile_import', data)
+      const key = 'resonance_profile_import'
+      await saveImportData(key, data).catch(() => {})
+      try { sessionStorage.setItem(key, JSON.stringify(data)) } catch { /* ignore */ }
       setImportDone(true)
     } catch (err) {
       setImportError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')

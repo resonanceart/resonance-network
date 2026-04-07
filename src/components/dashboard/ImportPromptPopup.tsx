@@ -57,10 +57,15 @@ export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
       const { data } = await res.json()
 
       if (activeTab === 'project') {
-        await saveImportData('resonance_import_data', data)
+        const key = 'resonance_import_data'
+        await saveImportData(key, data).catch(() => {})
+        // sessionStorage fallback for mobile Safari IndexedDB quirks
+        try { sessionStorage.setItem(key, JSON.stringify(data)) } catch { /* ignore */ }
         window.location.href = '/dashboard/projects/live-edit?new=true&import=true'
       } else {
-        await saveImportData('resonance_profile_import', data)
+        const key = 'resonance_profile_import'
+        await saveImportData(key, data).catch(() => {})
+        try { sessionStorage.setItem(key, JSON.stringify(data)) } catch { /* ignore */ }
         window.location.href = '/dashboard/profile/live-edit?import=profile'
       }
     } catch (err) {

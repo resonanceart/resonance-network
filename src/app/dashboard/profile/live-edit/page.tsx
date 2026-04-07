@@ -697,6 +697,8 @@ export default function LiveProfileEditor() {
               }
               setHasChanges(true)
               lastChangeTime.current = Date.now()
+              // Dismiss welcome overlay — import data is now applied
+              setShowWelcome(false)
               // Clean up both storage locations
               clearImportData('resonance_profile_import').catch(() => {})
               sessionStorage.removeItem('resonance_profile_import')
