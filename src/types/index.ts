@@ -394,6 +394,7 @@ export interface CollaborationTask {
   contactEmailSubject?: string
   heroImageUrl?: string
   projectSlug?: string
+  leadArtistName?: string
   source?: 'json' | 'supabase'
 }
 

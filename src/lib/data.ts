@@ -184,6 +184,7 @@ export async function getCollaborationTasksFromSupabase(): Promise<Collaboration
             contactEmail: String(row.artist_email || ''),
             contactEmailSubject: `Collaboration Interest: ${roleTitle} for ${row.project_title}`,
             heroImageUrl: typeof row.hero_image_data === 'string' ? row.hero_image_data : undefined,
+            leadArtistName: String(row.artist_name || ''),
             source: 'supabase',
           })
         }

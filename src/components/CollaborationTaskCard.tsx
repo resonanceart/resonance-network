@@ -20,7 +20,7 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
   const [profileLoaded, setProfileLoaded] = useState(false)
 
   const project = (projectsData as Project[]).find(p => p.slug === task.projectId || p.id === task.projectId)
-  const leadName = project?.leadArtistName
+  const leadName = project?.leadArtistName || task.leadArtistName
   const leadProfile = leadName ? (profilesData as Profile[]).find(p => p.name === leadName && p.status === 'published') : null
   const heroImage = task.heroImageUrl || project?.heroImage?.url
   const projectLink = task.projectSlug || task.projectId
@@ -126,8 +126,24 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
           ))}
         </div>
 
+        {/* Description */}
+        {task.description && (
+          <p className="task-card__description" style={{
+            fontSize: 'var(--text-sm)',
+            color: 'var(--color-text-secondary)',
+            lineHeight: 1.5,
+            marginTop: 'var(--space-2)',
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical' as const,
+            overflow: 'hidden',
+          }}>
+            {task.description}
+          </p>
+        )}
+
         {/* Scope */}
-        <p className="task-card__scope">{task.estimatedScope}</p>
+        {task.estimatedScope && <p className="task-card__scope">{task.estimatedScope}</p>}
 
         {/* Compensation */}
         {task.rewardDescription && (

@@ -121,6 +121,84 @@ function LiveProjectEditorInner() {
   const lastChangeTime = useRef(0)
   const markDirty = useCallback(() => { setHasChanges(true); lastChangeTime.current = Date.now() }, [])
 
+  // Apply imported data from website scraper (called after existing project loads)
+  async function applyImportData() {
+    try {
+      let imported: Record<string, unknown> | null = null
+      // Try IndexedDB first
+      try { imported = await loadImportData<Record<string, unknown>>('resonance_import_data') } catch { /* ignore */ }
+      // Fallback to sessionStorage
+      if (!imported) {
+        try {
+          const raw = sessionStorage.getItem('resonance_import_data')
+          if (raw) imported = JSON.parse(raw)
+        } catch { /* ignore */ }
+      }
+      if (!imported) return
+
+      // Apply all fields — overwrite existing data with imported content
+      if (imported.title) setTitle(imported.title as string)
+      if (imported.shortDescription) setShortDescription(imported.shortDescription as string)
+      if (imported.overviewLead) setOverviewLead(imported.overviewLead as string)
+      if (imported.overviewBody) setOverviewBody(imported.overviewBody as string)
+      if (imported.experience) setExperience(imported.experience as string)
+      if (imported.artistStory) setStory(imported.artistStory as string)
+      if (imported.materials) setMaterials(imported.materials as string)
+      if (imported.goals && Array.isArray(imported.goals) && imported.goals.length) setGoals(imported.goals as string[])
+      if (imported.suggestedDomains && Array.isArray(imported.suggestedDomains) && imported.suggestedDomains.length) setDomains(imported.suggestedDomains as string[])
+      if (imported.suggestedPathways && Array.isArray(imported.suggestedPathways) && imported.suggestedPathways.length) setPathways(imported.suggestedPathways as string[])
+      if (imported.suggestedStage) setStage(imported.suggestedStage as string)
+      if (imported.suggestedScale) setScale(imported.suggestedScale as string)
+      if (imported.leadArtistName) setLeadArtistName(imported.leadArtistName as string)
+      if (imported.leadArtistBio) setStory(imported.leadArtistBio as string)
+      // Upload base64 hero image to Supabase Storage
+      if (imported.heroImageUrl) {
+        const heroUrl = imported.heroImageUrl as string
+        if (heroUrl.startsWith('data:')) {
+          fetch(heroUrl).then(r => r.blob()).then(blob => {
+            const file = new File([blob], `hero-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
+            uploadFileToStorage(file, 'hero').then(url => {
+              if (url) { setHeroImageUrl(url); markDirty() }
+            })
+          }).catch(() => {})
+        } else {
+          setHeroImageUrl(heroUrl)
+        }
+      }
+      // Upload base64 gallery images to Storage
+      if (imported.galleryImages && Array.isArray(imported.galleryImages) && imported.galleryImages.length) {
+        const galleryImgs = imported.galleryImages as Array<{ url: string; alt: string }>
+        const hasBase64 = galleryImgs.some(img => img.url.startsWith('data:'))
+        if (hasBase64) {
+          const results = await Promise.all(galleryImgs.map(async (img) => {
+            if (img.url.startsWith('data:')) {
+              try {
+                const blob = await fetch(img.url).then(r => r.blob())
+                const file = new File([blob], `gallery-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
+                const url = await uploadFileToStorage(file, 'gallery')
+                return url ? { url, alt: img.alt } : null
+              } catch { return null }
+            }
+            return img
+          }))
+          const uploaded = results.filter(Boolean) as Array<{ url: string; alt: string }>
+          if (uploaded.length > 0) { setGalleryImages(uploaded); markDirty() }
+        } else {
+          setGalleryImages(galleryImgs)
+        }
+      }
+      if (imported.socialLinks && Array.isArray(imported.socialLinks) && imported.socialLinks.length) {
+        setProjectSocialLinks(imported.socialLinks as Array<{platform: string; url: string}>)
+      }
+      markDirty()
+      // Clean up storage
+      clearImportData('resonance_import_data').catch(() => {})
+      sessionStorage.removeItem('resonance_import_data')
+    } catch (e) {
+      console.error('Failed to apply imported project data:', e)
+    }
+  }
+
   // Fetch existing project if editing
   useEffect(() => {
     if (authLoading) return
@@ -220,86 +298,16 @@ function LiveProjectEditorInner() {
           }
         })
         .catch(() => {})
-    }
-
-    // Check for imported data from website scraper (IndexedDB first, sessionStorage fallback)
-    const importParam = new URLSearchParams(window.location.search).get('import')
-    if (importParam === 'true') {
-      loadImportData<Record<string, unknown>>('resonance_import_data')
-        .catch(() => null)
-        .then(fromDb => {
-          let imported = fromDb
-          // Fallback to sessionStorage (used by ImportFromWebsite)
-          if (!imported) {
-            try {
-              const raw = sessionStorage.getItem('resonance_import_data')
-              if (raw) imported = JSON.parse(raw)
-            } catch { /* ignore */ }
+        .finally(() => {
+          // Apply imported data AFTER existing project loads (avoids race condition)
+          const importParam = new URLSearchParams(window.location.search).get('import')
+          if (importParam === 'true') {
+            applyImportData()
           }
-          if (imported) {
-            if (imported.title) setTitle(imported.title as string)
-            if (imported.shortDescription) setShortDescription(imported.shortDescription as string)
-            if (imported.overviewLead) setOverviewLead(imported.overviewLead as string)
-            if (imported.overviewBody) setOverviewBody(imported.overviewBody as string)
-            if (imported.experience) setExperience(imported.experience as string)
-            if (imported.artistStory) setStory(imported.artistStory as string)
-            if (imported.materials) setMaterials(imported.materials as string)
-            if (imported.goals && Array.isArray(imported.goals) && imported.goals.length) setGoals(imported.goals as string[])
-            if (imported.suggestedDomains && Array.isArray(imported.suggestedDomains) && imported.suggestedDomains.length) setDomains(imported.suggestedDomains as string[])
-            if (imported.suggestedPathways && Array.isArray(imported.suggestedPathways) && imported.suggestedPathways.length) setPathways(imported.suggestedPathways as string[])
-            if (imported.suggestedStage) setStage(imported.suggestedStage as string)
-            if (imported.suggestedScale) setScale(imported.suggestedScale as string)
-            if (imported.leadArtistName) setLeadArtistName(imported.leadArtistName as string)
-            if (imported.leadArtistBio) setStory(imported.leadArtistBio as string)
-            // Upload base64 images to Supabase Storage (base64 data URLs are too
-            // large for the API body limit and will cause 413 errors on save)
-            if (imported.heroImageUrl) {
-              const heroUrl = imported.heroImageUrl as string
-              if (heroUrl.startsWith('data:')) {
-                // Convert base64 to File and upload
-                fetch(heroUrl).then(r => r.blob()).then(blob => {
-                  const file = new File([blob], `hero-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-                  uploadFileToStorage(file, 'hero').then(url => {
-                    if (url) { setHeroImageUrl(url); markDirty() }
-                  })
-                }).catch(() => {})
-              } else {
-                setHeroImageUrl(heroUrl)
-              }
-            }
-            if (imported.galleryImages && Array.isArray(imported.galleryImages) && imported.galleryImages.length) {
-              const galleryImgs = imported.galleryImages as Array<{ url: string; alt: string }>
-              const hasBase64 = galleryImgs.some(img => img.url.startsWith('data:'))
-              if (hasBase64) {
-                // Upload base64 gallery images to storage
-                Promise.all(galleryImgs.map(async (img) => {
-                  if (img.url.startsWith('data:')) {
-                    try {
-                      const blob = await fetch(img.url).then(r => r.blob())
-                      const file = new File([blob], `gallery-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-                      const url = await uploadFileToStorage(file, 'gallery')
-                      return url ? { url, alt: img.alt } : null
-                    } catch { return null }
-                  }
-                  return img
-                })).then(results => {
-                  const uploaded = results.filter(Boolean) as Array<{ url: string; alt: string }>
-                  if (uploaded.length > 0) { setGalleryImages(uploaded); markDirty() }
-                })
-              } else {
-                setGalleryImages(galleryImgs)
-              }
-            }
-            if (imported.socialLinks && Array.isArray(imported.socialLinks) && imported.socialLinks.length) setProjectSocialLinks(imported.socialLinks as Array<{platform: string; url: string}>)
-            markDirty()
-            // Clean up both storage locations
-            clearImportData('resonance_import_data').catch(() => {})
-            sessionStorage.removeItem('resonance_import_data')
-          }
+          setLoading(false)
         })
     }
 
-    setLoading(false)
   }, [user, authLoading, existingId, markDirty])
 
   // Keep a ref to the latest saveDraft function to avoid stale closures
