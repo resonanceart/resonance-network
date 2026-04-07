@@ -5,4 +5,4 @@ Disallow: /_next/
 Disallow: /admin/
 Disallow: /preview/
 
-Sitemap: https://resonance.network/sitemap.xml
+Sitemap: https://resonancenetwork.org/sitemap.xml
