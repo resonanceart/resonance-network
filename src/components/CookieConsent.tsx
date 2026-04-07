@@ -23,9 +23,9 @@ export function CookieConsent() {
     }
   }, [])
 
-  function handleAccept() {
+  function handleConsent(accepted: boolean) {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ accepted: true, timestamp: Date.now() }))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ accepted, timestamp: Date.now() }))
     } catch {
       // localStorage unavailable
     }
@@ -38,11 +38,14 @@ export function CookieConsent() {
     <div className="cookie-consent" role="alert">
       <div className="cookie-consent__inner">
         <p className="cookie-consent__text">
-          We use cookies for authentication and to improve your experience. No tracking cookies.
+          We use essential cookies for authentication. No tracking or third-party cookies.
         </p>
         <div className="cookie-consent__actions">
-          <button className="btn btn--primary btn--sm" onClick={handleAccept}>
+          <button className="btn btn--primary btn--sm" onClick={() => handleConsent(true)}>
             Accept
+          </button>
+          <button className="btn btn--ghost btn--sm" onClick={() => handleConsent(false)}>
+            Decline
           </button>
           <Link href="/privacy" className="btn btn--outline btn--sm">
             Learn More
