@@ -416,16 +416,19 @@ function TimelinePanel({
 
 // ─── Upload Helper ───────────────────────────────────────────────
 
-async function uploadFile(file: File, type: string): Promise<{ url: string | null; error: string | null }> {
+async function uploadFile(file: File, type: string, displayName?: string): Promise<{ url: string | null; error: string | null }> {
   // Direct Supabase Storage upload (bypasses Next.js ~4.5MB body limit)
   try {
+    const { slugify } = await import('@/lib/slugify')
     const { createSupabaseBrowserClient } = await import('@/lib/supabase-auth')
     const supabase = createSupabaseBrowserClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { url: null, error: 'Not authenticated. Please sign in again.' }
 
+    const nameSlug = slugify(displayName || '') || 'user'
     const ext = file.name.split('.').pop()?.toLowerCase() || (file.type.includes('pdf') ? 'pdf' : 'jpg')
-    const path = `${user.id}/${type}/${Date.now()}.${ext}`
+    const timestamp = Date.now()
+    const path = `${user.id}/${nameSlug}/${type}/${nameSlug}-${type}-${timestamp}.${ext}`
 
     const { data, error } = await supabase.storage
       .from('profile-uploads')
@@ -667,7 +670,7 @@ export default function LiveProfileEditor() {
                   try {
                     const blob = await fetch(avatarSrc).then(r => r.blob())
                     const file = new File([blob], `avatar-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-                    const { url, error } = await uploadFile(file, 'avatar')
+                    const { url, error } = await uploadFile(file, 'avatar', displayName)
                     if (url) { setAvatarUrl(url); setHasChanges(true); lastChangeTime.current = Date.now() }
                     else { console.error('Avatar upload failed:', error) }
                   } catch (err) {
@@ -685,7 +688,7 @@ export default function LiveProfileEditor() {
                   try {
                     const blob = await fetch(heroSrc).then(r => r.blob())
                     const file = new File([blob], `cover-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-                    const { url, error } = await uploadFile(file, 'cover')
+                    const { url, error } = await uploadFile(file, 'cover', displayName)
                     if (url) { setCoverImageUrl(url); setHasChanges(true); lastChangeTime.current = Date.now() }
                     else { console.error('Cover upload failed:', error) }
                   } catch (err) {
@@ -707,7 +710,7 @@ export default function LiveProfileEditor() {
                       try {
                         const blob = await fetch(img.url).then(r => r.blob())
                         const file = new File([blob], `gallery-import-${i}.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-                        const { url, error } = await uploadFile(file, 'gallery')
+                        const { url, error } = await uploadFile(file, 'gallery', displayName)
                         if (url) return { url, alt: img.alt || '', type: 'image' as const, order: i, isFeatured: i === 0 }
                         console.error(`Gallery image ${i} upload failed:`, error)
                         failedCount++
@@ -884,7 +887,7 @@ export default function LiveProfileEditor() {
   // File upload wrapper with error feedback
   async function upload(file: File, type: string): Promise<string | null> {
     setUploadError(null)
-    const result = await uploadFile(file, type)
+    const result = await uploadFile(file, type, displayName)
     if (result.error) {
       setUploadError(result.error)
       return null

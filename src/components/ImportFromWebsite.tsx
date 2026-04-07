@@ -103,9 +103,9 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     try { await saveImportData('resonance_import_data', projectData) } catch { /* IndexedDB failed */ }
     try { sessionStorage.setItem('resonance_import_data', JSON.stringify(projectData)) } catch { /* too large for sessionStorage, IndexedDB has it */ }
     if (user) {
-      window.location.href = '/dashboard/projects/live-edit?import=true'
+      window.location.href = '/dashboard/projects/live-edit?new=true&import=true'
     } else {
-      const redirectPath = encodeURIComponent('/dashboard/projects/live-edit?import=true')
+      const redirectPath = encodeURIComponent('/dashboard/projects/live-edit?new=true&import=true')
       window.location.href = `/login?tab=signup&redirect=${redirectPath}`
     }
   }
