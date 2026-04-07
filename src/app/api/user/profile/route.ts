@@ -166,6 +166,13 @@ export async function DELETE(request: Request) {
       )
     }
 
+    // Delete extended profile data
+    await supabaseAdmin.from('profile_extended').delete().eq('id', user.id)
+    await supabaseAdmin.from('profile_skills').delete().eq('profile_id', user.id)
+    await supabaseAdmin.from('profile_tools').delete().eq('profile_id', user.id)
+    await supabaseAdmin.from('profile_social_links').delete().eq('profile_id', user.id)
+    await supabaseAdmin.from('work_experience').delete().eq('profile_id', user.id)
+
     // Delete the auth user
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user.id)
 
@@ -176,6 +183,9 @@ export async function DELETE(request: Request) {
         { status: 500 }
       )
     }
+
+    // Sign out the server-side session
+    await supabase.auth.signOut()
 
     return NextResponse.json({ success: true })
   } catch {

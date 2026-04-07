@@ -382,9 +382,11 @@ function DeleteAccountSection({ router }: { router: ReturnType<typeof useRouter>
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/user/profile', { method: 'DELETE', credentials: 'include' })
+      const res = await fetch('/api/user/profile', { method: 'DELETE', credentials: 'include', headers: { 'x-csrf-token': 'resonance' } })
       if (res.ok) {
-        router.push('/login')
+        // Sign out the Supabase session so the browser doesn't keep stale auth
+        await supabase.auth.signOut()
+        window.location.href = '/login'
       } else {
         const data = await res.json()
         setError(data.error || 'Failed to delete account.')
