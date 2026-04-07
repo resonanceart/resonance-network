@@ -120,7 +120,7 @@ export async function POST(
               <div style="margin: 20px 0; padding: 16px; background: #f5f3ee; border-radius: 8px;">
                 <p style="white-space: pre-wrap; margin: 0;">${message}</p>
               </div>
-              <p style="color: #666; font-size: 14px;">You can reply directly to ${from_email} or view this message in your <a href="https://resonance.network/dashboard/messages" style="color: #01696F;">dashboard</a>.</p>
+              <p style="color: #666; font-size: 14px;">You can reply directly to ${from_email} or view this message in your <a href="https://resonancenetwork.org/dashboard/messages" style="color: #01696F;">dashboard</a>.</p>
               <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 24px 0;" />
               <p style="color: #999; font-size: 12px;">Resonance Network &mdash; Connecting Community Through Passion and Purpose</p>
             </div>

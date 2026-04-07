@@ -4,12 +4,12 @@ export const metadata: Metadata = {
   title: 'People — Artists & Collaborators',
   description: 'Meet the artists, engineers, architects, and makers building ambitious creative projects on Resonance Network across art, architecture, and ecology.',
   alternates: {
-    canonical: 'https://resonance.network/profiles',
+    canonical: 'https://resonancenetwork.org/profiles',
   },
   openGraph: {
     title: 'People — Resonance Network',
     description: 'Artists and collaborators building ambitious work at the intersection of art, architecture, and ecology.',
-    url: 'https://resonance.network/profiles',
+    url: 'https://resonancenetwork.org/profiles',
     type: 'website',
     images: [{ url: '/og-image.jpg' }],
   },

@@ -77,7 +77,7 @@ export async function POST(request: Request) {
       } catch (err) { console.error('Admin notification error:', (err as Error).message) }
 
       if (email) {
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance.network'
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonancenetwork.org'
         try {
           await sendEmail({
             to: email,

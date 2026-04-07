@@ -8,7 +8,7 @@ import { ScrollToTop } from '@/components/ScrollToTop'
 import { CookieConsent } from '@/components/CookieConsent'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://resonance.network'),
+  metadataBase: new URL('https://resonancenetwork.org'),
   title: {
     default: 'Resonance Network — Immersive Art Collaboration',
     template: '%s — Resonance Network',
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     'community art projects',
     'creative collaboration platform',
   ],
-  authors: [{ name: 'Resonance Network', url: 'https://resonance.network' }],
+  authors: [{ name: 'Resonance Network', url: 'https://resonancenetwork.org' }],
   creator: 'Resonance Network',
   publisher: 'Resonance Network',
   formatDetection: { telephone: false },
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     title: 'Resonance Network — Immersive Art Collaboration',
     description:
       'Between proposal and build — we surround serious spatial projects with aligned collaborators and the momentum to get built.',
-    url: 'https://resonance.network',
+    url: 'https://resonancenetwork.org',
     siteName: 'Resonance Network',
     locale: 'en_US',
     type: 'website',
@@ -82,7 +82,7 @@ export const metadata: Metadata = {
     apple: '/favicon.png',
   },
   alternates: {
-    canonical: 'https://resonance.network',
+    canonical: 'https://resonancenetwork.org',
   },
 }
 
@@ -97,8 +97,8 @@ const organizationJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Resonance Network',
-  url: 'https://resonance.network',
-  logo: 'https://resonance.network/assets/images/projects/money-shot.png',
+  url: 'https://resonancenetwork.org',
+  logo: 'https://resonancenetwork.org/assets/images/projects/money-shot.png',
   description:
     'An artist-led platform where ambitious creative projects find the collaborators, expertise, and pathways to get built.',
   email: 'resonanceartcollective@gmail.com',
@@ -121,7 +121,7 @@ const websiteJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'Resonance Network',
-  url: 'https://resonance.network',
+  url: 'https://resonancenetwork.org',
   description:
     'An artist-led platform where ambitious creative projects find collaborators, expertise, and momentum to get built.',
   publisher: {
@@ -130,7 +130,7 @@ const websiteJsonLd = {
   },
   potentialAction: {
     '@type': 'SearchAction',
-    target: 'https://resonance.network/collaborate?q={search_term_string}',
+    target: 'https://resonancenetwork.org/collaborate?q={search_term_string}',
     'query-input': 'required name=search_term_string',
   },
 }

@@ -6,8 +6,8 @@ export function validateCsrf(request: Request): boolean {
 
   // Exact-match origins
   const allowedOrigins = [
-    'https://resonance.network',
-    'https://www.resonance.network',
+    'https://resonancenetwork.org',
+    'https://www.resonancenetwork.org',
     'https://resonance-network.vercel.app',
     'http://localhost:3000',
     'http://localhost:3001',

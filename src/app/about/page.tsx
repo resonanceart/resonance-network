@@ -5,12 +5,12 @@ export const metadata: Metadata = {
   title: 'About — An Artist-Led Platform for Ambitious Creative Work',
   description: 'Built by artists, for artists. Resonance Network is a curated platform where ambitious creative projects find the people and pathways to get built.',
   alternates: {
-    canonical: 'https://resonance.network/about',
+    canonical: 'https://resonancenetwork.org/about',
   },
   openGraph: {
     title: 'About Resonance Network — Art Collaboration Platform',
     description: 'An artist-led collaboration platform connecting creators of ambitious projects with the expertise to make them real.',
-    url: 'https://resonance.network/about',
+    url: 'https://resonancenetwork.org/about',
     type: 'website',
     images: [{ url: '/og-image.jpg' }],
   },
@@ -26,8 +26,8 @@ const breadcrumbJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://resonance.network' },
-    { '@type': 'ListItem', position: 2, name: 'About', item: 'https://resonance.network/about' },
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://resonancenetwork.org' },
+    { '@type': 'ListItem', position: 2, name: 'About', item: 'https://resonancenetwork.org/about' },
   ],
 }
 

@@ -11,7 +11,7 @@ export function ShareProfile({ slug, displayName }: ShareProfileProps) {
   const [copied, setCopied] = useState(false)
   const [igCopied, setIgCopied] = useState(false)
 
-  const profileUrl = `https://resonance.network/profiles/${slug}`
+  const profileUrl = `https://resonancenetwork.org/profiles/${slug}`
   const tweetText = encodeURIComponent(
     `I just created my profile on @ResonanceNetwork — a curated guild for immersive and regenerative art projects. Check it out and apply to join the network! ${profileUrl}`
   )

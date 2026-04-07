@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next'
 import { getProjects, getProfiles } from '@/lib/data'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://resonance.network'
+  const baseUrl = 'https://resonancenetwork.org'
   const projects = await getProjects()
   const profiles = await getProfiles()
 

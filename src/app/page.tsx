@@ -10,12 +10,12 @@ export const metadata: Metadata = {
   title: 'Immersive Art Collaboration Platform',
   description: 'Resonance Network connects creators, collaborators, and communities at the intersection of immersive art, regenerative design, and ecological innovation.',
   alternates: {
-    canonical: 'https://resonance.network',
+    canonical: 'https://resonancenetwork.org',
   },
   openGraph: {
     title: 'Immersive Art Collaboration Platform',
     description: 'Resonance Network connects creators, collaborators, and communities at the intersection of immersive art, regenerative design, and ecological innovation.',
-    url: 'https://resonance.network',
+    url: 'https://resonancenetwork.org',
     type: 'website',
     images: [{ url: '/og-image.jpg' }],
   },

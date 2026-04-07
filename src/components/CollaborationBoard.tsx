@@ -19,13 +19,13 @@ const breadcrumbJsonLd = {
       '@type': 'ListItem',
       position: 1,
       name: 'Home',
-      item: 'https://resonance.network',
+      item: 'https://resonancenetwork.org',
     },
     {
       '@type': 'ListItem',
       position: 2,
       name: 'Collaborate',
-      item: 'https://resonance.network/collaborate',
+      item: 'https://resonancenetwork.org/collaborate',
     },
   ],
 }

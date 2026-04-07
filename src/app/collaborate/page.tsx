@@ -10,12 +10,12 @@ export const metadata: Metadata = {
   title: 'Community & Open Roles — People, Projects, Collaboration',
   description: 'Meet the creators and collaborators behind Resonance Network. Find open roles on curated immersive art, architecture, and ecological design projects.',
   alternates: {
-    canonical: 'https://resonance.network/collaborate',
+    canonical: 'https://resonancenetwork.org/collaborate',
   },
   openGraph: {
     title: 'Community & Open Roles — Resonance Network',
     description: 'Browse artists, engineers, and makers. Find collaboration opportunities on ambitious creative projects.',
-    url: 'https://resonance.network/collaborate',
+    url: 'https://resonancenetwork.org/collaborate',
     type: 'website',
     images: [{ url: '/og-image.jpg' }],
   },
