@@ -7,6 +7,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
 import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components/profile/SmartGallery'
 import { loadImportData, clearImportData } from '@/lib/import-store'
+import ImportPromptPopup from '@/components/dashboard/ImportPromptPopup'
 
 type EditSection = 'hero' | 'overview' | 'gallery' | 'description' | 'experience' | 'inclusivity' | 'materials_regen' | 'story' | 'goals' | 'classification' | 'team' | 'roles' | null
 
@@ -612,6 +613,11 @@ function LiveProjectEditorInner() {
         <nav className="breadcrumb container" style={{ paddingTop: 'var(--space-4)' }}>
           <Link href="/dashboard">Dashboard</Link> <span>/</span> <span>{title || 'New Project'}</span>
         </nav>
+
+        {/* Import from website prompt */}
+        <div className="container" style={{ marginTop: 'var(--space-3)' }}>
+          <ImportPromptPopup mode="project" />
+        </div>
 
         {/* Hero */}
         <div className="editable-section" onClick={!isDraggingHero ? () => openPanel('hero') : undefined}>

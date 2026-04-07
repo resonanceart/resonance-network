@@ -11,6 +11,7 @@ import { ProfileChecklist } from '@/components/profile/ProfileChecklist'
 import { ShareProfile } from '@/components/profile/ShareProfile'
 import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components/profile/SmartGallery'
 import { loadImportData, clearImportData } from '@/lib/import-store'
+import ImportPromptPopup from '@/components/dashboard/ImportPromptPopup'
 import type { ProfileSkill, ProfileTool, ProfileSocialLink } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -1189,6 +1190,11 @@ export default function LiveProfileEditor() {
           <span>Edit Profile</span> <span aria-hidden="true">/</span>
           <span>{displayName || 'Your Name'}</span>
         </nav>
+
+        {/* Import from website prompt */}
+        <div className="container" style={{ marginTop: 'var(--space-3)' }}>
+          <ImportPromptPopup mode="profile" />
+        </div>
 
         {/* Row 1: Banner */}
         <div ref={setSectionRef('cover')} className={`editable-section${activePanel === 'cover' ? ' editable-section--active' : ''}`} onClick={() => openPanel('cover')}>
