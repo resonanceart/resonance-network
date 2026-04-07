@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Reset Password',
   description: 'Reset your Resonance Network account password. Enter your email to receive a password reset link and regain access to your profile and projects.',
-  alternates: { canonical: 'https://resonance.network/reset-password' },
+  alternates: { canonical: 'https://resonancenetwork.org/reset-password' },
   robots: { index: false, follow: false },
 }
 

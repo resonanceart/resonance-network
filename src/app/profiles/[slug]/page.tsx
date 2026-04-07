@@ -30,12 +30,12 @@ export async function generateMetadata({
     title: `${profile.name} — ${profile.title}`,
     description: profile.shortBio,
     alternates: {
-      canonical: `https://resonance.network/profiles/${profile.slug}`,
+      canonical: `https://resonancenetwork.org/profiles/${profile.slug}`,
     },
     openGraph: {
       title: `${profile.name} — ${profile.title}`,
       description: profile.shortBio,
-      url: `https://resonance.network/profiles/${profile.slug}`,
+      url: `https://resonancenetwork.org/profiles/${profile.slug}`,
       images: profile.photo ? [{ url: profile.photo }] : [{ url: '/og-image.jpg' }],
       type: 'profile',
     },
@@ -55,7 +55,7 @@ function getPersonJsonLd(profile: Profile) {
     name: profile.name,
     jobTitle: profile.title,
     description: profile.shortBio,
-    url: `https://resonance.network/profiles/${profile.slug}`,
+    url: `https://resonancenetwork.org/profiles/${profile.slug}`,
     image: profile.photo,
     email: profile.email || undefined,
     address: profile.location ? { '@type': 'PostalAddress', addressLocality: profile.location } : undefined,

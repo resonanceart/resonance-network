@@ -184,7 +184,7 @@ export async function POST(request: Request) {
                 ${project_name ? `<p style="margin: 0 0 4px; color: #666;">Project: ${project_name}</p>` : ''}
                 <p style="margin: 0; color: #888; font-size: 14px;">${badgeDesc}</p>
               </div>
-              <p>View your profile on <a href="https://resonance.network/dashboard" style="color: #01696F;">Resonance Network</a>.</p>
+              <p>View your profile on <a href="https://resonancenetwork.org/dashboard" style="color: #01696F;">Resonance Network</a>.</p>
               <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 24px 0;" />
               <p style="color: #999; font-size: 12px;">Resonance Network — Connecting Community Through Passion and Purpose</p>
             </div>

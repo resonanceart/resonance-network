@@ -4,12 +4,12 @@ export const metadata: Metadata = {
   title: 'Join the Network',
   description: 'Join Resonance Network as a project creator or skilled collaborator. Submit your ambitious project or offer expertise in immersive art and ecology.',
   alternates: {
-    canonical: 'https://resonance.network/join',
+    canonical: 'https://resonancenetwork.org/join',
   },
   openGraph: {
     title: 'Join Resonance Network',
     description: 'Whether you bring an ambitious project or offer expertise, there is a place for you in our community of immersive art creators and collaborators.',
-    url: 'https://resonance.network/join',
+    url: 'https://resonancenetwork.org/join',
     type: 'website',
     images: [{ url: '/og-image.jpg' }],
   },

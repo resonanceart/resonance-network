@@ -1,4 +1,4 @@
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance.network'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonancenetwork.org'
 
 // Shared base layout for all emails
 function baseLayout(content: string): string {
@@ -33,7 +33,7 @@ function baseLayout(content: string): string {
         <!-- Footer -->
         <tr><td align="center" style="padding-top:24px">
           <p style="margin:0 0 8px;font-size:12px;color:#aaa">
-            <a href="${SITE_URL}" style="color:#aaa;text-decoration:none">resonance.network</a>
+            <a href="${SITE_URL}" style="color:#aaa;text-decoration:none">resonancenetwork.org</a>
           </p>
           <p style="margin:0;font-size:11px;color:#ccc">
             <a href="${SITE_URL}/dashboard/settings" style="color:#ccc;text-decoration:underline">Manage email preferences</a>

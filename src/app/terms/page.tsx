@@ -4,11 +4,11 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description: 'Resonance Network terms of service — the rules and guidelines for using our immersive art collaboration platform and connecting with creators.',
-  alternates: { canonical: 'https://resonance.network/terms' },
+  alternates: { canonical: 'https://resonancenetwork.org/terms' },
   openGraph: {
     title: 'Terms of Service — Resonance Network',
     description: 'The rules and guidelines for using Resonance Network for immersive and regenerative projects.',
-    url: 'https://resonance.network/terms',
+    url: 'https://resonancenetwork.org/terms',
     images: [{ url: '/og-image.jpg' }],
   },
   twitter: {
@@ -27,7 +27,7 @@ export default function TermsPage() {
 
         <p>
           Welcome to Resonance Network. By accessing or using our platform at{' '}
-          <strong>resonance.network</strong>, you agree to be bound by these Terms of Service
+          <strong>resonancenetwork.org</strong>, you agree to be bound by these Terms of Service
           (&quot;Terms&quot;). If you do not agree to these Terms, please do not use the platform.
         </p>
 

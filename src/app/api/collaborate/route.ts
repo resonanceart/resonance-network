@@ -100,7 +100,7 @@ export async function POST(request: Request) {
     }
 
     // Send styled admin/artist notification
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonance.network'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonancenetwork.org'
     for (const recipient of recipients) {
       try {
         const notifEmail = collaborationInterestNotification({

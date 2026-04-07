@@ -27,12 +27,12 @@ export async function generateMetadata({
     title,
     description: `${project.shortDescription} Explore this ${project.stage.toLowerCase()} stage ${project.domains[0]?.toLowerCase() || 'creative'} project on Resonance Network.`,
     alternates: {
-      canonical: `https://resonance.network/projects/${project.slug}`,
+      canonical: `https://resonancenetwork.org/projects/${project.slug}`,
     },
     openGraph: {
       title: project.title,
       description: `${project.shortDescription} A curated ${project.domains[0]?.toLowerCase() || 'creative'} project on Resonance Network.`,
-      url: `https://resonance.network/projects/${project.slug}`,
+      url: `https://resonancenetwork.org/projects/${project.slug}`,
       images: [{ url: project.heroImage.url, alt: project.heroImage.alt, width: 1200, height: 630 }],
       type: 'article',
     },
@@ -51,7 +51,7 @@ function getProjectJsonLd(project: Project) {
     '@type': 'CreativeWork',
     name: project.title,
     description: project.shortDescription,
-    url: `https://resonance.network/projects/${project.slug}`,
+    url: `https://resonancenetwork.org/projects/${project.slug}`,
     image: project.heroImage.url,
     creator: project.leadArtistName
       ? { '@type': 'Person', name: project.leadArtistName, description: project.leadArtistBio || undefined }
@@ -59,7 +59,7 @@ function getProjectJsonLd(project: Project) {
     genre: project.domains,
     keywords: [...project.domains, ...project.pathways].join(', '),
     about: project.overviewLead || project.shortDescription,
-    isPartOf: { '@type': 'WebSite', name: 'Resonance Network', url: 'https://resonance.network' },
+    isPartOf: { '@type': 'WebSite', name: 'Resonance Network', url: 'https://resonancenetwork.org' },
   }
 }
 
@@ -68,9 +68,9 @@ function getBreadcrumbJsonLd(project: Project) {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://resonance.network' },
-      { '@type': 'ListItem', position: 2, name: 'Projects', item: 'https://resonance.network/#projects' },
-      { '@type': 'ListItem', position: 3, name: project.title, item: `https://resonance.network/projects/${project.slug}` },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://resonancenetwork.org' },
+      { '@type': 'ListItem', position: 2, name: 'Projects', item: 'https://resonancenetwork.org/#projects' },
+      { '@type': 'ListItem', position: 3, name: project.title, item: `https://resonancenetwork.org/projects/${project.slug}` },
     ],
   }
 }
