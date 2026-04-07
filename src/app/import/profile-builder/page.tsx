@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
+import { loadImportData } from '@/lib/import-store'
 
 interface ImportedProfile {
   name: string
@@ -55,13 +56,19 @@ export default function ProfileBuilderPreview() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem('resonance_profile_import')
-      if (raw) {
-        setData(JSON.parse(raw))
-      }
-    } catch {}
-    setLoading(false)
+    async function load() {
+      // Try IndexedDB first (used by ImportPromptPopup), then sessionStorage
+      try {
+        const fromDb = await loadImportData<ImportedProfile>('resonance_profile_import')
+        if (fromDb) { setData(fromDb); setLoading(false); return }
+      } catch { /* ignore */ }
+      try {
+        const raw = sessionStorage.getItem('resonance_profile_import')
+        if (raw) setData(JSON.parse(raw))
+      } catch { /* ignore */ }
+      setLoading(false)
+    }
+    load()
   }, [])
 
   function handleCreateAccount() {

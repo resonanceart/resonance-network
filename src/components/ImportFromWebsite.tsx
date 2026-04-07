@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import Link from 'next/link'
 import type { ScrapedProject, ScrapedProfile } from '@/lib/scraper'
+import { saveImportData } from '@/lib/import-store'
 
 type ScrapeMode = 'project' | 'profile'
 type Step = 'input' | 'scraping' | 'preview' | 'error'
@@ -98,9 +99,10 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     }
   }
 
-  function handleUseInEditor() {
+  async function handleUseInEditor() {
     if (!projectData) return
     sessionStorage.setItem('resonance_import_data', JSON.stringify(projectData))
+    try { await saveImportData('resonance_import_data', projectData) } catch { /* sessionStorage fallback already set */ }
     if (user) {
       router.push('/dashboard/projects/live-edit?import=true')
     } else {
@@ -109,15 +111,16 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     }
   }
 
-  function saveProfileData() {
+  async function saveProfileData() {
     if (profileData) {
       sessionStorage.setItem('resonance_profile_import', JSON.stringify(profileData))
+      try { await saveImportData('resonance_profile_import', profileData) } catch { /* sessionStorage fallback already set */ }
     }
   }
 
   const profileEditorUrl = user
     ? '/dashboard/profile/live-edit?import=profile'
-    : '/dashboard/profile/live-edit?demo=true'
+    : '/login?tab=signup&redirect=' + encodeURIComponent('/dashboard/profile/live-edit?import=profile')
 
   return (
     <div style={{ paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-10)' }}>

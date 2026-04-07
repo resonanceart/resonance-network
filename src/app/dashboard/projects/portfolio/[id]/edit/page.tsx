@@ -29,12 +29,12 @@ function slugify(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 }
 
-async function uploadImage(file: File): Promise<string | null> {
+async function uploadImage(file: File, userId: string): Promise<string | null> {
   const ext = file.name.split('.').pop()
-  const fileName = `portfolio/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-  const { error } = await supabase.storage.from('profile-media').upload(fileName, file)
+  const fileName = `${userId}/portfolio/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+  const { error } = await supabase.storage.from('profile-uploads').upload(fileName, file)
   if (error) { console.error('Upload error:', error); return null }
-  const { data } = supabase.storage.from('profile-media').getPublicUrl(fileName)
+  const { data } = supabase.storage.from('profile-uploads').getPublicUrl(fileName)
   return data.publicUrl
 }
 
@@ -158,7 +158,7 @@ export default function EditPortfolioProjectPage({ params }: { params: Promise<{
     if (!file) return
     setUploadingCover(true)
     setCoverPreview(URL.createObjectURL(file))
-    const url = await uploadImage(file)
+    const url = await uploadImage(file, user?.id ?? '')
     if (url) setCoverImageUrl(url)
     setUploadingCover(false)
   }
@@ -267,7 +267,7 @@ export default function EditPortfolioProjectPage({ params }: { params: Promise<{
 
   // Block-specific image upload handler
   async function handleBlockImageUpload(blockIndex: number, file: File, field: string = 'url') {
-    const url = await uploadImage(file)
+    const url = await uploadImage(file, user?.id ?? '')
     if (url) {
       const updated = { ...contentBlocks[blockIndex].content, [field]: url }
       updateBlockContent(blockIndex, updated)
@@ -277,7 +277,7 @@ export default function EditPortfolioProjectPage({ params }: { params: Promise<{
   async function handleBlockMultiImageUpload(blockIndex: number, files: FileList) {
     const urls: { url: string; alt: string }[] = [...(contentBlocks[blockIndex].content.images as { url: string; alt: string }[] || [])]
     for (const file of Array.from(files)) {
-      const url = await uploadImage(file)
+      const url = await uploadImage(file, user?.id ?? '')
       if (url) urls.push({ url, alt: file.name })
     }
     updateBlockContent(blockIndex, { ...contentBlocks[blockIndex].content, images: urls })

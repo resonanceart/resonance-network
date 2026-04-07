@@ -15,12 +15,12 @@ function slugify(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 }
 
-async function uploadCoverImage(file: File): Promise<string | null> {
+async function uploadCoverImage(file: File, userId: string): Promise<string | null> {
   const ext = file.name.split('.').pop()
-  const fileName = `portfolio/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-  const { error } = await supabase.storage.from('profile-media').upload(fileName, file)
+  const fileName = `${userId}/portfolio/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+  const { error } = await supabase.storage.from('profile-uploads').upload(fileName, file)
   if (error) { console.error('Upload error:', error); return null }
-  const { data } = supabase.storage.from('profile-media').getPublicUrl(fileName)
+  const { data } = supabase.storage.from('profile-uploads').getPublicUrl(fileName)
   return data.publicUrl
 }
 
@@ -85,7 +85,7 @@ export default function NewPortfolioProjectPage() {
     if (!file) return
     setUploadingCover(true)
     setCoverPreview(URL.createObjectURL(file))
-    const url = await uploadCoverImage(file)
+    const url = await uploadCoverImage(file, user?.id ?? '')
     if (url) setCoverImageUrl(url)
     setUploadingCover(false)
   }
