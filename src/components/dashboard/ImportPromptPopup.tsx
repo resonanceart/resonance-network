@@ -31,8 +31,14 @@ export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
   }
 
   async function handleImport() {
-    const trimmed = url.trim()
+    let trimmed = url.trim()
     if (!trimmed) return
+
+    // Auto-prepend https:// for bare domains
+    if (!/^https?:\/\//i.test(trimmed)) {
+      trimmed = 'https://' + trimmed
+      setUrl(trimmed)
+    }
 
     setLoading(true)
     setError('')
@@ -203,7 +209,7 @@ export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
       <p style={{ margin: 0, marginTop: 'var(--space-3)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>
         No website?{' '}
         <a
-          href={activeTab === 'project' ? '/dashboard/projects/new' : '/dashboard/profile'}
+          href={activeTab === 'project' ? '/dashboard/projects/live-edit' : '/dashboard/profile/live-edit'}
           style={{ color: 'var(--color-accent, #6366f1)', textDecoration: 'underline', fontWeight: 500 }}
         >
           Start from scratch instead
