@@ -1243,6 +1243,18 @@ export default function LiveProfileEditor() {
             } : undefined}
             onMouseUp={() => { if (isDraggingCover) { setIsDraggingCover(false); markDirty() } }}
             onMouseLeave={() => { if (isDraggingCover) { setIsDraggingCover(false); markDirty() } }}
+            onTouchStart={coverImageUrl ? (e) => {
+              setIsDraggingCover(true)
+              coverDragStartY.current = e.touches[0].clientY
+              coverDragStartPos.current = coverPositionY
+            } : undefined}
+            onTouchMove={isDraggingCover ? (e) => {
+              const delta = e.touches[0].clientY - coverDragStartY.current
+              const bannerHeight = (e.currentTarget as HTMLElement).offsetHeight
+              const newPos = Math.max(0, Math.min(100, coverDragStartPos.current + (delta / bannerHeight) * 100))
+              setCoverPositionY(newPos)
+            } : undefined}
+            onTouchEnd={() => { if (isDraggingCover) { setIsDraggingCover(false); markDirty() } }}
           >
             {coverImageUrl && (
               <>
@@ -1748,6 +1760,18 @@ export default function LiveProfileEditor() {
                         } : undefined}
                         onMouseUp={() => { if (isDraggingAvatar) { setIsDraggingAvatar(false); markDirty() } }}
                         onMouseLeave={() => { if (isDraggingAvatar) { setIsDraggingAvatar(false); markDirty() } }}
+                        onTouchStart={(e) => {
+                          setIsDraggingAvatar(true)
+                          avatarDragStartY.current = e.touches[0].clientY
+                          avatarDragStartPos.current = avatarPositionY
+                        }}
+                        onTouchMove={isDraggingAvatar ? (e) => {
+                          const delta = e.touches[0].clientY - avatarDragStartY.current
+                          const containerHeight = (e.currentTarget as HTMLElement).offsetHeight
+                          const newPos = Math.max(0, Math.min(100, avatarDragStartPos.current + (delta / containerHeight) * 100))
+                          setAvatarPositionY(newPos)
+                        } : undefined}
+                        onTouchEnd={() => { if (isDraggingAvatar) { setIsDraggingAvatar(false); markDirty() } }}
                       >
                         <img src={avatarUrl} alt="Profile" draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: `center ${avatarPositionY}%`, pointerEvents: 'none' }} />
                         {isDraggingAvatar && (
@@ -2425,6 +2449,143 @@ export default function LiveProfileEditor() {
         .live-editor__gallery-dropzone--drag {
           border-color: var(--color-accent, #01696F) !important;
           background: rgba(1, 105, 111, 0.08) !important;
+        }
+
+        /* ── Mobile responsive ────────────────────────────── */
+        @media (max-width: 767px) {
+          .live-editor__toolbar {
+            height: auto;
+            min-height: 48px;
+            padding: var(--space-2) 0;
+          }
+          .live-editor__toolbar-inner {
+            flex-wrap: wrap;
+            gap: var(--space-2);
+          }
+          .live-editor__toolbar-title {
+            font-size: var(--text-xs);
+            flex-shrink: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .live-editor__toolbar-actions {
+            gap: var(--space-2);
+            flex-wrap: wrap;
+          }
+          .live-editor__toolbar-actions .btn--sm {
+            font-size: var(--text-xs);
+            padding: 6px 10px;
+            min-height: 36px;
+          }
+
+          /* Panels: bottom sheet style */
+          .live-editor__panel {
+            top: auto;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            max-width: 100%;
+            height: 85vh;
+            border-left: none;
+            border-top: 1px solid var(--color-border);
+            border-radius: 16px 16px 0 0;
+            animation: slideUpSheet 0.25s ease-out;
+          }
+          @keyframes slideUpSheet {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+          }
+          .live-editor__panel-header {
+            padding: var(--space-3) var(--space-4);
+          }
+          .live-editor__panel-body {
+            padding: var(--space-4);
+          }
+          .live-editor__panel-footer {
+            padding: var(--space-3) var(--space-4);
+          }
+          .live-editor__panel-close {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          /* Make "Click to edit" overlays always visible on touch */
+          .editable-section__overlay {
+            opacity: 0.85;
+            font-size: 10px;
+            padding: 3px 8px;
+          }
+          .editable-section:hover .editable-section__overlay {
+            opacity: 1;
+          }
+
+          /* Gallery remove buttons always visible on touch */
+          .live-editor__gallery-remove {
+            opacity: 1;
+            width: 32px;
+            height: 32px;
+            font-size: 18px;
+          }
+
+          /* Tag remove buttons bigger for touch */
+          .live-editor__tag-remove {
+            font-size: 18px;
+            padding: 2px 6px;
+            min-width: 28px;
+            min-height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          /* Gallery grid: 2 columns on small screens */
+          .live-editor__gallery-grid {
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+          }
+
+          /* Social/timeline entries: stack vertically */
+          .live-editor__social-entry {
+            flex-direction: column;
+          }
+          .live-editor__social-entry .form-select {
+            width: 100%;
+          }
+          .live-editor__add-row {
+            flex-direction: column;
+          }
+          .live-editor__add-row .form-select {
+            width: 100%;
+          }
+
+          /* Upload zones: adequate touch targets */
+          .live-editor__upload-zone {
+            min-height: 80px;
+            padding: var(--space-4) var(--space-3);
+          }
+
+          /* Form inputs: min 44px touch target */
+          .form-input,
+          .form-textarea,
+          .form-select {
+            min-height: 44px;
+            font-size: 16px; /* prevent iOS zoom on focus */
+          }
+        }
+
+        @media (max-width: 480px) {
+          .live-editor__toolbar-actions {
+            width: 100%;
+            justify-content: flex-end;
+          }
+          .live-editor__panel {
+            height: 90vh;
+          }
         }
 
         /* Welcome overlay */
