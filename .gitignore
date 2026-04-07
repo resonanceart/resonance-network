@@ -21,6 +21,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Playwright MCP artifacts
+.playwright-mcp/
+
+# Claude/swarm auto-generated state
+.claude-flow/
+.swarm/
+
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
