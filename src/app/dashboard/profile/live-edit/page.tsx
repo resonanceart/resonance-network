@@ -525,17 +525,10 @@ export default function LiveProfileEditor() {
     lastChangeTime.current = Date.now()
   }, [])
 
-  // Fetch profile on mount (auth required — middleware redirects unauthenticated users)
+  // Fetch profile on mount (middleware handles auth redirect for unauthenticated users)
   useEffect(() => {
     if (authLoading) return
     if (!user) return
-
-    // Only clear stale import data if this is NOT an import flow
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('import') !== 'profile') {
-      clearImportData('resonance_profile_import').catch(() => {})
-      try { sessionStorage.removeItem('resonance_profile_import') } catch {}
-    }
 
     fetch('/api/user/profile', { credentials: 'same-origin' })
       .then(r => r.json())
@@ -626,21 +619,29 @@ export default function LiveProfileEditor() {
           setShowWelcome(true)
         }
 
-        // Apply imported profile data from website scraper
+        // Apply imported profile data from website scraper (IndexedDB first, sessionStorage fallback)
         const params = new URLSearchParams(window.location.search)
         if (params.get('import') === 'profile') {
-          loadImportData<{
-            name?: string; bio?: string; titles?: string[]; education?: string[];
-            avatarUrl?: string | null; galleryImages?: Array<{ url: string; alt: string }>;
-            socialLinks?: Array<{ platform: string; url: string }>; website?: string;
-          }>('resonance_profile_import').then(imported => {
+          try {
+            let imported: {
+              name?: string; bio?: string; titles?: string[]; education?: string[];
+              avatarUrl?: string | null; galleryImages?: Array<{ url: string; alt: string }>;
+              socialLinks?: Array<{ platform: string; url: string }>; website?: string;
+            } | null = null
+
+            // Try IndexedDB first (used by ImportPromptPopup)
+            try {
+              imported = await loadImportData<typeof imported>('resonance_profile_import')
+            } catch { /* ignore */ }
+
+            // Fallback to sessionStorage (used by ImportFromWebsite)
             if (!imported) {
-              // Fallback to sessionStorage for smaller payloads
               try {
                 const raw = sessionStorage.getItem('resonance_profile_import')
                 if (raw) imported = JSON.parse(raw)
-              } catch {}
+              } catch { /* ignore */ }
             }
+
             if (imported) {
               // Only fill empty fields — don't overwrite existing data
               if (imported.name && !p?.display_name) setDisplayName(imported.name)
@@ -653,7 +654,7 @@ export default function LiveProfileEditor() {
               if (imported.galleryImages && imported.galleryImages.length > 0) {
                 setMediaGallery(prev => {
                   if (prev.length > 0) return prev
-                  return imported.galleryImages!.map((img, i) => ({
+                  return imported!.galleryImages!.map((img, i) => ({
                     url: img.url, alt: img.alt || '', type: 'image' as const,
                     order: i, isFeatured: i === 0,
                   }))
@@ -662,7 +663,7 @@ export default function LiveProfileEditor() {
               if (imported.socialLinks && imported.socialLinks.length > 0) {
                 setSocialLinks(prev => {
                   if (prev.length > 0) return prev
-                  return imported.socialLinks!.map((link, i) => ({
+                  return imported!.socialLinks!.map((link, i) => ({
                     id: `import-${Date.now()}-${i}`,
                     platform: link.platform as SocialEntry['platform'],
                     url: link.url,
@@ -673,7 +674,7 @@ export default function LiveProfileEditor() {
               if (imported.education && imported.education.length > 0) {
                 setTimeline(prev => {
                   if (prev.length > 0) return prev
-                  return imported.education!.map((ed) => ({
+                  return imported!.education!.map((ed) => ({
                     year: '', title: ed, category: 'education',
                     organization: '', description: '',
                   }))
@@ -681,12 +682,13 @@ export default function LiveProfileEditor() {
               }
               setHasChanges(true)
               lastChangeTime.current = Date.now()
+              // Clean up both storage locations
               clearImportData('resonance_profile_import').catch(() => {})
-              try { sessionStorage.removeItem('resonance_profile_import') } catch {}
+              sessionStorage.removeItem('resonance_profile_import')
             }
-          }).catch(e => {
+          } catch (e) {
             console.error('Failed to apply imported profile data:', e)
-          })
+          }
         }
       })
       .catch(() => {})
@@ -697,7 +699,7 @@ export default function LiveProfileEditor() {
   const saveAllRef = useRef(saveAll)
   useEffect(() => { saveAllRef.current = saveAll })
 
-  // Auto-save: 15s interval, debounced 2s after last change
+  // Auto-save: 15s interval, debounced 2s after last change (disabled in demo mode)
   useEffect(() => {
     if (!hasChanges) return
     const timer = setInterval(() => {
