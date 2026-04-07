@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+
 import { saveImportData } from '@/lib/import-store'
 
 type ImportMode = 'project' | 'profile' | 'both'
@@ -11,7 +11,6 @@ interface ImportPromptPopupProps {
 }
 
 export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
-  const router = useRouter()
   const [dismissed, setDismissed] = useState(() => {
     if (typeof window === 'undefined') return false
     return localStorage.getItem(`resonance_import_prompt_dismissed_${mode}`) === '1'
@@ -59,10 +58,10 @@ export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
 
       if (activeTab === 'project') {
         await saveImportData('resonance_import_data', data)
-        router.push('/dashboard/projects/live-edit?import=true')
+        window.location.href = '/dashboard/projects/live-edit?import=true'
       } else {
         await saveImportData('resonance_profile_import', data)
-        router.push('/dashboard/profile/live-edit?import=profile')
+        window.location.href = '/dashboard/profile/live-edit?import=profile'
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
