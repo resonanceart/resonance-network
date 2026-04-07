@@ -529,15 +529,15 @@ main {
 
 .site-hero__tagline {
   font-family: var(--font-display);
-  font-size: clamp(2.25rem, 6vw, 4.25rem);
-  font-weight: 600;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 500;
   font-style: italic;
-  color: #fff;
-  max-width: 18ch;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 28ch;
   margin: 0 auto var(--space-8);
-  line-height: 1.1;
-  letter-spacing: -0.025em;
-  text-shadow: 0 2px 30px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.2);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.35);
 }
 
 .site-hero__sub {
@@ -556,10 +556,11 @@ main {
 }
 
 .site-hero__actions .btn {
-  padding: var(--space-3) var(--space-8);
-  font-size: var(--text-base);
+  padding: var(--space-4) var(--space-12);
+  font-size: var(--text-lg);
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
+  border-radius: var(--radius-lg);
 }
 
 /* Hero CTA buttons — solid fill visible on any background */
@@ -619,9 +620,10 @@ main {
     padding-bottom: var(--space-10);
   }
   .site-hero__actions .btn {
-    padding: var(--space-3) var(--space-6);
+    padding: var(--space-4) var(--space-8);
+    font-size: var(--text-base);
     width: 100%;
-    max-width: 280px;
+    max-width: 320px;
     justify-content: center;
   }
 }
@@ -15159,4 +15161,255 @@ main {
 [data-theme="dark"] .profile-badge--more {
   background: rgba(255, 255, 255, 0.1);
   color: var(--color-text-secondary);
+}
+
+/* =========================
+   JOIN MODAL (visitor conversion overlay)
+   ========================= */
+
+.join-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  animation: contactModalFadeIn 0.3s ease-out;
+}
+
+.join-modal__card {
+  background: #1a1918;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  max-width: 580px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+  animation: contactModalSlideUp 0.35s var(--ease-out, ease-out);
+}
+
+[data-theme="light"] .join-modal__card,
+:root:not([data-theme="dark"]) .join-modal__card {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.2);
+}
+
+.join-modal__close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+  z-index: 1;
+}
+
+[data-theme="light"] .join-modal__close,
+:root:not([data-theme="dark"]) .join-modal__close {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.join-modal__close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="light"] .join-modal__close:hover,
+:root:not([data-theme="dark"]) .join-modal__close:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.join-modal__paths {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.join-modal__path {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  text-decoration: none;
+  color: inherit;
+  border: 1.5px solid;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+
+.join-modal__path:hover {
+  transform: translateY(-3px);
+}
+
+/* Share Art — teal card */
+.join-modal__path--share {
+  border-color: rgba(20, 184, 166, 0.5);
+  background: rgba(20, 184, 166, 0.1);
+}
+
+.join-modal__path--share:hover {
+  border-color: rgba(20, 184, 166, 0.9);
+  background: rgba(20, 184, 166, 0.14);
+  box-shadow: 0 16px 40px rgba(20, 184, 166, 0.15);
+}
+
+/* Help Build Art — gold card */
+.join-modal__path--help {
+  border-color: rgba(234, 179, 8, 0.5);
+  background: rgba(234, 179, 8, 0.1);
+}
+
+.join-modal__path--help:hover {
+  border-color: rgba(234, 179, 8, 0.9);
+  background: rgba(234, 179, 8, 0.14);
+  box-shadow: 0 16px 40px rgba(234, 179, 8, 0.12);
+}
+
+.join-modal__path h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: var(--space-3);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.join-modal__path--share h2 {
+  color: #2dd4bf;
+}
+
+.join-modal__path--help h2 {
+  color: #fbbf24;
+}
+
+[data-theme="light"] .join-modal__path--share h2,
+:root:not([data-theme="dark"]) .join-modal__path--share h2 {
+  color: var(--color-primary);
+}
+
+[data-theme="light"] .join-modal__path--help h2,
+:root:not([data-theme="dark"]) .join-modal__path--help h2 {
+  color: #d97706;
+}
+
+.join-modal__path p {
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.5;
+  margin-bottom: var(--space-4);
+}
+
+[data-theme="light"] .join-modal__path p,
+:root:not([data-theme="dark"]) .join-modal__path p {
+  color: var(--color-text-secondary);
+}
+
+.join-modal__path-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: 10px;
+  transition: all 0.2s;
+  width: 100%;
+  min-height: 44px;
+  letter-spacing: 0.01em;
+  border: none;
+  margin-top: auto;
+}
+
+.join-modal__path--share .join-modal__path-cta {
+  background: rgba(20, 184, 166, 0.9);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.25);
+}
+
+.join-modal__path--share:hover .join-modal__path-cta {
+  background: rgba(20, 184, 166, 1);
+  box-shadow: 0 6px 20px rgba(20, 184, 166, 0.35);
+}
+
+.join-modal__path--help .join-modal__path-cta {
+  background: rgba(234, 179, 8, 0.9);
+  color: #111;
+  box-shadow: 0 4px 12px rgba(234, 179, 8, 0.2);
+}
+
+.join-modal__path--help:hover .join-modal__path-cta {
+  background: rgba(234, 179, 8, 1);
+  box-shadow: 0 6px 20px rgba(234, 179, 8, 0.3);
+}
+
+.join-modal__signin {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+[data-theme="light"] .join-modal__signin,
+:root:not([data-theme="dark"]) .join-modal__signin {
+  color: var(--color-text-muted);
+}
+
+.join-modal__signin a {
+  color: #2dd4bf;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+[data-theme="light"] .join-modal__signin a,
+:root:not([data-theme="dark"]) .join-modal__signin a {
+  color: var(--color-primary);
+}
+
+.join-modal__signin a:hover {
+  text-decoration: underline;
+}
+
+/* Mobile */
+@media (max-width: 520px) {
+  .join-modal__overlay {
+    padding: var(--space-4);
+    align-items: center;
+  }
+
+  .join-modal__card {
+    padding: var(--space-5) var(--space-4) var(--space-4);
+    border-radius: 24px;
+    max-height: 90vh;
+  }
+
+  .join-modal__paths {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .join-modal__path {
+    padding: var(--space-4);
+  }
+
+  .join-modal__path h2 {
+    font-size: 1.5rem;
+  }
 }

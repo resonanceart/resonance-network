@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
+import { loadImportData, clearImportData } from '@/lib/import-store'
 import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components/profile/SmartGallery'
 
 type EditSection = 'hero' | 'overview' | 'gallery' | 'description' | 'experience' | 'inclusivity' | 'materials_regen' | 'story' | 'goals' | 'classification' | 'team' | 'roles' | null
@@ -64,6 +65,7 @@ function LiveProjectEditorInner() {
   const existingId = searchParams.get('id')
 
   const [loading, setLoading] = useState(true)
+  const [demoMode, setDemoMode] = useState(false)
   const [saving, setSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
   const [savedMessage, setSavedMessage] = useState(false)
@@ -122,6 +124,42 @@ function LiveProjectEditorInner() {
   // Fetch existing project if editing
   useEffect(() => {
     if (authLoading) return
+
+    // Demo mode — load from IndexedDB (or sessionStorage fallback) without auth
+    if (!user && searchParams.get('demo') === 'true') {
+      setDemoMode(true)
+      loadImportData<Record<string, unknown>>('resonance_import_data').then(imported => {
+        if (!imported) {
+          // Fallback to sessionStorage
+          try {
+            const raw = sessionStorage.getItem('resonance_import_data')
+            if (raw) imported = JSON.parse(raw)
+          } catch { /* ignore */ }
+        }
+        if (imported) {
+          if (imported.title) setTitle(imported.title as string)
+          if (imported.shortDescription) setShortDescription(imported.shortDescription as string)
+          if (imported.overviewLead) setOverviewLead(imported.overviewLead as string)
+          if (imported.overviewBody) setOverviewBody(imported.overviewBody as string)
+          if (imported.experience) setExperience(imported.experience as string)
+          if (imported.artistStory) setStory(imported.artistStory as string)
+          if (imported.materials) setMaterials(imported.materials as string)
+          if (imported.goals && Array.isArray(imported.goals) && imported.goals.length) setGoals(imported.goals as string[])
+          if (imported.suggestedDomains && Array.isArray(imported.suggestedDomains) && imported.suggestedDomains.length) setDomains(imported.suggestedDomains as string[])
+          if (imported.suggestedPathways && Array.isArray(imported.suggestedPathways) && imported.suggestedPathways.length) setPathways(imported.suggestedPathways as string[])
+          if (imported.suggestedStage) setStage(imported.suggestedStage as string)
+          if (imported.suggestedScale) setScale(imported.suggestedScale as string)
+          if (imported.leadArtistName) setLeadArtistName(imported.leadArtistName as string)
+          if (imported.leadArtistBio) setStory(imported.leadArtistBio as string)
+          if (imported.heroImageUrl) setHeroImageUrl(imported.heroImageUrl as string)
+          if (imported.galleryImages && Array.isArray(imported.galleryImages) && imported.galleryImages.length) setGalleryImages(imported.galleryImages as Array<{ url: string; alt: string }>)
+          if (imported.socialLinks && Array.isArray(imported.socialLinks) && imported.socialLinks.length) setProjectSocialLinks(imported.socialLinks as Array<{platform: string; url: string}>)
+        }
+        setLoading(false)
+      }).catch(() => setLoading(false))
+      return
+    }
+
     if (!user) { window.location.href = '/login'; return }
 
     // Get user profile for defaults
@@ -220,8 +258,45 @@ function LiveProjectEditorInner() {
         .catch(() => {})
     }
 
+    // Check for imported data from website scraper (IndexedDB first, sessionStorage fallback)
+    try {
+      const importParam = new URLSearchParams(window.location.search).get('import')
+      if (importParam === 'true') {
+        loadImportData<Record<string, unknown>>('resonance_import_data').then(imported => {
+          if (!imported) {
+            try {
+              const raw = sessionStorage.getItem('resonance_import_data')
+              if (raw) imported = JSON.parse(raw)
+            } catch { /* ignore */ }
+          }
+          if (imported) {
+            if (imported.title) setTitle(imported.title as string)
+            if (imported.shortDescription) setShortDescription(imported.shortDescription as string)
+            if (imported.overviewLead) setOverviewLead(imported.overviewLead as string)
+            if (imported.overviewBody) setOverviewBody(imported.overviewBody as string)
+            if (imported.experience) setExperience(imported.experience as string)
+            if (imported.artistStory) setStory(imported.artistStory as string)
+            if (imported.materials) setMaterials(imported.materials as string)
+            if (imported.goals && Array.isArray(imported.goals) && imported.goals.length) setGoals(imported.goals as string[])
+            if (imported.suggestedDomains && Array.isArray(imported.suggestedDomains) && imported.suggestedDomains.length) setDomains(imported.suggestedDomains as string[])
+            if (imported.suggestedPathways && Array.isArray(imported.suggestedPathways) && imported.suggestedPathways.length) setPathways(imported.suggestedPathways as string[])
+            if (imported.suggestedStage) setStage(imported.suggestedStage as string)
+            if (imported.suggestedScale) setScale(imported.suggestedScale as string)
+            if (imported.leadArtistName) setLeadArtistName(imported.leadArtistName as string)
+            if (imported.leadArtistBio) setStory(imported.leadArtistBio as string)
+            if (imported.heroImageUrl) setHeroImageUrl(imported.heroImageUrl as string)
+            if (imported.galleryImages && Array.isArray(imported.galleryImages) && imported.galleryImages.length) setGalleryImages(imported.galleryImages as Array<{ url: string; alt: string }>)
+            if (imported.socialLinks && Array.isArray(imported.socialLinks) && imported.socialLinks.length) setProjectSocialLinks(imported.socialLinks as Array<{platform: string; url: string}>)
+            markDirty()
+            clearImportData('resonance_import_data').catch(() => {})
+            sessionStorage.removeItem('resonance_import_data')
+          }
+        }).catch(() => {})
+      }
+    } catch { /* ignore import errors */ }
+
     setLoading(false)
-  }, [user, authLoading, existingId])
+  }, [user, authLoading, existingId, markDirty])
 
   // Keep a ref to the latest saveDraft function to avoid stale closures
   const saveDraftRef = useRef(saveDraft)
@@ -229,7 +304,7 @@ function LiveProjectEditorInner() {
 
   // Autosave every 5s with 2s debounce after last change
   useEffect(() => {
-    if (!hasChanges) return
+    if (!hasChanges || demoMode) return
     const timer = setInterval(() => {
       if (Date.now() - lastChangeTime.current < 2000) return
       saveDraftRef.current(true)
@@ -239,6 +314,7 @@ function LiveProjectEditorInner() {
   }, [hasChanges])
 
   async function saveDraft(silent = false) {
+    if (demoMode) return // Demo mode — no saving
     if (!title.trim()) {
       if (!silent) alert('Please enter a project title.')
       return
@@ -507,13 +583,27 @@ function LiveProjectEditorInner() {
       </div>
     )
   }
-  if (!user) return null
+  if (!user && !demoMode) return null
 
   return (
     <div className="live-editor">
       {/* Toolbar */}
       <div className="live-editor__toolbar">
         <div className="live-editor__toolbar-inner container">
+          {demoMode ? (
+            <>
+              <span className="live-editor__toolbar-title">Project Preview — {title || 'Untitled'}</span>
+              <div className="live-editor__toolbar-actions">
+                <a href="/login?tab=signup&redirect=/dashboard/projects/live-edit?import=true" className="btn btn--sm" style={{ background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, textDecoration: 'none' }}>
+                  Create Account to Save
+                </a>
+                <a href="/import" className="btn btn--outline btn--sm" style={{ textDecoration: 'none' }}>
+                  Back to Import
+                </a>
+              </div>
+            </>
+          ) : (
+          <>
           <span className="live-editor__toolbar-title">{submissionStatus === 'approved' ? 'Managing Your Live Project' : 'Building Your Project'}</span>
           <div className="live-editor__toolbar-actions">
             {errorMessage && (
@@ -563,6 +653,8 @@ function LiveProjectEditorInner() {
             </button>
             <Link href="/dashboard" className="btn btn--ghost btn--sm">Back</Link>
           </div>
+          </>
+          )}
         </div>
       </div>
 

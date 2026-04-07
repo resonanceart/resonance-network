@@ -52,17 +52,17 @@ export default async function HomePage() {
           <h1 className="site-hero__tagline">Connecting Community Through Passion and Purpose</h1>
           <div className="site-hero__actions">
             <AuthAwareCTA
-              loggedOutHref="/login?tab=signup"
-              loggedOutLabel="Build Profile"
-              loggedInHref="/dashboard/profile/live-edit"
-              loggedInLabel="Build Profile"
+              loggedOutHref="/login?tab=signup&redirect=/dashboard/welcome"
+              loggedOutLabel="Share Art"
+              loggedInHref="/dashboard/projects/new"
+              loggedInLabel="Share Art"
               className="btn btn--hero"
             />
             <AuthAwareCTA
-              loggedOutHref="/login?tab=signup&redirect=/dashboard/projects/new"
-              loggedOutLabel="Submit Project"
-              loggedInHref="/dashboard/projects/new"
-              loggedInLabel="Submit Project"
+              loggedOutHref="/login?tab=signup&redirect=/dashboard/welcome"
+              loggedOutLabel="Help Build Art"
+              loggedInHref="/dashboard/profile/live-edit"
+              loggedInLabel="Help Build Art"
               className="btn btn--hero btn--hero-outline"
             />
           </div>
