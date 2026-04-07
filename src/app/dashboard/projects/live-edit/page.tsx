@@ -251,8 +251,45 @@ function LiveProjectEditorInner() {
             if (imported.suggestedScale) setScale(imported.suggestedScale as string)
             if (imported.leadArtistName) setLeadArtistName(imported.leadArtistName as string)
             if (imported.leadArtistBio) setStory(imported.leadArtistBio as string)
-            if (imported.heroImageUrl) setHeroImageUrl(imported.heroImageUrl as string)
-            if (imported.galleryImages && Array.isArray(imported.galleryImages) && imported.galleryImages.length) setGalleryImages(imported.galleryImages as Array<{ url: string; alt: string }>)
+            // Upload base64 images to Supabase Storage (base64 data URLs are too
+            // large for the API body limit and will cause 413 errors on save)
+            if (imported.heroImageUrl) {
+              const heroUrl = imported.heroImageUrl as string
+              if (heroUrl.startsWith('data:')) {
+                // Convert base64 to File and upload
+                fetch(heroUrl).then(r => r.blob()).then(blob => {
+                  const file = new File([blob], `hero-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
+                  uploadFileToStorage(file, 'hero').then(url => {
+                    if (url) { setHeroImageUrl(url); markDirty() }
+                  })
+                }).catch(() => {})
+              } else {
+                setHeroImageUrl(heroUrl)
+              }
+            }
+            if (imported.galleryImages && Array.isArray(imported.galleryImages) && imported.galleryImages.length) {
+              const galleryImgs = imported.galleryImages as Array<{ url: string; alt: string }>
+              const hasBase64 = galleryImgs.some(img => img.url.startsWith('data:'))
+              if (hasBase64) {
+                // Upload base64 gallery images to storage
+                Promise.all(galleryImgs.map(async (img) => {
+                  if (img.url.startsWith('data:')) {
+                    try {
+                      const blob = await fetch(img.url).then(r => r.blob())
+                      const file = new File([blob], `gallery-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
+                      const url = await uploadFileToStorage(file, 'gallery')
+                      return url ? { url, alt: img.alt } : null
+                    } catch { return null }
+                  }
+                  return img
+                })).then(results => {
+                  const uploaded = results.filter(Boolean) as Array<{ url: string; alt: string }>
+                  if (uploaded.length > 0) { setGalleryImages(uploaded); markDirty() }
+                })
+              } else {
+                setGalleryImages(galleryImgs)
+              }
+            }
             if (imported.socialLinks && Array.isArray(imported.socialLinks) && imported.socialLinks.length) setProjectSocialLinks(imported.socialLinks as Array<{platform: string; url: string}>)
             markDirty()
             // Clean up both storage locations
@@ -339,6 +376,8 @@ function LiveProjectEditorInner() {
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         console.error('Draft save failed:', res.status, data)
+        // If submission not found (404), clear stale ID so next save creates a new one
+        if (res.status === 404) setSubmissionId(null)
         if (!silent) setErrorMessage(data.message || `Save failed (${res.status})`)
         setSaving(false)
         return

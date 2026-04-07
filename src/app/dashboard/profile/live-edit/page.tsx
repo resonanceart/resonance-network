@@ -651,15 +651,52 @@ export default function LiveProfileEditor() {
                 setProfessionalTitle(imported.titles[0])
               }
               if (imported.website && !p?.website) setWebsite(imported.website)
-              if (imported.avatarUrl && !p?.avatar_url) setAvatarUrl(imported.avatarUrl)
+              // Upload base64 avatar to Storage (base64 too large for API body limit)
+              if (imported.avatarUrl && !p?.avatar_url) {
+                const avatarSrc = imported.avatarUrl
+                if (avatarSrc.startsWith('data:')) {
+                  fetch(avatarSrc).then(r => r.blob()).then(blob => {
+                    const file = new File([blob], `avatar-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
+                    uploadFile(file, 'avatar').then(({ url }) => {
+                      if (url) { setAvatarUrl(url); setHasChanges(true); lastChangeTime.current = Date.now() }
+                    })
+                  }).catch(() => {})
+                } else {
+                  setAvatarUrl(avatarSrc)
+                }
+              }
+              // Upload base64 gallery images to Storage
               if (imported.galleryImages && imported.galleryImages.length > 0) {
-                setMediaGallery(prev => {
-                  if (prev.length > 0) return prev
-                  return imported!.galleryImages!.map((img, i) => ({
-                    url: img.url, alt: img.alt || '', type: 'image' as const,
-                    order: i, isFeatured: i === 0,
-                  }))
-                })
+                const galleryImgs = imported.galleryImages
+                const hasBase64 = galleryImgs.some(img => img.url.startsWith('data:'))
+                if (hasBase64) {
+                  Promise.all(galleryImgs.map(async (img, i) => {
+                    if (img.url.startsWith('data:')) {
+                      try {
+                        const blob = await fetch(img.url).then(r => r.blob())
+                        const file = new File([blob], `gallery-import-${i}.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
+                        const { url } = await uploadFile(file, 'gallery')
+                        return url ? { url, alt: img.alt || '', type: 'image' as const, order: i, isFeatured: i === 0 } : null
+                      } catch { return null }
+                    }
+                    return { url: img.url, alt: img.alt || '', type: 'image' as const, order: i, isFeatured: i === 0 }
+                  })).then(results => {
+                    const uploaded = results.filter(Boolean) as GalleryItem[]
+                    if (uploaded.length > 0) {
+                      setMediaGallery(prev => prev.length > 0 ? prev : uploaded)
+                      setHasChanges(true)
+                      lastChangeTime.current = Date.now()
+                    }
+                  })
+                } else {
+                  setMediaGallery(prev => {
+                    if (prev.length > 0) return prev
+                    return galleryImgs.map((img, i) => ({
+                      url: img.url, alt: img.alt || '', type: 'image' as const,
+                      order: i, isFeatured: i === 0,
+                    }))
+                  })
+                }
               }
               if (imported.socialLinks && imported.socialLinks.length > 0) {
                 setSocialLinks(prev => {
