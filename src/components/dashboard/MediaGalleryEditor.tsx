@@ -215,8 +215,9 @@ export default function MediaGalleryEditor({ items, onChange, onUpload }: MediaG
                 disabled={index === 0}
                 style={{
                   flex: 1,
-                  padding: '2px',
-                  fontSize: 'var(--text-xs, 12px)',
+                  padding: '8px',
+                  fontSize: '16px',
+                  minHeight: '40px',
                   cursor: index === 0 ? 'default' : 'pointer',
                   opacity: index === 0 ? 0.3 : 1,
                   border: '1px solid var(--color-border)',
@@ -233,8 +234,9 @@ export default function MediaGalleryEditor({ items, onChange, onUpload }: MediaG
                 disabled={index === sorted.length - 1}
                 style={{
                   flex: 1,
-                  padding: '2px',
-                  fontSize: 'var(--text-xs, 12px)',
+                  padding: '8px',
+                  fontSize: '16px',
+                  minHeight: '40px',
                   cursor: index === sorted.length - 1 ? 'default' : 'pointer',
                   opacity: index === sorted.length - 1 ? 0.3 : 1,
                   border: '1px solid var(--color-border)',
@@ -251,19 +253,20 @@ export default function MediaGalleryEditor({ items, onChange, onUpload }: MediaG
       </div>
 
       {/* Action buttons */}
-      <div style={{ display: 'flex', gap: 'var(--space-2, 8px)', marginTop: 'var(--space-2, 8px)' }}>
+      <div style={{ display: 'flex', gap: 'var(--space-2, 8px)', marginTop: 'var(--space-2, 8px)', flexWrap: 'wrap' }}>
         <button
           type="button"
           className="media-gallery-editor__add-btn"
           onClick={() => fileInputRef.current?.click()}
           style={{
-            padding: 'var(--space-2, 8px) var(--space-2, 8px)',
+            padding: 'var(--space-3, 12px) var(--space-4, 16px)',
             fontSize: 'var(--text-sm, 14px)',
             cursor: 'pointer',
             border: '1px solid var(--color-border)',
             borderRadius: '4px',
             background: 'var(--color-surface)',
             color: 'var(--color-primary)',
+            minHeight: '44px',
           }}
         >
           + Add Image
@@ -272,13 +275,14 @@ export default function MediaGalleryEditor({ items, onChange, onUpload }: MediaG
           type="button"
           onClick={handleAddVideo}
           style={{
-            padding: 'var(--space-2, 8px) var(--space-2, 8px)',
+            padding: 'var(--space-3, 12px) var(--space-4, 16px)',
             fontSize: 'var(--text-sm, 14px)',
             cursor: 'pointer',
             border: '1px solid var(--color-border)',
             borderRadius: '4px',
             background: 'var(--color-surface)',
             color: 'var(--color-primary)',
+            minHeight: '44px',
           }}
         >
           + Add Video

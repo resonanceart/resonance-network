@@ -12508,14 +12508,75 @@ main {
     padding: var(--space-1) 0;
   }
 
+  .live-editor__toolbar-actions {
+    justify-content: flex-end;
+  }
+
   .live-editor__toolbar-actions .btn--sm {
     font-size: 11px;
     padding: 5px 8px;
     min-height: 34px;
   }
 
+  .live-editor__toolbar-actions .btn--ghost.btn--sm {
+    padding: 5px 6px;
+  }
+
   .live-editor__panel {
     height: 90vh !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .live-editor__toolbar-title {
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .live-editor__toolbar-actions .btn--sm {
+    font-size: 10px;
+    padding: 4px 6px;
+    min-height: 32px;
+  }
+
+  .live-editor__unsaved,
+  .live-editor__saved,
+  .live-editor__autosave {
+    display: none;
+  }
+}
+
+/* --- Import Prompt Popup Mobile --- */
+@media (max-width: 480px) {
+  .import-prompt-popup {
+    padding: var(--space-4) !important;
+  }
+
+  .import-prompt-popup__input-row {
+    flex-direction: column !important;
+  }
+
+  .import-prompt-popup__input-row input {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+  }
+
+  .import-prompt-popup__input-row .btn {
+    width: 100% !important;
+    justify-content: center;
+  }
+
+  .import-prompt-popup__tabs {
+    flex-wrap: wrap;
+  }
+
+  .import-prompt-popup__tabs button {
+    flex: 1 1 auto;
+    justify-content: center;
+    font-size: var(--text-xs) !important;
+    padding: 6px 8px !important;
   }
 }
 

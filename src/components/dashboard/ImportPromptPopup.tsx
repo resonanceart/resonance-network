@@ -83,7 +83,7 @@ export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
     : null
 
   return (
-    <div style={{
+    <div className="import-prompt-popup" style={{
       background: 'var(--color-surface)',
       border: '1px solid var(--color-border)',
       borderRadius: '12px',
@@ -121,7 +121,7 @@ export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
 
       {/* Tabs (only in "both" mode) */}
       {showTabs && tabs && (
-        <div style={{
+        <div className="import-prompt-popup__tabs" style={{
           display: 'flex', gap: 'var(--space-2)',
           marginBottom: 'var(--space-4)',
           borderBottom: '1px solid var(--color-border)',
@@ -148,7 +148,7 @@ export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
       )}
 
       {/* URL input + submit */}
-      <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+      <div className="import-prompt-popup__input-row" style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
         <input
           type="url"
           value={url}

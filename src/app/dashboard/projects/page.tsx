@@ -104,9 +104,9 @@ export default function MyProjectsPage() {
   return (
     <section className="my-projects-page">
       <div className="container" style={{ paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-10)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-6)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-6)', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
           <h1 style={{ margin: 0 }}>My Projects</h1>
-          <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
             <Link href="/dashboard/projects/import" className="btn btn--outline">
               Import from Website
             </Link>
@@ -155,7 +155,7 @@ export default function MyProjectsPage() {
             className="my-projects-grid"
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(320px, 100%), 1fr))',
               gap: 'var(--space-4)',
             }}
           >
@@ -234,6 +234,9 @@ export default function MyProjectsPage() {
                       marginLeft: 'auto',
                       opacity: deletingId === project.id ? 0.5 : 1,
                       cursor: deletingId === project.id ? 'not-allowed' : 'pointer',
+                      minHeight: '44px',
+                      paddingLeft: 'var(--space-4)',
+                      paddingRight: 'var(--space-4)',
                     }}
                   >
                     {deletingId === project.id ? 'Deleting...' : 'Delete'}
