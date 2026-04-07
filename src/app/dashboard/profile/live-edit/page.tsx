@@ -532,7 +532,7 @@ export default function LiveProfileEditor() {
 
     fetch('/api/user/profile', { credentials: 'same-origin' })
       .then(r => r.json())
-      .then(data => {
+      .then(async data => {
         const p = data.profile
         const ext = data.extendedProfile || {}
         if (p) {
