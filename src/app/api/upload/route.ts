@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { rateLimit } from '@/lib/rate-limit'
 import { getClientIp } from '@/lib/sanitize'
+import { slugify } from '@/lib/slugify'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const type = (formData.get('type') as string) || 'gallery'
+    const projectSlug = formData.get('projectSlug') as string | null
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
@@ -67,10 +69,20 @@ export async function POST(request: Request) {
       )
     }
 
-    // Build storage path: userId/type/timestamp.ext
+    // Fetch display name for human-readable storage paths
+    const { data: profile } = await supabaseAdmin
+      .from('user_profiles')
+      .select('display_name')
+      .eq('id', user.id)
+      .single()
+    const nameSlug = slugify(profile?.display_name || '') || 'user'
+
+    // Build storage path with human-readable naming
     const ext = file.name.split('.').pop()?.toLowerCase() || (isPdf ? 'pdf' : 'jpg')
     const timestamp = Date.now()
-    const path = `${user.id}/${type}/${timestamp}.${ext}`
+    const path = projectSlug
+      ? `${user.id}/${nameSlug}/projects/${projectSlug}/${type}/${projectSlug}-${type}-${timestamp}.${ext}`
+      : `${user.id}/${nameSlug}/${type}/${nameSlug}-${type}-${timestamp}.${ext}`
 
     // Upload to Supabase Storage
     const { data, error } = await supabaseAdmin.storage
