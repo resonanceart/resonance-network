@@ -280,7 +280,9 @@ function extractSections($: cheerio.CheerioAPI): Array<{ heading: string; conten
 
       $section.find('p, li').each((_, p) => {
         const text = $(p).text().trim()
-        if (text && text.length > 5) paragraphs.push(text)
+        if (text && text.length > 5 && !/#block-|--sqs-|\.fe-block-|\{[^}]*:[^}]*;\s*\}/.test(text)) {
+          paragraphs.push(text)
+        }
       })
 
       if (paragraphs.length > 0) {
@@ -347,8 +349,8 @@ function extractSections($: cheerio.CheerioAPI): Array<{ heading: string; conten
     if (/\{"type":\s*"/.test(c) || /\{"identifier"/.test(c)) return false
     // Skip sections with CSS rules
     if (/\{[^}]*:\s*[^}]*;\s*\}/.test(c) && c.split('{').length > 3) return false
-    // Skip sections with code/config noise
-    if (/box-shadow:|border-radius:|font-family:|\.sqs-/.test(c)) return false
+    // Skip sections with code/config noise (including Squarespace CSS selectors and custom properties)
+    if (/box-shadow:|border-radius:|font-family:|\.sqs-|#block-|--sqs-|--opacity:|--translate-|--scale-|--rotation:|--skew-|\.fe-block-/.test(c)) return false
     // Skip very long sections (likely full-page scrapes with nav/footer noise)
     if (c.length > 15000) return false
     return true
@@ -481,6 +483,9 @@ export async function scrapeProjectPage(url: string): Promise<ScrapedProject> {
 
   const html = await response.text()
   const $ = cheerio.load(html)
+
+  // Remove style and script tags to prevent CSS/JS leaking into text extraction
+  $('style, script, noscript').remove()
 
   // Extract metadata
   const ogTitle = $('meta[property="og:title"]').attr('content')
@@ -686,6 +691,10 @@ export async function scrapeProfilePage(url: string): Promise<ScrapedProfile> {
 
   const html = await response.text()
   const $ = cheerio.load(html)
+
+  // Remove style and script tags to prevent CSS/JS leaking into text extraction
+  $('style, script, noscript').remove()
+
   const currentPath = new URL(url).pathname
 
   const ogTitle = $('meta[property="og:title"]').attr('content')
@@ -715,8 +724,12 @@ export async function scrapeProfilePage(url: string): Promise<ScrapedProfile> {
     .filter(s => s.content.length > 30 && !/thank you|submit|required/i.test(s.content))
     .map(s => s.content)
     .join('\n\n')
-    // Strip any remaining CSS rules or JSON fragments
-    .replace(/\.[a-zA-Z_#][\w-]*\s*\{[^}]*\}/g, '')
+    // Strip CSS rules (class selectors, ID selectors, and Squarespace blocks)
+    .replace(/[.#][a-zA-Z_][\w-]*\s*\{[^}]*\}/g, '')
+    // Strip multi-line CSS custom property blocks
+    .replace(/#block-[\w-]+\s*\{[^}]*\}/g, '')
+    // Strip remaining Squarespace CSS noise
+    .replace(/--sqs-[\w-]+:\s*[^;]+;/g, '')
     .replace(/\{"type":[^}]*\}/g, '')
     .replace(/\s{3,}/g, '\n\n')
     .trim()

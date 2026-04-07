@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase-client'
 import Link from 'next/link'
 import type { ProjectContentBlock } from '@/types'
 

@@ -101,7 +101,7 @@ export async function POST(
       const { data: extended } = await supabaseAdmin
         .from('profile_extended')
         .select('contact_email')
-        .eq('profile_id', match.id)
+        .eq('id', match.id)
         .single()
 
       const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(match.id)

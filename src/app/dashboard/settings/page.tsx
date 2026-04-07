@@ -51,7 +51,7 @@ export default function SettingsPage() {
 
         <DataExportSection />
         <SignOutAllSection supabase={supabase} router={router} />
-        <DeleteAccountSection router={router} />
+        <DeleteAccountSection router={router} supabase={supabase} />
       </div>
     </section>
   )
@@ -370,7 +370,7 @@ function SignOutAllSection({ supabase, router }: { supabase: ReturnType<typeof c
   )
 }
 
-function DeleteAccountSection({ router }: { router: ReturnType<typeof useRouter> }) {
+function DeleteAccountSection({ router, supabase }: { router: ReturnType<typeof useRouter>; supabase: ReturnType<typeof createSupabaseBrowserClient> }) {
   const [step, setStep] = useState(0) // 0=hidden, 1=checkbox, 2=type DELETE, 3=final confirm
   const [checked, setChecked] = useState(false)
   const [confirmText, setConfirmText] = useState('')
