@@ -125,9 +125,12 @@ function LiveProjectEditorInner() {
     if (authLoading) return
     if (!user) return
 
-    // Clear any stale demo/import data from previous sessions
-    clearImportData('resonance_import_data').catch(() => {})
-    try { sessionStorage.removeItem('resonance_import_data') } catch {}
+    // Only clear stale import data if this is NOT an import flow
+    const importParam = new URLSearchParams(window.location.search).get('import')
+    if (importParam !== 'true') {
+      clearImportData('resonance_import_data').catch(() => {})
+      try { sessionStorage.removeItem('resonance_import_data') } catch {}
+    }
 
     // Get user profile for defaults
     fetch('/api/user/profile', { credentials: 'same-origin' })

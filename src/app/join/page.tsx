@@ -25,7 +25,7 @@ export default function JoinPage() {
           <p className="join-hero__sub">
             {user
               ? 'You\u2019re part of the network. Here\u2019s what you can do next.'
-              : 'Whether you\u2019re bringing a project or offering your expertise, there\u2019s a place for you here.'}
+              : 'Artists, curators, and collaborators building at the intersection of art, architecture, and ecology.'}
           </p>
         </div>
       </section>
@@ -33,7 +33,7 @@ export default function JoinPage() {
       <section className="join-paths">
         <div className="container">
           <div className="join-cards">
-            {/* Card 1: Share a Project */}
+            {/* Card 1: Artist */}
             <div className="join-card join-card--project">
               <div className="join-card__icon">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -43,12 +43,12 @@ export default function JoinPage() {
                   <rect x="14" y="14" width="7" height="7" rx="1"/>
                 </svg>
               </div>
-              <h2>Share a Project</h2>
-              <p className="join-card__desc">You have a concept-ready spatial project — an installation, pavilion, environment, or public work — and you need the right people to help build it.</p>
+              <h2>{user ? 'Share a Project' : 'Join as Artist'}</h2>
+              <p className="join-card__desc">I create and lead projects — installations, pavilions, environments, or public works — and need the right people to help build them.</p>
               <p className="join-card__outcome">
                 {user
                   ? 'Share your project from your dashboard and start finding collaborators.'
-                  : 'Create your free profile, then share your project — all in one flow.'}
+                  : 'Create your free profile, share your project, and find collaborators — all in one flow.'}
               </p>
               <ul className="join-card__benefits">
                 <li>Project page with gallery and overview</li>
@@ -64,7 +64,7 @@ export default function JoinPage() {
               </Link>
             </div>
 
-            {/* Card 2: Join as Collaborator */}
+            {/* Card 2: Collaborator */}
             <div className="join-card join-card--collaborator">
               <div className="join-card__icon">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -77,8 +77,8 @@ export default function JoinPage() {
               <h2>{user ? 'Edit Your Profile' : 'Join as Collaborator'}</h2>
               <p className="join-card__desc">
                 {user
-                  ? 'Update your collaborator profile so project teams can find you.'
-                  : 'You\u2019re an engineer, fabricator, designer, producer, or specialist who wants to work on projects that actually matter \u2014 regenerative, values-aligned, and concept-ready.'}
+                  ? 'Update your profile so project teams can find you.'
+                  : 'I contribute skills to projects — engineering, fabrication, design, production, or specialized expertise for work that actually matters.'}
               </p>
               <p className="join-card__outcome">
                 {user
@@ -96,6 +96,39 @@ export default function JoinPage() {
                 className="btn btn--primary btn--large join-card__cta"
               >
                 {user ? 'Edit Your Profile' : 'Get Started'} &rarr;
+              </Link>
+            </div>
+
+            {/* Card 3: Curator */}
+            <div className="join-card join-card--collaborator">
+              <div className="join-card__icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+              </div>
+              <h2>{user ? 'Curate Projects' : 'Join as Curator'}</h2>
+              <p className="join-card__desc">
+                {user
+                  ? 'Review, organize, and present work on the network.'
+                  : 'I organize and present work — selecting, contextualizing, and championing projects that push boundaries.'}
+              </p>
+              <p className="join-card__outcome">
+                {user
+                  ? 'Access the curation pipeline and help shape what the network highlights.'
+                  : 'Join a community of curators shaping the future of spatial art and architecture.'}
+              </p>
+              <ul className="join-card__benefits">
+                <li>Review and provide feedback on submitted projects</li>
+                <li>Help shape the network&apos;s curatorial direction</li>
+                <li>Connect with artists and collaborators working on ambitious projects</li>
+                <li>Build your curatorial portfolio with emerging spatial work</li>
+              </ul>
+              <Link
+                href={user ? '/dashboard' : '/login?tab=signup&redirect=/dashboard/welcome'}
+                className="btn btn--primary btn--large join-card__cta"
+              >
+                {user ? 'Go to Dashboard' : 'Get Started'} &rarr;
               </Link>
             </div>
           </div>

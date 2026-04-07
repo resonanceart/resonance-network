@@ -69,8 +69,8 @@ export default function ProfileBuilderPreview() {
     if (user) {
       router.push('/dashboard/profile/live-edit?import=profile')
     } else {
-      // Route to demo mode of the real profile editor
-      window.location.href = '/dashboard/profile/live-edit?demo=true'
+      // Route through login/signup — middleware will redirect after auth
+      window.location.href = '/login?tab=signup&redirect=' + encodeURIComponent('/dashboard/profile/live-edit?import=profile')
     }
   }
 

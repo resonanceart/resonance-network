@@ -114,7 +114,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
 
   const projectEditorUrl = user
     ? '/dashboard/projects/live-edit?import=true'
-    : '/dashboard/projects/live-edit?demo=true'
+    : '/login?tab=signup&redirect=' + encodeURIComponent('/dashboard/projects/live-edit?import=true')
 
   async function saveProfileData() {
     if (!profileData) return
@@ -130,7 +130,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
 
   const profileEditorUrl = user
     ? '/dashboard/profile/live-edit?import=profile'
-    : '/dashboard/profile/live-edit?demo=true'
+    : '/login?tab=signup&redirect=' + encodeURIComponent('/dashboard/profile/live-edit?import=profile')
 
   return (
     <div style={{ paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-10)' }}>

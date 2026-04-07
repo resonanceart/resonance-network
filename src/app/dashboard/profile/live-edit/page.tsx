@@ -530,9 +530,12 @@ export default function LiveProfileEditor() {
     if (authLoading) return
     if (!user) return
 
-    // Clear any stale demo/import data from previous sessions
-    clearImportData('resonance_profile_import').catch(() => {})
-    try { sessionStorage.removeItem('resonance_profile_import') } catch {}
+    // Only clear stale import data if this is NOT an import flow
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('import') !== 'profile') {
+      clearImportData('resonance_profile_import').catch(() => {})
+      try { sessionStorage.removeItem('resonance_profile_import') } catch {}
+    }
 
     fetch('/api/user/profile', { credentials: 'same-origin' })
       .then(r => r.json())
