@@ -112,8 +112,8 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
 
   async function saveProfileData() {
     if (profileData) {
-      sessionStorage.setItem('resonance_profile_import', JSON.stringify(profileData))
-      try { await saveImportData('resonance_profile_import', profileData) } catch { /* sessionStorage fallback already set */ }
+      try { await saveImportData('resonance_profile_import', profileData) } catch { /* IndexedDB failed */ }
+      try { sessionStorage.setItem('resonance_profile_import', JSON.stringify(profileData)) } catch { /* too large for sessionStorage, IndexedDB has it */ }
     }
   }
 
