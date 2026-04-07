@@ -626,7 +626,8 @@ export default function LiveProfileEditor() {
           try {
             let imported: {
               name?: string; bio?: string; titles?: string[]; education?: string[];
-              avatarUrl?: string | null; galleryImages?: Array<{ url: string; alt: string }>;
+              avatarUrl?: string | null; heroImageUrl?: string | null;
+              galleryImages?: Array<{ url: string; alt: string }>;
               socialLinks?: Array<{ platform: string; url: string }>; website?: string;
             } | null = null
 
@@ -646,6 +647,9 @@ export default function LiveProfileEditor() {
             if (imported) {
               // Only fill empty fields — don't overwrite existing data
               if (imported.name && !p?.display_name) setDisplayName(imported.name)
+              if (imported.name && !p?.slug) {
+                setSlug(imported.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''))
+              }
               if (imported.bio && !p?.bio) setBio(imported.bio)
               if (imported.titles && imported.titles.length > 0 && !(ext?.professional_title)) {
                 setProfessionalTitle(imported.titles[0])
@@ -663,6 +667,20 @@ export default function LiveProfileEditor() {
                   }).catch(() => {})
                 } else {
                   setAvatarUrl(avatarSrc)
+                }
+              }
+              // Upload base64 cover/hero image to Storage
+              if (imported.heroImageUrl && !ext?.cover_image_url) {
+                const heroSrc = imported.heroImageUrl
+                if (heroSrc.startsWith('data:')) {
+                  fetch(heroSrc).then(r => r.blob()).then(blob => {
+                    const file = new File([blob], `cover-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
+                    uploadFile(file, 'cover').then(({ url }) => {
+                      if (url) { setCoverImageUrl(url); setHasChanges(true); lastChangeTime.current = Date.now() }
+                    })
+                  }).catch(() => {})
+                } else {
+                  setCoverImageUrl(heroSrc)
                 }
               }
               // Upload base64 gallery images to Storage
