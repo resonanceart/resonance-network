@@ -12371,6 +12371,19 @@ main {
 
   .live-editor__toolbar-title {
     width: 100%;
+    font-size: var(--text-xs);
+  }
+
+  .live-editor__toolbar-actions {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    width: 100%;
+  }
+
+  .live-editor__toolbar-actions .btn--sm {
+    font-size: var(--text-xs);
+    padding: 6px 10px;
+    min-height: 36px;
   }
 
   .live-editor__panel {
@@ -12378,17 +12391,54 @@ main {
     bottom: 0;
     left: 0;
     right: 0;
-    width: 100%;
-    max-width: 100%;
-    height: 70vh;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 85vh;
     border-left: none;
     border-top: 1px solid var(--color-border);
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     animation: contactModalSlideUp 0.25s var(--ease-out);
   }
 
+  .live-editor__panel-body {
+    padding: var(--space-4);
+  }
+
+  .live-editor__panel-header {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .live-editor__panel-footer {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  /* Show edit indicators on mobile (tap-friendly) */
   .editable-section__overlay {
-    display: none;
+    opacity: 1;
+    pointer-events: none;
+    padding: var(--space-1) var(--space-2);
+    font-size: 11px;
+    background: rgba(1, 105, 111, 0.85);
+  }
+
+  .editable-section {
+    -webkit-tap-highlight-color: rgba(1, 105, 111, 0.1);
+  }
+}
+
+@media (max-width: 480px) {
+  .live-editor__toolbar {
+    padding: var(--space-1) 0;
+  }
+
+  .live-editor__toolbar-actions .btn--sm {
+    font-size: 11px;
+    padding: 5px 8px;
+    min-height: 34px;
+  }
+
+  .live-editor__panel {
+    height: 90vh !important;
   }
 }
 
@@ -15038,23 +15088,169 @@ main {
   color: var(--color-text);
 }
 
+/* Import step */
+.onboarding__import-wrapper {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.onboarding__import-row {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+}
+
+.onboarding__import-row .form-input {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-base);
+  padding: var(--space-3) var(--space-4);
+}
+
+.onboarding__import-row .btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.onboarding__import-error {
+  color: var(--color-error, #ef4444);
+  font-size: var(--text-sm);
+  margin-top: var(--space-2);
+}
+
+.onboarding__import-hint {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin-top: var(--space-4);
+  text-align: center;
+}
+
+.onboarding__import-success {
+  text-align: center;
+  margin-top: var(--space-6);
+}
+
+.onboarding__import-success-icon {
+  font-size: 48px;
+  margin-bottom: var(--space-3);
+}
+
+.onboarding__import-success-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+
+.onboarding__import-success-desc {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
 /* Mobile */
 @media (max-width: 639px) {
+  .onboarding__overlay {
+    padding: var(--space-2);
+    align-items: flex-start;
+    padding-top: var(--space-4);
+  }
+
   .onboarding__card {
-    padding: var(--space-5);
+    padding: var(--space-4) var(--space-4) var(--space-5);
     border-radius: var(--radius-lg);
+    max-height: 95vh;
   }
 
-  .onboarding__role-grid {
-    grid-template-columns: 1fr;
+  .onboarding__progress {
+    margin-bottom: var(--space-4);
   }
 
-  .onboarding__goals-grid {
-    grid-template-columns: 1fr;
+  .onboarding__progress-dot {
+    width: 24px;
   }
 
   .onboarding__title {
     font-size: var(--text-xl);
+    margin-bottom: var(--space-1);
+  }
+
+  .onboarding__subtitle {
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-4);
+  }
+
+  .onboarding__step {
+    min-height: 0;
+  }
+
+  .onboarding__role-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+
+  .onboarding__role-card {
+    flex-direction: row;
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+  }
+
+  .onboarding__role-label {
+    font-size: var(--text-base);
+  }
+
+  .onboarding__role-desc {
+    font-size: var(--text-xs);
+  }
+
+  .onboarding__collab-section {
+    margin-top: var(--space-4);
+    padding-top: var(--space-3);
+  }
+
+  .onboarding__collab-pill {
+    padding: 5px 12px;
+    font-size: var(--text-xs);
+  }
+
+  .onboarding__import-row {
+    flex-direction: column;
+  }
+
+  .onboarding__import-row .btn {
+    width: 100%;
+  }
+
+  .onboarding__goals-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+
+  .onboarding__goal-card {
+    padding: var(--space-3);
+  }
+
+  .onboarding__field-pill {
+    padding: 5px 12px;
+    font-size: var(--text-xs);
+  }
+
+  .onboarding__summary {
+    margin: var(--space-4) 0;
+    padding: var(--space-3);
+  }
+
+  .onboarding__summary-value {
+    font-size: var(--text-xs);
+    word-break: break-word;
+  }
+
+  .onboarding__nav {
+    margin-top: var(--space-4);
+    padding-top: var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .onboarding__skip {
+    margin-top: var(--space-2);
   }
 }
 

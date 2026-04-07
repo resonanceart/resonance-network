@@ -226,8 +226,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
             </p>
 
             {!importDone ? (
-              <div style={{ maxWidth: 480, margin: '0 auto' }}>
-                <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-6)' }}>
+              <div className="onboarding__import-wrapper">
+                <div className="onboarding__import-row">
                   <input
                     type="url"
                     value={importUrl}
@@ -236,34 +236,30 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                     placeholder="https://yourwebsite.com/about"
                     disabled={importLoading}
                     className="form-input"
-                    style={{ flex: 1, fontSize: 'var(--text-base)', padding: 'var(--space-3) var(--space-4)' }}
                     autoFocus
                   />
                   <button
                     className="btn btn--primary"
                     onClick={handleImport}
                     disabled={importLoading || !importUrl.trim()}
-                    style={{ whiteSpace: 'nowrap' }}
                   >
                     {importLoading ? 'Importing...' : 'Import'}
                   </button>
                 </div>
                 {importError && (
-                  <p style={{ color: 'var(--color-error, #ef4444)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)' }}>
-                    {importError}
-                  </p>
+                  <p className="onboarding__import-error">{importError}</p>
                 )}
-                <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-4)', textAlign: 'center' }}>
+                <p className="onboarding__import-hint">
                   We&apos;ll pull in your bio, images, and social links. You can edit everything later.
                 </p>
               </div>
             ) : (
-              <div style={{ textAlign: 'center', marginTop: 'var(--space-6)' }}>
-                <div style={{ fontSize: '48px', marginBottom: 'var(--space-3)' }}>✓</div>
-                <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>
+              <div className="onboarding__import-success">
+                <div className="onboarding__import-success-icon">✓</div>
+                <p className="onboarding__import-success-title">
                   Profile data imported!
                 </p>
-                <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>
+                <p className="onboarding__import-success-desc">
                   Your imported data will be applied when you open the Profile Editor.
                 </p>
               </div>
