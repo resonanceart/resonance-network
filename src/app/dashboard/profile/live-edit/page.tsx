@@ -659,87 +659,24 @@ export default function LiveProfileEditor() {
                 setProfessionalTitle(imported.titles[0])
               }
               if (imported.website) setWebsite(imported.website)
-              // Upload base64 images to Storage with progress tracking
-              let importHadWarnings = false
-
-              // Upload base64 avatar to Storage (base64 too large for API body limit)
+              // Set image URLs (already uploaded to Supabase Storage by scrape API)
               if (imported.avatarUrl) {
-                const avatarSrc = imported.avatarUrl
-                if (avatarSrc.startsWith('data:')) {
-                  setImportStatus('Importing profile... Uploading avatar...')
-                  try {
-                    const blob = await fetch(avatarSrc).then(r => r.blob())
-                    const file = new File([blob], `avatar-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-                    const { url, error } = await uploadFile(file, 'avatar', displayName)
-                    if (url) { setAvatarUrl(url); setHasChanges(true); lastChangeTime.current = Date.now() }
-                    else { console.error('Avatar upload failed:', error) }
-                  } catch (err) {
-                    console.error('Avatar upload failed:', err)
-                  }
-                } else {
-                  setAvatarUrl(avatarSrc)
-                }
+                setAvatarUrl(imported.avatarUrl)
+                setHasChanges(true)
+                lastChangeTime.current = Date.now()
               }
-              // Upload base64 cover/hero image to Storage
               if (imported.heroImageUrl) {
-                const heroSrc = imported.heroImageUrl
-                if (heroSrc.startsWith('data:')) {
-                  setImportStatus('Importing profile... Uploading cover image...')
-                  try {
-                    const blob = await fetch(heroSrc).then(r => r.blob())
-                    const file = new File([blob], `cover-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-                    const { url, error } = await uploadFile(file, 'cover', displayName)
-                    if (url) { setCoverImageUrl(url); setHasChanges(true); lastChangeTime.current = Date.now() }
-                    else { console.error('Cover upload failed:', error) }
-                  } catch (err) {
-                    console.error('Cover upload failed:', err)
-                  }
-                } else {
-                  setCoverImageUrl(heroSrc)
-                }
+                setCoverImageUrl(imported.heroImageUrl)
+                setHasChanges(true)
+                lastChangeTime.current = Date.now()
               }
-              // Upload base64 gallery images to Storage
               if (imported.galleryImages && imported.galleryImages.length > 0) {
-                const galleryImgs = imported.galleryImages
-                const hasBase64 = galleryImgs.some(img => img.url.startsWith('data:'))
-                if (hasBase64) {
-                  let failedCount = 0
-                  const results = await Promise.all(galleryImgs.map(async (img, i) => {
-                    if (img.url.startsWith('data:')) {
-                      setImportStatus(`Importing profile... Uploading gallery images (${i + 1}/${galleryImgs.length})...`)
-                      try {
-                        const blob = await fetch(img.url).then(r => r.blob())
-                        const file = new File([blob], `gallery-import-${i}.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-                        const { url, error } = await uploadFile(file, 'gallery', displayName)
-                        if (url) return { url, alt: img.alt || '', type: 'image' as const, order: i, isFeatured: i === 0 }
-                        console.error(`Gallery image ${i} upload failed:`, error)
-                        failedCount++
-                        return null
-                      } catch (err) {
-                        console.error(`Gallery image ${i} upload failed:`, err)
-                        failedCount++
-                        return null
-                      }
-                    }
-                    return { url: img.url, alt: img.alt || '', type: 'image' as const, order: i, isFeatured: i === 0 }
-                  }))
-                  const uploaded = results.filter(Boolean) as GalleryItem[]
-                  if (uploaded.length > 0) {
-                    setMediaGallery(uploaded)
-                    setHasChanges(true)
-                    lastChangeTime.current = Date.now()
-                  }
-                  if (failedCount > 0) {
-                    importHadWarnings = true
-                    setImportStatus(`Profile imported with warnings: ${failedCount} image${failedCount !== 1 ? 's' : ''} failed to upload.`)
-                    setTimeout(() => setImportStatus(null), 8000)
-                  }
-                } else {
-                  setMediaGallery(galleryImgs.map((img, i) => ({
-                    url: img.url, alt: img.alt || '', type: 'image' as const,
-                    order: i, isFeatured: i === 0,
-                  })))
-                }
+                setMediaGallery(imported.galleryImages.map((img, i) => ({
+                  url: img.url, alt: img.alt || '', type: 'image' as const,
+                  order: i, isFeatured: i === 0,
+                })))
+                setHasChanges(true)
+                lastChangeTime.current = Date.now()
               }
               if (imported.socialLinks && imported.socialLinks.length > 0) {
                 setSocialLinks(imported.socialLinks.map((link, i) => ({
@@ -760,11 +697,8 @@ export default function LiveProfileEditor() {
               // Clean up both storage locations
               clearImportData('resonance_profile_import').catch(() => {})
               sessionStorage.removeItem('resonance_profile_import')
-              // Show success message (unless gallery warning is already showing)
-              if (!importHadWarnings) {
-                setImportStatus('Profile imported successfully!')
-                setTimeout(() => setImportStatus(null), 5000)
-              }
+              setImportStatus('Profile imported successfully!')
+              setTimeout(() => setImportStatus(null), 5000)
             }
           } catch (e) {
             console.error('Failed to apply imported profile data:', e)
