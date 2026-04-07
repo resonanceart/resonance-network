@@ -139,3 +139,85 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 })
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const ip = getClientIp(request)
+    if (!rateLimit(ip)) {
+      return NextResponse.json({ error: 'Too many requests.' }, { status: 429 })
+    }
+
+    if (!validateCsrf(request)) {
+      return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 })
+    }
+
+    const supabase = await createSupabaseServerClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { submissionId } = body
+
+    if (!submissionId) {
+      return NextResponse.json({ error: 'submissionId is required.' }, { status: 400 })
+    }
+
+    // Verify ownership
+    const { data: profile } = await supabaseAdmin
+      .from('user_profiles')
+      .select('email')
+      .eq('id', user.id)
+      .single()
+
+    const { data: existing, error: fetchError } = await supabaseAdmin
+      .from('project_submissions')
+      .select('id, user_id, artist_email, hero_image_url, gallery')
+      .eq('id', submissionId)
+      .single()
+
+    if (fetchError || !existing) {
+      return NextResponse.json({ error: 'Submission not found.' }, { status: 404 })
+    }
+
+    const isOwner = existing.user_id === user.id || (profile?.email && existing.artist_email === profile.email)
+    if (!isOwner) {
+      return NextResponse.json({ error: 'Not authorized to delete this submission.' }, { status: 403 })
+    }
+
+    // Clean up storage files
+    const filesToDelete: string[] = []
+    if (existing.hero_image_url) {
+      const match = existing.hero_image_url.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)/)
+      if (match) filesToDelete.push(match[1])
+    }
+    if (existing.gallery && Array.isArray(existing.gallery)) {
+      for (const item of existing.gallery) {
+        const url = typeof item === 'string' ? item : item?.url
+        if (url) {
+          const match = url.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)/)
+          if (match) filesToDelete.push(match[1])
+        }
+      }
+    }
+    if (filesToDelete.length > 0) {
+      await supabaseAdmin.storage.from('project-images').remove(filesToDelete).catch(() => {})
+    }
+
+    // Delete the submission
+    const { error: deleteError } = await supabaseAdmin
+      .from('project_submissions')
+      .delete()
+      .eq('id', submissionId)
+
+    if (deleteError) {
+      console.error('Submission delete error:', deleteError.message)
+      return NextResponse.json({ error: 'Failed to delete submission.' }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch {
+    return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 })
+  }
+}
