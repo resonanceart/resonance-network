@@ -605,7 +605,7 @@ function LiveProjectEditorInner() {
           <span className="live-editor__toolbar-title">{submissionStatus === 'approved' ? 'Managing Your Live Project' : 'Building Your Project'}</span>
           <div className="live-editor__toolbar-actions">
             {errorMessage && (
-              <div style={{ background: 'var(--color-error, #dc2626)', color: 'white', padding: '8px 16px', borderRadius: 8, fontSize: '14px', display: 'flex', alignItems: 'center', gap: 8, maxWidth: 400 }}>
+              <div style={{ background: 'var(--color-error, #dc2626)', color: 'white', padding: '8px 12px', borderRadius: 8, fontSize: '13px', display: 'flex', alignItems: 'center', gap: 8, maxWidth: '100%', width: '100%' }}>
                 <span style={{ flex: 1 }}>{errorMessage}</span>
                 <button onClick={() => setErrorMessage(null)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: 18 }}>&times;</button>
               </div>
@@ -698,6 +698,21 @@ function LiveProjectEditorInner() {
             } : undefined}
             onMouseUp={() => { if (isDraggingHero) { setIsDraggingHero(false); markDirty() } }}
             onMouseLeave={() => { if (isDraggingHero) { setIsDraggingHero(false); markDirty() } }}
+            onTouchStart={heroImageUrl ? (e) => {
+              const touch = e.touches[0]
+              setIsDraggingHero(true)
+              heroDragStartY.current = touch.clientY
+              heroDragStartPos.current = heroPositionY
+            } : undefined}
+            onTouchMove={isDraggingHero ? (e) => {
+              const touch = e.touches[0]
+              const delta = touch.clientY - heroDragStartY.current
+              const heroHeight = (e.currentTarget as HTMLElement).offsetHeight
+              const newPos = Math.max(0, Math.min(100, heroDragStartPos.current + (delta / heroHeight) * 100))
+              setHeroPositionY(newPos)
+              e.preventDefault()
+            } : undefined}
+            onTouchEnd={() => { if (isDraggingHero) { setIsDraggingHero(false); markDirty() } }}
           >
             {heroImageUrl && (
               <>
@@ -1521,7 +1536,7 @@ function LiveProjectEditorInner() {
       {settingsOpen && (
         <>
           <div className="live-editor__panel-backdrop" onClick={() => setSettingsOpen(false)} />
-          <div className="live-editor__panel" style={{ width: 'min(560px, 90vw)' }}>
+          <div className="live-editor__panel" style={{ width: 'min(560px, 100vw)' }}>
             <div className="live-editor__panel-header">
               <h3 className="live-editor__panel-title">Project Settings</h3>
               <button className="live-editor__panel-close" onClick={() => setSettingsOpen(false)}>&times;</button>
@@ -1590,7 +1605,7 @@ function LiveProjectEditorInner() {
                     ))}
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-3)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 'var(--space-3)' }}>
                   <div className="form-group">
                     <label className="form-label">Stage</label>
                     <select className="form-input" value={stage} onChange={e => { setStage(e.target.value); markDirty() }}>
