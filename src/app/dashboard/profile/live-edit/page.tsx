@@ -525,70 +525,14 @@ export default function LiveProfileEditor() {
     lastChangeTime.current = Date.now()
   }, [])
 
-  // Check for demo mode (preview without auth)
-  const [demoMode, setDemoMode] = useState(false)
-
-  // Fetch profile on mount
+  // Fetch profile on mount (auth required — middleware redirects unauthenticated users)
   useEffect(() => {
     if (authLoading) return
+    if (!user) return
 
-    // Demo mode: load from sessionStorage without auth
-    const params = new URLSearchParams(window.location.search)
-    if (!user && params.get('demo') === 'true') {
-      setDemoMode(true)
-      loadImportData<{
-        name?: string; bio?: string; titles?: string[]; education?: string[];
-        avatarUrl?: string | null; heroImageUrl?: string | null;
-        galleryImages?: Array<{ url: string; alt: string }>;
-        socialLinks?: Array<{ platform: string; url: string }>; website?: string;
-      }>('resonance_profile_import').then(imported => {
-        if (!imported) {
-          // Fallback to sessionStorage for smaller payloads
-          try {
-            const raw = sessionStorage.getItem('resonance_profile_import')
-            if (raw) imported = JSON.parse(raw)
-          } catch {}
-        }
-        if (imported) {
-          if (imported.name) setDisplayName(imported.name)
-          if (imported.bio) setBio(imported.bio)
-          if (imported.titles && imported.titles.length > 0) setProfessionalTitle(imported.titles[0])
-          if (imported.website) setWebsite(imported.website)
-          if (imported.avatarUrl) setAvatarUrl(imported.avatarUrl)
-          if (imported.heroImageUrl) setCoverImageUrl(imported.heroImageUrl)
-          if (imported.galleryImages && imported.galleryImages.length > 0) {
-            setMediaGallery(imported.galleryImages.map((img, i) => ({
-              url: img.url, alt: img.alt || '', type: 'image' as const,
-              order: i, isFeatured: i === 0,
-            })))
-          }
-          if (imported.socialLinks && imported.socialLinks.length > 0) {
-            setSocialLinks(imported.socialLinks.map((link, i) => ({
-              id: `import-${Date.now()}-${i}`,
-              platform: link.platform as SocialEntry['platform'],
-              url: link.url,
-              display_order: i,
-            })))
-          }
-          if (imported.education && imported.education.length > 0) {
-            setTimeline(imported.education.map((ed) => ({
-              year: '', title: ed, category: 'education',
-              organization: '', description: '',
-            })))
-          }
-          setSlug(
-            (imported.name || '')
-              .toLowerCase()
-              .replace(/\s+/g, '-')
-              .replace(/[^a-z0-9-]/g, '')
-          )
-        }
-        setLoading(false)
-      }).catch(() => setLoading(false))
-      return
-    }
-
-    if (!user) { window.location.href = '/login'; return }
+    // Clear any stale demo/import data from previous sessions
+    clearImportData('resonance_profile_import').catch(() => {})
+    try { sessionStorage.removeItem('resonance_profile_import') } catch {}
 
     fetch('/api/user/profile', { credentials: 'same-origin' })
       .then(r => r.json())
@@ -750,9 +694,9 @@ export default function LiveProfileEditor() {
   const saveAllRef = useRef(saveAll)
   useEffect(() => { saveAllRef.current = saveAll })
 
-  // Auto-save: 15s interval, debounced 2s after last change (disabled in demo mode)
+  // Auto-save: 15s interval, debounced 2s after last change
   useEffect(() => {
-    if (!hasChanges || demoMode) return
+    if (!hasChanges) return
     const timer = setInterval(() => {
       // Don't autosave if user changed something in the last 2 seconds
       if (Date.now() - lastChangeTime.current < 2000) return
@@ -1137,7 +1081,7 @@ export default function LiveProfileEditor() {
       </div>
     )
   }
-  if (!user && !demoMode) return null
+  if (!user) return null
 
   const locationDisplay = [location, locationSecondary].filter(Boolean).join(' / ')
   const initials = displayName
@@ -1153,25 +1097,8 @@ export default function LiveProfileEditor() {
       {/* ── Floating Toolbar ────────────────────────────────────── */}
       <div className="live-editor__toolbar">
         <div className="live-editor__toolbar-inner container">
-          <span className="live-editor__toolbar-title">
-            {demoMode ? `Profile Preview — ${displayName}` : 'Editing Your Profile'}
-          </span>
+          <span className="live-editor__toolbar-title">Editing Your Profile</span>
           <div className="live-editor__toolbar-actions">
-            {demoMode ? (
-              <>
-                <button
-                  onClick={() => {
-                    const redirectPath = encodeURIComponent('/dashboard/profile/live-edit?import=profile')
-                    window.location.href = `/login?tab=signup&redirect=${redirectPath}`
-                  }}
-                  className="btn btn--primary btn--sm"
-                >
-                  Create Account to Save
-                </button>
-                <a href="/import" className="btn btn--outline btn--sm">Back to Import</a>
-              </>
-            ) : (
-              <>
             {errorMessage && (
               <span className="live-editor__error" onClick={() => setErrorMessage(null)} title="Click to dismiss">
                 {errorMessage}
@@ -1245,8 +1172,6 @@ export default function LiveProfileEditor() {
             <Link href="/dashboard" className="btn btn--ghost btn--sm">
               Back
             </Link>
-              </>
-            )}
           </div>
         </div>
       </div>

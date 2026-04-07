@@ -47,14 +47,11 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protect dashboard and admin routes — require authentication
-  // Allow demo mode for profile preview (no auth needed to see the editor preview)
-  const isDemoPreview = (
-    request.nextUrl.pathname === '/dashboard/profile/live-edit' ||
-    request.nextUrl.pathname === '/dashboard/projects/live-edit'
-  ) && request.nextUrl.searchParams.get('demo') === 'true'
-  if ((request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/admin')) && !user && !isDemoPreview) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  // Protect dashboard and admin routes — require authentication (no exceptions)
+  if ((request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/admin')) && !user) {
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('redirect', request.nextUrl.pathname + request.nextUrl.search)
+    return NextResponse.redirect(loginUrl)
   }
 
   // Redirect logged-in users away from login page
