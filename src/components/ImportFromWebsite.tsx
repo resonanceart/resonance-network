@@ -73,13 +73,20 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     setError('')
     setProgress('Fetching page...')
 
+    // Auto-prepend https:// if user typed a bare domain (e.g. "example.com/about")
+    let cleanUrl = url.trim()
+    if (!/^https?:\/\//i.test(cleanUrl)) {
+      cleanUrl = 'https://' + cleanUrl
+      setUrl(cleanUrl)
+    }
+
     try {
       setProgress('Analyzing content...')
       const res = await fetch('/api/scrape', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ url: url.trim(), type: mode }),
+        body: JSON.stringify({ url: cleanUrl, type: mode }),
       })
 
       const json = await res.json()

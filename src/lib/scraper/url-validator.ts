@@ -1,8 +1,14 @@
 /** Validate and sanitize a URL for scraping — prevents SSRF attacks */
 export function validateScrapeUrl(input: string): { valid: boolean; url?: string; error?: string } {
+  // Auto-prepend https:// for bare domains (e.g. "example.com/about")
+  let normalized = input.trim()
+  if (!/^https?:\/\//i.test(normalized)) {
+    normalized = 'https://' + normalized
+  }
+
   let parsed: URL
   try {
-    parsed = new URL(input)
+    parsed = new URL(normalized)
   } catch {
     return { valid: false, error: 'Invalid URL format.' }
   }

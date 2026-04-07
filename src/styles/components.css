@@ -4418,6 +4418,37 @@ main {
   margin-top: auto;
 }
 
+@media (max-width: 639px) {
+  .join-card {
+    padding: var(--space-5);
+  }
+
+  .join-card h2 {
+    font-size: var(--text-lg);
+  }
+
+  .join-card__desc {
+    font-size: var(--text-sm);
+  }
+
+  .join-card__icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .join-hero {
+    padding: var(--space-10) 0 var(--space-4);
+  }
+
+  .join-hero h1 {
+    font-size: var(--text-2xl);
+  }
+
+  .join-hero__sub {
+    font-size: var(--text-base);
+  }
+}
+
 /* =========================
    PREFERS REDUCED MOTION
    ========================= */
@@ -12364,13 +12395,30 @@ main {
 
 /* Mobile */
 @media (max-width: 767px) {
+  .live-editor__toolbar {
+    top: 56px;
+    padding: var(--space-1) 0;
+  }
+
   .live-editor__toolbar-inner {
     flex-wrap: wrap;
-    gap: var(--space-2);
+    gap: var(--space-1);
   }
 
   .live-editor__toolbar-title {
     width: 100%;
+    font-size: var(--text-xs);
+  }
+
+  .live-editor__toolbar-actions {
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    width: 100%;
+  }
+
+  .live-editor__toolbar-actions .btn--sm {
+    font-size: 11px;
+    padding: 4px 8px;
   }
 
   .live-editor__panel {
@@ -12380,15 +12428,31 @@ main {
     right: 0;
     width: 100%;
     max-width: 100%;
-    height: 70vh;
+    height: 80vh;
     border-left: none;
     border-top: 1px solid var(--color-border);
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     animation: contactModalSlideUp 0.25s var(--ease-out);
   }
 
+  .live-editor__panel-body {
+    -webkit-overflow-scrolling: touch;
+  }
+
   .editable-section__overlay {
     display: none;
+  }
+
+  /* Ensure profile/project content is tappable on mobile */
+  .editable-section {
+    outline: 1px dashed var(--color-border);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-2);
+  }
+
+  .editable-section--active {
+    outline: 2px solid var(--color-primary);
   }
 }
 
