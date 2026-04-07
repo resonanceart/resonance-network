@@ -64,6 +64,7 @@ function LiveProjectEditorInner() {
   const { user, loading: authLoading } = useAuth()
   const searchParams = useSearchParams()
   const existingId = searchParams.get('id')
+  const isNewProject = searchParams.get('new') === 'true'
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -234,7 +235,19 @@ function LiveProjectEditorInner() {
       })
       .catch(() => {})
 
-    // Always check for existing submissions — load most recent draft if no ID specified
+    // When creating a new project (?new=true), skip loading existing submissions
+    if (isNewProject) {
+      setSubmissionId(null)
+      // Still check for import data
+      const importParam = new URLSearchParams(window.location.search).get('import')
+      if (importParam === 'true') {
+        applyImportData()
+      }
+      setLoading(false)
+      return
+    }
+
+    // Check for existing submissions — load most recent draft if no ID specified
     {
       fetch('/api/user/projects', { credentials: 'include' })
         .then(r => r.json())
@@ -326,7 +339,7 @@ function LiveProjectEditorInner() {
         })
     }
 
-  }, [user, authLoading, existingId, markDirty])
+  }, [user, authLoading, existingId, isNewProject, markDirty])
 
   // Keep a ref to the latest saveDraft function to avoid stale closures
   const saveDraftRef = useRef(saveDraft)
@@ -494,13 +507,17 @@ function LiveProjectEditorInner() {
   async function uploadFileToStorage(file: File, type: string): Promise<string | null> {
     // Direct Supabase Storage upload (bypasses Next.js body limit)
     try {
+      const { slugify } = await import('@/lib/slugify')
       const { createSupabaseBrowserClient } = await import('@/lib/supabase-auth')
       const supabase = createSupabaseBrowserClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setErrorMessage('Not authenticated. Please sign in again.'); return null }
 
+      const nameSlug = slugify(leadArtistName || '') || 'user'
+      const projSlug = slugify(title || '') || 'project'
       const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-      const path = `${user.id}/${type}/${Date.now()}.${ext}`
+      const timestamp = Date.now()
+      const path = `${user.id}/${nameSlug}/projects/${projSlug}/${type}/${projSlug}-${type}-${timestamp}.${ext}`
 
       const { data, error } = await supabase.storage
         .from('profile-uploads')
