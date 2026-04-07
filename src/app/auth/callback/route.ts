@@ -7,6 +7,14 @@ export async function GET(request: Request) {
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/dashboard'
 
+  // Handle error redirects from Supabase (e.g., expired confirmation links)
+  const authError = searchParams.get('error')
+  const errorDesc = searchParams.get('error_description')
+  if (authError) {
+    const desc = errorDesc ? `&error_description=${encodeURIComponent(errorDesc)}` : ''
+    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(authError)}${desc}`)
+  }
+
   if (code) {
     const cookieStore = cookies()
     const supabase = createServerClient(
@@ -30,7 +38,8 @@ export async function GET(request: Request) {
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`)
     }
+    return NextResponse.redirect(`${origin}/login?error=auth&error_description=${encodeURIComponent(error.message)}`)
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth`)
+  return NextResponse.redirect(`${origin}/login?error=auth&error_description=${encodeURIComponent('No authentication code received. Please try signing up again.')}`)
 }

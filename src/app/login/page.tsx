@@ -46,6 +46,7 @@ function LoginForm() {
   const supabase = createSupabaseBrowserClient()
 
   const urlError = searchParams.get('error')
+  const urlErrorDesc = searchParams.get('error_description')
   const emailValid = email.length > 0 && isValidEmail(email)
   const passwordStrength = useMemo(() => getPasswordStrength(password), [password])
 
@@ -133,7 +134,9 @@ function LoginForm() {
 
       {!error && urlError && (
         <div className="form-error" style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', borderRadius: '8px', background: 'rgba(220,38,38,0.08)' }}>
-          Authentication failed. Please try again.
+          {urlErrorDesc
+            ? urlErrorDesc.replace(/\+/g, ' ')
+            : 'Authentication failed. Please try again.'}
         </div>
       )}
 
