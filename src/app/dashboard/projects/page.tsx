@@ -21,6 +21,7 @@ export default function MyProjectsPage() {
   const router = useRouter()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   useEffect(() => {
     if (authLoading) return
@@ -69,6 +70,27 @@ export default function MyProjectsPage() {
   function projectSlug(project: Project): string {
     const slug = project.project_title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
     return `sub-${slug}-${project.id.substring(0, 8)}`
+  }
+
+  async function handleDelete(project: Project) {
+    if (!window.confirm(`Are you sure you want to delete "${project.project_title}"? This cannot be undone.`)) return
+    setDeletingId(project.id)
+    try {
+      const res = await fetch('/api/user/projects', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ submissionId: project.id }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Delete failed')
+      }
+      setProjects(prev => prev.filter(p => p.id !== project.id))
+    } catch {
+      alert('Failed to delete project. Please try again.')
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   function formatDate(dateStr: string): string {
@@ -202,6 +224,20 @@ export default function MyProjectsPage() {
                       View Live
                     </Link>
                   )}
+                  <button
+                    onClick={() => handleDelete(project)}
+                    disabled={deletingId === project.id}
+                    className="btn btn--outline btn--sm"
+                    style={{
+                      color: 'var(--color-error, #dc2626)',
+                      borderColor: 'var(--color-error, #dc2626)',
+                      marginLeft: 'auto',
+                      opacity: deletingId === project.id ? 0.5 : 1,
+                      cursor: deletingId === project.id ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {deletingId === project.id ? 'Deleting...' : 'Delete'}
+                  </button>
                 </div>
               </div>
             ))}
