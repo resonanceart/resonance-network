@@ -523,7 +523,7 @@ export default function LiveProfileEditor() {
   // Refs for scroll-to-section
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const lastChangeTime = useRef(0)
-  const importAppliedRef = useRef(false)
+  const profileFetchedRef = useRef(false)
 
   // Track changes
   const markDirty = useCallback(() => {
@@ -535,6 +535,8 @@ export default function LiveProfileEditor() {
   useEffect(() => {
     if (authLoading) return
     if (!user) return
+    if (profileFetchedRef.current) return
+    profileFetchedRef.current = true
 
     fetch('/api/user/profile', { credentials: 'same-origin' })
       .then(r => r.json())
@@ -626,10 +628,8 @@ export default function LiveProfileEditor() {
         }
 
         // Apply imported profile data from website scraper (IndexedDB first, sessionStorage fallback)
-        // Guard: only apply once — useEffect may re-run if user object reference changes
         const params = new URLSearchParams(window.location.search)
-        if (params.get('import') === 'profile' && !importAppliedRef.current) {
-          importAppliedRef.current = true
+        if (params.get('import') === 'profile') {
           try {
             let imported: {
               name?: string; bio?: string; titles?: string[]; education?: string[];

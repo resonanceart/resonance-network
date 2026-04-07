@@ -121,14 +121,11 @@ function LiveProjectEditorInner() {
   const [newSocialUrl, setNewSocialUrl] = useState('')
 
   const lastChangeTime = useRef(0)
-  const importAppliedRef = useRef(false)
+  const projectFetchedRef = useRef(false)
   const markDirty = useCallback(() => { setHasChanges(true); lastChangeTime.current = Date.now() }, [])
 
   // Apply imported data from website scraper (called after existing project loads)
-  // Guard: only apply once — useEffect may re-run if user object reference changes
   async function applyImportData() {
-    if (importAppliedRef.current) return
-    importAppliedRef.current = true
     try {
       let imported: Record<string, unknown> | null = null
       // Try IndexedDB first
@@ -187,6 +184,8 @@ function LiveProjectEditorInner() {
   useEffect(() => {
     if (authLoading) return
     if (!user) { window.location.href = '/login'; return }
+    if (projectFetchedRef.current) return
+    projectFetchedRef.current = true
 
     // Get user profile for defaults
     fetch('/api/user/profile', { credentials: 'same-origin' })
