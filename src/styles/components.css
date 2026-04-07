@@ -5902,6 +5902,13 @@ main {
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     z-index: 10;
+    scrollbar-width: none;
+    mask-image: linear-gradient(to right, transparent 0, #000 8px, #000 calc(100% - 24px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 8px, #000 calc(100% - 24px), transparent 100%);
+  }
+
+  .dashboard-nav::-webkit-scrollbar {
+    display: none;
   }
 
   .dashboard-nav__list {
@@ -6253,6 +6260,30 @@ main {
 .media-gallery-editor__add-btn:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
+}
+
+@media (max-width: 640px) {
+  .media-gallery-editor__grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  .media-gallery-editor__item-actions button {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .media-gallery-editor__featured-btn button {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .media-gallery-editor__item-reorder button {
+    min-height: 44px;
+    font-size: 16px;
+    padding: 6px 10px;
+  }
 }
 
 /* =========================
@@ -12424,6 +12455,52 @@ main {
   .editable-section {
     -webkit-tap-highlight-color: rgba(1, 105, 111, 0.1);
   }
+
+  .live-editor__panel-close {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .live-editor__gallery-remove {
+    opacity: 1;
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+  }
+
+  .live-editor__tag-remove {
+    font-size: 18px;
+    padding: 2px 6px;
+    min-width: 28px;
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .live-editor__add-row {
+    flex-direction: column;
+  }
+  .live-editor__add-row .form-select {
+    width: 100%;
+  }
+  .live-editor__social-entry {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .live-editor__social-entry .form-select,
+  .live-editor__social-entry .form-input {
+    width: 100%;
+  }
+
+  .live-editor__panel input,
+  .live-editor__panel textarea,
+  .live-editor__panel select {
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -14614,6 +14691,35 @@ main {
 @media (max-width: 640px) {
   .smart-gallery {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  /* Always show controls on mobile — no hover */
+  .smart-gallery__tile .smart-gallery__drag-handle,
+  .smart-gallery__tile .smart-gallery__delete,
+  .smart-gallery__tile .smart-gallery__edit-buttons {
+    opacity: 1;
+  }
+
+  /* Larger touch targets for drag handle */
+  .smart-gallery__drag-handle {
+    padding: 10px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Larger delete button — 44px min tap target */
+  .smart-gallery__delete {
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+  }
+
+  /* Larger edit buttons for touch */
+  .smart-gallery__edit-buttons button {
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    min-height: 44px;
   }
 }
 
@@ -14654,6 +14760,20 @@ main {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .smart-gallery__add-buttons {
+    flex-direction: column;
+  }
+
+  .smart-gallery__add-btn {
+    width: 100%;
+    justify-content: center;
+    padding: var(--space-3) var(--space-4);
+    min-height: 44px;
+    font-size: var(--text-base);
+  }
 }
 
 /* ─── Profile Header Grid — Social Row ──────────────────────── */
