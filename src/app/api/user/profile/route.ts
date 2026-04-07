@@ -261,7 +261,15 @@ export async function PUT(request: Request) {
 
     // Handle profile_extended fields
     const extendedFields: Record<string, unknown> = {}
-    if (body.media_gallery !== undefined) extendedFields.media_gallery = body.media_gallery
+    if (body.media_gallery !== undefined) {
+      if (body.media_gallery === null) {
+        extendedFields.media_gallery = null
+      } else if (Array.isArray(body.media_gallery) && body.media_gallery.length <= 100) {
+        extendedFields.media_gallery = body.media_gallery.filter((item: Record<string, unknown>) =>
+          item && typeof item.type === 'string' && typeof item.url === 'string'
+        ).slice(0, 100)
+      }
+    }
     if (body.extended_projects !== undefined) extendedFields.projects = body.extended_projects
     if (body.extended_links !== undefined) extendedFields.links = body.extended_links
     if (body.timeline !== undefined) extendedFields.timeline = body.timeline

@@ -111,7 +111,7 @@ function SkillsPanel({
             className="form-input"
             value={newCategory}
             onChange={e => setNewCategory(e.target.value as ProfileSkill['category'])}
-            style={{ width: 'auto', minWidth: 120 }}
+            style={{ width: 'auto', minWidth: 0, flex: '0 1 120px' }}
           >
             {SKILL_CATEGORIES.map(c => (
               <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
@@ -199,7 +199,7 @@ function ToolsPanel({
             className="form-input"
             value={newCategory}
             onChange={e => setNewCategory(e.target.value as ProfileTool['category'])}
-            style={{ width: 'auto', minWidth: 120 }}
+            style={{ width: 'auto', minWidth: 0, flex: '0 1 120px' }}
           >
             {TOOL_CATEGORIES.map(c => (
               <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
@@ -283,7 +283,7 @@ function SocialPanel({
             className="form-input"
             value={link.platform}
             onChange={e => updateLink(link.id, 'platform', e.target.value)}
-            style={{ width: 'auto', minWidth: 120 }}
+            style={{ width: 'auto', minWidth: 0, flex: '0 1 120px' }}
           >
             {SOCIAL_PLATFORMS.filter(p => p !== 'custom').map(p => (
               <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
@@ -321,7 +321,7 @@ function SocialPanel({
             value={link.label || ''}
             onChange={e => updateLink(link.id, 'label', e.target.value)}
             placeholder="Label (e.g. Portfolio)"
-            style={{ width: 140 }}
+            style={{ width: 'auto', minWidth: 0, flex: '0 1 140px' }}
           />
           <input
             className="form-input"
@@ -925,7 +925,11 @@ export default function LiveProfileEditor() {
 
   async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file || file.size > 10 * 1024 * 1024) return
+    if (!file) return
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError('Cover image must be under 10MB')
+      return
+    }
     setSaving(true)
     const resized = await resizeImageFile(file, 1600)
     const url = await upload(resized, 'cover')
@@ -967,7 +971,12 @@ export default function LiveProfileEditor() {
 
   async function handleGalleryUpload(files: FileList | null) {
     if (!files) return
-    for (const file of Array.from(files)) {
+    if (mediaGallery.length >= 50) {
+      setUploadError('Gallery is limited to 50 items. Remove some items before adding more.')
+      return
+    }
+    const filesToUpload = Array.from(files).slice(0, 50 - mediaGallery.length)
+    for (const file of filesToUpload) {
       if (file.size > 10 * 1024 * 1024) {
         setUploadError(`"${file.name}" is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 10MB.`)
         continue
@@ -1201,7 +1210,7 @@ export default function LiveProfileEditor() {
               className="btn btn--primary btn--sm"
               disabled={saving || !hasChanges}
             >
-              {saving ? 'Saving...' : 'Save All Changes'}
+              {saving ? 'Saving...' : <><span className="hide-mobile">Save All Changes</span><span className="show-mobile">Save</span></>}
             </button>
             <button
               onClick={() => {
@@ -1242,7 +1251,7 @@ export default function LiveProfileEditor() {
                 disabled={saving || !displayName.trim() || !bio.trim()}
                 style={{ borderColor: 'var(--color-success, #4ade80)', color: 'var(--color-success, #4ade80)' }}
               >
-                Submit for Review
+                <span className="hide-mobile">Submit for Review</span><span className="show-mobile">Submit</span>
               </button>
             )}
             {profileVisibility === 'pending' && (

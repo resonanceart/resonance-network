@@ -7,7 +7,7 @@ import { validateCsrf } from '@/lib/csrf'
 
 const VALID_PLATFORMS = [
   'instagram', 'linkedin', 'behance', 'artstation', 'dribbble', 'github',
-  'vimeo', 'soundcloud', 'spotify', 'youtube', 'x', 'tiktok', 'custom',
+  'vimeo', 'soundcloud', 'spotify', 'youtube', 'x', 'tiktok', 'facebook', 'linktree', 'custom',
 ]
 
 async function resolveProfileOwner(slug: string, userId: string) {
