@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import Link from 'next/link'
 import type { ScrapedProject, ScrapedProfile } from '@/lib/scraper'
@@ -16,7 +16,6 @@ interface ImportFromWebsiteProps {
 
 export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) {
   const { user } = useAuth()
-  const router = useRouter()
   const searchParams = useSearchParams()
 
   const [url, setUrl] = useState('')
@@ -104,10 +103,10 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     sessionStorage.setItem('resonance_import_data', JSON.stringify(projectData))
     try { await saveImportData('resonance_import_data', projectData) } catch { /* sessionStorage fallback already set */ }
     if (user) {
-      router.push('/dashboard/projects/live-edit?import=true')
+      window.location.href = '/dashboard/projects/live-edit?import=true'
     } else {
       const redirectPath = encodeURIComponent('/dashboard/projects/live-edit?import=true')
-      router.push(`/login?tab=signup&redirect=${redirectPath}`)
+      window.location.href = `/login?tab=signup&redirect=${redirectPath}`
     }
   }
 
@@ -118,9 +117,14 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     }
   }
 
-  const profileEditorUrl = user
-    ? '/dashboard/profile/live-edit?import=profile'
-    : '/login?tab=signup&redirect=' + encodeURIComponent('/dashboard/profile/live-edit?import=profile')
+  async function handleUseProfileEditor() {
+    await saveProfileData()
+    if (user) {
+      window.location.href = '/dashboard/profile/live-edit?import=profile'
+    } else {
+      window.location.href = '/login?tab=signup&redirect=' + encodeURIComponent('/dashboard/profile/live-edit?import=profile')
+    }
+  }
 
   return (
     <div style={{ paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-10)' }}>
@@ -446,14 +450,13 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
               Preview for {profileData.name}
             </span>
             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-              <a
-                href={profileEditorUrl}
-                onClick={saveProfileData}
+              <button
+                onClick={handleUseProfileEditor}
                 className="btn btn--sm"
-                style={{ background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, textDecoration: 'none' }}
+                style={{ background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, cursor: 'pointer' }}
               >
                 {user ? 'Open in Editor' : 'Build This Profile'}
-              </a>
+              </button>
               <button onClick={() => { setStep('input'); setProfileData(null) }} className="btn btn--outline btn--sm">
                 New URL
               </button>
@@ -634,14 +637,13 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
           {/* Action buttons */}
           <div className="container" style={{ maxWidth: '800px' }}>
             <div style={{ display: 'flex', gap: 'var(--space-3)', paddingTop: 'var(--space-5)', borderTop: '1px solid var(--color-border)', marginTop: 'var(--space-4)' }}>
-              <a
-                href={profileEditorUrl}
-                onClick={saveProfileData}
+              <button
+                onClick={handleUseProfileEditor}
                 className="btn"
-                style={{ flex: 1, background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, textAlign: 'center', textDecoration: 'none' }}
+                style={{ flex: 1, background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, textAlign: 'center', cursor: 'pointer' }}
               >
                 {user ? 'Apply to My Profile' : 'Sign Up & Build Your Profile'}
-              </a>
+              </button>
               <button onClick={() => { setStep('input'); setProfileData(null) }} className="btn btn--outline">
                 Try a Different URL
               </button>
