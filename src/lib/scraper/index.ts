@@ -484,6 +484,9 @@ export async function scrapeProjectPage(url: string): Promise<ScrapedProject> {
   const html = await response.text()
   const $ = cheerio.load(html)
 
+  // Remove style and script tags to prevent CSS/JS leaking into text extraction
+  $('style, script, noscript').remove()
+
   // Extract metadata
   const ogTitle = $('meta[property="og:title"]').attr('content')
   const ogDesc = $('meta[property="og:description"]').attr('content')
@@ -688,6 +691,10 @@ export async function scrapeProfilePage(url: string): Promise<ScrapedProfile> {
 
   const html = await response.text()
   const $ = cheerio.load(html)
+
+  // Remove style and script tags to prevent CSS/JS leaking into text extraction
+  $('style, script, noscript').remove()
+
   const currentPath = new URL(url).pathname
 
   const ogTitle = $('meta[property="og:title"]').attr('content')
