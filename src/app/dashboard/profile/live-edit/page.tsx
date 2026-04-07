@@ -1821,7 +1821,9 @@ export default function LiveProfileEditor() {
                       <option value="they/them">they/them</option>
                       <option value="he/they">he/they</option>
                       <option value="she/they">she/they</option>
+                      <option value="ze/zir">ze/zir</option>
                       <option value="any pronouns">any pronouns</option>
+                      <option value="prefer not to say">prefer not to say</option>
                     </select>
                   </div>
                   <div className="form-group">

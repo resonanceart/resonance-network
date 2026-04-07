@@ -222,7 +222,7 @@ export async function PUT(request: Request) {
     // Sanitize updatable fields
     const updates: Record<string, unknown> = {}
     if (body.display_name !== undefined) updates.display_name = sanitizeText(body.display_name, 200)
-    if (body.bio !== undefined) updates.bio = sanitizeText(body.bio, 5000)
+    if (body.bio !== undefined) updates.bio = sanitizeText(body.bio, 3000)
     if (body.location !== undefined) updates.location = sanitizeText(body.location, 200)
     if (body.website !== undefined) updates.website = sanitizeText(body.website, 500)
     if (body.avatar_url !== undefined) {
@@ -321,13 +321,13 @@ export async function PUT(request: Request) {
     if (body.projects !== undefined && extendedFields.projects === undefined) extendedFields.projects = body.projects
     if (body.links !== undefined && extendedFields.links === undefined) extendedFields.links = body.links
     if (body.achievements !== undefined && extendedFields.achievements === undefined) extendedFields.achievements = body.achievements
-    if (body.philosophy !== undefined && extendedFields.philosophy === undefined) extendedFields.philosophy = sanitizeText(body.philosophy || '', 5000)
+    if (body.philosophy !== undefined && extendedFields.philosophy === undefined) extendedFields.philosophy = sanitizeText(body.philosophy || '', 500)
 
     // Enhanced profile fields
     if (body.professional_title !== undefined) extendedFields.professional_title = sanitizeText(body.professional_title, 200)
     if (body.pronouns !== undefined) extendedFields.pronouns = sanitizeText(body.pronouns, 100)
     if (body.location_secondary !== undefined) extendedFields.location_secondary = sanitizeText(body.location_secondary, 200)
-    if (body.artist_statement !== undefined) extendedFields.artist_statement = sanitizeText(body.artist_statement, 10000)
+    if (body.artist_statement !== undefined) extendedFields.artist_statement = sanitizeText(body.artist_statement, 2000)
     if (body.accent_color !== undefined) extendedFields.accent_color = sanitizeText(body.accent_color, 20)
     if (body.bio_excerpt !== undefined) extendedFields.bio_excerpt = sanitizeText(body.bio_excerpt, 500)
     if (body.primary_website_url !== undefined) extendedFields.primary_website_url = sanitizeText(body.primary_website_url, 500)
@@ -425,26 +425,36 @@ export async function PUT(request: Request) {
 
     // Send email notification when profile submitted for review
     if (body.profile_visibility === 'pending' && profile) {
-      const displayName = String(profile.display_name || 'Unknown')
-      const userEmail = String(profile.email || '')
-      try {
-        // Notify admin
-        await sendNotification({
-          to: ['resonanceartcollective@gmail.com'],
-          subject: `New Profile Submitted for Review: ${displayName}`,
-          body: `${displayName} has submitted their profile for review.\n\nEmail: ${userEmail}\nUser ID: ${user.id}\n\nReview profiles in the admin dashboard.`,
-        })
-        // Confirm to user
-        if (userEmail) {
+      // Only notify on first submission, not repeated saves
+      const { data: currentProfile } = await supabaseAdmin
+        .from('user_profiles')
+        .select('profile_visibility')
+        .eq('id', user.id)
+        .single()
+      const wasAlreadyPending = currentProfile?.profile_visibility === 'pending'
+
+      if (!wasAlreadyPending) {
+        const displayName = String(profile.display_name || 'Unknown')
+        const userEmail = String(profile.email || '')
+        try {
+          // Notify admin
           await sendNotification({
-            to: [userEmail],
-            subject: 'Profile Submitted — Resonance Network',
-            body: `Hi ${displayName},\n\nYour profile has been submitted for review. Our team will review it shortly and you'll be notified when it's published.\n\nIn the meantime, you can continue editing your profile.\n\nThank you,\nResonance Network`,
+            to: ['resonanceartcollective@gmail.com'],
+            subject: `New Profile Submitted for Review: ${displayName}`,
+            body: `${displayName} has submitted their profile for review.\n\nEmail: ${userEmail}\nUser ID: ${user.id}\n\nReview profiles in the admin dashboard.`,
           })
+          // Confirm to user
+          if (userEmail) {
+            await sendNotification({
+              to: [userEmail],
+              subject: 'Profile Submitted — Resonance Network',
+              body: `Hi ${displayName},\n\nYour profile has been submitted for review. Our team will review it shortly and you'll be notified when it's published.\n\nIn the meantime, you can continue editing your profile.\n\nThank you,\nResonance Network`,
+            })
+          }
+        } catch (e) {
+          console.error('Failed to send review notification:', e)
+          // Don't fail the request if email fails
         }
-      } catch (e) {
-        console.error('Failed to send review notification:', e)
-        // Don't fail the request if email fails
       }
     }
 
