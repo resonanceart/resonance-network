@@ -645,18 +645,18 @@ export default function LiveProfileEditor() {
             }
 
             if (imported) {
-              // Only fill empty fields — don't overwrite existing data
-              if (imported.name && !p?.display_name) setDisplayName(imported.name)
-              if (imported.name && !p?.slug) {
+              // Apply imported data — overwrite fields with scraped content
+              if (imported.name) setDisplayName(imported.name)
+              if (imported.name) {
                 setSlug(imported.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''))
               }
-              if (imported.bio && !p?.bio) setBio(imported.bio)
-              if (imported.titles && imported.titles.length > 0 && !(ext?.professional_title)) {
+              if (imported.bio) setBio(imported.bio)
+              if (imported.titles && imported.titles.length > 0) {
                 setProfessionalTitle(imported.titles[0])
               }
-              if (imported.website && !p?.website) setWebsite(imported.website)
+              if (imported.website) setWebsite(imported.website)
               // Upload base64 avatar to Storage (base64 too large for API body limit)
-              if (imported.avatarUrl && !p?.avatar_url) {
+              if (imported.avatarUrl) {
                 const avatarSrc = imported.avatarUrl
                 if (avatarSrc.startsWith('data:')) {
                   fetch(avatarSrc).then(r => r.blob()).then(blob => {
@@ -670,7 +670,7 @@ export default function LiveProfileEditor() {
                 }
               }
               // Upload base64 cover/hero image to Storage
-              if (imported.heroImageUrl && !ext?.cover_image_url) {
+              if (imported.heroImageUrl) {
                 const heroSrc = imported.heroImageUrl
                 if (heroSrc.startsWith('data:')) {
                   fetch(heroSrc).then(r => r.blob()).then(blob => {
@@ -701,40 +701,31 @@ export default function LiveProfileEditor() {
                   })).then(results => {
                     const uploaded = results.filter(Boolean) as GalleryItem[]
                     if (uploaded.length > 0) {
-                      setMediaGallery(prev => prev.length > 0 ? prev : uploaded)
+                      setMediaGallery(uploaded)
                       setHasChanges(true)
                       lastChangeTime.current = Date.now()
                     }
                   })
                 } else {
-                  setMediaGallery(prev => {
-                    if (prev.length > 0) return prev
-                    return galleryImgs.map((img, i) => ({
-                      url: img.url, alt: img.alt || '', type: 'image' as const,
-                      order: i, isFeatured: i === 0,
-                    }))
-                  })
+                  setMediaGallery(galleryImgs.map((img, i) => ({
+                    url: img.url, alt: img.alt || '', type: 'image' as const,
+                    order: i, isFeatured: i === 0,
+                  })))
                 }
               }
               if (imported.socialLinks && imported.socialLinks.length > 0) {
-                setSocialLinks(prev => {
-                  if (prev.length > 0) return prev
-                  return imported!.socialLinks!.map((link, i) => ({
-                    id: `import-${Date.now()}-${i}`,
-                    platform: link.platform as SocialEntry['platform'],
-                    url: link.url,
-                    display_order: i,
-                  }))
-                })
+                setSocialLinks(imported.socialLinks.map((link, i) => ({
+                  id: `import-${Date.now()}-${i}`,
+                  platform: link.platform as SocialEntry['platform'],
+                  url: link.url,
+                  display_order: i,
+                })))
               }
               if (imported.education && imported.education.length > 0) {
-                setTimeline(prev => {
-                  if (prev.length > 0) return prev
-                  return imported!.education!.map((ed) => ({
-                    year: '', title: ed, category: 'education',
-                    organization: '', description: '',
-                  }))
-                })
+                setTimeline(imported.education.map((ed) => ({
+                  year: '', title: ed, category: 'education',
+                  organization: '', description: '',
+                })))
               }
               setHasChanges(true)
               lastChangeTime.current = Date.now()
