@@ -95,7 +95,7 @@ function LoginForm() {
       password,
       options: {
         data: { full_name: name },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent('/dashboard/welcome')}`,
       },
     })
     if (error) {
