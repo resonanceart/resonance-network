@@ -111,7 +111,7 @@ function SkillsPanel({
             className="form-input"
             value={newCategory}
             onChange={e => setNewCategory(e.target.value as ProfileSkill['category'])}
-            style={{ width: 'auto', minWidth: 120 }}
+            style={{ width: 'auto', minWidth: 0, flex: '0 1 120px' }}
           >
             {SKILL_CATEGORIES.map(c => (
               <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
@@ -199,7 +199,7 @@ function ToolsPanel({
             className="form-input"
             value={newCategory}
             onChange={e => setNewCategory(e.target.value as ProfileTool['category'])}
-            style={{ width: 'auto', minWidth: 120 }}
+            style={{ width: 'auto', minWidth: 0, flex: '0 1 120px' }}
           >
             {TOOL_CATEGORIES.map(c => (
               <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
@@ -283,7 +283,7 @@ function SocialPanel({
             className="form-input"
             value={link.platform}
             onChange={e => updateLink(link.id, 'platform', e.target.value)}
-            style={{ width: 'auto', minWidth: 120 }}
+            style={{ width: 'auto', minWidth: 0, flex: '0 1 120px' }}
           >
             {SOCIAL_PLATFORMS.filter(p => p !== 'custom').map(p => (
               <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
@@ -321,7 +321,7 @@ function SocialPanel({
             value={link.label || ''}
             onChange={e => updateLink(link.id, 'label', e.target.value)}
             placeholder="Label (e.g. Portfolio)"
-            style={{ width: 140 }}
+            style={{ width: 'auto', minWidth: 0, flex: '0 1 140px' }}
           />
           <input
             className="form-input"
@@ -412,6 +412,53 @@ function TimelinePanel({
       </button>
     </div>
   )
+}
+
+// ─── Image Resize Helper ────────────────────────────────────────
+
+function resizeImageFile(file: File, maxDimension: number, quality: number = 0.85): Promise<File> {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/')) {
+      resolve(file)
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => {
+      const img = new Image()
+      img.onload = () => {
+        if (img.width <= maxDimension && img.height <= maxDimension) {
+          resolve(file)
+          return
+        }
+        const canvas = document.createElement('canvas')
+        let w = img.width
+        let h = img.height
+        if (w > h) {
+          if (w > maxDimension) { h = Math.round(h * (maxDimension / w)); w = maxDimension }
+        } else {
+          if (h > maxDimension) { w = Math.round(w * (maxDimension / h)); h = maxDimension }
+        }
+        canvas.width = w
+        canvas.height = h
+        const ctx = canvas.getContext('2d')
+        if (!ctx) { resolve(file); return }
+        ctx.drawImage(img, 0, 0, w, h)
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) { resolve(file); return }
+            const resized = new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() })
+            resolve(resized)
+          },
+          'image/jpeg',
+          quality
+        )
+      }
+      img.onerror = () => resolve(file)
+      img.src = reader.result as string
+    }
+    reader.onerror = () => resolve(file)
+    reader.readAsDataURL(file)
+  })
 }
 
 // ─── Upload Helper ───────────────────────────────────────────────
@@ -524,6 +571,7 @@ export default function LiveProfileEditor() {
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const lastChangeTime = useRef(0)
   const profileFetchedRef = useRef(false)
+  const savingRef = useRef(false)
 
   // Track changes
   const markDirty = useCallback(() => {
@@ -732,6 +780,8 @@ export default function LiveProfileEditor() {
   }, [hasChanges])
 
   async function saveAll(silent = false) {
+    if (savingRef.current) return // Prevent concurrent saves
+    savingRef.current = true
     setSaving(true)
     setErrorMessage(null)
     try {
@@ -807,6 +857,7 @@ export default function LiveProfileEditor() {
       }
     }
     setSaving(false)
+    savingRef.current = false
   }
 
   function openPanel(section: EditSection) {
@@ -841,9 +892,10 @@ export default function LiveProfileEditor() {
       if (file) setUploadError('Image must be under 5MB')
       return
     }
-    // Upload immediately to Supabase Storage
+    // Resize and upload to Supabase Storage
     setUploadError(null)
-    const url = await upload(file, 'avatar')
+    const resized = await resizeImageFile(file, 400, 0.85)
+    const url = await upload(resized, 'avatar')
     if (url) {
       setAvatarUrl(url)
       markDirty()
@@ -873,9 +925,14 @@ export default function LiveProfileEditor() {
 
   async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file || file.size > 10 * 1024 * 1024) return
+    if (!file) return
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError('Cover image must be under 10MB')
+      return
+    }
     setSaving(true)
-    const url = await upload(file, 'cover')
+    const resized = await resizeImageFile(file, 1600)
+    const url = await upload(resized, 'cover')
     if (url) {
       setCoverImageUrl(url)
       markDirty()
@@ -914,12 +971,18 @@ export default function LiveProfileEditor() {
 
   async function handleGalleryUpload(files: FileList | null) {
     if (!files) return
-    for (const file of Array.from(files)) {
+    if (mediaGallery.length >= 50) {
+      setUploadError('Gallery is limited to 50 items. Remove some items before adding more.')
+      return
+    }
+    const filesToUpload = Array.from(files).slice(0, 50 - mediaGallery.length)
+    for (const file of filesToUpload) {
       if (file.size > 10 * 1024 * 1024) {
         setUploadError(`"${file.name}" is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 10MB.`)
         continue
       }
-      const url = await upload(file, 'gallery')
+      const resized = await resizeImageFile(file, 1600)
+      const url = await upload(resized, 'gallery')
       if (url) {
         setMediaGallery(prev => [...prev, {
           url,
@@ -1147,7 +1210,7 @@ export default function LiveProfileEditor() {
               className="btn btn--primary btn--sm"
               disabled={saving || !hasChanges}
             >
-              {saving ? 'Saving...' : 'Save All Changes'}
+              {saving ? 'Saving...' : <><span className="hide-mobile">Save All Changes</span><span className="show-mobile">Save</span></>}
             </button>
             <button
               onClick={() => {
@@ -1188,7 +1251,7 @@ export default function LiveProfileEditor() {
                 disabled={saving || !displayName.trim() || !bio.trim()}
                 style={{ borderColor: 'var(--color-success, #4ade80)', color: 'var(--color-success, #4ade80)' }}
               >
-                Submit for Review
+                <span className="hide-mobile">Submit for Review</span><span className="show-mobile">Submit</span>
               </button>
             )}
             {profileVisibility === 'pending' && (
@@ -1470,8 +1533,8 @@ export default function LiveProfileEditor() {
               Accepted: JPG, PNG, WebP, GIF, HEIC, AVIF, BMP, TIFF, SVG (max 10MB) · PDF (max 10MB) · Drag tiles to reorder
             </p>
             {/* Add buttons */}
-            <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-2)', flexWrap: 'wrap' }}>
-              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer' }}>
+            <div className="live-editor__gallery-controls" style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-2)', flexWrap: 'wrap' }}>
+              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer', flex: '1 1 auto' }}>
                 <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,image/avif,image/bmp,image/tiff,image/svg+xml" multiple onChange={async (e) => {
                   setGalleryUploading(true)
                   setUploadError(null)
@@ -1480,7 +1543,7 @@ export default function LiveProfileEditor() {
                 }} style={{ display: 'none' }} />
                 {galleryUploading ? 'Uploading...' : '+ Add Images'}
               </label>
-              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer', position: 'relative' }}>
+              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer', position: 'relative', flex: '1 1 auto' }}>
                 <input type="file" accept=".pdf,application/pdf" multiple onChange={async (e) => {
                   const files = e.target.files
                   if (!files || files.length === 0) return
@@ -1504,7 +1567,7 @@ export default function LiveProfileEditor() {
               </label>
               {showAddLink ? (
                 <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-end', flexWrap: 'wrap', flex: 1 }}>
-                  <div className="form-group" style={{ margin: 0, flex: 1, minWidth: 120 }}>
+                  <div className="form-group" style={{ margin: 0, flex: '1 1 120px', minWidth: 0 }}>
                     <label className="form-label" style={{ fontSize: 'var(--text-xs)' }}>URL</label>
                     <input className="form-input" value={newLinkUrl} onChange={e => setNewLinkUrl(e.target.value)} placeholder="https://..." style={{ fontSize: 'var(--text-sm)' }} />
                   </div>
@@ -1537,7 +1600,7 @@ export default function LiveProfileEditor() {
                   <button className="btn btn--ghost btn--sm" onClick={() => { setShowAddLink(false); setNewLinkThumbnail(null) }}>Cancel</button>
                 </div>
               ) : (
-                <button className="btn btn--outline btn--sm" onClick={() => setShowAddLink(true)}>+ Add Link</button>
+                <button className="btn btn--outline btn--sm" style={{ flex: '1 1 auto' }} onClick={() => setShowAddLink(true)}>+ Add Link</button>
               )}
             </div>
           </div>
@@ -1821,7 +1884,9 @@ export default function LiveProfileEditor() {
                       <option value="they/them">they/them</option>
                       <option value="he/they">he/they</option>
                       <option value="she/they">she/they</option>
+                      <option value="ze/zir">ze/zir</option>
                       <option value="any pronouns">any pronouns</option>
+                      <option value="prefer not to say">prefer not to say</option>
                     </select>
                   </div>
                   <div className="form-group">
@@ -2036,7 +2101,7 @@ export default function LiveProfileEditor() {
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                         <input type="text" className="form-input" placeholder="Label (e.g. Studio, Fundraiser)" value={link.label} onChange={e => updateMediaLink(i, 'label', e.target.value)} />
                         <input type="url" className="form-input" placeholder="https://..." value={link.url} onChange={e => updateMediaLink(i, 'url', e.target.value)} />
-                        <select className="form-input" value={link.type} onChange={e => updateMediaLink(i, 'type', e.target.value)} style={{ width: '160px', maxWidth: '100%' }}>
+                        <select className="form-input" value={link.type} onChange={e => updateMediaLink(i, 'type', e.target.value)} style={{ width: 'auto', minWidth: 0, flex: '0 1 160px', maxWidth: '100%' }}>
                           <option value="website">Website</option>
                           <option value="fundraiser">Fundraiser</option>
                           <option value="other">Other</option>
@@ -2451,8 +2516,17 @@ export default function LiveProfileEditor() {
           background: rgba(1, 105, 111, 0.08) !important;
         }
 
+        /* ── Mobile text toggle utilities ─────────────────── */
+        .show-mobile { display: none; }
+        .hide-mobile { display: inline; }
+
         /* ── Mobile responsive ────────────────────────────── */
         @media (max-width: 767px) {
+          .show-mobile { display: inline; }
+          .hide-mobile { display: none; }
+          .live-editor__gallery-controls {
+            flex-direction: column;
+          }
           .live-editor__toolbar {
             height: auto;
             min-height: 48px;
