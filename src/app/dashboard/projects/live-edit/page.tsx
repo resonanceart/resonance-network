@@ -70,6 +70,7 @@ function LiveProjectEditorInner() {
   const [hasChanges, setHasChanges] = useState(false)
   const [savedMessage, setSavedMessage] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [importProgress, setImportProgress] = useState<string | null>(null)
   const [activePanel, setActivePanel] = useState<EditSection>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [submissionId, setSubmissionId] = useState<string | null>(existingId)
@@ -155,12 +156,17 @@ function LiveProjectEditorInner() {
       if (imported.heroImageUrl) {
         const heroUrl = imported.heroImageUrl as string
         if (heroUrl.startsWith('data:')) {
-          fetch(heroUrl).then(r => r.blob()).then(blob => {
+          setImportProgress('Uploading hero image...')
+          try {
+            const blob = await fetch(heroUrl).then(r => r.blob())
             const file = new File([blob], `hero-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-            uploadFileToStorage(file, 'hero').then(url => {
-              if (url) { setHeroImageUrl(url); markDirty() }
-            })
-          }).catch(() => {})
+            const url = await uploadFileToStorage(file, 'hero')
+            if (url) { setHeroImageUrl(url); markDirty() }
+            else { console.error('Hero image upload returned no URL'); setErrorMessage('Hero image failed to upload. You can add one manually.') }
+          } catch (err) {
+            console.error('Hero image upload failed:', err)
+            setErrorMessage('Hero image failed to upload. You can add one manually.')
+          }
         } else {
           setHeroImageUrl(heroUrl)
         }
@@ -170,19 +176,28 @@ function LiveProjectEditorInner() {
         const galleryImgs = imported.galleryImages as Array<{ url: string; alt: string }>
         const hasBase64 = galleryImgs.some(img => img.url.startsWith('data:'))
         if (hasBase64) {
+          setImportProgress(`Uploading gallery images (0/${galleryImgs.length})...`)
+          let uploadedCount = 0
           const results = await Promise.all(galleryImgs.map(async (img) => {
             if (img.url.startsWith('data:')) {
               try {
                 const blob = await fetch(img.url).then(r => r.blob())
                 const file = new File([blob], `gallery-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
                 const url = await uploadFileToStorage(file, 'gallery')
+                uploadedCount++
+                setImportProgress(`Uploading gallery images (${uploadedCount}/${galleryImgs.length})...`)
                 return url ? { url, alt: img.alt } : null
               } catch { return null }
             }
+            uploadedCount++
             return img
           }))
           const uploaded = results.filter(Boolean) as Array<{ url: string; alt: string }>
           if (uploaded.length > 0) { setGalleryImages(uploaded); markDirty() }
+          const failedCount = galleryImgs.length - uploaded.length
+          if (failedCount > 0) {
+            setErrorMessage(`${failedCount} gallery image(s) failed to upload.`)
+          }
         } else {
           setGalleryImages(galleryImgs)
         }
@@ -191,11 +206,14 @@ function LiveProjectEditorInner() {
         setProjectSocialLinks(imported.socialLinks as Array<{platform: string; url: string}>)
       }
       markDirty()
+      setImportProgress('Import complete!')
+      setTimeout(() => setImportProgress(null), 3000)
       // Clean up storage
       clearImportData('resonance_import_data').catch(() => {})
       sessionStorage.removeItem('resonance_import_data')
     } catch (e) {
       console.error('Failed to apply imported project data:', e)
+      setImportProgress(null)
     }
   }
 
@@ -665,6 +683,14 @@ function LiveProjectEditorInner() {
         <div className="container" style={{ marginTop: 'var(--space-3)' }}>
           <ImportPromptPopup mode="project" />
         </div>
+
+        {importProgress && (
+          <div className="container" style={{ marginTop: 'var(--space-2)' }}>
+            <div style={{ padding: '12px 16px', background: 'rgba(45, 212, 191, 0.1)', border: '1px solid rgba(45, 212, 191, 0.3)', borderRadius: '8px', color: 'var(--color-text)', fontSize: '14px' }}>
+              {importProgress}
+            </div>
+          </div>
+        )}
 
         {/* Hero */}
         <div className="editable-section" onClick={!isDraggingHero ? () => openPanel('hero') : undefined}>

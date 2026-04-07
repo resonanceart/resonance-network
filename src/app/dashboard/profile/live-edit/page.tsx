@@ -462,6 +462,7 @@ export default function LiveProfileEditor() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [galleryUploading, setGalleryUploading] = useState(false)
+  const [importStatus, setImportStatus] = useState<string | null>(null)
   const [activePanel, setActivePanel] = useState<EditSection>(null)
   const [showWelcome, setShowWelcome] = useState(false)
 
@@ -655,16 +656,23 @@ export default function LiveProfileEditor() {
                 setProfessionalTitle(imported.titles[0])
               }
               if (imported.website) setWebsite(imported.website)
+              // Upload base64 images to Storage with progress tracking
+              let importHadWarnings = false
+
               // Upload base64 avatar to Storage (base64 too large for API body limit)
               if (imported.avatarUrl) {
                 const avatarSrc = imported.avatarUrl
                 if (avatarSrc.startsWith('data:')) {
-                  fetch(avatarSrc).then(r => r.blob()).then(blob => {
+                  setImportStatus('Importing profile... Uploading avatar...')
+                  try {
+                    const blob = await fetch(avatarSrc).then(r => r.blob())
                     const file = new File([blob], `avatar-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-                    uploadFile(file, 'avatar').then(({ url }) => {
-                      if (url) { setAvatarUrl(url); setHasChanges(true); lastChangeTime.current = Date.now() }
-                    })
-                  }).catch(() => {})
+                    const { url, error } = await uploadFile(file, 'avatar')
+                    if (url) { setAvatarUrl(url); setHasChanges(true); lastChangeTime.current = Date.now() }
+                    else { console.error('Avatar upload failed:', error) }
+                  } catch (err) {
+                    console.error('Avatar upload failed:', err)
+                  }
                 } else {
                   setAvatarUrl(avatarSrc)
                 }
@@ -673,12 +681,16 @@ export default function LiveProfileEditor() {
               if (imported.heroImageUrl) {
                 const heroSrc = imported.heroImageUrl
                 if (heroSrc.startsWith('data:')) {
-                  fetch(heroSrc).then(r => r.blob()).then(blob => {
+                  setImportStatus('Importing profile... Uploading cover image...')
+                  try {
+                    const blob = await fetch(heroSrc).then(r => r.blob())
                     const file = new File([blob], `cover-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-                    uploadFile(file, 'cover').then(({ url }) => {
-                      if (url) { setCoverImageUrl(url); setHasChanges(true); lastChangeTime.current = Date.now() }
-                    })
-                  }).catch(() => {})
+                    const { url, error } = await uploadFile(file, 'cover')
+                    if (url) { setCoverImageUrl(url); setHasChanges(true); lastChangeTime.current = Date.now() }
+                    else { console.error('Cover upload failed:', error) }
+                  } catch (err) {
+                    console.error('Cover upload failed:', err)
+                  }
                 } else {
                   setCoverImageUrl(heroSrc)
                 }
@@ -688,24 +700,37 @@ export default function LiveProfileEditor() {
                 const galleryImgs = imported.galleryImages
                 const hasBase64 = galleryImgs.some(img => img.url.startsWith('data:'))
                 if (hasBase64) {
-                  Promise.all(galleryImgs.map(async (img, i) => {
+                  let failedCount = 0
+                  const results = await Promise.all(galleryImgs.map(async (img, i) => {
                     if (img.url.startsWith('data:')) {
+                      setImportStatus(`Importing profile... Uploading gallery images (${i + 1}/${galleryImgs.length})...`)
                       try {
                         const blob = await fetch(img.url).then(r => r.blob())
                         const file = new File([blob], `gallery-import-${i}.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-                        const { url } = await uploadFile(file, 'gallery')
-                        return url ? { url, alt: img.alt || '', type: 'image' as const, order: i, isFeatured: i === 0 } : null
-                      } catch { return null }
+                        const { url, error } = await uploadFile(file, 'gallery')
+                        if (url) return { url, alt: img.alt || '', type: 'image' as const, order: i, isFeatured: i === 0 }
+                        console.error(`Gallery image ${i} upload failed:`, error)
+                        failedCount++
+                        return null
+                      } catch (err) {
+                        console.error(`Gallery image ${i} upload failed:`, err)
+                        failedCount++
+                        return null
+                      }
                     }
                     return { url: img.url, alt: img.alt || '', type: 'image' as const, order: i, isFeatured: i === 0 }
-                  })).then(results => {
-                    const uploaded = results.filter(Boolean) as GalleryItem[]
-                    if (uploaded.length > 0) {
-                      setMediaGallery(uploaded)
-                      setHasChanges(true)
-                      lastChangeTime.current = Date.now()
-                    }
-                  })
+                  }))
+                  const uploaded = results.filter(Boolean) as GalleryItem[]
+                  if (uploaded.length > 0) {
+                    setMediaGallery(uploaded)
+                    setHasChanges(true)
+                    lastChangeTime.current = Date.now()
+                  }
+                  if (failedCount > 0) {
+                    importHadWarnings = true
+                    setImportStatus(`Profile imported with warnings: ${failedCount} image${failedCount !== 1 ? 's' : ''} failed to upload.`)
+                    setTimeout(() => setImportStatus(null), 8000)
+                  }
                 } else {
                   setMediaGallery(galleryImgs.map((img, i) => ({
                     url: img.url, alt: img.alt || '', type: 'image' as const,
@@ -732,9 +757,15 @@ export default function LiveProfileEditor() {
               // Clean up both storage locations
               clearImportData('resonance_profile_import').catch(() => {})
               sessionStorage.removeItem('resonance_profile_import')
+              // Show success message (unless gallery warning is already showing)
+              if (!importHadWarnings) {
+                setImportStatus('Profile imported successfully!')
+                setTimeout(() => setImportStatus(null), 5000)
+              }
             }
           } catch (e) {
             console.error('Failed to apply imported profile data:', e)
+            setImportStatus(null)
           }
         }
       })
@@ -1151,6 +1182,16 @@ export default function LiveProfileEditor() {
         <div className="live-editor__toolbar-inner container">
           <span className="live-editor__toolbar-title">Editing Your Profile</span>
           <div className="live-editor__toolbar-actions">
+            {importStatus && (
+              <span
+                className={importStatus.includes('warnings') ? 'live-editor__error' : 'live-editor__saved'}
+                onClick={() => setImportStatus(null)}
+                title="Click to dismiss"
+                style={{ cursor: 'pointer' }}
+              >
+                {importStatus}
+              </span>
+            )}
             {errorMessage && (
               <span className="live-editor__error" onClick={() => setErrorMessage(null)} title="Click to dismiss">
                 {errorMessage}
