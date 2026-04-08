@@ -215,9 +215,14 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
     images.push({ url: resolved, alt: 'Hero image', heroScore: 10 })
   }
 
-  // Get all img tags — check src, data-src, data-lazy-src (WordPress lazy load), srcset
+  // Get all img tags — prefer lazy-load attributes over src (which may be a placeholder)
   $('img').each((_, el) => {
-    let src = $(el).attr('src') || $(el).attr('data-src') || $(el).attr('data-lazy-src') || $(el).attr('data-original') || ''
+    // Prefer real-image lazy-load attributes over src (which may be a data: URI placeholder)
+    let src = $(el).attr('data-lazy-src')
+      || $(el).attr('data-src')
+      || $(el).attr('data-original')
+      || $(el).attr('src')
+      || ''
 
     // For Squarespace, also check srcset for highest-res version
     const srcset = $(el).attr('srcset')
