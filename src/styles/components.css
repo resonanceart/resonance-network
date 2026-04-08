@@ -2458,6 +2458,118 @@ main {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
+/* =========================
+   COLLABORATE — COMPACT HEADER
+   ========================= */
+.collab-header-section {
+  padding: var(--space-8) 0 var(--space-4);
+  text-align: center;
+}
+
+.collab-header__title {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  margin-bottom: var(--space-2);
+}
+
+.collab-header__subtitle {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-6);
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Prominent tab variant */
+.collab-tabs--prominent {
+  max-width: 480px;
+  border-width: 2px;
+  margin: 0 auto;
+}
+
+.collab-tabs--prominent .collab-tab {
+  font-size: var(--text-base);
+  padding: var(--space-3) var(--space-5);
+  min-height: 52px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.collab-tabs--prominent .collab-tab__count {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.collab-tabs--prominent .collab-tab--active .collab-tab__count {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* People tab contrast — distinct color when active */
+.collab-tab--people.collab-tab--active {
+  background: var(--color-text);
+  color: var(--color-bg);
+}
+
+[data-theme="dark"] .collab-tab--people.collab-tab--active {
+  background: #f5f0eb;
+  color: #111110;
+}
+
+/* How & Benefits sections — moved below content */
+.collab-how-section {
+  padding: var(--space-10) 0;
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.collab-how-section__title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin-bottom: var(--space-5);
+}
+
+.collab-benefits-section {
+  padding: var(--space-10) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.collab-benefits-section__title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin-bottom: var(--space-5);
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .collab-header-section {
+    padding: var(--space-6) 0 var(--space-3);
+  }
+
+  .collab-header__title {
+    font-size: var(--text-2xl);
+  }
+
+  .collab-header__subtitle {
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-4);
+  }
+
+  .collab-tabs--prominent {
+    max-width: 100%;
+  }
+
+  .collab-tabs--prominent .collab-tab {
+    font-size: var(--text-sm);
+    padding: var(--space-2) var(--space-3);
+    min-height: 44px;
+  }
+}
+
 /* Available Collaborators CTA */
 .collab-available {
   padding: var(--space-12) 0 var(--space-16);
