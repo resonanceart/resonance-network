@@ -93,6 +93,27 @@ function isSquarespace($: cheerio.CheerioAPI): boolean {
   return html.includes('squarespace') || html.includes('sqs-') || html.includes('fluid-engine')
 }
 
+/** Detect if page is built on Wix */
+function isWix($: cheerio.CheerioAPI): boolean {
+  const html = $.html()
+  return html.includes('wix.com') || html.includes('wixstatic.com') || html.includes('wix-warmup-data')
+}
+
+/**
+ * Upgrade Wix image URLs to high resolution.
+ * Wix SSR sends LQIP (Low Quality Image Placeholder) with tiny dimensions and blur.
+ * The URL structure is: /media/{id}/v1/fill/w_49,h_39,...,blur_2,.../filename
+ * We rewrite to request full-resolution: w_1920,h_1920,q_90
+ */
+function upgradeWixImageUrl(url: string): string {
+  if (!url.includes('wixstatic.com/media/')) return url
+  // Match the /v1/fill/.../ segment and replace with high-quality params
+  return url.replace(
+    /\/v1\/fill\/[^/]+\//,
+    '/v1/fill/w_1920,h_1920,al_c,q_90,enc_auto,quality_auto/'
+  )
+}
+
 function extractSocialLinks($: cheerio.CheerioAPI, baseUrl: string): Array<{ platform: string; url: string }> {
   const links: Array<{ platform: string; url: string }> = []
   const seen = new Set<string>()
@@ -182,11 +203,13 @@ function scoreImageForHero(el: any | null, $: cheerio.CheerioAPI, url: string): 
 function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: string; alt: string; heroScore: number }> {
   const images: Array<{ url: string; alt: string; heroScore: number }> = []
   const seen = new Set<string>()
+  const wixSite = isWix($)
 
   // Get og:image — but only add it if it does NOT look like a site-wide default
   const ogImage = $('meta[property="og:image"]').attr('content')
   if (ogImage && !isLikelySiteDefault(ogImage)) {
-    const resolved = resolveUrl(ogImage, baseUrl)
+    let resolved = resolveUrl(ogImage, baseUrl)
+    if (wixSite) resolved = upgradeWixImageUrl(resolved)
     seen.add(resolved)
     // og:image gets a moderate baseline score — real content images from main area can beat it
     images.push({ url: resolved, alt: 'Hero image', heroScore: 10 })
@@ -208,15 +231,22 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
     }
 
     if (!src || src.startsWith('data:')) return
-    const resolved = resolveUrl(src, baseUrl)
+    let resolved = resolveUrl(src, baseUrl)
+
+    // Wix: upgrade LQIP placeholders (tiny, blurred) to full resolution
+    if (wixSite) resolved = upgradeWixImageUrl(resolved)
+
+    // Deduplicate after URL upgrade (Wix LQIPs with different blur params → same upgraded URL)
+    if (seen.has(resolved)) return
 
     // Skip duplicates, tiny images, icons, tracking pixels
-    if (seen.has(resolved)) return
     if (/favicon|1x1|spacer|pixel|badge|icon/i.test(resolved)) return
-    // Skip very small specified dimensions
-    const width = parseInt($(el).attr('width') || '0')
-    const height = parseInt($(el).attr('height') || '0')
-    if ((width > 0 && width < 50) || (height > 0 && height < 50)) return
+    // Skip very small specified dimensions (but not for Wix — SSR dimensions are fake placeholders)
+    if (!wixSite) {
+      const width = parseInt($(el).attr('width') || '0')
+      const height = parseInt($(el).attr('height') || '0')
+      if ((width > 0 && width < 50) || (height > 0 && height < 50)) return
+    }
 
     seen.add(resolved)
     const heroScore = scoreImageForHero(el, $, resolved)
