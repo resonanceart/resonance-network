@@ -192,9 +192,9 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
     images.push({ url: resolved, alt: 'Hero image', heroScore: 10 })
   }
 
-  // Get all img tags — check src, data-src (lazy load), srcset
+  // Get all img tags — check src, data-src, data-lazy-src (WordPress lazy load), srcset
   $('img').each((_, el) => {
-    let src = $(el).attr('src') || $(el).attr('data-src') || ''
+    let src = $(el).attr('src') || $(el).attr('data-src') || $(el).attr('data-lazy-src') || $(el).attr('data-original') || ''
 
     // For Squarespace, also check srcset for highest-res version
     const srcset = $(el).attr('srcset')
@@ -207,7 +207,7 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
       }
     }
 
-    if (!src) return
+    if (!src || src.startsWith('data:')) return
     const resolved = resolveUrl(src, baseUrl)
 
     // Skip duplicates, tiny images, icons, tracking pixels
@@ -233,7 +233,21 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
     images.push({ url: resolved, alt: '', heroScore: scoreImageForHero(null, $, resolved) })
   })
 
-  // Squarespace-specific: background images in inline styles
+  // WordPress/lightbox: <a> tags linking directly to image files (gallery lightboxes)
+  $('a[href]').each((_, el) => {
+    const href = $(el).attr('href') || ''
+    if (!/\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(href)) return
+    const resolved = resolveUrl(href, baseUrl)
+    if (seen.has(resolved)) return
+    // Only include if inside a gallery or portfolio container
+    const parent = $(el).closest('.gallery, .portfolio, [class*="gallery"], [class*="portfolio"], .wp-block-gallery, main, article')
+    if (parent.length === 0) return
+    seen.add(resolved)
+    const alt = $(el).find('img').attr('alt') || ''
+    images.push({ url: resolved, alt, heroScore: scoreImageForHero(null, $, resolved) })
+  })
+
+  // Background images in inline styles
   $('[style*="background-image"]').each((_, el) => {
     const style = $(el).attr('style') || ''
     const match = style.match(/url\(['"]?(.*?)['"]?\)/)
