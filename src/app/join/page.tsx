@@ -32,120 +32,69 @@ export default function JoinPage() {
 
       <section className="join-paths">
         <div className="container">
-          <div className="join-cards">
+          <div className="join-cards join-cards--two-up">
             {/* Card 1: Artist */}
-            <div className="join-card join-card--project">
-              <div className="join-card__icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <rect x="3" y="3" width="7" height="7" rx="1"/>
-                  <rect x="14" y="3" width="7" height="7" rx="1"/>
-                  <rect x="3" y="14" width="7" height="7" rx="1"/>
-                  <rect x="14" y="14" width="7" height="7" rx="1"/>
-                </svg>
+            <div className="join-card join-card--featured">
+              <div className="join-card__header">
+                <span className="join-card__emoji">🎨</span>
+                <h2>Share a Project</h2>
+                <p className="join-card__tagline">
+                  You lead creative work and need collaborators to bring it to life.
+                </p>
               </div>
-              <h2>{user ? 'Share a Project' : 'Join as Artist'}</h2>
-              <p className="join-card__desc">I create and lead projects — installations, pavilions, environments, or public works — and need the right people to help build them.</p>
-              <p className="join-card__outcome">
-                {user
-                  ? 'Share your project from your dashboard and start finding collaborators.'
-                  : 'Create your free profile, share your project, and find collaborators — all in one flow.'}
-              </p>
-              <ul className="join-card__benefits">
-                <li>Project page with gallery and overview</li>
-                <li>Artist profile on the network</li>
-                <li>Collaboration board listing for open roles</li>
+              <ul className="join-card__perks">
+                <li>Curated project page with gallery</li>
+                <li>Find engineers, fabricators, and producers</li>
                 <li>Visibility to funders and curators</li>
               </ul>
               <Link
                 href={user ? '/dashboard/projects/new' : '/login?tab=signup&redirect=/dashboard/welcome'}
-                className="btn btn--primary btn--large join-card__cta"
+                className="btn btn--primary btn--xl join-card__cta"
               >
-                {user ? 'Share a Project' : 'Get Started'} &rarr;
+                {user ? 'Share a Project' : 'Get Started — Free'}
               </Link>
             </div>
 
             {/* Card 2: Collaborator */}
-            <div className="join-card join-card--collaborator">
-              <div className="join-card__icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                  <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
+            <div className="join-card join-card--featured">
+              <div className="join-card__header">
+                <span className="join-card__emoji">🛠</span>
+                <h2>Join as Collaborator</h2>
+                <p className="join-card__tagline">
+                  You have skills and want to contribute to ambitious, values-aligned projects.
+                </p>
               </div>
-              <h2>{user ? 'Edit Your Profile' : 'Join as Collaborator'}</h2>
-              <p className="join-card__desc">
-                {user
-                  ? 'Update your profile so project teams can find you.'
-                  : 'I contribute skills to projects — engineering, fabrication, design, production, or specialized expertise for work that actually matters.'}
-              </p>
-              <p className="join-card__outcome">
-                {user
-                  ? 'Keep your profile current with your latest skills and availability.'
-                  : 'Create your free profile so project teams can discover you and reach out.'}
-              </p>
-              <ul className="join-card__benefits">
-                <li>Access a curated pipeline of serious projects ready for your expertise</li>
-                <li>Work on regenerative, values-aligned installations — not commercial campaigns</li>
-                <li>Build long-term relationships with visionary creators, not one-off transactions</li>
-                <li>Your skills are treated as central to the work, not accessory</li>
+              <ul className="join-card__perks">
+                <li>Browse curated projects seeking your expertise</li>
+                <li>Credited roles linked to your profile</li>
+                <li>Meaningful work, not commercial gigs</li>
               </ul>
               <Link
                 href={user ? '/dashboard/profile' : '/login?tab=signup&redirect=/dashboard/welcome'}
-                className="btn btn--primary btn--large join-card__cta"
+                className="btn btn--primary btn--xl join-card__cta"
               >
-                {user ? 'Edit Your Profile' : 'Get Started'} &rarr;
-              </Link>
-            </div>
-
-            {/* Card 3: Curator */}
-            <div className="join-card join-card--collaborator">
-              <div className="join-card__icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-                </svg>
-              </div>
-              <h2>{user ? 'Curate Projects' : 'Join as Curator'}</h2>
-              <p className="join-card__desc">
-                {user
-                  ? 'Review, organize, and present work on the network.'
-                  : 'I organize and present work — selecting, contextualizing, and championing projects that push boundaries.'}
-              </p>
-              <p className="join-card__outcome">
-                {user
-                  ? 'Access the curation pipeline and help shape what the network highlights.'
-                  : 'Join a community of curators shaping the future of spatial art and architecture.'}
-              </p>
-              <ul className="join-card__benefits">
-                <li>Review and provide feedback on submitted projects</li>
-                <li>Help shape the network&apos;s curatorial direction</li>
-                <li>Connect with artists and collaborators working on ambitious projects</li>
-                <li>Build your curatorial portfolio with emerging spatial work</li>
-              </ul>
-              <Link
-                href={user ? '/dashboard' : '/login?tab=signup&redirect=/dashboard/welcome'}
-                className="btn btn--primary btn--large join-card__cta"
-              >
-                {user ? 'Go to Dashboard' : 'Get Started'} &rarr;
+                {user ? 'Edit Your Profile' : 'Get Started — Free'}
               </Link>
             </div>
           </div>
 
-          {/* Logged-in extras */}
-          {user && (
-            <div style={{ textAlign: 'center', marginTop: 'var(--space-8)' }}>
-              <Link href="/collaborate" className="btn btn--outline" style={{ marginRight: 'var(--space-3)' }}>
-                Browse Open Roles
-              </Link>
-              <Link href="/dashboard" className="btn btn--outline">
-                Go to Dashboard
+          {/* Curator — secondary, smaller */}
+          <div className="join-curator-row">
+            <div className="join-curator-card">
+              <span className="join-card__emoji">📖</span>
+              <div>
+                <h3>Join as Curator</h3>
+                <p>Review projects, shape curatorial direction, and champion emerging spatial work.</p>
+              </div>
+              <Link
+                href={user ? '/dashboard' : '/login?tab=signup&redirect=/dashboard/welcome'}
+                className="btn btn--outline btn--large"
+              >
+                {user ? 'Go to Dashboard' : 'Get Started'}
               </Link>
             </div>
-          )}
+          </div>
 
-          {/* Sign-in link for anonymous users */}
           {!user && (
             <p style={{ textAlign: 'center', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-6)' }}>
               Already have an account?{' '}
