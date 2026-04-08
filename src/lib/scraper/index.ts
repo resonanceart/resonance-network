@@ -1,5 +1,17 @@
 import * as cheerio from 'cheerio'
 
+/** Extract text from a cheerio element, inserting spaces around block-level breaks */
+function safeText($el: cheerio.Cheerio<any>, $: cheerio.CheerioAPI): string {
+  // Replace <br> tags with spaces before extracting text
+  const clone = $el.clone()
+  clone.find('br').replaceWith(' ')
+  clone.find('div, p, li, h1, h2, h3, h4, h5, h6').each((_, el) => {
+    $(el).prepend(' ')
+    $(el).append(' ')
+  })
+  return clone.text().replace(/\s+/g, ' ').trim()
+}
+
 export interface ScrapedProject {
   title: string
   shortDescription: string
@@ -492,7 +504,7 @@ export async function scrapeProjectPage(url: string): Promise<ScrapedProject> {
   const ogDesc = $('meta[property="og:description"]').attr('content')
   const metaDesc = $('meta[name="description"]').attr('content')
   const pageTitle = $('title').text().trim()
-  const h1 = $('h1').first().text().trim()
+  const h1 = safeText($('h1').first(), $)
   const currentPath = new URL(url).pathname
 
   // Best title — clean up "PROJECT — SITE NAME" format
@@ -698,7 +710,7 @@ export async function scrapeProfilePage(url: string): Promise<ScrapedProfile> {
   const currentPath = new URL(url).pathname
 
   const ogTitle = $('meta[property="og:title"]').attr('content')
-  const h1 = $('h1').first().text().trim()
+  const h1 = safeText($('h1').first(), $)
   const siteName = $('meta[property="og:site_name"]').attr('content') || ''
 
   // For about pages, prefer site name over page title

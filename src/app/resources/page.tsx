@@ -64,7 +64,7 @@ export default function ResourcesPage() {
             <div style={{ padding: 'var(--space-5)', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--color-primary)' }}>
               <h3 style={{ fontFamily: 'var(--font-display)', marginBottom: 'var(--space-2)' }}>Evaluation Framework</h3>
               <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>Understand how projects are evaluated across 8 value domains. Download the full framework to prepare your submission.</p>
-              <Link href="/assets/resonance-evaluation-framework.pdf" target="_blank" rel="noopener noreferrer" style={{ fontSize: 'var(--text-sm)', color: 'var(--color-primary)', fontWeight: 600 }}>Download PDF &rarr;</Link>
+              <a href="/assets/resonance-evaluation-framework.pdf" target="_blank" rel="noopener noreferrer" style={{ fontSize: 'var(--text-sm)', color: 'var(--color-primary)', fontWeight: 600 }}>Download PDF &rarr;</a>
             </div>
           </div>
 
