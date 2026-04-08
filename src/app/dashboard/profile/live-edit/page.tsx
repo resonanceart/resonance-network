@@ -1276,13 +1276,6 @@ export default function LiveProfileEditor() {
 
       {/* ── Profile Preview — exact same structure as public page ── */}
       <article className="profile-page" style={{ marginTop: '53px' }}>
-        {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="breadcrumb container" style={{ paddingTop: 'var(--space-4)' }}>
-          <Link href="/dashboard">Dashboard</Link> <span aria-hidden="true">/</span>
-          <span>Edit Profile</span> <span aria-hidden="true">/</span>
-          <span>{displayName || 'Your Name'}</span>
-        </nav>
-
         {/* Import from website prompt */}
         <div className="container" style={{ marginTop: 'var(--space-3)' }}>
           <ImportPromptPopup mode="profile" />

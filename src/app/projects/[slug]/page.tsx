@@ -166,11 +166,6 @@ export default async function ProjectPage({ params }: { params: { slug: string }
         dangerouslySetInnerHTML={{ __html: JSON.stringify(getBreadcrumbJsonLd(project)) }}
       />
 
-      {/* Breadcrumb navigation */}
-      <nav aria-label="Breadcrumb" className="breadcrumb container" style={{ paddingTop: 'var(--space-4)' }}>
-        <Link href="/">Home</Link> <span aria-hidden="true">/</span> <Link href="/#projects">Projects</Link> <span aria-hidden="true">/</span> <span>{project.title}</span>
-      </nav>
-
       {/* Hero */}
       <section className="project-hero">
         {project.heroImage.url && project.heroImage.url !== '/assets/images/projects/money-shot.png' && (

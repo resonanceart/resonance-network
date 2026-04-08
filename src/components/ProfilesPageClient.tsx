@@ -37,9 +37,6 @@ export function ProfilesPageClient({ profiles }: { profiles: Profile[] }) {
     <>
       <section className="page-header">
         <div className="container">
-          <nav aria-label="Breadcrumb" className="breadcrumb">
-            <Link href="/">Home</Link> <span aria-hidden="true">/</span> <span>People</span>
-          </nav>
           <p className="section-label">Community</p>
           <h1>The People Behind the Work</h1>
           <p className="lead">

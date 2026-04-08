@@ -233,10 +233,6 @@ function ProjectPreviewInner() {
       </div>
 
       <article>
-        {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="breadcrumb container" style={{ paddingTop: 'var(--space-4)' }}>
-          <Link href="/dashboard">Dashboard</Link> <span aria-hidden="true">/</span> <Link href="/dashboard/projects">Projects</Link> <span aria-hidden="true">/</span> <span>{project.project_title}</span>
-        </nav>
         {/* Hero */}
         <section className="project-hero">
           {project.hero_image_data && (
