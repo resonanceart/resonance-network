@@ -213,7 +213,7 @@ function mapUserProfileRow(
 
   return {
     id: String(row.id),
-    slug: slugify(String(row.display_name)),
+    slug: typeof row.slug === 'string' && row.slug ? row.slug : slugify(String(row.display_name)),
     name: String(row.display_name || ''),
     title: (extended?.professional_title ? String(extended.professional_title) : '') || skills[0] || (profileType === 'artist' ? 'Creator' : 'Collaborator'),
     type: profileType,
@@ -389,25 +389,44 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
     }
   }
 
-  // Check for user profile by slugified display_name
-  // Fetch all profiles (not just published) so admins and preview can access
+  // Query user profile by slug column (indexed) with published preference
   try {
-    const { data: allUsers, error: upError } = await supabaseAdmin
+    let match: Record<string, unknown> | null = null
+    const { data: published } = await supabaseAdmin
       .from('user_profiles')
       .select('*')
-      .limit(1000)
-      .order('created_at', { ascending: false })
+      .eq('slug', slug)
+      .eq('profile_visibility', 'published')
+      .single()
 
-    if (!upError && allUsers) {
-      // First try published, then any visibility
-      const publishedMatch = allUsers.find(
-        (row: Record<string, unknown>) => slugify(String(row.display_name)) === slug && row.profile_visibility === 'published'
-      )
-      const anyMatch = allUsers.find(
-        (row: Record<string, unknown>) => slugify(String(row.display_name)) === slug
-      )
-      const match = publishedMatch || anyMatch
-      if (match) {
+    if (published) {
+      match = published as Record<string, unknown>
+    } else {
+      const { data: anyRow } = await supabaseAdmin
+        .from('user_profiles')
+        .select('*')
+        .eq('slug', slug)
+        .single()
+      if (anyRow) match = anyRow as Record<string, unknown>
+    }
+
+    // Legacy fallback: match by slugified display_name for rows without slug column
+    if (!match) {
+      const { data: allUsers } = await supabaseAdmin
+        .from('user_profiles')
+        .select('*')
+        .is('slug', null)
+        .limit(500)
+      if (allUsers) {
+        match = (allUsers.find(
+          (row: Record<string, unknown>) => slugify(String(row.display_name)) === slug && row.profile_visibility === 'published'
+        ) || allUsers.find(
+          (row: Record<string, unknown>) => slugify(String(row.display_name)) === slug
+        )) as Record<string, unknown> | null
+      }
+    }
+
+    if (match) {
         const profileId = String(match.id)
 
         // Fetch all related data in parallel (matching getProfileBySlugEnhanced)
