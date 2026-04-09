@@ -17,9 +17,12 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 })
 
-/** Timeout (ms) before we retry getSession if the initial call hangs
- *  (e.g. orphaned navigator lock from a previous tab crash). */
-const SESSION_TIMEOUT_MS = 5000
+/**
+ * Maximum time (ms) to wait for getSession before unblocking the UI.
+ * Combined with the reduced lockAcquireTimeout (2s) on the Supabase
+ * client, the worst-case spinner duration is about 3s instead of infinite.
+ */
+const SESSION_TIMEOUT_MS = 3000
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -31,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout> | undefined
 
+    /** Apply a definitive session. First caller wins (via resolvedRef). */
     const applySession = (s: Session | null) => {
       if (resolvedRef.current) return
       resolvedRef.current = true
@@ -40,38 +44,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
     }
 
-    // Primary: try to recover session from cookies/storage
+    // Path 1: try to recover session from cookies/storage
     supabase.auth.getSession().then(({ data: { session: s } }: { data: { session: Session | null } }) => {
       applySession(s)
+    }).catch((err: unknown) => {
+      // Lock acquire timeout or network error. Do not call
+      // applySession(null) because onAuthStateChange may still
+      // deliver the real session momentarily.
+      console.warn('[AuthProvider] getSession error:', err)
     })
 
-    // Fallback: if getSession hangs (orphaned lock), retry after timeout
+    // Path 2: timeout safety net. If neither getSession nor
+    // onAuthStateChange resolved in time, unblock the UI. Leave
+    // resolvedRef false so onAuthStateChange can still update state.
     timeoutId = setTimeout(() => {
       if (!resolvedRef.current) {
-        console.warn('[AuthProvider] getSession timed out — retrying')
-        supabase.auth.getSession().then(({ data: { session: s } }: { data: { session: Session | null } }) => {
-          // Accept whatever we get, even null (will show login)
-          resolvedRef.current = true
-          setSession(s)
-          setUser(s?.user ?? null)
-          setLoading(false)
-        }).catch(() => {
-          // Last resort: unblock the UI so the user isn't stuck forever
-          resolvedRef.current = true
-          setSession(null)
-          setUser(null)
-          setLoading(false)
-        })
+        console.warn('[AuthProvider] session init timed out, unblocking UI')
+        setLoading(false)
       }
     }, SESSION_TIMEOUT_MS)
 
-    // Also listen for auth state changes (handles sign-in/sign-out events)
+    // Path 3: auth state change listener. This is the most reliable
+    // path. Supabase fires INITIAL_SESSION once the navigator lock is
+    // acquired, even if getSession timed out above.
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(
       (_event: string, s: Session | null) => {
-        // Once the listener fires, it means the lock was acquired and the
-        // session is authoritative — always apply it.
         resolvedRef.current = true
         clearTimeout(timeoutId)
         setSession(s)
