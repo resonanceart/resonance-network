@@ -1354,7 +1354,7 @@ export default function LiveProfileEditor() {
                   <div className="editable-section__overlay"><span>Edit photo</span></div>
                 </div>
 
-                {/* Skills, Location, Social — below photo */}
+                {/* Skills, Location — below photo */}
                 <div ref={setSectionRef('skills')} className={`editable-section${activePanel === 'skills' ? ' editable-section--active' : ''}`} onClick={() => openPanel('skills')} style={{ marginTop: 'var(--space-3)', fontSize: 'var(--text-xs)' }}>
                   {profileSkills.length > 0 ? (
                     <div style={{ marginBottom: 'var(--space-2)' }}>
@@ -1377,8 +1377,13 @@ export default function LiveProfileEditor() {
                       <ProfileAvailabilityBadge status={availabilityStatus as 'open' | 'busy' | 'unavailable'} note={availabilityNote} />
                     </div>
                   )}
-                  {socialLinks.length > 0 && (
-                    <div ref={setSectionRef('social')} style={{ marginTop: 'var(--space-2)' }} onClick={(e) => { e.stopPropagation(); openPanel('social') }}>
+                  <div className="editable-section__overlay"><span>Edit skills</span></div>
+                </div>
+
+                {/* Social Links — separate editable section */}
+                <div ref={setSectionRef('social')} className={`editable-section${activePanel === 'social' ? ' editable-section--active' : ''}`} onClick={() => openPanel('social')} style={{ marginTop: 'var(--space-3)', fontSize: 'var(--text-xs)' }}>
+                  {socialLinks.length > 0 ? (
+                    <>
                       <p className="profile-header-grid__sidebar-label">Social</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                         {[...socialLinks].sort((a, b) => a.display_order - b.display_order).map(link => (
@@ -1387,14 +1392,11 @@ export default function LiveProfileEditor() {
                           </a>
                         ))}
                       </div>
-                    </div>
+                    </>
+                  ) : (
+                    <p className="live-editor__placeholder-text" style={{ fontSize: 'var(--text-xs)' }}>Add social links</p>
                   )}
-                  {socialLinks.length === 0 && (
-                    <div ref={setSectionRef('social')} onClick={(e) => { e.stopPropagation(); openPanel('social') }}>
-                      <p className="live-editor__placeholder-text" style={{ fontSize: 'var(--text-xs)' }}>Add social links</p>
-                    </div>
-                  )}
-                  <div className="editable-section__overlay"><span>Edit skills</span></div>
+                  <div className="editable-section__overlay"><span>Edit social links</span></div>
                 </div>
               </div>
 
