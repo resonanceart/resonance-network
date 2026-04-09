@@ -35,6 +35,7 @@ main {
   gap: var(--space-3);
   text-decoration: none;
   flex-shrink: 0;
+  min-width: 0;
 }
 
 .logo svg {
@@ -354,6 +355,24 @@ main {
   background: var(--color-primary);
   color: #fff;
   border-color: var(--color-primary);
+}
+
+/* Mobile header: prevent logo from squishing against nav actions */
+@media (max-width: 767px) {
+  .logo {
+    flex-shrink: 1;
+    overflow: hidden;
+  }
+  .logo-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-base);
+  }
+  .nav-actions {
+    gap: var(--space-1);
+    flex-shrink: 0;
+  }
 }
 
 /* Desktop nav breakpoint */
@@ -1907,7 +1926,7 @@ main {
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-body);
-  font-size: var(--text-base);
+  font-size: max(var(--text-base), 16px);
   min-height: 44px;
   transition: border-color var(--duration-fast) var(--ease-out),
               box-shadow var(--duration-fast) var(--ease-out);
