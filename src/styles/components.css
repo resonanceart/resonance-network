@@ -228,8 +228,36 @@ main {
 }
 
 [data-theme="dark"] .nav-mobile {
-  background: #1A1918;
   background: var(--color-surface, #1A1918);
+}
+
+[data-theme="dark"] .nav-mobile__logo {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .nav-mobile__links a {
+  color: var(--color-text);
+  border-bottom-color: var(--color-border);
+}
+
+[data-theme="dark"] .nav-mobile__links a:first-child {
+  border-top-color: var(--color-border);
+}
+
+[data-theme="dark"] .nav-mobile__links a:hover {
+  color: var(--color-primary);
+}
+
+[data-theme="dark"] .nav-mobile__theme-toggle {
+  background: var(--color-surface-alt);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .nav-mobile__theme-toggle:hover {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
 }
 
 .nav-mobile.active {
@@ -926,6 +954,13 @@ main {
   height: 100%;
 }
 
+.project-card__link > span {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
 .project-card__link > img,
 .project-card__link > span > img {
   position: absolute;
@@ -934,6 +969,7 @@ main {
   height: 100%;
   object-fit: cover;
   max-width: none;
+  opacity: 1;
   transition: transform 1s cubic-bezier(.215,.61,.355,1),
               opacity 0.36s cubic-bezier(.215,.61,.355,1);
 }
@@ -1684,7 +1720,7 @@ main {
 /* Task card (shared between project detail and collaborate page) */
 .task-card {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   background: var(--color-card-bg);
   border: 1px solid var(--color-card-border);
   border-radius: var(--radius-lg);
@@ -5931,6 +5967,17 @@ main {
   display: flex;
   gap: var(--space-2);
   flex-shrink: 0;
+}
+
+[data-theme="dark"] .cookie-consent {
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  border-top-color: var(--color-border);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .cookie-consent__text {
+  color: var(--color-text-muted);
 }
 
 /* Footer legal links */

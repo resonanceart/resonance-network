@@ -56,7 +56,7 @@ export function Footer() {
                     <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/>
                   </svg>
                 </a>
-                <a href="https://resonanceart.org" target="_blank" rel="noopener noreferrer" aria-label="Main Website" className="footer-social-btn">
+                <a href="https://resonanceart.org" target="_blank" rel="noopener noreferrer" aria-label="Studio Site" className="footer-social-btn">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <circle cx="12" cy="12" r="10"/>
                     <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
