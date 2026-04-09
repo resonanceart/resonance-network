@@ -21,6 +21,7 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
   const [selectedSpecialty, setSelectedSpecialty] = useState('')
 
   // Roles tab state
+  const [showAllConcepts, setShowAllConcepts] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedLocation, setSelectedLocation] = useState('')
   const [selectedStage, setSelectedStage] = useState('')
@@ -319,10 +320,20 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
                     <div className="container" style={{ paddingTop: 'var(--space-6)' }}>
                       <p className="section-label">AI Concept Roles</p>
                       <div className="task-grid">
-                        {conceptTasks.map(task => (
+                        {(showAllConcepts ? conceptTasks : conceptTasks.slice(0, 6)).map(task => (
                           <CollaborationTaskCard key={task.id} task={task} />
                         ))}
                       </div>
+                      {conceptTasks.length > 6 && !showAllConcepts && (
+                        <div style={{ textAlign: 'center', marginTop: 'var(--space-6)' }}>
+                          <button
+                            className="btn btn--outline"
+                            onClick={() => setShowAllConcepts(true)}
+                          >
+                            Show More Roles ({conceptTasks.length - 6} more)
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </section>
                 )}
