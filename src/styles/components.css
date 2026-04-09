@@ -2143,7 +2143,8 @@ main {
   position: relative;
   overflow: hidden;
   padding: var(--space-16) 0 var(--space-12);
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, rgba(10, 10, 10, 1) 100%);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.75) 0%, rgba(10, 10, 10, 0.9) 100%),
+    url('/assets/images/projects/resonance-interior.jpg') center/cover no-repeat;
   text-align: center;
 }
 
