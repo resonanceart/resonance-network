@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface ShareProfileProps {
   slug: string
@@ -31,7 +31,10 @@ export function ShareProfile({ slug, displayName }: ShareProfileProps) {
     } catch {}
   }
 
-  const hasNativeShare = typeof window !== 'undefined' && !!navigator.share
+  const [hasNativeShare, setHasNativeShare] = useState(false)
+  useEffect(() => {
+    setHasNativeShare(!!navigator.share)
+  }, [])
 
   return (
     <div className="share-profile">
