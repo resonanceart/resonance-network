@@ -80,6 +80,11 @@ export function MobileNav({ isOpen, onClose }: Props) {
         <Link href="/collaborate" onClick={onClose}>Community</Link>
         <Link href="/about" onClick={onClose}>About</Link>
         <Link href="/resources" onClick={onClose}>Resources</Link>
+        {!authLoading && (
+          user
+            ? <Link href="/dashboard" onClick={onClose}>Dashboard</Link>
+            : <Link href="/login" onClick={onClose}>Log In</Link>
+        )}
       </div>
 
       {/* CTA buttons */}
