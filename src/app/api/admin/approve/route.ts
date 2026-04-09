@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
+import { timingSafeEqual } from 'crypto'
 import { supabaseAdmin } from '@/lib/supabase'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, getClientIp } from '@/lib/sanitize'
+import { validateCsrf } from '@/lib/csrf'
 import { sendEmail } from '@/lib/gmail'
 import { submissionApproved, submissionRejected } from '@/lib/email-templates'
 
@@ -17,11 +19,25 @@ export async function POST(request: Request) {
       )
     }
 
+    if (!validateCsrf(request)) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid request origin.' },
+        { status: 403 }
+      )
+    }
+
     const body = await request.json()
 
-    // Verify admin access — either password OR authenticated admin user
+    // Verify admin access: password (timing-safe) OR authenticated admin user
     const adminPassword = body.adminPassword || request.headers.get('x-admin-password')
-    let isAdmin = adminPassword === process.env.ADMIN_PASSWORD
+    let isAdmin = false
+    if (adminPassword && process.env.ADMIN_PASSWORD) {
+      const pwdBuf = Buffer.from(String(adminPassword))
+      const expectedBuf = Buffer.from(String(process.env.ADMIN_PASSWORD))
+      if (pwdBuf.length === expectedBuf.length && timingSafeEqual(pwdBuf, expectedBuf)) {
+        isAdmin = true
+      }
+    }
 
     if (!isAdmin) {
       // Check if authenticated user has admin role
