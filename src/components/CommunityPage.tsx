@@ -86,7 +86,7 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
         <div className="container">
           <h1 className="collab-header__title">Community Connections Board</h1>
           <p className="collab-header__subtitle">
-            Find roles on ambitious projects — or meet the people building them.
+            Find roles on ambitious projects, or meet the people building them.
           </p>
 
           <div className="collab-tabs collab-tabs--prominent" role="tablist" aria-label="Community view">
@@ -413,7 +413,7 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
           <div className="collab-benefits__grid">
             <div className="collab-benefit-card">
               <strong>Portfolio-worthy work</strong>
-              <p>Contribute to ambitious projects you can proudly showcase — not commercial campaigns, but values-aligned creative work.</p>
+              <p>Contribute to ambitious projects you can proudly showcase, not commercial campaigns, but values-aligned creative work.</p>
             </div>
             <div className="collab-benefit-card">
               <strong>Credited contributions</strong>
@@ -421,11 +421,11 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
             </div>
             <div className="collab-benefit-card">
               <strong>Flexible commitment</strong>
-              <p>From a 2-hour plan review to an ongoing team role — contribute at the level that works for you.</p>
+              <p>From a 2-hour plan review to an ongoing team role, contribute at the level that works for you.</p>
             </div>
             <div className="collab-benefit-card">
               <strong>Meaningful relationships</strong>
-              <p>Build long-term connections with visionary creators and fellow specialists — a guild, not a gig.</p>
+              <p>Build long-term connections with visionary creators and fellow specialists, a guild, not a gig.</p>
             </div>
           </div>
         </div>

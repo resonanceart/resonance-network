@@ -7,7 +7,7 @@ export default function NotFound() {
         <span className="error-page__code">404</span>
         <h1 className="error-page__title">Page not found</h1>
         <p className="error-page__desc">
-          This page doesn&apos;t exist — but plenty of extraordinary projects do.
+          This page doesn&apos;t exist, but plenty of extraordinary projects do.
         </p>
         <div className="error-page__actions">
           <Link href="/" className="btn btn--primary">Explore Projects</Link>

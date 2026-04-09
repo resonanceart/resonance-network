@@ -3,17 +3,17 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'Resonance Network privacy policy — how we collect, use, and protect your personal data when you use our art collaboration platform and services.',
+  description: 'Resonance Network privacy policy. How we collect, use, and protect your personal data when you use our art collaboration platform and services.',
   alternates: { canonical: 'https://resonancenetwork.org/privacy' },
   openGraph: {
-    title: 'Privacy Policy — Resonance Network',
+    title: 'Privacy Policy | Resonance Network',
     description: 'How we collect, use, and protect your personal data on the Resonance Network platform.',
     url: 'https://resonancenetwork.org/privacy',
     images: [{ url: '/og-image.jpg' }],
   },
   twitter: {
     card: 'summary',
-    title: 'Privacy Policy — Resonance Network',
+    title: 'Privacy Policy | Resonance Network',
     description: 'How we collect, use, and protect your personal data on the Resonance Network platform.',
   },
 }
@@ -83,9 +83,9 @@ export default function PrivacyPage() {
         <h2>4. Third-Party Services</h2>
         <p>We use the following third-party services to operate the platform:</p>
         <ul>
-          <li><strong>Supabase</strong> — Authentication, database, and file storage.</li>
-          <li><strong>Vercel</strong> — Website hosting and deployment.</li>
-          <li><strong>Resend / Gmail</strong> — Transactional and notification emails.</li>
+          <li><strong>Supabase</strong>. Authentication, database, and file storage.</li>
+          <li><strong>Vercel</strong>. Website hosting and deployment.</li>
+          <li><strong>Resend / Gmail</strong>. Transactional and notification emails.</li>
         </ul>
         <p>
           These services have their own privacy policies. We do not sell, trade, or rent your

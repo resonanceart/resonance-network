@@ -68,7 +68,7 @@ export function CollaborationTaskCard({ task }: { task: CollaborationTask }) {
   return (
     <div className={`task-card${isConcept ? ' task-card--concept' : ''}`}>
       {isConcept && (
-        <span className="task-card__concept-tooltip">AI Concept — developed by AI</span>
+        <span className="task-card__concept-tooltip">AI Concept, developed by AI</span>
       )}
       {/* Hero banner */}
       {heroImage && (

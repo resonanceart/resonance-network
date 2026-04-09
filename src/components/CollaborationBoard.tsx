@@ -93,7 +93,7 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
           <p className="section-label">Collaborate</p>
           <h1>Open Roles on Curated Projects</h1>
           <p className="lead">
-            Collaboration opportunities across curated projects — from structural engineering to grant writing to spatial audio design. Every role is tied to a real team with a clear vision.
+            Collaboration opportunities across curated projects, from structural engineering to grant writing to spatial audio design. Every role is tied to a real team with a clear vision.
           </p>
         </div>
       </section>

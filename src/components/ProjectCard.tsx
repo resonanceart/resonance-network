@@ -52,7 +52,7 @@ export function ProjectCard({ project, index = 0, transitionDelay = 0 }: Props) 
           />
         )}
         {project.source === 'json' && (
-          <span className="project-card__concept-tooltip">AI Concept — developed by AI</span>
+          <span className="project-card__concept-tooltip">AI Concept, developed by AI</span>
         )}
         <div className="project-card__body">
           <p className="project-card__eyebrow">{project.eyebrow}</p>

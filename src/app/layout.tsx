@@ -11,8 +11,8 @@ import { JoinModal } from '@/components/JoinModal'
 export const metadata: Metadata = {
   metadataBase: new URL('https://resonancenetwork.org'),
   title: {
-    default: 'Resonance Network — Immersive Art Collaboration',
-    template: '%s — Resonance Network',
+    default: 'Resonance Network | Immersive Art Collaboration',
+    template: '%s | Resonance Network',
   },
   description:
     'A curated guild where concept-ready immersive and regenerative spatial projects find aligned collaborators, honest feedback, and the momentum to get built.',
@@ -43,9 +43,9 @@ export const metadata: Metadata = {
   publisher: 'Resonance Network',
   formatDetection: { telephone: false },
   openGraph: {
-    title: 'Resonance Network — Immersive Art Collaboration',
+    title: 'Resonance Network | Immersive Art Collaboration',
     description:
-      'Between proposal and build — we surround serious spatial projects with aligned collaborators and the momentum to get built.',
+      'Between proposal and build, we surround serious spatial projects with aligned collaborators and the momentum to get built.',
     url: 'https://resonancenetwork.org',
     siteName: 'Resonance Network',
     locale: 'en_US',

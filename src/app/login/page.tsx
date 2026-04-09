@@ -254,7 +254,7 @@ function LoginForm() {
               </div>
               <span className="password-strength__label" style={{ color: passwordStrength.color }}>
                 {passwordStrength.label}
-                {password.length < 8 && ' — minimum 8 characters'}
+                {password.length < 8 && ', minimum 8 characters'}
               </span>
             </div>
           )}

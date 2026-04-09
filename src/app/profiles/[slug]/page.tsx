@@ -27,13 +27,13 @@ export async function generateMetadata({
   const profile = await getProfileBySlug(params.slug)
   if (!profile) return {}
   return {
-    title: `${profile.name} — ${profile.title}`,
+    title: `${profile.name} | ${profile.title}`,
     description: profile.shortBio,
     alternates: {
       canonical: `https://resonancenetwork.org/profiles/${profile.slug}`,
     },
     openGraph: {
-      title: `${profile.name} — ${profile.title}`,
+      title: `${profile.name} | ${profile.title}`,
       description: profile.shortBio,
       url: `https://resonancenetwork.org/profiles/${profile.slug}`,
       images: profile.photo ? [{ url: profile.photo }] : [{ url: '/og-image.jpg' }],
@@ -41,7 +41,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${profile.name} — ${profile.title}`,
+      title: `${profile.name} | ${profile.title}`,
       description: profile.shortBio,
       images: profile.photo ? [profile.photo] : ['/og-image.jpg'],
     },

@@ -1631,7 +1631,7 @@ export default function LiveProfileEditor() {
                       <span className="profile-timeline__year-label">{entry.year}</span>
                       <div className="profile-timeline__content">
                         <strong>{entry.title}</strong>
-                        {entry.organization && <span> — {entry.organization}</span>}
+                        {entry.organization && <span>, {entry.organization}</span>}
                         {entry.description && <p style={{ margin: 'var(--space-1) 0 0', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>{entry.description}</p>}
                       </div>
                     </div>

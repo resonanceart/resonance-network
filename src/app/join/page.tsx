@@ -51,7 +51,7 @@ export default function JoinPage() {
                 href={user ? '/dashboard/projects/new' : '/login?tab=signup&redirect=/dashboard/welcome'}
                 className="btn btn--primary btn--xl join-card__cta"
               >
-                {user ? 'Share a Project' : 'Get Started — Free'}
+                {user ? 'Share a Project' : 'Get Started for Free'}
               </Link>
             </div>
 
@@ -73,7 +73,7 @@ export default function JoinPage() {
                 href={user ? '/dashboard/profile' : '/login?tab=signup&redirect=/dashboard/welcome'}
                 className="btn btn--primary btn--xl join-card__cta"
               >
-                {user ? 'Edit Your Profile' : 'Get Started — Free'}
+                {user ? 'Edit Your Profile' : 'Get Started for Free'}
               </Link>
             </div>
           </div>
@@ -111,7 +111,7 @@ export default function JoinPage() {
           <div className="join-benefits__grid">
             <div className="join-benefit-card">
               <h3>Curated Project Page</h3>
-              <p>A professional, visual home for your work — gallery, team, collaboration board — that you can share with funders, venues, and partners.</p>
+              <p>A professional, visual home for your work (gallery, team, collaboration board) that you can share with funders, venues, and partners.</p>
             </div>
             <div className="join-benefit-card">
               <h3>Collaboration Matching</h3>
@@ -119,7 +119,7 @@ export default function JoinPage() {
             </div>
             <div className="join-benefit-card">
               <h3>Curator Feedback</h3>
-              <p>Every project receives a personal review from practicing artists and makers — honest, specific, and designed to help your work succeed.</p>
+              <p>Every project receives a personal review from practicing artists and makers. Honest, specific, and designed to help your work succeed.</p>
             </div>
             <div className="join-benefit-card">
               <h3>Community &amp; Resources</h3>
@@ -177,7 +177,7 @@ export default function JoinPage() {
             </div>
             <div className="faq-item">
               <h3>What if my project gets rejected?</h3>
-              <p>You&apos;ll get personal feedback and an open invitation to resubmit. The answer is never &quot;no&quot; — it&apos;s &quot;not yet.&quot;</p>
+              <p>You&apos;ll get personal feedback and an open invitation to resubmit. The answer is never &quot;no.&quot; It&apos;s &quot;not yet.&quot;</p>
             </div>
             <div className="faq-item">
               <h3>Is there a fee?</h3>
@@ -185,7 +185,7 @@ export default function JoinPage() {
             </div>
             <div className="faq-item">
               <h3>What happens after approval?</h3>
-              <p>We&apos;ll build your project page — a curated, visual home for your work — and list your collaboration needs on the network.</p>
+              <p>We&apos;ll build your project page, a curated visual home for your work, and list your collaboration needs on the network.</p>
             </div>
           </div>
         </div>
@@ -195,7 +195,7 @@ export default function JoinPage() {
       <section className="submit-section">
         <div className="container">
           <h2>Who Can Submit</h2>
-          <p>Resonance Network is for creators working on concept-ready spatial projects — immersive installations, regenerative architecture, public works, and experiential environments. We evaluate on scope and stewardship, not size. You are a good fit if:</p>
+          <p>Resonance Network is for creators working on concept-ready spatial projects like immersive installations, regenerative architecture, public works, and experiential environments. We evaluate on scope and stewardship, not size. You are a good fit if</p>
           <ul className="prepare-list">
             <li>
               <strong>Concept-ready spatial project</strong>
@@ -211,7 +211,7 @@ export default function JoinPage() {
             </li>
             <li>
               <strong>Open to curation</strong>
-              <span>You welcome honest feedback and a curatorial process — &quot;not yet&quot; isn&apos;t a no</span>
+              <span>You welcome honest feedback and a curatorial process where &quot;not yet&quot; isn&apos;t a no</span>
             </li>
           </ul>
         </div>

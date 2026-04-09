@@ -455,7 +455,7 @@ export async function PUT(request: Request) {
           if (userEmail) {
             await sendNotification({
               to: [userEmail],
-              subject: 'Profile Submitted — Resonance Network',
+              subject: 'Profile Submitted | Resonance Network',
               body: `Hi ${displayName},\n\nYour profile has been submitted for review. Our team will review it shortly and you'll be notified when it's published.\n\nIn the meantime, you can continue editing your profile.\n\nThank you,\nResonance Network`,
             })
           }

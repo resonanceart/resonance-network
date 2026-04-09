@@ -163,7 +163,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
         {step === 1 && (
           <div className="onboarding__step">
             <h2 className="onboarding__title">Let&apos;s get you started</h2>
-            <p className="onboarding__subtitle">Define your role — select all that apply</p>
+            <p className="onboarding__subtitle">Define your role. Select all. that apply</p>
 
             <div className="onboarding__role-grid">
               {[
@@ -330,7 +330,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                 <span className="onboarding__summary-label">Role</span>
                 <span className="onboarding__summary-value">
                   {Array.from(selectedRoles).map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')}
-                  {collaboratorType && ` — ${collaboratorType === 'Other' ? customCollabType || 'Other' : collaboratorType}`}
+                  {collaboratorType && `, ${collaboratorType === 'Other' ? customCollabType || 'Other' : collaboratorType}`}
                 </span>
               </div>
               {selectedGoals.size > 0 && (

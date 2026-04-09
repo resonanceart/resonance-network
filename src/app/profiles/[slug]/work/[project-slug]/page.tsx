@@ -60,7 +60,7 @@ export async function generateMetadata({
   const data = await getPortfolioProject(params.slug, params['project-slug'])
   if (!data) return { title: 'Project Not Found' }
   return {
-    title: `${data.title} — ${data.profile_name} | Resonance Network`,
+    title: `${data.title} | ${data.profile_name} | Resonance Network`,
     description: data.tagline || data.description || `Portfolio project by ${data.profile_name}`,
     openGraph: {
       title: data.title,
