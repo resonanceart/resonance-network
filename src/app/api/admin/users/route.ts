@@ -118,7 +118,12 @@ export async function DELETE(request: Request) {
     const body = await request.json()
 
     const adminPassword = body.adminPassword || request.headers.get('x-admin-password')
-    if (adminPassword !== process.env.ADMIN_PASSWORD) {
+    if (!adminPassword || !process.env.ADMIN_PASSWORD) {
+      return NextResponse.json({ success: false, message: 'Unauthorized.' }, { status: 401 })
+    }
+    const delPwdBuf = Buffer.from(String(adminPassword))
+    const delExpBuf = Buffer.from(String(process.env.ADMIN_PASSWORD))
+    if (delPwdBuf.length !== delExpBuf.length || !timingSafeEqual(delPwdBuf, delExpBuf)) {
       return NextResponse.json({ success: false, message: 'Unauthorized.' }, { status: 401 })
     }
 
