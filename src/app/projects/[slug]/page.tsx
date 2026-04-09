@@ -22,7 +22,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const project = await getProjectBySlug(params.slug)
   if (!project) return {}
-  const title = `${project.title} — ${project.domains.slice(0, 2).join(' & ')} | Resonance Network`
+  const domainStr = project.domains.slice(0, 2).join(' & ')
+  const title = domainStr
+    ? `${project.title} — ${domainStr} | Resonance Network`
+    : `${project.title} | Resonance Network`
   return {
     title,
     description: `${project.shortDescription} Explore this ${project.stage.toLowerCase()} stage ${project.domains[0]?.toLowerCase() || 'creative'} project on Resonance Network.`,
