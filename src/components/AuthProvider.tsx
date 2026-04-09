@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Primary: try to recover session from cookies/storage
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
+    supabase.auth.getSession().then(({ data: { session: s } }: { data: { session: Session | null } }) => {
       applySession(s)
     })
 
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     timeoutId = setTimeout(() => {
       if (!resolvedRef.current) {
         console.warn('[AuthProvider] getSession timed out — retrying')
-        supabase.auth.getSession().then(({ data: { session: s } }) => {
+        supabase.auth.getSession().then(({ data: { session: s } }: { data: { session: Session | null } }) => {
           // Accept whatever we get, even null (will show login)
           resolvedRef.current = true
           setSession(s)
