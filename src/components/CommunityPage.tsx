@@ -1,7 +1,8 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
 import { CollaborationTaskCard } from '@/components/CollaborationTaskCard'
@@ -12,8 +13,12 @@ const CATEGORIES = ['Engineering', 'Architecture', 'Fabrication', 'Production', 
 
 export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks: CollaborationTask[] }) {
   const { user } = useAuth()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const projects = projectsData as Project[]
-  const [activeTab, setActiveTab] = useState<'people' | 'roles'>('roles')
+
+  const initialTab = searchParams.get('tab') === 'people' ? 'people' : 'roles'
+  const [activeTab, setActiveTab] = useState<'people' | 'roles'>(initialTab)
 
   // People tab state
   const [search, setSearch] = useState('')
@@ -27,14 +32,10 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
   const [selectedStage, setSelectedStage] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Read tab from URL on mount
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const tab = new URLSearchParams(window.location.search).get('tab')
-      if (tab === 'roles' || tab === 'needs') setActiveTab('roles')
-      else if (tab === 'people') setActiveTab('people')
-    }
-  }, [])
+  const switchTab = useCallback((tab: 'people' | 'roles') => {
+    setActiveTab(tab)
+    router.replace(`/collaborate?tab=${tab}`, { scroll: false })
+  }, [router])
 
   // People filtering
   const allSpecialties = useMemo(() => {
@@ -92,7 +93,7 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
               role="tab"
               aria-selected={activeTab === 'roles'}
               className={`collab-tab collab-tab--roles${activeTab === 'roles' ? ' collab-tab--active' : ''}`}
-              onClick={() => setActiveTab('roles')}
+              onClick={() => switchTab('roles')}
             >
               Open Roles <span className="collab-tab__count">{tasks.length}</span>
             </button>
@@ -100,7 +101,7 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
               role="tab"
               aria-selected={activeTab === 'people'}
               className={`collab-tab collab-tab--people${activeTab === 'people' ? ' collab-tab--active' : ''}`}
-              onClick={() => setActiveTab('people')}
+              onClick={() => switchTab('people')}
             >
               People <span className="collab-tab__count">{profiles.length}</span>
             </button>

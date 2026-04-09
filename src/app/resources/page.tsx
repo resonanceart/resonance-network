@@ -24,11 +24,7 @@ export default function ResourcesPage() {
     <>
       <section className="section" style={{ padding: 'var(--space-10) 0' }}>
         <div className="container">
-          <p className="section-label">Resources</p>
-          <h1>Tools & Guides for Ambitious Projects</h1>
-          <p style={{ maxWidth: '640px', color: 'var(--color-text-secondary)', lineHeight: 1.7, marginBottom: 'var(--space-8)' }}>
-            Building something extraordinary requires more than vision. It takes knowledge, connections, and practical tools. We are building a library of resources to help creators navigate the path from concept to reality.
-          </p>
+          <h1>Tools and Guides</h1>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: 'var(--space-5)' }}>
             <div style={{ padding: 'var(--space-5)', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--color-primary)' }}>

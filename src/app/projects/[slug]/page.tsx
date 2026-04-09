@@ -548,7 +548,7 @@ export default async function ProjectPage({ params }: { params: { slug: string }
 
       {/* Bottom nav */}
       <nav className="project-nav" aria-label="Related pages">
-        <div className="container" style={{ display: 'flex', gap: 'var(--space-4)', paddingBottom: 'var(--space-8)', flexWrap: 'wrap' }}>
+        <div className="container" style={{ display: 'flex', gap: 'var(--space-4)', paddingBottom: 'var(--space-8)', flexWrap: 'wrap', justifyContent: 'center' }}>
           <Link href="/" className="btn btn--outline">All Projects</Link>
           <Link href="/collaborate" className="btn btn--outline">All Open Roles</Link>
           <Link href="/join" className="btn btn--outline">Share Your Project</Link>

@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { getProfiles, getCollaborationTasksFromSupabase } from '@/lib/data'
 import tasksData from '../../../data/tasks.json'
@@ -38,5 +39,9 @@ export default async function CollaboratePage() {
   const taggedStaticTasks = staticTasks.map(t => ({ ...t, source: 'json' as const }))
   const tasks = [...supabaseTasks, ...taggedStaticTasks]
 
-  return <CommunityPage profiles={profiles} tasks={tasks} />
+  return (
+    <Suspense>
+      <CommunityPage profiles={profiles} tasks={tasks} />
+    </Suspense>
+  )
 }
