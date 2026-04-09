@@ -36,19 +36,23 @@ export async function GET(request: Request) {
     }
   }
 
-  // Check if user is authenticated (owner or admin)
-  let isAuthorized = false
+  // Determine current user (if any)
+  let currentUser: { id: string; email?: string } | null = null
+  let isAdminAuth = false
   try {
     const supabase = await createSupabaseServerClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      isAuthorized = true // Any authenticated user can preview
-    }
+    if (user) currentUser = { id: user.id, email: user.email }
   } catch {
-    // Check admin password header as fallback
+    // Not authenticated via session, check admin password header
     const adminPwd = request.headers.get('x-admin-password')
-    if (adminPwd === process.env.ADMIN_PASSWORD) {
-      isAuthorized = true
+    if (adminPwd && process.env.ADMIN_PASSWORD) {
+      const { timingSafeEqual } = await import('crypto')
+      const a = Buffer.from(adminPwd)
+      const b = Buffer.from(process.env.ADMIN_PASSWORD)
+      if (a.length === b.length && timingSafeEqual(a, b)) {
+        isAdminAuth = true
+      }
     }
   }
 
@@ -65,15 +69,29 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
-    // If not authorized, only allow viewing approved/published items
-    if (!isAuthorized) {
-      const status = (data as Record<string, unknown>).status as string
-      if (status !== 'approved' && status !== 'published') {
-        return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    const row = data as Record<string, unknown>
+    const status = row.status as string | undefined
+
+    // Published/approved items are publicly viewable
+    if (status === 'approved' || status === 'published') {
+      return NextResponse.json({ data })
+    }
+
+    // Draft/pending items require ownership or admin access
+    if (isAdminAuth) {
+      return NextResponse.json({ data })
+    }
+
+    if (currentUser) {
+      const isOwner =
+        row.user_id === currentUser.id ||
+        (currentUser.email && (row.artist_email === currentUser.email || row.email === currentUser.email))
+      if (isOwner) {
+        return NextResponse.json({ data })
       }
     }
 
-    return NextResponse.json({ data })
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
   } catch {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
