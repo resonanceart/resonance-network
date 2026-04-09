@@ -115,8 +115,12 @@ export async function DELETE(request: Request) {
     const body = await request.json()
 
     const adminPassword = body.adminPassword || request.headers.get('x-admin-password')
-    if (adminPassword !== process.env.ADMIN_PASSWORD) {
+    if (!verifyAdminPassword(adminPassword)) {
       return NextResponse.json({ success: false, message: 'Unauthorized.' }, { status: 401 })
+    }
+
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return NextResponse.json({ success: false, message: 'Server misconfigured: missing service role key.' }, { status: 500 })
     }
 
     const userId = sanitizeText(body.userId, 50)
@@ -124,24 +128,26 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ success: false, message: 'Missing user ID.' }, { status: 400 })
     }
 
-    const { error: profileError } = await supabaseAdmin
-      .from('user_profiles')
-      .delete()
-      .eq('id', userId)
+    // Delete auth user first — CASCADE handles user_profiles and all related tables
+    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId)
 
-    if (profileError) {
-      console.error('Admin user delete error:', profileError.message)
-      return NextResponse.json({ success: false, message: 'Failed to delete user profile.' }, { status: 500 })
-    }
+    if (authError) {
+      // Auth user might not exist (e.g. imported profiles). Delete profile directly.
+      console.warn('Auth delete failed (may not exist):', authError.message)
+      const { error: profileError } = await supabaseAdmin
+        .from('user_profiles')
+        .delete()
+        .eq('id', userId)
 
-    try {
-      await supabaseAdmin.auth.admin.deleteUser(userId)
-    } catch {
-      // Auth user may not exist
+      if (profileError) {
+        console.error('Admin user delete error:', profileError.message)
+        return NextResponse.json({ success: false, message: `Failed to delete: ${profileError.message}` }, { status: 500 })
+      }
     }
 
     return NextResponse.json({ success: true, message: 'User deleted successfully.' })
-  } catch {
+  } catch (err) {
+    console.error('Admin DELETE error:', err)
     return NextResponse.json({ success: false, message: 'Server error.' }, { status: 500 })
   }
 }
