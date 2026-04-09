@@ -121,8 +121,8 @@ function LoginForm() {
   }
 
   return (
-    <section className="section" style={{ maxWidth: '28rem', margin: '0 auto', padding: 'var(--space-8) var(--space-4)' }}>
-      <h1 className="section__title" style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
+    <section className="section" style={{ maxWidth: '28rem', width: '100%', margin: '0 auto', padding: 'var(--space-8) var(--space-4)', boxSizing: 'border-box' }}>
+      <h1 style={{ textAlign: 'center', marginBottom: 'var(--space-6)', fontSize: 'var(--text-2xl)', fontFamily: 'var(--font-display)', fontWeight: 600 }}>
         {tab === 'signin' ? 'Sign In' : 'Create Account'}
       </h1>
 
@@ -254,7 +254,7 @@ function LoginForm() {
               </div>
               <span className="password-strength__label" style={{ color: passwordStrength.color }}>
                 {passwordStrength.label}
-                {password.length < 8 && ' — minimum 8 characters'}
+                {password.length < 8 && ', minimum 8 characters'}
               </span>
             </div>
           )}
