@@ -86,8 +86,8 @@ export default function MyProjectsPage() {
         throw new Error(data.error || 'Delete failed')
       }
       setProjects(prev => prev.filter(p => p.id !== project.id))
-    } catch {
-      alert('Failed to delete project. Please try again.')
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete project. Please try again.')
     } finally {
       setDeletingId(null)
     }

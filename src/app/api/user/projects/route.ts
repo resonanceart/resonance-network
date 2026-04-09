@@ -205,15 +205,30 @@ export async function DELETE(request: Request) {
       await supabaseAdmin.storage.from('project-images').remove(filesToDelete).catch(() => {})
     }
 
-    // Delete the submission
+    // Delete related collaboration_tasks first (if any exist)
+    await supabaseAdmin
+      .from('collaboration_tasks')
+      .delete()
+      .eq('submission_id', submissionId)
+      .catch(() => {}) // Table may not exist
+
+    // Delete the submission — try supabaseAdmin first, fall back to user client
     const { error: deleteError } = await supabaseAdmin
       .from('project_submissions')
       .delete()
       .eq('id', submissionId)
 
     if (deleteError) {
-      console.error('Submission delete error:', deleteError.message)
-      return NextResponse.json({ error: 'Failed to delete submission.' }, { status: 500 })
+      console.error('Submission delete error (admin):', deleteError.message)
+      // Fallback: try with the user's authenticated client (needs DELETE RLS policy)
+      const { error: userDeleteError } = await supabase
+        .from('project_submissions')
+        .delete()
+        .eq('id', submissionId)
+      if (userDeleteError) {
+        console.error('Submission delete error (user):', userDeleteError.message)
+        return NextResponse.json({ error: `Failed to delete: ${userDeleteError.message}` }, { status: 500 })
+      }
     }
 
     return NextResponse.json({ success: true })
