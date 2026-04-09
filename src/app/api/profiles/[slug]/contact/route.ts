@@ -108,7 +108,7 @@ export async function POST(
 
       const recipientEmail = extended?.contact_email || authUser?.user?.email
       if (recipientEmail) {
-        const subjectLine = `New ${subject_type} message from ${from_name} — Resonance Network`
+        const subjectLine = `New ${subject_type} message from ${from_name} | Resonance Network`
         await sendEmail({
           to: recipientEmail,
           subject: subjectLine,

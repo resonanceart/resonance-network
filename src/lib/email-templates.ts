@@ -78,7 +78,7 @@ export function welcomeEmail(name: string, dashboardUrl: string): { subject: str
     subject: 'Welcome to Resonance Network!',
     html: baseLayout(`
       ${greeting(name)}
-      ${paragraph('Welcome to <strong>Resonance Network</strong> — a community where ambitious creative projects in art, architecture, and ecology find the collaborators and momentum to get built.')}
+      ${paragraph('Welcome to <strong>Resonance Network</strong>, a community where ambitious creative projects in art, architecture, and ecology find the collaborators and momentum to get built.')}
       ${paragraph('Here\'s what you can do:')}
       <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px">
         <tr><td style="padding:6px 0;font-size:14px;color:#444">
@@ -103,7 +103,7 @@ export function welcomeEmail(name: string, dashboardUrl: string): { subject: str
 
 export function projectSubmissionConfirmation(name: string, projectTitle: string, previewUrl: string): { subject: string; html: string } {
   return {
-    subject: `We received your project submission — Resonance Network`,
+    subject: `We received your project submission | Resonance Network`,
     html: baseLayout(`
       ${greeting(name)}
       ${paragraph(`Thank you for submitting <strong>${projectTitle}</strong> to Resonance Network. Our curation team will review your submission within two weeks.`)}
@@ -117,7 +117,7 @@ export function projectSubmissionConfirmation(name: string, projectTitle: string
 
 export function collaboratorProfileConfirmation(name: string): { subject: string; html: string } {
   return {
-    subject: 'We received your collaborator profile — Resonance Network',
+    subject: 'We received your collaborator profile | Resonance Network',
     html: baseLayout(`
       ${greeting(name)}
       ${paragraph('Thank you for submitting your collaborator profile to Resonance Network. Our team will review it and you\'ll hear from us within two weeks.')}
@@ -173,7 +173,7 @@ export function collaborationInterestNotification(params: {
 
 export function collaborationInterestConfirmation(name: string, taskTitle: string, projectTitle: string, collaborateUrl: string): { subject: string; html: string } {
   return {
-    subject: 'We received your interest — Resonance Network',
+    subject: 'We received your interest | Resonance Network',
     html: baseLayout(`
       ${greeting(name)}
       ${paragraph(`Thanks for your interest in <strong>${taskTitle || 'collaborating'}</strong> on <strong>${projectTitle || 'a Resonance Network project'}</strong>.`)}
@@ -187,7 +187,7 @@ export function collaborationInterestConfirmation(name: string, taskTitle: strin
 export function submissionApproved(name: string, type: 'project' | 'profile', title: string, pageUrl: string): { subject: string; html: string } {
   const typeLabel = type === 'project' ? 'project' : 'collaborator profile'
   return {
-    subject: `Your ${typeLabel} "${title}" has been approved! — Resonance Network`,
+    subject: `Your ${typeLabel} "${title}" has been approved! | Resonance Network`,
     html: baseLayout(`
       ${greeting(name)}
       ${paragraph(`Great news! Your ${typeLabel} <strong>${title}</strong> has been approved and is now live on Resonance Network.`)}
@@ -204,11 +204,11 @@ export function submissionApproved(name: string, type: 'project' | 'profile', ti
 export function submissionRejected(name: string, type: 'project' | 'profile', title: string): { subject: string; html: string } {
   const typeLabel = type === 'project' ? 'project' : 'collaborator profile'
   return {
-    subject: `Update on your ${typeLabel} submission — Resonance Network`,
+    subject: `Update on your ${typeLabel} submission | Resonance Network`,
     html: baseLayout(`
       ${greeting(name)}
       ${paragraph(`Thank you for submitting <strong>${title}</strong> to Resonance Network. After careful review, our curation team has decided not to feature this ${typeLabel} at this time.`)}
-      ${paragraph('This doesn\'t mean your work isn\'t valuable — our curation focuses on fit with the current network themes and stage. We encourage you to:')}
+      ${paragraph('This doesn\'t mean your work isn\'t valuable. Our curation focuses on fit with the current network themes and stage. We encourage you to:')}
       <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px">
         <tr><td style="padding:6px 0;font-size:14px;color:#444">
           <span style="color:#14b8a6;font-weight:700;margin-right:8px">&#9679;</span>
@@ -231,7 +231,7 @@ export function submissionRejected(name: string, type: 'project' | 'profile', ti
 
 export function passwordResetEmail(name: string, resetUrl: string): { subject: string; html: string } {
   return {
-    subject: 'Reset your password — Resonance Network',
+    subject: 'Reset your password | Resonance Network',
     html: baseLayout(`
       ${greeting(name)}
       ${paragraph('We received a request to reset your password. Click the button below to choose a new one.')}
@@ -244,7 +244,7 @@ export function passwordResetEmail(name: string, resetUrl: string): { subject: s
 
 export function magicLinkEmail(name: string, magicUrl: string): { subject: string; html: string } {
   return {
-    subject: 'Your sign-in link — Resonance Network',
+    subject: 'Your sign-in link | Resonance Network',
     html: baseLayout(`
       ${greeting(name)}
       ${paragraph('Click the button below to sign in to Resonance Network. No password needed.')}

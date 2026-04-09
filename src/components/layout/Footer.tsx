@@ -37,12 +37,11 @@ export function Footer() {
               <div className="footer-links">
                 <Link href="/join">Share a Project</Link>
                 <Link href="/about#process">Curation Process</Link>
-                <Link href="/about#process">How It Works</Link>
                 <a href="https://fundrazr.com/72glEe" target="_blank" rel="noopener noreferrer">Support / Donate</a>
               </div>
             </div>
 
-            {/* Column 4: Connect — inline social icons */}
+            {/* Column 4: Connect, inline social icons */}
             <div className="footer-col">
               <p className="footer-col-title">Connect</p>
               <div className="footer-links">
@@ -54,6 +53,11 @@ export function Footer() {
                     <rect x="2" y="2" width="20" height="20" rx="5"/>
                     <circle cx="12" cy="12" r="5"/>
                     <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/>
+                  </svg>
+                </a>
+                <a href="https://www.facebook.com/profile.php?id=61571789286333" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="footer-social-btn">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
                   </svg>
                 </a>
                 <a href="https://resonanceart.org" target="_blank" rel="noopener noreferrer" aria-label="Studio Site" className="footer-social-btn">

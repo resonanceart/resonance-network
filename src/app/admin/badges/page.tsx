@@ -207,12 +207,12 @@ export default function AdminBadgesPage() {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Project Name (optional — for project badges)</label>
+              <label className="form-label">Project Name (optional, for project badges)</label>
               <input className="form-input" value={awardProjectName} onChange={e => setAwardProjectName(e.target.value)} placeholder="e.g. Resonance" />
             </div>
 
             <div className="form-group">
-              <label className="form-label">Custom Label (optional — overrides default)</label>
+              <label className="form-label">Custom Label (optional, overrides default)</label>
               <input className="form-input" value={awardCustomLabel} onChange={e => setAwardCustomLabel(e.target.value)} placeholder="Leave blank to use default" />
             </div>
 
@@ -250,7 +250,7 @@ export default function AdminBadgesPage() {
                         <strong>{ab.display_name}</strong>
                         <span style={{ color: 'var(--color-text-muted)', marginLeft: 8 }}>
                           {ab.label || type?.label || ab.badge_type}
-                          {ab.project_name && ` — ${ab.project_name}`}
+                          {ab.project_name && `, ${ab.project_name}`}
                         </span>
                         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
                           {new Date(ab.awarded_at).toLocaleDateString()}

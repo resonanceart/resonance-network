@@ -482,7 +482,7 @@ export default function ProfileEditPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
               <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', textTransform: 'capitalize' }}>
                 {availabilityStatus || 'Not set'}
-                {availabilityTypes.length > 0 && ` — ${availabilityTypes.join(', ')}`}
+                {availabilityTypes.length > 0 && `, ${availabilityTypes.join(', ')}`}
               </span>
               <button type="button" className="btn btn--outline btn--sm" onClick={() => setAvailabilityModalOpen(true)}>
                 Edit Availability

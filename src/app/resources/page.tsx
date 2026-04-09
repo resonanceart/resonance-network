@@ -2,18 +2,18 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Resources — Guides, Tools & Pathways',
+  title: 'Resources | Guides, Tools & Pathways',
   description: 'Fundraising guides, permitting resources, fiscal sponsorship pathways, and production tools for ambitious spatial and creative projects.',
   alternates: { canonical: 'https://resonancenetwork.org/resources' },
   openGraph: {
-    title: 'Resources — Resonance Network',
+    title: 'Resources | Resonance Network',
     description: 'Fundraising guides, permitting resources, and production tools for ambitious immersive art and creative projects.',
     url: 'https://resonancenetwork.org/resources',
     images: [{ url: '/og-image.jpg' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Resources — Resonance Network',
+    title: 'Resources | Resonance Network',
     description: 'Fundraising guides, permitting resources, and production tools for ambitious immersive art and creative projects.',
     images: [{ url: '/og-image.jpg' }],
   },
@@ -27,7 +27,7 @@ export default function ResourcesPage() {
           <p className="section-label">Resources</p>
           <h1>Tools & Guides for Ambitious Projects</h1>
           <p style={{ maxWidth: '640px', color: 'var(--color-text-secondary)', lineHeight: 1.7, marginBottom: 'var(--space-8)' }}>
-            Building something extraordinary requires more than vision — it takes knowledge, connections, and practical tools. We are building a library of resources to help creators navigate the path from concept to reality.
+            Building something extraordinary requires more than vision. It takes knowledge, connections, and practical tools. We are building a library of resources to help creators navigate the path from concept to reality.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: 'var(--space-5)' }}>

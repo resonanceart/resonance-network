@@ -164,7 +164,7 @@ export default function DashboardPage() {
           <div className="dashboard-completion-banner">
             <div className="dashboard-completion-banner__top">
               <div className="dashboard-completion-banner__content">
-                <strong>Complete your profile — {profileCompletion}%</strong>
+                <strong>Complete your profile ({profileCompletion}%)</strong>
                 <p>A complete profile helps collaborators find and connect with you.</p>
               </div>
               <Link href="/dashboard/profile/live-edit" className="btn btn--primary btn--sm">

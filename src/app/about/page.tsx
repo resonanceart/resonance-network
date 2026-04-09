@@ -2,13 +2,13 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'About — An Artist-Led Platform for Ambitious Creative Work',
+  title: 'About | An Artist-Led Platform for Ambitious Creative Work',
   description: 'Built by artists, for artists. Resonance Network is a curated platform where ambitious creative projects find the people and pathways to get built.',
   alternates: {
     canonical: 'https://resonancenetwork.org/about',
   },
   openGraph: {
-    title: 'About Resonance Network — Art Collaboration Platform',
+    title: 'About Resonance Network | Art Collaboration Platform',
     description: 'An artist-led collaboration platform connecting creators of ambitious projects with the expertise to make them real.',
     url: 'https://resonancenetwork.org/about',
     type: 'website',
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'About Resonance Network — Art Collaboration Platform',
+    title: 'About Resonance Network | Art Collaboration Platform',
     description: 'An artist-led platform connecting creators of ambitious projects with the collaborators to make them real.',
     images: [{ url: '/og-image.jpg' }],
   },
@@ -59,7 +59,7 @@ export default function AboutPage() {
             <div>
               <p className="mission-vision__label">Vision</p>
               <p className="mission-vision__text">
-                We envision a world where immersive public art and regenerative design form the cultural infrastructure of the future — fostering shared ritual, ecological stewardship, and creative solidarity across borders.
+                We envision a world where immersive public art and regenerative design form the cultural infrastructure of the future, fostering shared ritual, ecological stewardship, and creative solidarity across borders.
               </p>
             </div>
           </div>
@@ -71,7 +71,7 @@ export default function AboutPage() {
         <div className="container">
           <p className="section-label">Core Values &amp; Evaluation</p>
           <h2>What Guides Us</h2>
-          <p className="about-section__intro">These eight values guide everything we do — from how we collaborate to how we evaluate projects for the network.</p>
+          <p className="about-section__intro">These eight values guide everything we do, from how we collaborate to how we evaluate projects for the network.</p>
           <div className="values-grid values-grid--compact">
             <div className="value-card value-card--title-only value-card--accent-1"><h3>Resonance</h3></div>
             <div className="value-card value-card--title-only value-card--accent-2"><h3>Inspiration</h3></div>
@@ -105,7 +105,7 @@ export default function AboutPage() {
               </div>
             </div>
             <blockquote className="about-pullquote about-pullquote--centered" style={{ marginTop: 'var(--space-6)' }}>
-              <p>The message is never &quot;no.&quot; It is <em>&quot;not yet — and here&apos;s how to come back.&quot;</em></p>
+              <p>The message is never &quot;no.&quot; It is <em>&quot;not yet, and here&apos;s how to come back.&quot;</em></p>
             </blockquote>
 
             {/* Full Scorecard CTA */}
@@ -127,7 +127,7 @@ export default function AboutPage() {
                 Download Full Scorecard
               </a>
               <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
-                PDF — 8 value domains, scoring criteria, and fit-level definitions
+                PDF with 8 value domains, scoring criteria, and fit-level definitions
               </p>
             </div>
           </div>
@@ -141,7 +141,7 @@ export default function AboutPage() {
             <p className="section-label">Purpose</p>
             <h2>The Gap We Close</h2>
             <p className="about-gap__text">
-              Visionary spatial projects — immersive installations, regenerative pavilions, ecological environments — rarely fail because the vision isn&apos;t strong enough. They stall because creators are isolated from the collaborators, technical expertise, and funding pathways they need. Resonance Network exists to close that gap.
+              Visionary spatial projects like immersive installations, regenerative pavilions, ecological environments rarely fail because the vision isn&apos;t strong enough. They stall because creators are isolated from the collaborators, technical expertise, and funding pathways they need. Resonance Network exists to close that gap.
             </p>
           </div>
         </div>
@@ -210,7 +210,7 @@ export default function AboutPage() {
               </div>
               <div className="step-content">
                 <h3>Publish or Guide</h3>
-                <p>Approved projects are published to the network. Projects not yet ready receive clear, actionable feedback — with an invitation to resubmit.</p>
+                <p>Approved projects are published to the network. Projects not yet ready receive clear, actionable feedback with an invitation to resubmit.</p>
               </div>
             </div>
           </div>

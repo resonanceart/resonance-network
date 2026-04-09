@@ -81,7 +81,7 @@ export async function POST(request: Request) {
         try {
           await sendEmail({
             to: email,
-            subject: 'We received your profile — Resonance Network',
+            subject: 'We received your profile | Resonance Network',
             html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:40px 24px">
 <div style="background:#fff;border-radius:12px;padding:32px;border:1px solid #e5e2dc">
 <h2 style="color:#14b8a6;margin:0 0 16px;font-size:14px;text-transform:uppercase;letter-spacing:0.1em">Resonance Network</h2>
@@ -92,7 +92,7 @@ export async function POST(request: Request) {
 <a href="${siteUrl}/preview/profile/${inserted.id}" style="display:inline-block;padding:14px 32px;background:#14b8a6;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Preview Your Profile</a>
 </div>
 <p>Welcome to the network!</p>
-<p style="color:#888;margin-top:24px">— The Resonance Network Team</p>
+<p style="color:#888;margin-top:24px">, The Resonance Network Team</p>
 </div></div>`,
           })
         } catch (err) { console.error('Applicant confirmation error:', (err as Error).message) }

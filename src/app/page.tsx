@@ -40,7 +40,7 @@ export default async function HomePage() {
       <section className="site-hero">
         <Image
           src="/assets/images/projects/money-shot.png"
-          alt="Resonance — immersive spatial art installation"
+          alt="Resonance, immersive spatial art installation"
           className="site-hero__img"
           fill
           priority

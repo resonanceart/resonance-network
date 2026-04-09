@@ -208,7 +208,7 @@ function ProjectPreviewInner() {
               ? 'This project is live on the network'
               : project.status === 'new'
                 ? 'Submitted for review'
-                : 'Draft preview — not yet submitted'}
+                : 'Draft preview, not yet submitted'}
           </span>
           <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
             <Link href={`/dashboard/projects/live-edit?id=${projectId}`} style={{ color: '#fff', fontSize: 'var(--text-sm)', textDecoration: 'underline' }}>

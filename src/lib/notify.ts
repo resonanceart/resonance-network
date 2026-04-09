@@ -102,7 +102,7 @@ function buildEmailTemplate(
         <a href="${adminUrl}" style="color:#888;font-size:13px;text-decoration:underline">Go to Admin Dashboard</a>
       </div>
     </div>
-    <p style="text-align:center;margin-top:24px;font-size:12px;color:#aaa">Resonance Network — resonanceartcollective@gmail.com</p>
+    <p style="text-align:center;margin-top:24px;font-size:12px;color:#aaa">Resonance Network | resonanceartcollective@gmail.com</p>
   </div>
 </body>
 </html>`

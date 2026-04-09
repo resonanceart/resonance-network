@@ -266,7 +266,7 @@ export default function ProfilePreviewPage() {
       <div style={{ position: 'sticky', top: 64, zIndex: 100, background: 'var(--color-primary)', color: '#fff', padding: 'var(--space-2) 0', textAlign: 'center' }}>
         <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-4)' }}>
           <span style={{ fontSize: 'var(--text-sm)', fontWeight: 500 }}>
-            {profileVisibility === 'published' ? 'This is your live profile' : 'Preview. This profile has not been published yet.'}
+            {profileVisibility === 'published' ? 'This is your live profile' : 'Preview, this profile has not been published yet'}
           </span>
           <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
             <Link href="/dashboard/profile/live-edit" style={{ color: '#fff', fontSize: 'var(--text-sm)', textDecoration: 'underline' }}>

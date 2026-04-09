@@ -24,7 +24,7 @@ export async function generateMetadata({
   if (!project) return {}
   const domainStr = project.domains.slice(0, 2).join(' & ')
   const title = domainStr
-    ? `${project.title} — ${domainStr} | Resonance Network`
+    ? `${project.title}, ${domainStr} | Resonance Network`
     : `${project.title} | Resonance Network`
   return {
     title,

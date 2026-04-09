@@ -17,7 +17,7 @@
     ],
     "heroImage": {
       "url": "https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=1600&q=80",
-      "alt": "Terra Nexus — regenerative community pavilion concept"
+      "alt": "Terra Nexus, regenerative community pavilion concept"
     },
     "galleryImages": [
       {
@@ -50,7 +50,7 @@
     "updates": [
       {
         "date": "2026-03-10",
-        "text": "Schematic design finalized — integrating constructed wetland and rammed earth wall systems.",
+        "text": "Schematic design finalized, integrating constructed wetland and rammed earth wall systems.",
         "link": null
       },
       {
@@ -59,8 +59,8 @@
         "link": null
       }
     ],
-    "experience": "Approaching Terra Nexus, visitors first hear water — the soft movement of constructed wetlands filtering stormwater through gravel beds and native plantings. The pavilion's rammed earth walls radiate warmth, their layered strata telling the geological story of the site. Inside, the gathering space opens to a living roof where rainwater is visible moving through the system. The air smells of wet earth and native grasses. Community members gather on built-in earthen benches for workshops, meals, and conversation — surrounded by the quiet evidence that damaged land can be brought back to life.",
-    "artistStory": "Jordan Clarke grew up watching vacant lots in their Detroit neighborhood accumulate trash and standing water. Trained as both an ecologist and an architect, Jordan became obsessed with the question: what if the most neglected urban land could become the most cherished? Terra Nexus emerged from a decade of community work — mapping brownfield sites, running soil remediation workshops, and designing small-scale rain gardens with neighbors. This project is the culmination of that journey: a full-scale demonstration that regenerative infrastructure can be beautiful, functional, and community-owned.",
+    "experience": "Approaching Terra Nexus, visitors first hear water, the soft movement of constructed wetlands filtering stormwater through gravel beds and native plantings. The pavilion's rammed earth walls radiate warmth, their layered strata telling the geological story of the site. Inside, the gathering space opens to a living roof where rainwater is visible moving through the system. The air smells of wet earth and native grasses. Community members gather on built-in earthen benches for workshops, meals, and conversation, surrounded by the quiet evidence that damaged land can be brought back to life.",
+    "artistStory": "Jordan Clarke grew up watching vacant lots in their Detroit neighborhood accumulate trash and standing water. Trained as both an ecologist and an architect, Jordan became obsessed with the question: what if the most neglected urban land could become the most cherished? Terra Nexus emerged from a decade of community work: mapping brownfield sites, running soil remediation workshops, and designing small-scale rain gardens with neighbors. This project is the culmination of that journey: a full-scale demonstration that regenerative infrastructure can be beautiful, functional, and community-owned.",
     "goals": [
       "Remediate a brownfield site through constructed wetland systems",
       "Create a year-round community gathering pavilion with passive climate control",
@@ -75,7 +75,7 @@
     "slug": "luminous-currents",
     "title": "Luminous Currents",
     "eyebrow": "Engineering | Experimental Technology",
-    "shortDescription": "Hundreds of solar-powered light elements that sway with wind and water currents — a kinetic sculpture for public waterfronts.",
+    "shortDescription": "Hundreds of solar-powered light elements that sway with wind and water currents, a kinetic sculpture for public waterfronts.",
     "stage": "Engineering",
     "status": "published",
     "domains": [
@@ -89,7 +89,7 @@
     ],
     "heroImage": {
       "url": "https://images.unsplash.com/photo-1504297050568-910d24c426d3?w=1600&q=80",
-      "alt": "Luminous Currents — kinetic light sculpture for waterfront spaces"
+      "alt": "Luminous Currents, kinetic light sculpture for waterfront spaces"
     },
     "galleryImages": [
       {
@@ -128,12 +128,12 @@
       },
       {
         "date": "2026-01-20",
-        "text": "Structural engineering review complete — stainless steel mast design validated.",
+        "text": "Structural engineering review complete, stainless steel mast design validated.",
         "link": null
       }
     ],
-    "experience": "At dusk, the waterfront transforms. Hundreds of slender steel masts begin to glow — soft points of light that sway and pulse in response to wind gusts and tidal data from sensors below the surface. The effect is oceanic: a field of bioluminescent organisms breathing with the harbor. Visitors walk among the masts, their movement triggering subtle shifts in color temperature. On calm nights the light is steady and meditative; during storms, the entire field surges with intensity. The installation makes invisible natural forces — wind, current, tide — tangible and luminous.",
-    "artistStory": "Ingrid Voss trained as a mechanical engineer before pivoting to art, drawn by a desire to make ecological data felt rather than read. Growing up on the Dutch coast, she watched the relationship between water, wind, and human infrastructure with an engineer's eye and an artist's heart. Her early kinetic sculptures were small — wind-driven mobiles and sensor-reactive light objects. Luminous Currents is her most ambitious project: an attempt to build an instrument that lets an entire waterfront breathe visibly, translating the invisible rhythms of coastal ecology into shared public experience.",
+    "experience": "At dusk, the waterfront transforms. Hundreds of slender steel masts begin to glow, soft points of light that sway and pulse in response to wind gusts and tidal data from sensors below the surface. The effect is oceanic: a field of bioluminescent organisms breathing with the harbor. Visitors walk among the masts, their movement triggering subtle shifts in color temperature. On calm nights the light is steady and meditative; during storms, the entire field surges with intensity. The installation makes invisible natural forces (wind, current, tide) tangible and luminous.",
+    "artistStory": "Ingrid Voss trained as a mechanical engineer before pivoting to art, drawn by a desire to make ecological data felt rather than read. Growing up on the Dutch coast, she watched the relationship between water, wind, and human infrastructure with an engineer's eye and an artist's heart. Her early kinetic sculptures were small, wind-driven mobiles and sensor-reactive light objects. Luminous Currents is her most ambitious project: an attempt to build an instrument that lets an entire waterfront breathe visibly, translating the invisible rhythms of coastal ecology into shared public experience.",
     "goals": [
       "Install 300–500 solar-powered kinetic light elements on a public waterfront",
       "Visualize real-time wind and tidal data through responsive light behavior",
@@ -148,7 +148,7 @@
     "slug": "mycelium-sound-chamber",
     "title": "Mycelium Sound Chamber",
     "eyebrow": "Material Innovation | Ecological Design",
-    "shortDescription": "An acoustic installation grown from living mycelium — where material science and sensory architecture meet.",
+    "shortDescription": "An acoustic installation grown from living mycelium, where material science and sensory architecture meet.",
     "stage": "Design Development",
     "status": "published",
     "domains": [
@@ -162,7 +162,7 @@
     ],
     "heroImage": {
       "url": "https://images.unsplash.com/photo-1533134486753-c833f0ed4866?w=1600&q=80",
-      "alt": "Mycelium Sound Chamber — organic acoustic installation"
+      "alt": "Mycelium Sound Chamber, organic acoustic installation"
     },
     "galleryImages": [
       {
@@ -179,7 +179,7 @@
       }
     ],
     "overviewLead": "A new kind of acoustic space grown from living materials.",
-    "overviewBody": "The Mycelium Sound Chamber explores how fungal networks can be shaped into acoustic architecture — combining material science, acoustic engineering, and sensory design into a single immersive environment.",
+    "overviewBody": "The Mycelium Sound Chamber explores how fungal networks can be shaped into acoustic architecture, combining material science, acoustic engineering, and sensory design into a single immersive environment.",
     "leadArtistName": "Sera Okafor",
     "leadArtistBio": "Artist and material researcher working with biological materials in architectural contexts.",
     "collaborators": [],
@@ -187,7 +187,7 @@
     "contactEmail": "studio@seraokafor.com",
     "milestones": [
       { "label": "Material Research Phase", "completed": true },
-      { "label": "Acoustic Testing — Lab Scale", "completed": true },
+      { "label": "Acoustic Testing, Lab Scale", "completed": true },
       { "label": "Growth Protocol Established", "completed": true },
       { "label": "Full-Scale Panel Fabrication", "completed": false },
       { "label": "Acoustic Chamber Design Finalized", "completed": false }
@@ -204,8 +204,8 @@
         "link": null
       }
     ],
-    "experience": "The chamber entrance is a threshold — crossing from the noise of the outside world into a space that absorbs sound in a way that feels almost biological. The walls are alive: grown from mycelium composites, their surfaces are soft, irregular, and faintly warm to the touch. Sound behaves differently here — spoken words dissolve quickly, footsteps vanish, and what remains is a deep, enveloping quiet punctuated by carefully composed ambient tones that seem to emerge from the material itself. Visitors report feeling held, as if the space is listening back.",
-    "artistStory": "Sera Okafor's path to the Mycelium Sound Chamber began in a university mycology lab, where she was researching the structural properties of fungal networks for her architecture thesis. She became captivated by a simple observation: mycelium composites absorbed sound in ways that synthetic acoustic panels could not. What started as a material science inquiry became an artistic obsession — could you grow a space that fundamentally changed how people experienced sound? Sera left her academic position to pursue this question full-time, founding a studio practice that bridges material research and immersive art.",
+    "experience": "The chamber entrance is a threshold, crossing from the noise of the outside world into a space that absorbs sound in a way that feels almost biological. The walls are alive: grown from mycelium composites, their surfaces are soft, irregular, and faintly warm to the touch. Sound behaves differently here. Spoken words dissolve quickly, footsteps vanish, and what remains is a deep, enveloping quiet punctuated by carefully composed ambient tones that seem to emerge from the material itself. Visitors report feeling held, as if the space is listening back.",
+    "artistStory": "Sera Okafor's path to the Mycelium Sound Chamber began in a university mycology lab, where she was researching the structural properties of fungal networks for her architecture thesis. She became captivated by a simple observation: mycelium composites absorbed sound in ways that synthetic acoustic panels could not. What started as a material science inquiry became an artistic obsession: could you grow a space that fundamentally changed how people experienced sound? Sera left her academic position to pursue this question full-time, founding a studio practice that bridges material research and immersive art.",
     "goals": [
       "Grow architectural-scale acoustic panels from mycelium composites",
       "Achieve measurable acoustic performance exceeding conventional materials",
@@ -220,7 +220,7 @@
     "slug": "canopy-commons",
     "title": "Canopy Commons",
     "eyebrow": "Public Space | Community Infrastructure",
-    "shortDescription": "A modular shade and gathering system for underserved public spaces — designed for workshops, markets, and community life.",
+    "shortDescription": "A modular shade and gathering system for underserved public spaces, designed for workshops, markets, and community life.",
     "stage": "Concept",
     "status": "published",
     "domains": [
@@ -233,7 +233,7 @@
     ],
     "heroImage": {
       "url": "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?w=1600&q=80",
-      "alt": "Canopy Commons — public shade and gathering structure"
+      "alt": "Canopy Commons, public shade and gathering structure"
     },
     "galleryImages": [
       {
@@ -250,7 +250,7 @@
       }
     ],
     "overviewLead": "A modular shade system that activates public space for community gathering and civic life.",
-    "overviewBody": "Canopy Commons is a modular tensile shade system designed for deployment in underserved public spaces — parks, plazas, and street corners — creating covered areas for workshops, markets, ceremonies, and everyday gathering.",
+    "overviewBody": "Canopy Commons is a modular tensile shade system designed for deployment in underserved public spaces (parks, plazas, and street corners) creating covered areas for workshops, markets, ceremonies, and everyday gathering.",
     "leadArtistName": "Marcus Osei",
     "leadArtistBio": "Architect and community organizer focused on equitable public space design.",
     "collaborators": [],
@@ -276,7 +276,7 @@
       }
     ],
     "experience": "Under the canopy, the quality of public space changes immediately. Shade transforms a sun-blasted plaza into a place people want to stay. The tensile fabric filters light into soft, warm tones, and the modular steel structure creates a sense of architectural presence without walls. On market days, vendors set up beneath the canopy's bays. On weekday mornings, elders gather for coffee. On weekends, the space hosts workshops, performances, and community meetings. The structure is simple enough to be erected by community members in a day, but designed with enough craft and intention to feel permanent and cared for.",
-    "artistStory": "Marcus Osei spent fifteen years as a practicing architect watching his firm design beautiful public spaces that nobody from his own neighborhood would ever use. The disconnect between who designs public infrastructure and who needs it most became the central question of his practice. He left his firm to work directly with underserved communities in South Los Angeles, running shade audits that mapped which neighborhoods had tree cover and which had none. Canopy Commons emerged from those audits — a direct response to the reality that in many neighborhoods, there is simply nowhere to gather outside without baking in the sun.",
+    "artistStory": "Marcus Osei spent fifteen years as a practicing architect watching his firm design beautiful public spaces that nobody from his own neighborhood would ever use. The disconnect between who designs public infrastructure and who needs it most became the central question of his practice. He left his firm to work directly with underserved communities in South Los Angeles, running shade audits that mapped which neighborhoods had tree cover and which had none. Canopy Commons emerged from those audits, a direct response to the reality that in many neighborhoods, there is simply nowhere to gather outside without baking in the sun.",
     "goals": [
       "Deploy modular shade structures in 3 underserved public spaces",
       "Design a system that can be erected by community members without heavy equipment",
@@ -291,7 +291,7 @@
     "slug": "solaris-pavilion",
     "title": "Solaris Pavilion",
     "eyebrow": "Architecture | Ecological Design",
-    "shortDescription": "A gathering structure that follows the sun — generating energy while shading the public space beneath it.",
+    "shortDescription": "A gathering structure that follows the sun, generating energy while shading the public space beneath it.",
     "stage": "Engineering",
     "status": "published",
     "domains": [
@@ -305,7 +305,7 @@
     ],
     "heroImage": {
       "url": "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1600&q=80",
-      "alt": "Solaris Pavilion — solar-responsive gathering structure"
+      "alt": "Solaris Pavilion, solar-responsive gathering structure"
     },
     "galleryImages": [
       {
@@ -321,7 +321,7 @@
         "alt": "Dramatic landscape with expansive sky and light"
       }
     ],
-    "overviewLead": "A public gathering place that generates its own energy — architecture that works with the sun, not against it.",
+    "overviewLead": "A public gathering place that generates its own energy, architecture that works with the sun, not against it.",
     "overviewBody": "The Solaris Pavilion uses a solar-tracking canopy system to shade public space while generating renewable energy. The structure responds to daily and seasonal light cycles, creating a dynamic relationship between architecture, climate, and community.",
     "leadArtistName": "Yuki Tanaka",
     "leadArtistBio": "Architect and sustainable systems designer focused on energy-generating public infrastructure.",
@@ -343,12 +343,12 @@
       },
       {
         "date": "2026-02-05",
-        "text": "Solar panel integration approach finalized — moving to prototype phase.",
+        "text": "Solar panel integration approach finalized, moving to prototype phase.",
         "link": null
       }
     ],
-    "experience": "Standing beneath the Solaris Pavilion, you become aware of time passing in a way buildings rarely allow. The canopy panels shift throughout the day, tracking the sun's arc — casting moving shadow patterns across the gathering space below. In the morning, the panels tilt to let warm light through for a farmers market. By midday, they flatten to maximum shade, and the space beneath feels cool and sheltered. As evening approaches, the panels angle to capture the last light, and the pavilion's integrated lighting slowly takes over, powered entirely by the energy harvested during the day. The building breathes with the sun.",
-    "artistStory": "Yuki Tanaka grew up in a small town in Kyushu, Japan, where her grandparents' home had no air conditioning — instead, it was designed to work with the sun and wind. When she moved to Phoenix, Arizona for architecture school, she was shocked by how American public spaces fought against climate rather than working with it. Solaris Pavilion is her answer: a public structure that doesn't just withstand the sun but collaborates with it. Yuki spent three years developing the solar-tracking canopy mechanism, iterating through dozens of prototypes in her garage workshop before the system achieved the elegance and reliability she demanded.",
+    "experience": "Standing beneath the Solaris Pavilion, you become aware of time passing in a way buildings rarely allow. The canopy panels shift throughout the day, tracking the sun's arc, casting moving shadow patterns across the gathering space below. In the morning, the panels tilt to let warm light through for a farmers market. By midday, they flatten to maximum shade, and the space beneath feels cool and sheltered. As evening approaches, the panels angle to capture the last light, and the pavilion's integrated lighting slowly takes over, powered entirely by the energy harvested during the day. The building breathes with the sun.",
+    "artistStory": "Yuki Tanaka grew up in a small town in Kyushu, Japan, where her grandparents' home had no air conditioning. Instead, it was designed to work with the sun and wind. When she moved to Phoenix, Arizona for architecture school, she was shocked by how American public spaces fought against climate rather than working with it. Solaris Pavilion is her answer: a public structure that doesn't just withstand the sun but collaborates with it. Yuki spent three years developing the solar-tracking canopy mechanism, iterating through dozens of prototypes in her garage workshop before the system achieved the elegance and reliability she demanded.",
     "goals": [
       "Build a net-positive energy public pavilion generating more power than it consumes",
       "Develop a solar-tracking canopy system adaptable to different climates",
@@ -376,7 +376,7 @@
     ],
     "heroImage": {
       "url": "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=1600&q=80",
-      "alt": "Deep Current — underwater-inspired immersive environment"
+      "alt": "Deep Current, underwater-inspired immersive environment"
     },
     "galleryImages": [
       {
@@ -393,7 +393,7 @@
       }
     ],
     "overviewLead": "An immersive ocean experience built from light, sound, and moving fabric.",
-    "overviewBody": "Deep Current creates a complete sensory environment inspired by the deep ocean — a space where visitors feel submerged in movement, light, and sound without water. Kinetic fabric structures move in choreographed patterns while spatial audio and projection create the sensation of being within a living tidal system.",
+    "overviewBody": "Deep Current creates a complete sensory environment inspired by the deep ocean, a space where visitors feel submerged in movement, light, and sound without water. Kinetic fabric structures move in choreographed patterns while spatial audio and projection create the sensation of being within a living tidal system.",
     "leadArtistName": "Amara Diallo",
     "leadArtistBio": "Interdisciplinary artist working with immersive environments and aquatic ecosystems as artistic material.",
     "collaborators": [],
@@ -409,17 +409,17 @@
     "updates": [
       {
         "date": "2026-03-15",
-        "text": "Kinetic fabric prototype tested — choreographed movement patterns validated.",
+        "text": "Kinetic fabric prototype tested, choreographed movement patterns validated.",
         "link": null
       },
       {
         "date": "2026-02-20",
-        "text": "Spatial audio design complete — 24-channel immersive sound system specified.",
+        "text": "Spatial audio design complete, 24-channel immersive sound system specified.",
         "link": null
       }
     ],
-    "experience": "Entering Deep Current is like descending into the ocean without getting wet. The space is dark, vast, and enveloping. Massive fabric structures — translucent and subtly lit from within — move in slow, choreographed undulations overhead, mimicking the motion of kelp forests and jellyfish. A 24-channel spatial audio system fills the room with deep, shifting tidal sounds: whale song, currents, the creak of pressure at depth. Projection maps bioluminescent patterns across the floor and walls, responding to visitors' movement. The experience is both deeply calming and awe-inducing — a reminder of the immensity and beauty of the world beneath the surface.",
-    "artistStory": "Amara Diallo grew up on the coast of Senegal, where the ocean was both livelihood and mythology. She learned to freedive before she learned to read, and the underwater world shaped her sense of what art could be — immersive, enveloping, and felt in the body. After studying sculpture and digital media in Paris, Amara began creating immersive environments that translated her ocean experiences for landlocked audiences. Deep Current is her most personal work: an attempt to give people who may never dive the feeling of being held by the sea — and through that feeling, to build empathy for marine ecosystems under threat.",
+    "experience": "Entering Deep Current is like descending into the ocean without getting wet. The space is dark, vast, and enveloping. Massive fabric structures, translucent and subtly lit from within, move in slow, choreographed undulations overhead, mimicking the motion of kelp forests and jellyfish. A 24-channel spatial audio system fills the room with deep, shifting tidal sounds: whale song, currents, the creak of pressure at depth. Projection maps bioluminescent patterns across the floor and walls, responding to visitors' movement. The experience is both deeply calming and awe-inducing, a reminder of the immensity and beauty of the world beneath the surface.",
+    "artistStory": "Amara Diallo grew up on the coast of Senegal, where the ocean was both livelihood and mythology. She learned to freedive before she learned to read, and the underwater world shaped her sense of what art could be: immersive, enveloping, and felt in the body. After studying sculpture and digital media in Paris, Amara began creating immersive environments that translated her ocean experiences for landlocked audiences. Deep Current is her most personal work: an attempt to give people who may never dive the feeling of being held by the sea, and through that feeling, to build empathy for marine ecosystems under threat.",
     "goals": [
       "Create a 5,000+ sq ft immersive ocean environment using kinetic fabric and spatial audio",
       "Develop a touring-ready installation system that can adapt to different venue sizes",
@@ -434,7 +434,7 @@
     "slug": "tidal-pavilion",
     "title": "Tidal Pavilion",
     "eyebrow": "Architecture | Coastal Ecology",
-    "shortDescription": "A coastal gathering structure shaped by tidal cycles and cultural ritual — architecture that moves with the edge of land and sea.",
+    "shortDescription": "A coastal gathering structure shaped by tidal cycles and cultural ritual, architecture that moves with the edge of land and sea.",
     "stage": "Concept",
     "status": "published",
     "domains": [
@@ -448,7 +448,7 @@
     ],
     "heroImage": {
       "url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80",
-      "alt": "Tidal Pavilion — coastal gathering structure at the edge of land and sea"
+      "alt": "Tidal Pavilion, coastal gathering structure at the edge of land and sea"
     },
     "galleryImages": [
       {
@@ -464,7 +464,7 @@
         "alt": "Resort pavilion structure with coastal setting and water views"
       }
     ],
-    "overviewLead": "A structure that belongs to the tidal edge — shaped by the rhythms of land and sea.",
+    "overviewLead": "A structure that belongs to the tidal edge, shaped by the rhythms of land and sea.",
     "overviewBody": "The Tidal Pavilion proposes a coastal gathering space whose form emerges from tidal ecology and human ritual. Designed for communities at the water's edge, it frames encounter, ceremony, and daily use within an architecture that acknowledges the dynamism of coastal environments.",
     "leadArtistName": "Raia Fatu",
     "leadArtistBio": "Architect and cultural practitioner focused on Pacific coastal communities and tidal ecology.",
@@ -481,17 +481,17 @@
     "updates": [
       {
         "date": "2026-03-01",
-        "text": "Cultural research phase complete — documenting Pacific coastal community gathering traditions.",
+        "text": "Cultural research phase complete, documenting Pacific coastal community gathering traditions.",
         "link": null
       },
       {
         "date": "2026-01-25",
-        "text": "Initial concept sketches developed — exploring forms shaped by tidal movement.",
+        "text": "Initial concept sketches developed, exploring forms shaped by tidal movement.",
         "link": null
       }
     ],
-    "experience": "The Tidal Pavilion is never the same twice. At low tide, the structure sits on exposed rock and sand, its open platforms serving as gathering space for community meals, storytelling, and ceremony. As the tide rises, water enters the lower chambers through designed channels, creating shallow reflecting pools that mirror the sky. At high tide, the pavilion becomes a promontory — visitors stand at the edge of architecture and ocean, spray on their skin, watching the water claim and release the space. The building doesn't resist the tide; it choreographs with it, teaching visitors to read the rhythms of the coast through their bodies.",
-    "artistStory": "Raia Fatu was raised in a fishing village in Samoa, where the boundary between land and sea was never fixed. Buildings were designed to withstand cyclones, ceremonies timed to tidal cycles, and the ocean was understood not as a threat but as a relative. When Raia studied architecture in New Zealand, she found that coastal design was dominated by defensive thinking — seawalls, barriers, retreat. The Tidal Pavilion is her counter-proposal: an architecture that works with tidal systems rather than against them, drawing on Pacific Indigenous knowledge of coastal living that has sustained communities for millennia.",
+    "experience": "The Tidal Pavilion is never the same twice. At low tide, the structure sits on exposed rock and sand, its open platforms serving as gathering space for community meals, storytelling, and ceremony. As the tide rises, water enters the lower chambers through designed channels, creating shallow reflecting pools that mirror the sky. At high tide, the pavilion becomes a promontory. Visitors stand at the edge of architecture and ocean, spray on their skin, watching the water claim and release the space. The building doesn't resist the tide; it choreographs with it, teaching visitors to read the rhythms of the coast through their bodies.",
+    "artistStory": "Raia Fatu was raised in a fishing village in Samoa, where the boundary between land and sea was never fixed. Buildings were designed to withstand cyclones, ceremonies timed to tidal cycles, and the ocean was understood not as a threat but as a relative. When Raia studied architecture in New Zealand, she found that coastal design was dominated by defensive thinking: seawalls, barriers, retreat. The Tidal Pavilion is her counter-proposal: an architecture that works with tidal systems rather than against them, drawing on Pacific Indigenous knowledge of coastal living that has sustained communities for millennia.",
     "goals": [
       "Design a coastal structure that integrates tidal ecology into its architecture",
       "Embed Pacific Indigenous knowledge of coastal living into contemporary design",
@@ -506,7 +506,7 @@
     "slug": "root-network",
     "title": "Root Network",
     "eyebrow": "Ecological Design | Social Impact",
-    "shortDescription": "Ecological corridors woven into urban neighborhoods — living infrastructure designed by the people who live there.",
+    "shortDescription": "Ecological corridors woven into urban neighborhoods, living infrastructure designed by the people who live there.",
     "stage": "Design Development",
     "status": "published",
     "domains": [
@@ -520,7 +520,7 @@
     ],
     "heroImage": {
       "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1600&q=80",
-      "alt": "Root Network — ecological corridors woven into urban neighborhoods"
+      "alt": "Root Network, ecological corridors woven into urban neighborhoods"
     },
     "galleryImages": [
       {
@@ -537,7 +537,7 @@
       }
     ],
     "overviewLead": "Living infrastructure woven block by block into the fabric of urban neighborhoods.",
-    "overviewBody": "Root Network is a participatory infrastructure project that works with urban communities to design and install ecological corridors — continuous green and permeable pathways that connect fragmented urban nature. The project uses art, participatory design, and community engagement to embed ecological thinking into neighborhood planning.",
+    "overviewBody": "Root Network is a participatory infrastructure project that works with urban communities to design and install ecological corridors, continuous green and permeable pathways that connect fragmented urban nature. The project uses art, participatory design, and community engagement to embed ecological thinking into neighborhood planning.",
     "leadArtistName": "Fatima Al-Hassan",
     "leadArtistBio": "Landscape architect and community organizer specializing in urban ecological design and grassroots infrastructure.",
     "collaborators": [],
@@ -562,8 +562,8 @@
         "link": null
       }
     ],
-    "experience": "Walking a Root Network corridor feels different from walking an ordinary sidewalk. The ground is permeable — rainwater soaks in rather than running off. Native plantings line both sides, buzzing with pollinators that have returned since the corridor was installed. Murals and sculptural markers designed by neighborhood residents tell the story of each block. Children use the corridors as safe walking routes to school. Elders tend small garden plots embedded in the pathway. The corridor is infrastructure, art, ecology, and community space woven into a single continuous thread through the neighborhood — proof that urban nature and urban life can share the same ground.",
-    "artistStory": "Fatima Al-Hassan grew up in a neighborhood in East Oakland where the nearest park was a 20-minute bus ride away, but vacant lots were on every block. She became a landscape architect specifically to answer the question: why do some neighborhoods have nature and others don't? After a decade of community organizing and design work, Fatima realized that isolated parks weren't enough — neighborhoods needed continuous ecological infrastructure woven into their daily paths. Root Network is the synthesis of her life's work: a design framework that embeds ecological corridors into the fabric of underserved neighborhoods, one block at a time, designed by the people who live there.",
+    "experience": "Walking a Root Network corridor feels different from walking an ordinary sidewalk. The ground is permeable. Rainwater soaks in rather than running off. Native plantings line both sides, buzzing with pollinators that have returned since the corridor was installed. Murals and sculptural markers designed by neighborhood residents tell the story of each block. Children use the corridors as safe walking routes to school. Elders tend small garden plots embedded in the pathway. The corridor is infrastructure, art, ecology, and community space woven into a single continuous thread through the neighborhood, proof that urban nature and urban life can share the same ground.",
+    "artistStory": "Fatima Al-Hassan grew up in a neighborhood in East Oakland where the nearest park was a 20-minute bus ride away, but vacant lots were on every block. She became a landscape architect specifically to answer the question: why do some neighborhoods have nature and others don't? After a decade of community organizing and design work, Fatima realized that isolated parks weren't enough. Neighborhoods needed continuous ecological infrastructure woven into their daily paths. Root Network is the synthesis of her life's work: a design framework that embeds ecological corridors into the fabric of underserved neighborhoods, one block at a time, designed by the people who live there.",
     "goals": [
       "Install ecological corridors across 6 urban blocks in a pilot neighborhood",
       "Increase permeable surface area by 30% in the pilot zone",
