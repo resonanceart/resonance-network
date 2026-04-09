@@ -389,10 +389,13 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
     }
   }
 
-  // Query user profile by slug column (indexed) with published preference
+  // Query user profile by slug column (indexed) with published preference,
+  // with fallback to runtime slugify for DBs without the slug column yet.
   try {
     let match: Record<string, unknown> | null = null
-    const { data: published } = await supabaseAdmin
+
+    // Try slug column first (may not exist if migration hasn't been applied)
+    const { data: published, error: slugErr } = await supabaseAdmin
       .from('user_profiles')
       .select('*')
       .eq('slug', slug)
@@ -401,7 +404,8 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
 
     if (published) {
       match = published as Record<string, unknown>
-    } else {
+    } else if (!slugErr || !slugErr.message?.includes('does not exist')) {
+      // Slug column exists but no published match — try any visibility
       const { data: anyRow } = await supabaseAdmin
         .from('user_profiles')
         .select('*')
@@ -410,12 +414,11 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
       if (anyRow) match = anyRow as Record<string, unknown>
     }
 
-    // Legacy fallback: match by slugified display_name for rows without slug column
+    // Fallback: slug column missing or no match — try runtime slugify on all profiles
     if (!match) {
       const { data: allUsers } = await supabaseAdmin
         .from('user_profiles')
         .select('*')
-        .is('slug', null)
         .limit(500)
       if (allUsers) {
         match = (allUsers.find(
