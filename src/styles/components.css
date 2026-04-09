@@ -16421,4 +16421,9 @@ main {
     flex-direction: column;
     gap: var(--space-1);
   }
+
+  /* Clear cookie banner on mobile */
+  .import-url-section {
+    padding-bottom: var(--space-16);
+  }
 }
