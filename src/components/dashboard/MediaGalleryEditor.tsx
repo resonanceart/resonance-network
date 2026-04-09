@@ -49,51 +49,105 @@ export default function MediaGalleryEditor({ items, onChange, onUpload }: MediaG
     onChange(next);
   }
 
-  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = '';
 
-    const img = new Image();
-    img.onload = async () => {
-      const maxWidth = 1200;
-      let width = img.width;
-      let height = img.height;
+    const nextOrder = sorted.length > 0 ? sorted[sorted.length - 1].order + 1 : 0;
 
-      if (width > maxWidth) {
-        height = Math.round((height * maxWidth) / width);
-        width = maxWidth;
+    // Try to resize; fall back to original file on any failure
+    let fileToUpload: File = file;
+    try {
+      const resized = await resizeImage(file, 1200);
+      if (resized) fileToUpload = resized;
+    } catch {
+      // Resize failed — upload original
+    }
+
+    if (onUpload) {
+      const url = await onUpload(fileToUpload, 'gallery');
+      if (url) {
+        onChange([...sorted, { url, alt: '', type: 'image', order: nextOrder }]);
       }
-
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      ctx.drawImage(img, 0, 0, width, height);
-
-      const nextOrder = sorted.length > 0 ? sorted[sorted.length - 1].order + 1 : 0;
-
-      if (onUpload) {
-        // Upload resized image to Storage instead of keeping as base64
-        const blob = await new Promise<Blob | null>(resolve =>
-          canvas.toBlob(resolve, 'image/jpeg', 0.85)
-        );
-        if (!blob) return;
-        const resizedFile = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
-        const url = await onUpload(resizedFile, 'gallery');
-        if (url) {
-          onChange([...sorted, { url, alt: '', type: 'image', order: nextOrder }]);
-        }
-      } else {
-        // Fallback: use base64 data URL
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    } else {
+      const dataUrl = await fileToDataUrl(fileToUpload);
+      if (dataUrl) {
         onChange([...sorted, { url: dataUrl, alt: '', type: 'image', order: nextOrder }]);
       }
-    };
+    }
+  }
 
-    img.src = URL.createObjectURL(file);
-    e.target.value = '';
+  function resizeImage(file: File, maxWidth: number): Promise<File | null> {
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => resolve(null), 10_000);
+      const objectUrl = URL.createObjectURL(file);
+
+      const img = new Image();
+      img.onload = () => {
+        try {
+          let width = img.width;
+          let height = img.height;
+
+          if (width <= maxWidth) {
+            clearTimeout(timeout);
+            URL.revokeObjectURL(objectUrl);
+            resolve(null); // No resize needed — use original
+            return;
+          }
+
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            clearTimeout(timeout);
+            URL.revokeObjectURL(objectUrl);
+            resolve(null);
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => {
+              clearTimeout(timeout);
+              URL.revokeObjectURL(objectUrl);
+              if (!blob) { resolve(null); return; }
+              const resized = new File(
+                [blob],
+                file.name.replace(/\.[^.]+$/, '.jpg'),
+                { type: 'image/jpeg' }
+              );
+              resolve(resized);
+            },
+            'image/jpeg',
+            0.85
+          );
+        } catch {
+          clearTimeout(timeout);
+          URL.revokeObjectURL(objectUrl);
+          resolve(null);
+        }
+      };
+      img.onerror = () => {
+        clearTimeout(timeout);
+        URL.revokeObjectURL(objectUrl);
+        resolve(null); // Image can't be decoded — use original
+      };
+      img.src = objectUrl;
+    });
+  }
+
+  function fileToDataUrl(file: File): Promise<string | null> {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
   }
 
   function handleAddVideo() {
