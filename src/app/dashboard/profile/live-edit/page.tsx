@@ -572,6 +572,7 @@ export default function LiveProfileEditor() {
   const lastChangeTime = useRef(0)
   const profileFetchedRef = useRef(false)
   const savingRef = useRef(false)
+  const savingPromiseRef = useRef<Promise<void> | null>(null)
 
   // Track changes
   const markDirty = useCallback(() => {
@@ -780,84 +781,99 @@ export default function LiveProfileEditor() {
   }, [hasChanges])
 
   async function saveAll(silent = false) {
-    if (savingRef.current) return // Prevent concurrent saves
+    // If a save is already in flight, wait for it instead of skipping.
+    // This prevents the Preview button from navigating before data is
+    // persisted when an auto-save is running concurrently.
+    if (savingRef.current && savingPromiseRef.current) {
+      await savingPromiseRef.current
+      return
+    }
+    if (savingRef.current) return
+
     savingRef.current = true
     setSaving(true)
     setErrorMessage(null)
-    try {
-      const res = await fetch('/api/user/profile', {
-        method: 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          display_name: displayName.trim(),
-          bio: bio.trim() || null,
-          location: location.trim() || null,
-          website: website.trim() || null,
-          skills: skills.length > 0 ? skills : null,
-          avatar_url: avatarUrl,
-          tools_and_materials: toolsAndMaterials.length > 0 ? toolsAndMaterials : null,
-          availability_status: availabilityStatus || null,
-          availability_note: availabilityNote.trim() || null,
-          cover_image_url: coverImageUrl,
-          cover_position: { x: 50, y: coverPositionY, scale: 1, avatarY: avatarPositionY },
-          professional_title: professionalTitle.trim() || null,
-          pronouns: pronouns.trim() || null,
-          location_secondary: locationSecondary.trim() || null,
-          availability_types: availabilityTypes,
-          social_links: socialLinks,
-          profile_skills: profileSkills,
-          profile_tools: profileTools,
-          artist_statement: artistStatement.trim() || null,
-          philosophy: philosophy.trim() || null,
-          achievements: achievements.length > 0 ? achievements : null,
-          timeline: timeline.length > 0 ? timeline : null,
-          accent_color: accentColor,
-          // Save all gallery items as unified array for consistent ordering
-          media_gallery: (() => {
-            const allItems = buildGalleryItems()
-            return allItems.length > 0 ? allItems.map(item => ({
-              id: item.id,
-              type: item.type,
-              url: item.url,
-              thumbnail: item.thumbnail,
-              title: item.title,
-              subtitle: item.subtitle,
-              order: item.order,
-            })) : null
-          })(),
-          past_work: null, // consolidated into media_gallery
-          resume_url: resumeUrl,
-          portfolio_pdf_url: portfolioPdfUrl,
-          media_links: null, // consolidated into media_gallery
-          links: links.length > 0 ? links : null,
-          pdf_documents: null, // consolidated into media_gallery
-          section_order: sectionOrder,
-          gallery_order: null, // no longer needed — order is in media_gallery
-        }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        console.error('Profile save failed:', res.status, data)
-        if (!silent) {
-          setErrorMessage(data.error || `Save failed (${res.status}). Please try again.`)
+
+    const doSave = async () => {
+      try {
+        const res = await fetch('/api/user/profile', {
+          method: 'PUT',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            display_name: displayName.trim(),
+            bio: bio.trim() || null,
+            location: location.trim() || null,
+            website: website.trim() || null,
+            skills: skills.length > 0 ? skills : null,
+            avatar_url: avatarUrl,
+            tools_and_materials: toolsAndMaterials.length > 0 ? toolsAndMaterials : null,
+            availability_status: availabilityStatus || null,
+            availability_note: availabilityNote.trim() || null,
+            cover_image_url: coverImageUrl,
+            cover_position: { x: 50, y: coverPositionY, scale: 1, avatarY: avatarPositionY },
+            professional_title: professionalTitle.trim() || null,
+            pronouns: pronouns.trim() || null,
+            location_secondary: locationSecondary.trim() || null,
+            availability_types: availabilityTypes,
+            social_links: socialLinks,
+            profile_skills: profileSkills,
+            profile_tools: profileTools,
+            artist_statement: artistStatement.trim() || null,
+            philosophy: philosophy.trim() || null,
+            achievements: achievements.length > 0 ? achievements : null,
+            timeline: timeline.length > 0 ? timeline : null,
+            accent_color: accentColor,
+            // Save all gallery items as unified array for consistent ordering
+            media_gallery: (() => {
+              const allItems = buildGalleryItems()
+              return allItems.length > 0 ? allItems.map(item => ({
+                id: item.id,
+                type: item.type,
+                url: item.url,
+                thumbnail: item.thumbnail,
+                title: item.title,
+                subtitle: item.subtitle,
+                order: item.order,
+              })) : null
+            })(),
+            past_work: null, // consolidated into media_gallery
+            resume_url: resumeUrl,
+            portfolio_pdf_url: portfolioPdfUrl,
+            media_links: null, // consolidated into media_gallery
+            links: links.length > 0 ? links : null,
+            pdf_documents: null, // consolidated into media_gallery
+            section_order: sectionOrder,
+            gallery_order: null, // no longer needed, order is in media_gallery
+          }),
+        })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          console.error('Profile save failed:', res.status, data)
+          if (!silent) {
+            setErrorMessage(data.error || `Save failed (${res.status}). Please try again.`)
+          }
+          return
         }
+        setHasChanges(false)
+        if (!silent) {
+          setSavedMessage(true)
+          setTimeout(() => setSavedMessage(false), 3000)
+        }
+      } catch (err) {
+        console.error('Profile save error:', err)
+        if (!silent) {
+          setErrorMessage('Network error. Please check your connection and try again.')
+        }
+      } finally {
         setSaving(false)
-        return
-      }
-      setHasChanges(false)
-      if (!silent) {
-        setSavedMessage(true)
-        setTimeout(() => setSavedMessage(false), 3000)
-      }
-    } catch (err) {
-      console.error('Profile save error:', err)
-      if (!silent) {
-        setErrorMessage('Network error. Please check your connection and try again.')
+        savingRef.current = false
+        savingPromiseRef.current = null
       }
     }
-    setSaving(false)
-    savingRef.current = false
+
+    savingPromiseRef.current = doSave()
+    await savingPromiseRef.current
   }
 
   function openPanel(section: EditSection) {
@@ -1631,7 +1647,7 @@ export default function LiveProfileEditor() {
                       <span className="profile-timeline__year-label">{entry.year}</span>
                       <div className="profile-timeline__content">
                         <strong>{entry.title}</strong>
-                        {entry.organization && <span> — {entry.organization}</span>}
+                        {entry.organization && <span>, {entry.organization}</span>}
                         {entry.description && <p style={{ margin: 'var(--space-1) 0 0', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>{entry.description}</p>}
                       </div>
                     </div>

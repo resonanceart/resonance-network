@@ -19,6 +19,10 @@ export function createSupabaseBrowserClient() {
         flowType: 'pkce',
         detectSessionInUrl: true,
         persistSession: true,
+        // Reduce lock acquire timeout from the default 5s so orphaned
+        // locks from crashed tabs don't block session recovery as long.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...({ lockAcquireTimeout: 2000 } as any),
       },
     }
   )
