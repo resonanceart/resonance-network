@@ -195,7 +195,7 @@ export default function AdminPage() {
   }
 
   async function handleDeleteUser(userId: string, displayName: string) {
-    if (!confirm(\`Are you sure you want to delete \${displayName}? This cannot be undone.\`)) return
+    if (!confirm(`Are you sure you want to delete ${displayName}? This cannot be undone.`)) return
     setActionMsg('')
     try {
       const res = await fetch('/api/admin/users', {
@@ -205,7 +205,7 @@ export default function AdminPage() {
       })
       const data = await res.json()
       if (data.success) {
-        setActionMsg(\`User "\${displayName}" deleted successfully.\`)
+        setActionMsg(`User "${displayName}" deleted successfully.`)
         setUsers(prev => prev.filter(u => u.id !== userId))
         setUserProfiles(prev => prev.filter(up => up.id !== userId))
       } else {

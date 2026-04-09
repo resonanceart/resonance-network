@@ -450,7 +450,6 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
             work_experience: (workExpResult.data as Record<string, unknown>[]) || undefined,
           }
         )
-      }
     }
   } catch {
     // continue
