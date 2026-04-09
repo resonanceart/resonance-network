@@ -1406,7 +1406,7 @@ main {
 
 /* Project experience */
 .project-experience {
-  padding: var(--space-12) 0;
+  padding: var(--space-8) 0;
   border-top: 1px solid var(--color-border);
 }
 
@@ -1466,7 +1466,7 @@ main {
 
 /* Artist section */
 .project-artist {
-  padding: var(--space-12) 0;
+  padding: var(--space-8) 0;
   border-top: 1px solid var(--color-border);
 }
 
@@ -1645,7 +1645,7 @@ main {
 
 /* Project Experience */
 .project-experience {
-  padding: var(--space-12) 0;
+  padding: var(--space-8) 0;
   border-top: 1px solid var(--color-border);
 }
 
@@ -1658,7 +1658,7 @@ main {
 
 /* Project Story */
 .project-story {
-  padding: var(--space-12) 0;
+  padding: var(--space-8) 0;
   border-top: 1px solid var(--color-border);
 }
 
@@ -1671,7 +1671,7 @@ main {
 
 /* Project Goals */
 .project-goals {
-  padding: var(--space-12) 0;
+  padding: var(--space-8) 0;
   border-top: 1px solid var(--color-border);
 }
 
@@ -1713,7 +1713,7 @@ main {
 
 /* Collaboration tasks */
 .project-collab {
-  padding: var(--space-12) 0;
+  padding: var(--space-8) 0;
   border-top: 1px solid var(--color-border);
 }
 
