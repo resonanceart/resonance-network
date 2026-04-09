@@ -478,7 +478,7 @@ export default async function ProjectPage({ params }: { params: { slug: string }
 
       {/* Materials */}
       {project.materials && (
-        <section style={{ padding: 'var(--space-12) 0', borderTop: '1px solid var(--color-border)' }}>
+        <section style={{ padding: 'var(--space-8) 0', borderTop: '1px solid var(--color-border)' }}>
           <div className="container">
             <p className="section-label">Materials &amp; Processes</p>
             <p className="overview-body">{project.materials}</p>
