@@ -3372,7 +3372,7 @@ main {
   position: fixed;
   bottom: var(--space-8);
   right: var(--space-8);
-  z-index: 10000;
+  z-index: 900;
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -3455,6 +3455,16 @@ main {
   }
   .fab-menu__logo { width: 26px; height: 26px; }
   .fab-menu__close { width: 20px; height: 20px; }
+}
+
+/* Ensure footer legal links aren't blocked by FAB on mobile */
+@media (max-width: 767px) {
+  .site-footer {
+    padding-bottom: calc(var(--space-8) + 68px);
+  }
+  .site-footer--compact {
+    padding-bottom: calc(var(--space-5) + 68px);
+  }
 }
 
 /* =========================
