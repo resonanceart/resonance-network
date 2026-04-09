@@ -62,7 +62,7 @@ export default function MediaGalleryEditor({ items, onChange, onUpload }: MediaG
       const resized = await resizeImage(file, 1200);
       if (resized) fileToUpload = resized;
     } catch {
-      // Resize failed — upload original
+      // Resize failed, upload original
     }
 
     if (onUpload) {
@@ -92,7 +92,7 @@ export default function MediaGalleryEditor({ items, onChange, onUpload }: MediaG
           if (width <= maxWidth) {
             clearTimeout(timeout);
             URL.revokeObjectURL(objectUrl);
-            resolve(null); // No resize needed — use original
+            resolve(null); // No resize needed, use original
             return;
           }
 
@@ -135,7 +135,7 @@ export default function MediaGalleryEditor({ items, onChange, onUpload }: MediaG
       img.onerror = () => {
         clearTimeout(timeout);
         URL.revokeObjectURL(objectUrl);
-        resolve(null); // Image can't be decoded — use original
+        resolve(null); // Image can't be decoded, use original
       };
       img.src = objectUrl;
     });
