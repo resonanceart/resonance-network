@@ -38,9 +38,6 @@ export default function JoinPage() {
               <div className="join-card__header">
                 <span className="join-card__emoji">🎨</span>
                 <h2>Share a Project</h2>
-                <p className="join-card__tagline">
-                  You lead creative work and need collaborators to bring it to life.
-                </p>
               </div>
               <ul className="join-card__perks">
                 <li>Curated project page with gallery</li>
@@ -60,9 +57,6 @@ export default function JoinPage() {
               <div className="join-card__header">
                 <span className="join-card__emoji">🛠</span>
                 <h2>Join as Collaborator</h2>
-                <p className="join-card__tagline">
-                  You have skills and want to contribute to ambitious, values-aligned projects.
-                </p>
               </div>
               <ul className="join-card__perks">
                 <li>Browse curated projects seeking your expertise</li>
