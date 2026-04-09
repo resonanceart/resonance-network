@@ -135,7 +135,7 @@ export default function JoinPage() {
       <section className="submit-section">
         <div className="container">
           <h2>Before You Share a Project</h2>
-          <p className="submit-section__intro">Gather these materials so your project can shine:</p>
+          <p className="submit-section__intro">Gather these materials so your project can shine</p>
           <ul className="prepare-list">
             <li>
               <strong>Lead artist information</strong>
