@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { supabaseAdmin } from '@/lib/supabase'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, getClientIp } from '@/lib/sanitize'
 import { validateCsrf } from '@/lib/csrf'
+
+function verifyAdminPassword(password: string | null): boolean {
+  if (!password || !process.env.ADMIN_PASSWORD) return false
+  const pwdBuf = Buffer.from(String(password))
+  const expBuf = Buffer.from(String(process.env.ADMIN_PASSWORD))
+  return pwdBuf.length === expBuf.length && timingSafeEqual(pwdBuf, expBuf)
+}
 
 export async function GET(request: Request) {
   try {
@@ -15,7 +23,7 @@ export async function GET(request: Request) {
     }
 
     const adminPassword = request.headers.get('x-admin-password')
-    if (adminPassword !== process.env.ADMIN_PASSWORD) {
+    if (!verifyAdminPassword(adminPassword)) {
       return NextResponse.json({ success: false, message: 'Unauthorized.' }, { status: 401 })
     }
 
@@ -56,7 +64,7 @@ export async function PUT(request: Request) {
     const body = await request.json()
 
     const adminPassword = body.adminPassword || request.headers.get('x-admin-password')
-    if (adminPassword !== process.env.ADMIN_PASSWORD) {
+    if (!verifyAdminPassword(adminPassword)) {
       return NextResponse.json({ success: false, message: 'Unauthorized.' }, { status: 401 })
     }
 
