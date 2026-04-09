@@ -85,9 +85,7 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
       <section className="collab-header-section">
         <div className="container">
           <h1 className="collab-header__title">Community Connections Board</h1>
-          <p className="collab-header__subtitle">
-            Find roles on ambitious projects, or meet the people building them.
-          </p>
+
 
           <div className="collab-tabs collab-tabs--prominent" role="tablist" aria-label="Community view">
             <button
@@ -118,10 +116,8 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
               <div className="profiles-filter-bar">
                 <div className="profiles-type-tabs" role="tablist" aria-label="Filter by type">
                   {[
-                    { value: '', label: 'All' },
                     { value: 'artist', label: 'Artists' },
                     { value: 'collaborator', label: 'Collaborators' },
-                    { value: 'collective', label: 'Collectives' },
                   ].map(tab => (
                     <button
                       key={tab.value}
@@ -134,25 +130,6 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
                     </button>
                   ))}
                 </div>
-                <input
-                  type="search"
-                  placeholder="Search by name or specialty..."
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  className="profiles-filter-bar__search"
-                  aria-label="Search profiles"
-                />
-                <select
-                  value={selectedSpecialty}
-                  onChange={e => setSelectedSpecialty(e.target.value)}
-                  className="profiles-filter-bar__select"
-                  aria-label="Filter by specialty"
-                >
-                  <option value="">All Specialties</option>
-                  {allSpecialties.map(s => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
               </div>
             </div>
           </section>
@@ -232,62 +209,7 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
       {/* Open Roles Tab */}
       {activeTab === 'roles' && (
         <>
-          <section className="collab-filters">
-            <div className="container">
-              <div className="filters-compact">
-                <label htmlFor="collab-search" className="sr-only">Search collaboration opportunities</label>
-                <input
-                  id="collab-search"
-                  type="search"
-                  placeholder="Search opportunities..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="filter-search"
-                  aria-label="Search collaboration opportunities"
-                />
-                <select
-                  value={selectedCategory}
-                  onChange={e => setSelectedCategory(e.target.value)}
-                  className="filter-select"
-                  aria-label="Filter by category"
-                >
-                  <option value="">Category</option>
-                  {CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-                <select
-                  value={selectedLocation}
-                  onChange={e => setSelectedLocation(e.target.value)}
-                  className="filter-select"
-                  aria-label="Filter by location"
-                >
-                  <option value="">Location</option>
-                  {allLocations.map(loc => (
-                    <option key={loc} value={loc}>{loc}</option>
-                  ))}
-                </select>
-                <select
-                  value={selectedStage}
-                  onChange={e => setSelectedStage(e.target.value)}
-                  className="filter-select"
-                  aria-label="Filter by stage"
-                >
-                  <option value="">Stage</option>
-                  {STAGES.map(s => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              </div>
-              {(searchQuery || selectedCategory) && (
-                <p className="filter-count">
-                  {filteredTasks.length} {filteredTasks.length === 1 ? 'opportunity' : 'opportunities'}
-                  {selectedCategory && ` in ${selectedCategory}`}
-                  {searchQuery && ` matching "${searchQuery}"`}
-                </p>
-              )}
-            </div>
-          </section>
+
 
           {(() => {
             const liveTasks = filteredTasks.filter(t => t.source === 'supabase')

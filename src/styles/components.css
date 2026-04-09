@@ -615,7 +615,7 @@ main {
   position: relative;
   z-index: 1;
   width: 100%;
-  padding: 0 var(--gutter) var(--space-12);
+  padding: 0 var(--gutter) var(--space-16, 6rem);
   max-width: var(--container-max);
   margin: 0 auto;
   text-align: center;
@@ -637,12 +637,12 @@ main {
   font-size: clamp(1.5rem, 3vw, 2rem);
   font-weight: 500;
   font-style: italic;
-  color: rgba(255, 255, 255, 0.9);
+  color: #E8A838;
   max-width: 28ch;
-  margin: 0 auto var(--space-8);
+  margin: 0 auto var(--space-10);
   line-height: 1.3;
   letter-spacing: -0.01em;
-  text-shadow: 0 2px 20px rgba(0,0,0,0.35);
+  text-shadow: 0 2px 24px rgba(0,0,0,0.5);
 }
 
 .site-hero__sub {
@@ -670,29 +670,31 @@ main {
 
 /* Hero CTA buttons — solid fill visible on any background */
 .btn--hero {
-  background: #fff;
-  color: #111;
-  border: 2px solid #fff;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  background: #E8A838;
+  color: #1a1008;
+  border: 2px solid #E8A838;
+  box-shadow: 0 2px 16px rgba(232,168,56,0.3);
 }
 
 .btn--hero:hover {
-  background: rgba(255,255,255,0.92);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  background: #D4963A;
+  border-color: #D4963A;
+  box-shadow: 0 4px 24px rgba(232,168,56,0.4);
 }
 
 .btn--hero-outline {
-  background: rgba(255,255,255,0.08);
-  color: #fff;
-  border: 2px solid rgba(255,255,255,0.6);
+  background: rgba(232,155,123,0.1);
+  color: #E89B7B;
+  border: 2px solid rgba(232,155,123,0.5);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   box-shadow: none;
 }
 
 .btn--hero-outline:hover {
-  background: rgba(255,255,255,0.18);
-  border-color: #fff;
+  background: rgba(232,155,123,0.2);
+  border-color: #E89B7B;
+  color: #F0B49A;
 }
 
 .site-hero__actions .btn--outline {
@@ -1262,7 +1264,7 @@ main {
 .project-hero__content {
   position: relative;
   z-index: 2;
-  padding: var(--space-8) var(--gutter) var(--space-10);
+  padding: var(--space-8) var(--gutter) var(--space-8);
   max-width: var(--container-max);
   margin: 0 auto;
   width: 100%;
@@ -1466,7 +1468,7 @@ main {
 
 /* Artist section */
 .project-artist {
-  padding: var(--space-12) 0;
+  padding: var(--space-8) 0;
   border-top: 1px solid var(--color-border);
 }
 
@@ -1713,7 +1715,7 @@ main {
 
 /* Collaboration tasks */
 .project-collab {
-  padding: var(--space-12) 0;
+  padding: var(--space-8) 0;
   border-top: 1px solid var(--color-border);
 }
 
@@ -2566,9 +2568,9 @@ main {
 }
 
 [data-theme="dark"] .collab-tab--active {
-  background: var(--color-primary);
-  color: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  color: #E8A838;
+  border-bottom-color: #E8A838;
+  background: rgba(232,168,56,0.08);
 }
 
 /* =========================
@@ -2602,6 +2604,7 @@ main {
 }
 
 .collab-tabs--prominent .collab-tab {
+  transition: all 0.2s ease;
   font-size: var(--text-base);
   padding: var(--space-3) var(--space-5);
   min-height: 52px;
@@ -2677,6 +2680,7 @@ main {
   }
 
   .collab-tabs--prominent .collab-tab {
+  transition: all 0.2s ease;
     font-size: var(--text-sm);
     padding: var(--space-2) var(--space-3);
     min-height: 44px;
@@ -2915,15 +2919,16 @@ main {
   flex-direction: column;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-left: 3px solid var(--color-primary);
+  border-left: 4px solid var(--color-primary);
   border-radius: 10px;
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-4) var(--space-5) var(--space-4) var(--space-6);
   line-height: 1.5;
 }
 
 .prepare-list li strong {
   display: block;
-  font-size: var(--text-base);
+  font-size: 1.1rem;
+  font-weight: 650;
   color: var(--color-text);
 }
 
@@ -2931,6 +2936,7 @@ main {
   font-size: var(--text-sm);
   color: var(--color-text-secondary);
   margin-top: var(--space-1);
+  line-height: 1.6;
 }
 
 [data-theme="dark"] .prepare-list li {
@@ -13777,19 +13783,20 @@ main {
 @media (max-width: 767px) {
   .profile-header-grid {
     grid-template-columns: 1fr;
-    gap: var(--space-4);
-    text-align: center;
+    gap: var(--space-3);
+    text-align: left;
   }
   .profile-header-grid__photo {
-    width: 200px;
-    height: 260px;
+    width: 180px;
+    height: 240px;
     margin: -60px auto 0;
   }
   .profile-header-grid__name {
     font-size: var(--text-2xl);
+    justify-content: flex-start;
   }
   .profile-link-buttons {
-    justify-content: center;
+    justify-content: flex-start;
   }
   .profile-header-grid__bio {
     text-align: left;
@@ -13798,7 +13805,9 @@ main {
     text-align: left;
   }
   .profile-header-grid__skill-tags {
-    justify-content: center;
+    justify-content: flex-start;
+    overflow: visible;
+    flex-wrap: wrap;
   }
 }
 
@@ -13811,18 +13820,18 @@ main {
     padding: 0 0 var(--space-4);
   }
   .profile-header-grid {
-    gap: var(--space-3);
-    padding: var(--space-4) 0;
+    gap: var(--space-2);
+    padding: var(--space-3) 0;
   }
   .profile-header-grid__photo {
-    width: 160px;
-    height: 210px;
-    margin: -50px auto 0;
+    width: 140px;
+    height: 185px;
+    margin: -40px auto 0;
   }
   .profile-header-grid__name {
     font-size: var(--text-xl);
     gap: var(--space-1);
-    justify-content: center;
+    justify-content: flex-start;
   }
   .profile-header-grid__bio {
     font-size: var(--text-base);
@@ -16469,4 +16478,11 @@ main {
   .import-url-section {
     padding-bottom: var(--space-16);
   }
+}
+
+/* DESIGN-3: Profile sidebar tag overflow fix */
+.profile-skill-tag {
+  overflow: visible;
+  text-overflow: initial;
+  white-space: nowrap;
 }
