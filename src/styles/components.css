@@ -1449,7 +1449,7 @@ main {
 
 /* Project story */
 .project-story {
-  padding: var(--space-8) 0 var(--space-12);
+  padding: var(--space-8) 0;
 }
 
 .project-story h2 {
@@ -5393,7 +5393,7 @@ main {
 /* --- Dashboard Responsive --- */
 @media (max-width: 768px) {
   .dashboard {
-    padding: var(--space-8) 0 var(--space-12);
+    padding: var(--space-8) 0;
   }
 
   .dashboard-stats {
@@ -5913,7 +5913,7 @@ main {
    LEGAL PAGES
    ========================= */
 .legal-page {
-  padding: var(--space-8) 0 var(--space-12);
+  padding: var(--space-8) 0;
 }
 
 .legal-page__container {
