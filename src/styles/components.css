@@ -359,6 +359,9 @@ main {
 
 /* Mobile header: prevent logo from squishing against nav actions */
 @media (max-width: 767px) {
+  .site-header .container {
+    gap: var(--space-3); /* prevent logo text from running into Log In / auth links */
+  }
   .logo {
     flex-shrink: 1;
     overflow: hidden;
@@ -3483,6 +3486,14 @@ main {
   }
   .site-footer--compact {
     padding-bottom: calc(var(--space-5) + 68px);
+  }
+  /* Add bottom clearance for FAB on all main page content */
+  main#main-content {
+    padding-bottom: 80px; /* clear the 56px FAB + spacing */
+  }
+  /* Ensure FAQ list last item clears FAB */
+  .faq-list {
+    padding-bottom: var(--space-8);
   }
 }
 
