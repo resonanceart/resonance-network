@@ -167,7 +167,7 @@ export default function JoinPage() {
           <div className="faq-list">
             <div className="faq-item">
               <h3>What happens after I share my project?</h3>
-              <p>Our curation team reviews every project personally within two weeks. You&apos;ll hear from us either way.</p>
+              <p>Our curation team reviews every project personally and will respond soon after receiving your submission. You&apos;ll hear from us either way.</p>
             </div>
             <div className="faq-item">
               <h3>What if my project gets rejected?</h3>
@@ -226,7 +226,7 @@ export default function JoinPage() {
             </li>
             <li>
               <strong>Our team reviews</strong>
-              <span>Every project is reviewed personally within two weeks</span>
+              <span>Every project is reviewed personally soon after receiving your submission</span>
             </li>
             <li>
               <strong>Accepted projects</strong>
