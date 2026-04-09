@@ -476,6 +476,36 @@ export async function PUT(request: Request) {
 
       if (extError) {
         console.error('Extended profile upsert error:', extError.message)
+        // Retry with only base-migration columns (guaranteed to exist)
+        // Enhancement columns (accent_color, cover_position, section_order, gallery_order,
+        // gallery_layout, gallery_columns, etc.) may not exist if migrations haven't been applied
+        const coreColumns = [
+          'media_gallery', 'cover_image_url', 'philosophy', 'timeline',
+          'tools_and_materials', 'availability_status', 'availability_note',
+          'projects', 'links', 'testimonials', 'achievements',
+        ]
+        const coreFields: Record<string, unknown> = {}
+        for (const key of coreColumns) {
+          if (key in extendedFields) coreFields[key] = extendedFields[key]
+        }
+        if (Object.keys(coreFields).length > 0) {
+          const { data: retryData, error: retryError } = await supabaseAdmin
+            .from('profile_extended')
+            .upsert({ id: user.id, ...coreFields }, { onConflict: 'id' })
+            .select()
+            .single()
+          if (retryError) {
+            console.error('Extended profile retry error:', retryError.message)
+            // Return the error to the client so they know the save failed
+            return NextResponse.json(
+              { error: `Profile media save failed: ${retryError.message}`, profile },
+              { status: 500 }
+            )
+          } else {
+            extendedProfile = retryData
+            console.log('Extended profile saved with core columns only (some enhancement columns may be missing)')
+          }
+        }
       } else {
         extendedProfile = data
       }
