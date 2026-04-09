@@ -37,7 +37,7 @@ export function Footer() {
               <div className="footer-links">
                 <Link href="/join">Share a Project</Link>
                 <Link href="/about#process">Curation Process</Link>
-                <Link href="/join#faq">FAQ</Link>
+                <Link href="/about#process">How It Works</Link>
                 <a href="https://fundrazr.com/72glEe" target="_blank" rel="noopener noreferrer">Support / Donate</a>
               </div>
             </div>

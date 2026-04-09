@@ -59,7 +59,7 @@ export default async function HomePage() {
               className="btn btn--hero"
             />
             <AuthAwareCTA
-              loggedOutHref="/login?tab=signup&redirect=/dashboard/welcome"
+              loggedOutHref="/import?mode=profile"
               loggedOutLabel="Help Build Art"
               loggedInHref="/dashboard/profile/live-edit"
               loggedInLabel="Help Build Art"
