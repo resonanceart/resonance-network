@@ -38,9 +38,6 @@ export default function JoinPage() {
               <div className="join-card__header">
                 <span className="join-card__emoji">🎨</span>
                 <h2>Share a Project</h2>
-                <p className="join-card__tagline">
-                  You lead creative work and need collaborators to bring it to life.
-                </p>
               </div>
               <ul className="join-card__perks">
                 <li>Curated project page with gallery</li>
@@ -60,9 +57,6 @@ export default function JoinPage() {
               <div className="join-card__header">
                 <span className="join-card__emoji">🛠</span>
                 <h2>Join as Collaborator</h2>
-                <p className="join-card__tagline">
-                  You have skills and want to contribute to ambitious, values-aligned projects.
-                </p>
               </div>
               <ul className="join-card__perks">
                 <li>Browse curated projects seeking your expertise</li>
@@ -141,7 +135,7 @@ export default function JoinPage() {
       <section className="submit-section">
         <div className="container">
           <h2>Before You Share a Project</h2>
-          <p className="submit-section__intro">Gather these materials so your project can shine:</p>
+          <p className="submit-section__intro">Gather these materials so your project can shine</p>
           <ul className="prepare-list">
             <li>
               <strong>Lead artist information</strong>
@@ -173,7 +167,7 @@ export default function JoinPage() {
           <div className="faq-list">
             <div className="faq-item">
               <h3>What happens after I share my project?</h3>
-              <p>Our curation team reviews every project personally within two weeks. You&apos;ll hear from us either way.</p>
+              <p>Our curation team reviews every project personally and will respond soon after receiving your submission. You&apos;ll hear from us either way.</p>
             </div>
             <div className="faq-item">
               <h3>What if my project gets rejected?</h3>
@@ -232,7 +226,7 @@ export default function JoinPage() {
             </li>
             <li>
               <strong>Our team reviews</strong>
-              <span>Every project is reviewed personally within two weeks</span>
+              <span>Every project is reviewed personally soon after receiving your submission</span>
             </li>
             <li>
               <strong>Accepted projects</strong>

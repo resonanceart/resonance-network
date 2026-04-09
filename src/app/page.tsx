@@ -33,7 +33,7 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero — full-width immersive image + tagline + 2 CTAs */}
+      {/* Hero, full-width immersive image + tagline + 2 CTAs */}
       <section className="site-hero">
         <Image
           src="/assets/images/projects/money-shot.png"
