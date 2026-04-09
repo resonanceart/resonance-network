@@ -2,6 +2,7 @@
   {
     "id": "resonance-structural-engineer",
     "projectId": "resonance",
+    "projectSlug": "sub-resonance-bfba66c8",
     "projectTitle": "Resonance",
     "title": "Structural engineer to validate acoustic chamber load paths",
     "description": "We need a structural engineer experienced with curved timber and composite structures to review and validate the load path design for the main acoustic chambers.",
@@ -21,6 +22,7 @@
   {
     "id": "resonance-lighting-designer",
     "projectId": "resonance",
+    "projectSlug": "sub-resonance-bfba66c8",
     "projectTitle": "Resonance",
     "title": "Lighting designer for responsive ambient system",
     "description": "Seeking a lighting designer to develop the responsive ambient lighting system that integrates with acoustic sensors. Must work with low-voltage LED systems and DMX or similar control protocols.",
@@ -40,6 +42,7 @@
   {
     "id": "resonance-grant-writer",
     "projectId": "resonance",
+    "projectSlug": "sub-resonance-bfba66c8",
     "projectTitle": "Resonance",
     "title": "Grant writer with experience in public art / cultural funding",
     "description": "Looking for a grant writer or funding strategist experienced with public art commissions, NEA grants, and cultural foundation funding. We have a strong project package and need help with 2–3 targeted applications.",
@@ -59,6 +62,7 @@
   {
     "id": "resonance-funding",
     "projectId": "resonance",
+    "projectSlug": "sub-resonance-bfba66c8",
     "projectTitle": "Resonance",
     "title": "Fiscal sponsor or aligned funding partner",
     "description": "Seeking a fiscal sponsor or direct funding partner aligned with public art, ecological design, and immersive cultural experiences. We have a strong project package including renderings, structural documentation, and budget models.",
@@ -77,6 +81,7 @@
   {
     "id": "resonance-site-partner",
     "projectId": "resonance",
+    "projectSlug": "sub-resonance-bfba66c8",
     "projectTitle": "Resonance",
     "title": "Site partner — festival, museum, or civic context",
     "description": "Looking for a museum, cultural festival, public art program, or civic partner with a site and audience where Resonance can be installed and experienced. Ideal contexts include outdoor festivals, beachside or park settings, or cultural institutions with outdoor programming capacity.",
@@ -95,6 +100,7 @@
   {
     "id": "resonance-grant-research",
     "projectId": "resonance",
+    "projectSlug": "sub-resonance-bfba66c8",
     "projectTitle": "Resonance",
     "title": "Grant research lead — arts, ecology, public space",
     "description": "Help map aligned grant opportunities across arts, ecology, and public-space funding. We need someone who can identify the best-fit foundations, government programs, and commissions for a project at the intersection of bamboo architecture, immersive art, and public gathering.",
