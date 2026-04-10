@@ -1,8 +1,6 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { getProfiles, getCollaborationTasksFromSupabase } from '@/lib/data'
-import tasksData from '../../../data/tasks.json'
-import type { CollaborationTask } from '@/types'
 import { CommunityPage } from '@/components/CommunityPage'
 
 export const revalidate = 60
@@ -29,15 +27,10 @@ export const metadata: Metadata = {
 }
 
 export default async function CollaboratePage() {
-  const [profiles, staticTasks, supabaseTasks] = await Promise.all([
+  const [profiles, tasks] = await Promise.all([
     getProfiles(),
-    Promise.resolve(tasksData as CollaborationTask[]),
     getCollaborationTasksFromSupabase(),
   ])
-
-  // Tag static tasks as JSON source, then combine (Supabase first)
-  const taggedStaticTasks = staticTasks.map(t => ({ ...t, source: 'json' as const }))
-  const tasks = [...supabaseTasks, ...taggedStaticTasks]
 
   return (
     <Suspense>

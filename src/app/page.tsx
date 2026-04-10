@@ -29,7 +29,8 @@ export const metadata: Metadata = {
 export const revalidate = 60
 
 export default async function HomePage() {
-  const projects = await getProjects()
+  const allProjects = await getProjects()
+  const projects = allProjects.filter(p => p.source === 'supabase')
 
   return (
     <>

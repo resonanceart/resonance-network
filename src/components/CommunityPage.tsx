@@ -26,7 +26,6 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
   const [selectedSpecialty, setSelectedSpecialty] = useState('')
 
   // Roles tab state
-  const [showAllConcepts, setShowAllConcepts] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedLocation, setSelectedLocation] = useState('')
   const [selectedStage, setSelectedStage] = useState('')
@@ -95,7 +94,7 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
               className={`collab-tab collab-tab--roles${activeTab === 'roles' ? ' collab-tab--active' : ''}`}
               onClick={() => switchTab('roles')}
             >
-              Open Roles <span className="collab-tab__count">{tasks.length}</span>
+              Open Roles <span className="collab-tab__count">{tasks.filter(t => t.source === 'supabase').length}</span>
             </button>
             <button
               role="tab"
@@ -214,7 +213,6 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
 
           {(() => {
             const liveTasks = filteredTasks.filter(t => t.source === 'supabase')
-            const conceptTasks = filteredTasks.filter(t => t.source !== 'supabase')
             return (
               <>
                 {/* Live Roles */}
@@ -229,37 +227,11 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
                       </div>
                     ) : (
                       <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: 'var(--space-6) 0' }}>
-                        {filteredTasks.length === 0
-                          ? 'No roles match your current filters. Try broadening your search.'
-                          : 'No live roles yet. Be the first to submit a project with open roles.'}
+                        No live roles yet. Be the first to submit a project with open roles.
                       </p>
                     )}
                   </div>
                 </section>
-
-                {/* AI Concept Roles */}
-                {conceptTasks.length > 0 && (
-                  <section className="collab-grid" style={{ borderTop: '1px solid var(--color-border)' }}>
-                    <div className="container" style={{ paddingTop: 'var(--space-6)' }}>
-                      <p className="section-label">AI Concept Roles</p>
-                      <div className="task-grid">
-                        {(showAllConcepts ? conceptTasks : conceptTasks.slice(0, 6)).map(task => (
-                          <CollaborationTaskCard key={task.id} task={task} />
-                        ))}
-                      </div>
-                      {conceptTasks.length > 6 && !showAllConcepts && (
-                        <div style={{ textAlign: 'center', marginTop: 'var(--space-6)' }}>
-                          <button
-                            className="btn btn--outline"
-                            onClick={() => setShowAllConcepts(true)}
-                          >
-                            Show More Roles ({conceptTasks.length - 6} more)
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </section>
-                )}
               </>
             )
           })()}
