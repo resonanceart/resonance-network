@@ -1,0 +1,567 @@
+/* ============================================================
+   CLAIM PAGE — /claim?token=xxx
+   Public-facing page where an artist previews the profile
+   Elliot built for them and claims it with a password.
+
+   Aesthetic: cream background, white cards, teal accent.
+   Matches src/lib/email-templates.ts so the email → web
+   handoff feels continuous. Light theme only, mobile-first.
+   ============================================================ */
+
+.claim-page {
+  min-height: 100vh;
+  background: #f5f3ee;
+  color: #1a1a1a;
+  font-family: var(--font-body, -apple-system, BlinkMacSystemFont,
+               'Segoe UI', Roboto, Helvetica, Arial, sans-serif);
+  padding: 32px 16px 64px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.claim-page__container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ---------- Header ---------- */
+.claim-page__header {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 40px;
+}
+
+.claim-page__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.claim-page__brand-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #14b8a6;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.claim-page__brand-mark::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid #14b8a6;
+  opacity: 0.6;
+}
+
+.claim-page__brand-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #14b8a6;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.claim-page__title {
+  font-family: var(--font-display, Zodiak, Georgia, serif);
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 700;
+  line-height: 1.15;
+  color: #1a1a1a;
+  margin: 0 0 16px;
+  letter-spacing: -0.01em;
+}
+
+.claim-page__intro {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #555;
+  margin: 0;
+}
+
+.claim-page__intro strong {
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.claim-page__intro a {
+  color: #14b8a6;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(20, 184, 166, 0.35);
+  transition: border-color 0.15s ease;
+}
+
+.claim-page__intro a:hover {
+  border-bottom-color: #14b8a6;
+}
+
+/* ---------- Grid (preview + signup) ---------- */
+.claim-page__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 32px;
+  align-items: start;
+}
+
+.claim-page__preview {
+  min-width: 0;
+}
+
+.claim-page__signup {
+  position: sticky;
+  top: 24px;
+}
+
+/* ---------- Signup card ---------- */
+.claim-signup {
+  background: #ffffff;
+  border: 1px solid #e5e2dc;
+  border-radius: 12px;
+  padding: 28px 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
+              0 12px 32px rgba(0, 0, 0, 0.06);
+}
+
+.claim-signup__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(20, 184, 166, 0.1);
+  color: #0f9488;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 14px;
+}
+
+.claim-signup__badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+.claim-signup__heading {
+  font-family: var(--font-display, Zodiak, Georgia, serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 6px;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.claim-signup__subtext {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+  margin: 0 0 20px;
+}
+
+.claim-signup__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.claim-signup__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.claim-signup__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.claim-signup__email-field {
+  position: relative;
+}
+
+.claim-signup__email-field input {
+  padding-right: 40px;
+  background: #f9f8f4;
+  color: #555;
+  cursor: not-allowed;
+}
+
+.claim-signup__email-field::after {
+  content: '';
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translateY(-50%);
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='11' width='18' height='11' rx='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg>") no-repeat center;
+  background-size: contain;
+  pointer-events: none;
+}
+
+.claim-signup__input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 16px; /* prevents iOS auto-zoom */
+  font-family: inherit;
+  color: #1a1a1a;
+  background: #ffffff;
+  border: 1px solid #e5e2dc;
+  border-radius: 8px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.claim-signup__input:focus {
+  outline: none;
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.12);
+}
+
+.claim-signup__input::placeholder {
+  color: #b5b2ab;
+}
+
+.claim-signup__help {
+  font-size: 12px;
+  color: #888;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.claim-signup__strength {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.claim-signup__strength-bar {
+  flex: 1;
+  height: 3px;
+  background: #ede9e0;
+  border-radius: 2px;
+  transition: background 0.2s ease;
+}
+
+.claim-signup__strength-bar--active {
+  background: #14b8a6;
+}
+
+.claim-signup__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 22px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #ffffff;
+  background: #14b8a6;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  margin-top: 4px;
+}
+
+.claim-signup__submit:hover:not(:disabled) {
+  background: #0f9488;
+}
+
+.claim-signup__submit:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.claim-signup__submit:disabled {
+  background: #94a3a0;
+  cursor: not-allowed;
+}
+
+.claim-signup__submit svg {
+  width: 16px;
+  height: 16px;
+}
+
+.claim-signup__error {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.18);
+  color: #b91c1c;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.claim-signup__divider {
+  height: 1px;
+  background: #f0ede6;
+  margin: 20px 0 16px;
+}
+
+.claim-signup__dismiss {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  font-size: 13px;
+  color: #888;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.15s ease;
+}
+
+.claim-signup__dismiss:hover {
+  color: #1a1a1a;
+}
+
+.claim-signup__expiry {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #999;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f5f3ee;
+}
+
+.claim-signup__expiry svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* ---------- Preview card ---------- */
+.claim-preview {
+  background: #ffffff;
+  border: 1px solid #e5e2dc;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
+              0 12px 32px rgba(0, 0, 0, 0.06);
+}
+
+.claim-preview__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  background: #f9f8f4;
+  border-bottom: 1px solid #f0ede6;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #888;
+}
+
+.claim-preview__label svg {
+  width: 14px;
+  height: 14px;
+  color: #14b8a6;
+}
+
+.claim-preview__frame {
+  /* Contains the full public profile render — no extra padding
+     so the preview reads as the real profile */
+  background: #ffffff;
+}
+
+/* ---------- Error state ---------- */
+.claim-error {
+  max-width: 520px;
+  margin: 64px auto;
+  background: #ffffff;
+  border: 1px solid #e5e2dc;
+  border-radius: 12px;
+  padding: 48px 32px 40px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
+              0 12px 32px rgba(0, 0, 0, 0.06);
+}
+
+.claim-error__icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: rgba(220, 38, 38, 0.08);
+  color: #b91c1c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.claim-error__icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.claim-error--info .claim-error__icon {
+  background: rgba(20, 184, 166, 0.1);
+  color: #0f9488;
+}
+
+.claim-error__title {
+  font-family: var(--font-display, Zodiak, Georgia, serif);
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 12px;
+  line-height: 1.25;
+}
+
+.claim-error__message {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #666;
+  margin: 0 0 24px;
+}
+
+.claim-error__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.claim-error__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease,
+              border-color 0.15s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.claim-error__btn--primary {
+  background: #14b8a6;
+  color: #ffffff;
+}
+
+.claim-error__btn--primary:hover {
+  background: #0f9488;
+}
+
+.claim-error__btn--secondary {
+  background: #ffffff;
+  color: #555;
+  border-color: #e5e2dc;
+}
+
+.claim-error__btn--secondary:hover {
+  background: #f5f3ee;
+  color: #1a1a1a;
+}
+
+/* ---------- Footer note ---------- */
+.claim-page__footer {
+  text-align: center;
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid #e8e5de;
+  font-size: 12px;
+  color: #999;
+  line-height: 1.6;
+}
+
+.claim-page__footer a {
+  color: #14b8a6;
+  text-decoration: none;
+}
+
+.claim-page__footer a:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   RESPONSIVE — Tablet (< 1024px): narrower signup column
+   ============================================================ */
+@media (max-width: 1024px) {
+  .claim-page__grid {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 24px;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — Mobile (< 820px): stack, signup FIRST so the
+   call-to-action is immediately visible before the preview.
+   ============================================================ */
+@media (max-width: 820px) {
+  .claim-page {
+    padding: 24px 16px 48px;
+  }
+
+  .claim-page__header {
+    margin-bottom: 24px;
+  }
+
+  .claim-page__grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .claim-page__signup {
+    position: static;
+    order: -1;
+  }
+
+  .claim-page__preview {
+    order: 1;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — Small phones (≤ 375px): tighten paddings
+   ============================================================ */
+@media (max-width: 420px) {
+  .claim-page {
+    padding: 20px 12px 40px;
+  }
+
+  .claim-page__title {
+    font-size: 26px;
+  }
+
+  .claim-page__intro {
+    font-size: 15px;
+  }
+
+  .claim-signup {
+    padding: 24px 20px;
+    border-radius: 12px;
+  }
+
+  .claim-signup__heading {
+    font-size: 20px;
+  }
+
+  .claim-error {
+    margin: 32px auto;
+    padding: 36px 20px 32px;
+  }
+
+  .claim-error__title {
+    font-size: 20px;
+  }
+}
