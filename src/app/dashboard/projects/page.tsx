@@ -155,7 +155,7 @@ export default function MyProjectsPage() {
             className="my-projects-grid"
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(min(320px, 100%), 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(400px, 100%), 1fr))',
               gap: 'var(--space-4)',
             }}
           >
@@ -193,7 +193,7 @@ export default function MyProjectsPage() {
                 </div>
 
                 {project.one_sentence && (
-                  <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+                  <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>
                     {project.one_sentence}
                   </p>
                 )}
