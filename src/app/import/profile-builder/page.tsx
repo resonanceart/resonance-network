@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { loadImportData } from '@/lib/import-store'
+import { importAdminBlockBanner } from '@/lib/claim-copy'
 
 interface ImportedProfile {
   name: string
@@ -54,6 +55,27 @@ export default function ProfileBuilderPreview() {
   const router = useRouter()
   const [data, setData] = useState<ImportedProfile | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Admin block banner state — prevents an admin from silently overwriting
+  // their own profile via the scraped import flow. "Continue anyway" unlocks
+  // the normal CTA; the live-edit page then shows a confirmation modal.
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [adminOverrideAck, setAdminOverrideAck] = useState(false)
+  useEffect(() => {
+    let cancelled = false
+    if (!user) {
+      setIsAdmin(false)
+      return
+    }
+    fetch('/api/user/profile', { credentials: 'same-origin' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled) return
+        setIsAdmin(d?.profile?.role === 'admin')
+      })
+      .catch(() => { /* non-fatal — no banner */ })
+    return () => { cancelled = true }
+  }, [user])
 
   useEffect(() => {
     async function load() {
@@ -118,9 +140,15 @@ export default function ProfileBuilderPreview() {
             Profile Preview for {data.name}
           </span>
           <div className="live-editor__toolbar-actions">
-            <button onClick={handleCreateAccount} className="btn btn--primary btn--sm">
-              {user ? 'Open in Profile Editor' : 'Create Account to Save'}
-            </button>
+            {isAdmin && !adminOverrideAck ? (
+              <Link href="/admin" className="btn btn--primary btn--sm">
+                {importAdminBlockBanner.goToAdminButton}
+              </Link>
+            ) : (
+              <button onClick={handleCreateAccount} className="btn btn--primary btn--sm">
+                {user ? 'Open in Profile Editor' : 'Create Account to Save'}
+              </button>
+            )}
             <Link href="/import" className="btn btn--outline btn--sm">
               Back to Import
             </Link>
@@ -291,6 +319,56 @@ export default function ProfileBuilderPreview() {
         {/* CTA section */}
         <section style={{ padding: 'var(--space-8) 0 var(--space-10)' }}>
           <div className="container" style={{ textAlign: 'center', maxWidth: '600px' }}>
+            {isAdmin && !adminOverrideAck && (
+              <div
+                role="alert"
+                style={{
+                  background: 'rgba(220, 38, 38, 0.06)',
+                  border: '1px solid rgba(220, 38, 38, 0.2)',
+                  borderRadius: 12,
+                  padding: 'var(--space-4)',
+                  marginBottom: 'var(--space-5)',
+                  textAlign: 'left',
+                }}
+              >
+                <h4 style={{
+                  margin: '0 0 var(--space-2) 0',
+                  fontSize: 'var(--text-base)',
+                  fontWeight: 700,
+                  color: '#b91c1c',
+                }}>
+                  {importAdminBlockBanner.heading}
+                </h4>
+                <p style={{
+                  margin: '0 0 var(--space-2) 0',
+                  fontSize: 'var(--text-sm)',
+                  color: 'var(--color-text)',
+                  lineHeight: 1.6,
+                }}>
+                  {importAdminBlockBanner.body}
+                </p>
+                <p style={{
+                  margin: '0 0 var(--space-3) 0',
+                  fontSize: 'var(--text-sm)',
+                  color: 'var(--color-text-muted)',
+                  lineHeight: 1.6,
+                }}>
+                  {importAdminBlockBanner.continueHint}
+                </p>
+                <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                  <Link href="/admin" className="btn btn--primary btn--sm">
+                    {importAdminBlockBanner.goToAdminButton}
+                  </Link>
+                  <button
+                    type="button"
+                    className="btn btn--outline btn--sm"
+                    onClick={() => setAdminOverrideAck(true)}
+                  >
+                    {importAdminBlockBanner.continueButton}
+                  </button>
+                </div>
+              </div>
+            )}
             <h2 style={{ fontSize: 'clamp(1.25rem, 3vw, 1.75rem)', fontWeight: 700, marginBottom: 'var(--space-3)' }}>
               This is how your profile will look
             </h2>
@@ -298,9 +376,15 @@ export default function ProfileBuilderPreview() {
               Create your account to save this profile and customize it further. Add skills, availability, work experience, and more.
             </p>
             <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button onClick={handleCreateAccount} className="btn btn--primary" style={{ minWidth: '200px' }}>
-                {user ? 'Open in Profile Editor' : 'Create Account to Save'}
-              </button>
+              {isAdmin && !adminOverrideAck ? (
+                <Link href="/admin" className="btn btn--primary" style={{ minWidth: '200px' }}>
+                  {importAdminBlockBanner.goToAdminButton}
+                </Link>
+              ) : (
+                <button onClick={handleCreateAccount} className="btn btn--primary" style={{ minWidth: '200px' }}>
+                  {user ? 'Open in Profile Editor' : 'Create Account to Save'}
+                </button>
+              )}
               <Link href="/import" className="btn btn--outline">
                 Back to Import
               </Link>
