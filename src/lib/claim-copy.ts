@@ -31,7 +31,7 @@ export const claimCopy = {
   },
 
   welcomeBanner: (artistName: string) =>
-    `Welcome, ${artistName}! Your profile is now yours &mdash; your saves go to this profile.`,
+    `Welcome, ${artistName}! Your profile is now yours — your saves go to this profile.`,
 
   homeLink: 'Go to home',
   loginLink: 'Sign in instead',
@@ -42,7 +42,7 @@ export const adminClaimCopy = {
   modalSubtitle: 'Build a profile for an artist. They can claim it later with a one-click link.',
 
   emailLabel: 'Artist email',
-  emailHint: 'Where we\'ll send the claim invite (optional &mdash; you can send it later).',
+  emailHint: 'Where we\'ll send the claim invite. Required.',
   displayNameLabel: 'Display name',
   displayNameHint: 'How the artist\'s name will appear on their profile.',
   importUrlLabel: 'Import from URL',

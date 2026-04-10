@@ -3,6 +3,9 @@ import { supabaseAdmin } from '@/lib/supabase'
 import { rateLimit } from '@/lib/rate-limit'
 import { getClientIp } from '@/lib/sanitize'
 
+// Reads request.headers / request.url — skip Next's static-analysis probe.
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/claim/preview?token=xxx
  *
