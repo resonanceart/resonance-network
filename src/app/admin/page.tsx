@@ -3,6 +3,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase-client'
 import { useAuth } from '@/components/AuthProvider'
+import { adminClaimCopy } from '@/lib/claim-copy'
 import '@/styles/admin.css'
 
 type AdminView = 'overview' | 'review' | 'users' | 'projects' | 'profiles' | 'user_profiles' | 'messages' | 'interests' | 'activity'
@@ -883,6 +884,7 @@ export default function AdminPage() {
       {/* ── "Build Profile for Artist" Modal ──────────────────────── */}
       {showClaimableModal && (
         <div
+          className="admin-modal__overlay"
           role="dialog"
           aria-modal="true"
           aria-labelledby="build-profile-title"
@@ -891,227 +893,124 @@ export default function AdminPage() {
               setShowClaimableModal(false)
             }
           }}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 3000,
-            padding: 'var(--space-4)',
-          }}
         >
-          <div
-            style={{
-              background: 'var(--color-surface, #111)',
-              border: '1px solid var(--color-border, #222)',
-              borderRadius: 16,
-              padding: 'var(--space-6)',
-              maxWidth: 480,
-              width: '100%',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              boxShadow: '0 24px 64px rgba(0,0,0,0.4)',
-            }}
-          >
-            <h2
-              id="build-profile-title"
-              style={{
-                margin: 0,
-                marginBottom: 'var(--space-2)',
-                fontFamily: 'var(--font-display, serif)',
-                fontSize: 'var(--text-2xl, 24px)',
-                color: 'var(--color-text, #fff)',
-              }}
+          <div className="admin-modal__card admin-modal--build-profile">
+            <button
+              type="button"
+              className="admin-modal__close"
+              aria-label="Close"
+              onClick={() => { if (!claimableSubmitting) { setShowClaimableModal(false); resetClaimableForm() } }}
+              disabled={claimableSubmitting}
             >
-              Build Profile for Artist
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+
+            <div className="admin-modal__brand">
+              <span className="admin-modal__brand-mark" aria-hidden="true" />
+              <span className="admin-modal__brand-label">Resonance Network</span>
+            </div>
+
+            <h2 id="build-profile-title" className="admin-modal__title">
+              {adminClaimCopy.modalTitle}
             </h2>
-            <p
-              style={{
-                margin: 0,
-                marginBottom: 'var(--space-5)',
-                color: 'var(--color-text-muted, #aaa)',
-                fontSize: 'var(--text-sm, 14px)',
-                lineHeight: 1.5,
-              }}
-            >
-              Create a curated profile for an artist. They&rsquo;ll receive an email to claim it and set their password.
+            <p className="admin-modal__subtitle">
+              {adminClaimCopy.modalSubtitle}
             </p>
 
-            <form onSubmit={handleCreateClaimableProfile}>
-              <div style={{ marginBottom: 'var(--space-4)' }}>
-                <label
-                  htmlFor="claimable-email"
-                  style={{
-                    display: 'block',
-                    fontSize: 'var(--text-sm, 13px)',
-                    color: 'var(--color-text, #fff)',
-                    marginBottom: 'var(--space-1)',
-                    fontWeight: 500,
-                  }}
-                >
-                  Artist&rsquo;s Email <span style={{ color: '#ef4444' }}>*</span>
+            <form onSubmit={handleCreateClaimableProfile} className="admin-modal__form">
+              <div className="admin-modal__field">
+                <label htmlFor="claimable-email" className="admin-modal__label">
+                  {adminClaimCopy.emailLabel}
+                  <span className="admin-modal__label-required" aria-hidden="true">*</span>
                 </label>
                 <input
                   id="claimable-email"
                   type="email"
+                  className="admin-modal__input"
                   value={claimableEmail}
                   onChange={(e) => setClaimableEmail(e.target.value)}
                   placeholder="artist@example.com"
                   required
                   autoFocus
                   disabled={claimableSubmitting}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    background: 'var(--color-bg, #000)',
-                    border: '1px solid var(--color-border, #222)',
-                    borderRadius: 8,
-                    color: 'var(--color-text, #fff)',
-                    fontSize: 'var(--text-base, 14px)',
-                    fontFamily: 'inherit',
-                  }}
                 />
+                {/* Note: adminClaimCopy.emailHint says "(optional)" but backend
+                    requires this field — override with our own required copy. */}
+                <p className="admin-modal__help">
+                  Where we&rsquo;ll send the claim invite. Required.
+                </p>
               </div>
 
-              <div style={{ marginBottom: 'var(--space-4)' }}>
-                <label
-                  htmlFor="claimable-display-name"
-                  style={{
-                    display: 'block',
-                    fontSize: 'var(--text-sm, 13px)',
-                    color: 'var(--color-text, #fff)',
-                    marginBottom: 'var(--space-1)',
-                    fontWeight: 500,
-                  }}
-                >
-                  Display Name <span style={{ color: '#ef4444' }}>*</span>
+              <div className="admin-modal__field">
+                <label htmlFor="claimable-display-name" className="admin-modal__label">
+                  {adminClaimCopy.displayNameLabel}
+                  <span className="admin-modal__label-required" aria-hidden="true">*</span>
                 </label>
                 <input
                   id="claimable-display-name"
                   type="text"
+                  className="admin-modal__input"
                   value={claimableDisplayName}
                   onChange={(e) => setClaimableDisplayName(e.target.value)}
                   placeholder="Marin Cosmos"
                   required
                   disabled={claimableSubmitting}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    background: 'var(--color-bg, #000)',
-                    border: '1px solid var(--color-border, #222)',
-                    borderRadius: 8,
-                    color: 'var(--color-text, #fff)',
-                    fontSize: 'var(--text-base, 14px)',
-                    fontFamily: 'inherit',
-                  }}
                 />
+                <p className="admin-modal__help">
+                  {adminClaimCopy.displayNameHint.replace(/&mdash;/g, '—')}
+                </p>
               </div>
 
-              <div style={{ marginBottom: 'var(--space-5)' }}>
-                <label
-                  htmlFor="claimable-import-url"
-                  style={{
-                    display: 'block',
-                    fontSize: 'var(--text-sm, 13px)',
-                    color: 'var(--color-text, #fff)',
-                    marginBottom: 'var(--space-1)',
-                    fontWeight: 500,
-                  }}
-                >
-                  Import from Website <span style={{ color: 'var(--color-text-muted, #888)', fontWeight: 400 }}>(optional)</span>
+              <div className="admin-modal__field">
+                <label htmlFor="claimable-import-url" className="admin-modal__label">
+                  {adminClaimCopy.importUrlLabel}
                 </label>
                 <input
                   id="claimable-import-url"
                   type="url"
+                  className="admin-modal__input"
                   value={claimableImportUrl}
                   onChange={(e) => setClaimableImportUrl(e.target.value)}
                   placeholder="https://example.com"
                   disabled={claimableSubmitting}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    background: 'var(--color-bg, #000)',
-                    border: '1px solid var(--color-border, #222)',
-                    borderRadius: 8,
-                    color: 'var(--color-text, #fff)',
-                    fontSize: 'var(--text-base, 14px)',
-                    fontFamily: 'inherit',
-                  }}
                 />
-                <p
-                  style={{
-                    margin: 0,
-                    marginTop: 'var(--space-1)',
-                    fontSize: 'var(--text-xs, 12px)',
-                    color: 'var(--color-text-muted, #888)',
-                    lineHeight: 1.4,
-                  }}
-                >
-                  If provided, we&rsquo;ll scrape the site to pre-fill the profile. You can edit everything afterward.
+                <p className="admin-modal__help">
+                  {adminClaimCopy.importUrlHint.replace(/&mdash;/g, '—')}
                 </p>
               </div>
 
               {claimableError && (
-                <div
-                  role="alert"
-                  style={{
-                    padding: '10px 12px',
-                    background: 'rgba(220,38,38,0.1)',
-                    border: '1px solid rgba(220,38,38,0.3)',
-                    borderRadius: 8,
-                    color: '#ef4444',
-                    fontSize: 'var(--text-sm, 13px)',
-                    marginBottom: 'var(--space-4)',
-                    lineHeight: 1.5,
-                  }}
-                >
+                <div role="alert" className="admin-modal__error">
                   {claimableError}
                 </div>
               )}
 
               {claimableSubmitting && claimableImportUrl.trim() && (
-                <div
-                  style={{
-                    padding: '10px 12px',
-                    background: 'rgba(20,184,166,0.08)',
-                    border: '1px solid rgba(20,184,166,0.3)',
-                    borderRadius: 8,
-                    color: 'var(--color-primary, #14b8a6)',
-                    fontSize: 'var(--text-sm, 13px)',
-                    marginBottom: 'var(--space-4)',
-                  }}
-                >
-                  Importing from {claimableImportUrl.trim()}... This can take up to 30 seconds.
-                </div>
+                <p className="admin-modal__help">
+                  {adminClaimCopy.submittingWithUrl(claimableImportUrl.trim())}
+                </p>
               )}
 
-              <div
-                style={{
-                  display: 'flex',
-                  gap: 'var(--space-2)',
-                  justifyContent: 'flex-end',
-                  flexWrap: 'wrap',
-                }}
-              >
+              <div className="admin-modal__actions">
                 <button
                   type="button"
-                  className="admin-btn admin-btn--outline"
+                  className="admin-modal__btn admin-modal__btn--secondary"
                   onClick={() => { setShowClaimableModal(false); resetClaimableForm() }}
                   disabled={claimableSubmitting}
                 >
-                  Cancel
+                  {adminClaimCopy.cancelButton}
                 </button>
                 <button
                   type="submit"
-                  className="admin-btn admin-btn--primary"
+                  className="admin-modal__btn admin-modal__btn--primary"
                   disabled={claimableSubmitting}
                 >
                   {claimableSubmitting
-                    ? (claimableImportUrl.trim() ? 'Importing...' : 'Creating...')
-                    : (claimableImportUrl.trim() ? 'Create & Import' : 'Create Profile')}
+                    ? (claimableImportUrl.trim() ? adminClaimCopy.submittingWithUrl(claimableImportUrl.trim()) : adminClaimCopy.submittingNoUrl)
+                    : (claimableImportUrl.trim() ? adminClaimCopy.submitButton : adminClaimCopy.submitButtonNoUrl)}
                 </button>
               </div>
             </form>

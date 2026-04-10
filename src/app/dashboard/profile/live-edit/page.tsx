@@ -12,6 +12,7 @@ import { ShareProfile } from '@/components/profile/ShareProfile'
 import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components/profile/SmartGallery'
 import { loadImportData, clearImportData } from '@/lib/import-store'
 import ImportPromptPopup from '@/components/dashboard/ImportPromptPopup'
+import { claimCopy, claimableBannerCopy } from '@/lib/claim-copy'
 import type { ProfileSkill, ProfileTool, ProfileSocialLink } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -1449,152 +1450,122 @@ export default function LiveProfileEditor() {
 
         {/* ── Claim-flow banners ── */}
         {(adminEditAs || claimableMeta?.isClaimable || showWelcomeClaimed) && (
-          <div className="container" style={{ marginTop: 'var(--space-3)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+          <div className="container" style={{ marginTop: 'var(--space-3)' }}>
             {/* Admin edit-as banner */}
             {adminEditAs && (
-              <div
-                role="status"
-                style={{
-                  background: 'rgba(99, 102, 241, 0.08)',
-                  border: '1px solid rgba(99, 102, 241, 0.3)',
-                  borderRadius: 'var(--radius-md, 8px)',
-                  padding: 'var(--space-3) var(--space-4)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: 'var(--space-3)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <span style={{ fontSize: '1.25rem' }} aria-hidden="true">🛠️</span>
-                  <div>
-                    <strong style={{ color: 'var(--color-text)' }}>Editing as admin</strong>
-                    <div style={{ fontSize: 'var(--text-sm, 0.875rem)', color: 'var(--color-text-muted, #888)' }}>
-                      Your saves go to {adminEditTargetEmail ? <code>{adminEditTargetEmail}</code> : 'this profile'}, not your own account.
-                    </div>
-                  </div>
+              <div className="admin-edit-banner" role="status">
+                <div className="admin-edit-banner__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
                 </div>
-                <Link href="/admin" className="btn btn--outline" style={{ textDecoration: 'none' }}>
-                  Back to admin
-                </Link>
+                <div className="admin-edit-banner__content">
+                  <p className="admin-edit-banner__heading">
+                    {claimableBannerCopy.adminEditAsBanner(adminEditTargetEmail || claimableMeta?.targetEmail || 'this artist')}
+                  </p>
+                  <p className="admin-edit-banner__subtext">
+                    <Link href="/admin">{claimableBannerCopy.adminEditAsBack}</Link>
+                  </p>
+                </div>
               </div>
             )}
 
             {/* Claimable profile banner */}
             {claimableMeta?.isClaimable && (
-              <div
-                role="status"
-                style={{
-                  background: 'rgba(20, 184, 166, 0.08)',
-                  border: '1px solid rgba(20, 184, 166, 0.3)',
-                  borderRadius: 'var(--radius-md, 8px)',
-                  padding: 'var(--space-4)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 'var(--space-3)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
-                  <span style={{ fontSize: '1.5rem', lineHeight: 1 }} aria-hidden="true">🔐</span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <strong style={{ color: 'var(--color-text)', display: 'block', fontSize: 'var(--text-lg, 1.125rem)' }}>
-                      Claimable Profile
-                    </strong>
-                    <div style={{ fontSize: 'var(--text-sm, 0.875rem)', color: 'var(--color-text-muted, #888)', marginTop: '4px' }}>
-                      {claimableMeta.targetEmail ? (
-                        <>For: <code>{claimableMeta.targetEmail}</code> — waiting to be claimed.</>
-                      ) : (
-                        'Waiting to be claimed.'
+              <div className="claimable-banner" role="status">
+                <div className="claimable-banner__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </div>
+                <div className="claimable-banner__content">
+                  <h2 className="claimable-banner__heading">
+                    {claimableBannerCopy.heading}
+                    <span className="claimable-banner__pill">Draft</span>
+                  </h2>
+                  <p className="claimable-banner__subtext">
+                    {claimableBannerCopy.subtext(displayName || claimableMeta.targetEmail || 'this artist')}
+                  </p>
+                  <p className="claimable-banner__subtext">{claimableBannerCopy.infoLine}</p>
+
+                  {(claimableMeta.targetEmail || claimableMeta.sourceUrl) && (
+                    <div className="claimable-banner__info">
+                      {claimableMeta.targetEmail && (
+                        <span className="claimable-banner__info-item">
+                          <span className="claimable-banner__info-label">For:</span>
+                          <span className="claimable-banner__info-value">{claimableMeta.targetEmail}</span>
+                        </span>
+                      )}
+                      {claimableMeta.sendCount > 0 && (
+                        <span className="claimable-banner__info-item">
+                          <span className="claimable-banner__info-label">Invites sent:</span>
+                          <span className="claimable-banner__info-value">{claimableMeta.sendCount}</span>
+                        </span>
                       )}
                     </div>
-                    <div style={{ fontSize: 'var(--text-sm, 0.875rem)', color: 'var(--color-text-muted, #888)', marginTop: '4px' }}>
-                      This profile is a draft. Polish it, then send the artist an invite so they can claim it and take ownership.
-                    </div>
-                  </div>
-                </div>
+                  )}
 
-                {claimInviteMessage && (
-                  <div
-                    style={{
-                      padding: 'var(--space-2) var(--space-3)',
-                      background: 'var(--color-surface, rgba(255,255,255,0.04))',
-                      borderRadius: 'var(--radius-sm, 4px)',
-                      fontSize: 'var(--text-sm, 0.875rem)',
-                      color: 'var(--color-text)',
-                    }}
-                  >
-                    {claimInviteMessage}
-                  </div>
-                )}
+                  {claimInviteMessage && (
+                    <p className="claimable-banner__subtext" role="status">{claimInviteMessage}</p>
+                  )}
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
-                  <button
-                    type="button"
-                    className="btn btn--primary"
-                    onClick={sendClaimInvite}
-                    disabled={claimInviteSending}
-                  >
-                    {claimInviteSending
-                      ? 'Sending…'
-                      : claimableMeta.sendCount > 0
-                        ? `Resend Invite (${claimableMeta.sendCount} sent)`
-                        : 'Send Claim Invite'}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn--outline"
-                    onClick={deleteClaimableProfile}
-                    style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.4)' }}
-                  >
-                    Delete Profile
-                  </button>
+                  <div className="claimable-banner__actions">
+                    <button
+                      type="button"
+                      className="claimable-banner__btn claimable-banner__btn--primary"
+                      onClick={sendClaimInvite}
+                      disabled={claimInviteSending}
+                    >
+                      {claimInviteSending
+                        ? 'Sending…'
+                        : claimableMeta.sendCount > 0
+                          ? claimableBannerCopy.resendButton(`${claimableMeta.sendCount}×`)
+                          : claimableBannerCopy.sendButton}
+                    </button>
+                    <button
+                      type="button"
+                      className="claimable-banner__btn claimable-banner__btn--danger"
+                      onClick={deleteClaimableProfile}
+                      disabled={claimInviteSending}
+                    >
+                      {claimableBannerCopy.deleteButton}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
 
             {/* Welcome-claimed banner (dismissible) */}
             {showWelcomeClaimed && (
-              <div
-                role="status"
-                style={{
-                  background: 'rgba(20, 184, 166, 0.08)',
-                  border: '1px solid rgba(20, 184, 166, 0.3)',
-                  borderRadius: 'var(--radius-md, 8px)',
-                  padding: 'var(--space-4)',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  justifyContent: 'space-between',
-                  gap: 'var(--space-3)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)', flex: 1 }}>
-                  <span style={{ fontSize: '1.5rem', lineHeight: 1 }} aria-hidden="true">✨</span>
-                  <div>
-                    <strong style={{ color: 'var(--color-text)', display: 'block', fontSize: 'var(--text-lg, 1.125rem)' }}>
-                      Welcome to Resonance Network{displayName ? `, ${displayName}` : ''}
-                    </strong>
-                    <div style={{ fontSize: 'var(--text-sm, 0.875rem)', color: 'var(--color-text-muted, #888)', marginTop: '4px' }}>
-                      Your profile is yours to edit — polish anything you want, and hit Publish when you&apos;re ready.
-                    </div>
+              <div className="claimable-banner" role="status">
+                <div className="claimable-banner__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                </div>
+                <div className="claimable-banner__content">
+                  <h2 className="claimable-banner__heading">
+                    Welcome to Resonance Network{displayName ? `, ${displayName}` : ''}
+                  </h2>
+                  <p
+                    className="claimable-banner__subtext"
+                    // claim-copy.ts line ~36 has a literal &mdash; entity — replace at consumption.
+                    dangerouslySetInnerHTML={{
+                      __html: claimCopy.welcomeBanner(displayName || 'friend').replace(/&mdash;/g, '—'),
+                    }}
+                  />
+                  <div className="claimable-banner__actions">
+                    <button
+                      type="button"
+                      className="claimable-banner__btn claimable-banner__btn--secondary"
+                      onClick={() => setShowWelcomeClaimed(false)}
+                    >
+                      Dismiss
+                    </button>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowWelcomeClaimed(false)}
-                  aria-label="Dismiss welcome message"
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: 'var(--color-text-muted, #888)',
-                    cursor: 'pointer',
-                    fontSize: '1.25rem',
-                    lineHeight: 1,
-                    padding: '4px 8px',
-                  }}
-                >
-                  ×
-                </button>
               </div>
             )}
           </div>

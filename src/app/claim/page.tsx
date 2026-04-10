@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { claimCopy } from '@/lib/claim-copy'
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -56,19 +57,10 @@ type PreviewState =
   | { status: 'dismissed' }
   | { status: 'ready'; data: PreviewResponse }
 
-// ─── Error messages ───────────────────────────────────────────────
+// ─── Error messages (shared with email/UI copy) ───────────────────
 
 function errorMessageFor(code: PreviewErrorCode): string {
-  switch (code) {
-    case 'invite_not_found':
-      return "Hmm, we can't find this invite. It may have expired or been removed. If you think this is a mistake, reach out to hello@resonancenetwork.org."
-    case 'expired':
-      return "This invite has expired. If you still want to join, reach out to hello@resonancenetwork.org and we'll send you a fresh one."
-    case 'already_claimed':
-      return 'This profile has already been claimed. If this was you, log in to continue editing.'
-    default:
-      return 'Something went wrong loading this invite. Please try again in a moment.'
-  }
+  return claimCopy.errors[code] || claimCopy.errors.generic
 }
 
 // ─── Page wrapper with Suspense (required for useSearchParams) ────
