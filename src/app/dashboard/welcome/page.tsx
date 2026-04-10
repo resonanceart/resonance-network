@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
-import { OnboardingWizard } from '@/components/OnboardingWizard'
 
 export default function WelcomePage() {
   const { user, loading: authLoading } = useAuth()
@@ -11,7 +10,6 @@ export default function WelcomePage() {
   const [displayName, setDisplayName] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [showWizard, setShowWizard] = useState(false)
   const [checkingStatus, setCheckingStatus] = useState(true)
 
   useEffect(() => {
@@ -35,8 +33,6 @@ export default function WelcomePage() {
         }
         if (data.display_name) {
           setDisplayName(data.display_name)
-          // Name already set — skip to wizard
-          if (data.display_name.trim()) setShowWizard(true)
         }
       })
       .catch(() => {})
@@ -57,16 +53,18 @@ export default function WelcomePage() {
         body: JSON.stringify({ display_name: displayName.trim() }),
       })
       if (!res.ok) throw new Error('Failed to save')
-      setShowWizard(true)
+      // Mark onboarding complete and go to dashboard
+      await fetch('/api/user/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ onboarding_completed: true }),
+      }).catch(() => {})
+      router.push('/dashboard?onboarded=1')
     } catch {
       setError('Something went wrong. Please try again.')
     } finally {
       setSaving(false)
     }
-  }
-
-  function handleWizardComplete() {
-    router.push('/dashboard?onboarded=1')
   }
 
   if (authLoading || checkingStatus) {
@@ -75,11 +73,6 @@ export default function WelcomePage() {
         <p style={{ color: 'var(--color-text-muted)' }}>Loading...</p>
       </div>
     )
-  }
-
-  // Show the onboarding wizard after name is set
-  if (showWizard) {
-    return <OnboardingWizard onComplete={handleWizardComplete} />
   }
 
   // Name entry step
@@ -126,7 +119,7 @@ export default function WelcomePage() {
         </button>
 
         <p style={{ marginTop: 'var(--space-6)', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
-          Next: a quick quiz to personalize your experience.
+          You can always edit your profile later.
         </p>
       </div>
     </div>
