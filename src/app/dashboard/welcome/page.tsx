@@ -27,12 +27,9 @@ export default function WelcomePage() {
     fetch('/api/user/onboarding', { credentials: 'include' })
       .then(r => r.json())
       .then(data => {
-        if (data.onboarding_completed) {
-          router.push('/dashboard')
+        if (data.onboarding_completed || (data.display_name && data.display_name.trim())) {
+          router.push('/dashboard?onboarded=1')
           return
-        }
-        if (data.display_name) {
-          setDisplayName(data.display_name)
         }
       })
       .catch(() => {})
@@ -50,15 +47,9 @@ export default function WelcomePage() {
       const res = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ display_name: displayName.trim() }),
+        body: JSON.stringify({ display_name: displayName.trim(), onboarding_completed: true }),
       })
       if (!res.ok) throw new Error('Failed to save')
-      // Mark onboarding complete and go to dashboard
-      await fetch('/api/user/onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ onboarding_completed: true }),
-      }).catch(() => {})
       router.push('/dashboard?onboarded=1')
     } catch {
       setError('Something went wrong. Please try again.')
