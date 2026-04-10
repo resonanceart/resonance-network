@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
-import { rateLimit } from '@/lib/rate-limit'
+import { rateLimitStrict } from '@/lib/rate-limit'
 import { getClientIp, sanitizeText } from '@/lib/sanitize'
 import { validateCsrf } from '@/lib/csrf'
 
@@ -21,7 +21,10 @@ const MIN_PASSWORD_LENGTH = 8
 export async function POST(request: Request) {
   try {
     const ip = getClientIp(request)
-    if (!rateLimit(ip)) {
+    // Strict budget: claim finalize is a high-value, password-setting endpoint.
+    // 5 attempts per 15 minutes per IP is enough for legitimate retries while
+    // shutting down brute-force attempts on the token + password combination.
+    if (!rateLimitStrict(ip)) {
       return NextResponse.json(
         { success: false, error: 'rate_limited', message: 'Too many requests. Please try again later.' },
         { status: 429 }
