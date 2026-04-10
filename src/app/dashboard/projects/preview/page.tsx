@@ -208,7 +208,7 @@ function ProjectPreviewInner() {
               ? 'This project is live on the network'
               : project.status === 'new'
                 ? 'Submitted for review'
-                : 'Draft preview — not yet submitted'}
+                : 'Draft preview, not yet submitted'}
           </span>
           <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
             <Link href={`/dashboard/projects/live-edit?id=${projectId}`} style={{ color: '#fff', fontSize: 'var(--text-sm)', textDecoration: 'underline' }}>
@@ -233,10 +233,6 @@ function ProjectPreviewInner() {
       </div>
 
       <article>
-        {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="breadcrumb container" style={{ paddingTop: 'var(--space-4)' }}>
-          <Link href="/dashboard">Dashboard</Link> <span aria-hidden="true">/</span> <Link href="/dashboard/projects">Projects</Link> <span aria-hidden="true">/</span> <span>{project.project_title}</span>
-        </nav>
         {/* Hero */}
         <section className="project-hero">
           {project.hero_image_data && (

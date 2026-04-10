@@ -194,6 +194,49 @@ export default function AdminPage() {
     }
   }
 
+  async function handleDeleteUser(userId: string, displayName: string) {
+    if (!confirm(`Are you sure you want to delete ${displayName}? This cannot be undone.`)) return
+    setActionMsg('')
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'x-csrf-token': 'resonance' },
+        body: JSON.stringify({ userId, adminPassword: password }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setActionMsg(`User "${displayName}" deleted successfully.`)
+        setUsers(prev => prev.filter(u => u.id !== userId))
+        setUserProfiles(prev => prev.filter(up => up.id !== userId))
+      } else {
+        setActionMsg(data.message || 'Failed to delete user.')
+      }
+    } catch {
+      setActionMsg('Network error.')
+    }
+  }
+
+  async function handleDeleteProject(projectId: string, projectTitle: string) {
+    if (!confirm(`Are you sure you want to delete "${projectTitle}"? This will permanently delete this project and all its data.`)) return
+    setActionMsg('')
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'x-csrf-token': 'resonance' },
+        body: JSON.stringify({ projectId, adminPassword: password }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setActionMsg(`Project "${projectTitle}" deleted successfully.`)
+        setProjects(prev => prev.filter(p => p.id !== projectId))
+      } else {
+        setActionMsg(data.message || 'Failed to delete project.')
+      }
+    } catch {
+      setActionMsg('Network error.')
+    }
+  }
+
   async function handleRoleChange(userId: string, newRole: string) {
     setActionMsg('')
     try {
@@ -276,7 +319,10 @@ export default function AdminPage() {
 
   function timeAgo(dateStr: string) {
     const ms = Date.now() - new Date(dateStr).getTime()
-    const mins = Math.floor(ms / 60000)
+    if (ms < 0) return 'just now'
+    const secs = Math.floor(ms / 1000)
+    if (secs < 60) return `${secs}s ago`
+    const mins = Math.floor(secs / 60)
     if (mins < 60) return `${mins}m ago`
     const hrs = Math.floor(mins / 60)
     if (hrs < 24) return `${hrs}h ago`
@@ -515,6 +561,7 @@ export default function AdminPage() {
                               {up.profile_visibility === 'published' && (
                                 <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleUserProfileAction(up.id, 'reject')}>Unpublish</button>
                               )}
+                              <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleDeleteUser(up.id, up.display_name)}>Delete</button>
                             </div>
                           </td>
                         </tr>
@@ -562,6 +609,7 @@ export default function AdminPage() {
                                   <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleAction('project', p.id, 'reject')}>Reject</button>
                                 </>
                               )}
+                              <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleDeleteProject(p.id, p.project_title)}>Delete</button>
                             </div>
                           </td>
                         </tr>
@@ -594,11 +642,22 @@ export default function AdminPage() {
                           <td><span className={`admin-badge admin-badge--${u.role === 'admin' ? 'approved' : 'new'}`}>{u.role}</span></td>
                           <td className="admin-table__date">{new Date(u.created_at).toLocaleDateString()}</td>
                           <td>
-                            <select value={u.role} onChange={e => handleRoleChange(u.id, e.target.value)} className="admin-filter-select" style={{minWidth:100}}>
-                              <option value="collaborator">Collaborator</option>
-                              <option value="creator">Creator</option>
-                              <option value="admin">Admin</option>
-                            </select>
+                            <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+                              <select value={u.role} onChange={e => handleRoleChange(u.id, e.target.value)} className="admin-filter-select" style={{minWidth:100}}>
+                                <option value="collaborator">Collaborator</option>
+                                <option value="creator">Creator</option>
+                                <option value="admin">Admin</option>
+                              </select>
+                              <button
+                                onClick={() => handleDeleteUser(u.id, u.display_name)}
+                                className="admin-btn admin-btn--sm"
+                                style={{background:'rgba(220,38,38,0.1)',color:'#ef4444',border:'1px solid rgba(220,38,38,0.2)',padding:'4px 8px',borderRadius:6,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:4,fontSize:12,whiteSpace:'nowrap'}}
+                                title={`Delete ${u.display_name}`}
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                Delete
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}

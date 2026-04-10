@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { saveImportData } from '@/lib/import-store'
 
 const COLLABORATOR_TYPES = [
   'Structural Engineer', 'Electrical Engineer', 'Software Engineer',
@@ -42,7 +43,11 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const totalSteps = 4
+  const [importUrl, setImportUrl] = useState('')
+  const [importLoading, setImportLoading] = useState(false)
+  const [importError, setImportError] = useState('')
+  const [importDone, setImportDone] = useState(false)
+  const totalSteps = 5
 
   function toggleGoal(id: string) {
     setSelectedGoals(prev => {
@@ -79,10 +84,40 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     })
   }
 
+  async function handleImport() {
+    let trimmed = importUrl.trim()
+    if (!trimmed) return
+    if (!/^https?:\/\//i.test(trimmed)) trimmed = 'https://' + trimmed
+    setImportUrl(trimmed)
+    setImportLoading(true)
+    setImportError('')
+    try {
+      const res = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-csrf-token': 'resonance' },
+        body: JSON.stringify({ url: trimmed, type: 'profile' }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || `Import failed (${res.status})`)
+      }
+      const { data } = await res.json()
+      const key = 'resonance_profile_import'
+      await saveImportData(key, data).catch(() => {})
+      try { sessionStorage.setItem(key, JSON.stringify(data)) } catch { /* ignore */ }
+      setImportDone(true)
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+    } finally {
+      setImportLoading(false)
+    }
+  }
+
   function canProceed(): boolean {
     if (step === 1) return selectedRoles.size > 0 && (!selectedRoles.has('collaborator') || !!collaboratorType)
-    if (step === 2) return selectedGoals.size > 0
-    if (step === 3) return selectedFields.size > 0
+    if (step === 2) return true // Import step — always skippable
+    if (step === 3) return selectedGoals.size > 0
+    if (step === 4) return selectedFields.size > 0
     return true
   }
 
@@ -128,7 +163,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
         {step === 1 && (
           <div className="onboarding__step">
             <h2 className="onboarding__title">Let&apos;s get you started</h2>
-            <p className="onboarding__subtitle">Define your role — select all that apply</p>
+            <p className="onboarding__subtitle">Define your role. Select all. that apply</p>
 
             <div className="onboarding__role-grid">
               {[
@@ -182,8 +217,58 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           </div>
         )}
 
-        {/* Step 2: Goals */}
+        {/* Step 2: Import from Website */}
         {step === 2 && (
+          <div className="onboarding__step">
+            <h2 className="onboarding__title">Already have a website?</h2>
+            <p className="onboarding__subtitle">
+              Paste your website or portfolio URL and we&apos;ll auto-build your profile.
+            </p>
+
+            {!importDone ? (
+              <div className="onboarding__import-wrapper">
+                <div className="onboarding__import-row">
+                  <input
+                    type="url"
+                    value={importUrl}
+                    onChange={e => { setImportUrl(e.target.value); setImportError('') }}
+                    onKeyDown={e => { if (e.key === 'Enter') handleImport() }}
+                    placeholder="https://yourwebsite.com/about"
+                    disabled={importLoading}
+                    className="form-input"
+                    autoFocus
+                  />
+                  <button
+                    className="btn btn--primary"
+                    onClick={handleImport}
+                    disabled={importLoading || !importUrl.trim()}
+                  >
+                    {importLoading ? 'Importing...' : 'Import'}
+                  </button>
+                </div>
+                {importError && (
+                  <p className="onboarding__import-error">{importError}</p>
+                )}
+                <p className="onboarding__import-hint">
+                  We&apos;ll pull in your bio, images, and social links. You can edit everything later.
+                </p>
+              </div>
+            ) : (
+              <div className="onboarding__import-success">
+                <div className="onboarding__import-success-icon">✓</div>
+                <p className="onboarding__import-success-title">
+                  Profile data imported!
+                </p>
+                <p className="onboarding__import-success-desc">
+                  Your imported data will be applied when you open the Profile Editor.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Step 3: Goals */}
+        {step === 3 && (
           <div className="onboarding__step">
             <h2 className="onboarding__title">Let&apos;s define some goals</h2>
             <p className="onboarding__subtitle">What would you like to achieve? Select all that apply.</p>
@@ -203,8 +288,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           </div>
         )}
 
-        {/* Step 3: Fields of Interest */}
-        {step === 3 && (
+        {/* Step 4: Fields of Interest */}
+        {step === 4 && (
           <div className="onboarding__step">
             <h2 className="onboarding__title">Which fields are you interested in?</h2>
             <p className="onboarding__subtitle">Select all that apply.</p>
@@ -228,8 +313,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           </div>
         )}
 
-        {/* Step 4: Complete */}
-        {step === 4 && (
+        {/* Step 5: Complete */}
+        {step === 5 && (
           <div className="onboarding__step onboarding__step--complete">
             <div className="onboarding__check-icon">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -245,7 +330,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                 <span className="onboarding__summary-label">Role</span>
                 <span className="onboarding__summary-value">
                   {Array.from(selectedRoles).map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')}
-                  {collaboratorType && ` — ${collaboratorType === 'Other' ? customCollabType || 'Other' : collaboratorType}`}
+                  {collaboratorType && `, ${collaboratorType === 'Other' ? customCollabType || 'Other' : collaboratorType}`}
                 </span>
               </div>
               {selectedGoals.size > 0 && (
@@ -270,37 +355,64 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
 
         {/* Navigation */}
         <div className="onboarding__nav">
-          {step > 1 && step < 4 && (
+          {step > 1 && step < 5 && (
             <button className="btn btn--ghost" onClick={() => setStep(s => s - 1)}>
               Back
             </button>
           )}
           <div style={{ flex: 1 }} />
-          {step < 4 && (
+          {step < 5 && (
             <button
               className="btn btn--primary"
               disabled={!canProceed()}
               onClick={() => setStep(s => s + 1)}
             >
-              Next
+              {step === 2 ? (importDone ? 'Next' : 'Skip') : 'Next'}
             </button>
           )}
-          {step === 4 && (
+          {step === 5 && (
             <button
               className="btn btn--primary btn--large"
-              onClick={handleComplete}
+              onClick={async () => {
+                setSaving(true)
+                setError('')
+                try {
+                  const finalCollabType = collaboratorType === 'Other' ? customCollabType.trim() || 'Other' : collaboratorType
+                  const roles = Array.from(selectedRoles)
+                  await fetch('/api/user/onboarding', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      role_type: roles.join(','),
+                      collaborator_type: selectedRoles.has('collaborator') ? finalCollabType : undefined,
+                      goals: Array.from(selectedGoals),
+                      fields_of_interest: Array.from(selectedFields),
+                    }),
+                  }).catch(() => {})
+                  // Redirect: profile editor if imported, otherwise dashboard
+                  if (importDone) {
+                    window.location.href = '/dashboard/profile/live-edit?import=profile'
+                  } else {
+                    onComplete()
+                  }
+                } catch {
+                  setError('Network error. Please try again.')
+                  setSaving(false)
+                }
+              }}
               disabled={saving}
             >
-              {saving ? 'Saving...' : 'Go to Dashboard'}
+              {saving ? 'Saving...' : importDone ? 'Open Profile Editor' : 'Go to Dashboard'}
             </button>
           )}
         </div>
 
         {/* Skip link */}
-        {step < 4 && (
+        {step < 5 && (
           <button
             className="onboarding__skip"
-            onClick={() => setStep(4)}
+            onClick={() => setStep(5)}
           >
             Skip for now
           </button>

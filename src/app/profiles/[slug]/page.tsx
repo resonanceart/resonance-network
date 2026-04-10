@@ -27,13 +27,13 @@ export async function generateMetadata({
   const profile = await getProfileBySlug(params.slug)
   if (!profile) return {}
   return {
-    title: `${profile.name} — ${profile.title}`,
+    title: `${profile.name} | ${profile.title}`,
     description: profile.shortBio,
     alternates: {
       canonical: `https://resonancenetwork.org/profiles/${profile.slug}`,
     },
     openGraph: {
-      title: `${profile.name} — ${profile.title}`,
+      title: `${profile.name} | ${profile.title}`,
       description: profile.shortBio,
       url: `https://resonancenetwork.org/profiles/${profile.slug}`,
       images: profile.photo ? [{ url: profile.photo }] : [{ url: '/og-image.jpg' }],
@@ -41,7 +41,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${profile.name} — ${profile.title}`,
+      title: `${profile.name} | ${profile.title}`,
       description: profile.shortBio,
       images: profile.photo ? [profile.photo] : ['/og-image.jpg'],
     },
@@ -387,7 +387,7 @@ export default async function ProfilePage({ params }: { params: { slug: string }
                 )}
               </div>
               {/* Skills, Location, Availability, Social — under the photo */}
-              <div style={{ marginTop: 'var(--space-3)', fontSize: 'var(--text-xs)' }}>
+              <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--text-xs)', textAlign: 'left' }}>
                 {locationDisplay && (
                   <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 4 }}>
                     <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.5 1 2.5 3 2.5 5.5C2.5 9 7 13 7 13s4.5-4 4.5-7.5C11.5 3 9.5 1 7 1z" stroke="currentColor" strokeWidth="1.2"/><circle cx="7" cy="5.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/></svg>

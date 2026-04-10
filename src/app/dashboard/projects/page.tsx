@@ -21,6 +21,7 @@ export default function MyProjectsPage() {
   const router = useRouter()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   useEffect(() => {
     if (authLoading) return
@@ -71,6 +72,27 @@ export default function MyProjectsPage() {
     return `sub-${slug}-${project.id.substring(0, 8)}`
   }
 
+  async function handleDelete(project: Project) {
+    if (!window.confirm(`Are you sure you want to delete "${project.project_title}"? This cannot be undone.`)) return
+    setDeletingId(project.id)
+    try {
+      const res = await fetch('/api/user/projects', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ submissionId: project.id }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Delete failed')
+      }
+      setProjects(prev => prev.filter(p => p.id !== project.id))
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete project. Please try again.')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   function formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -82,9 +104,9 @@ export default function MyProjectsPage() {
   return (
     <section className="my-projects-page">
       <div className="container" style={{ paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-10)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-6)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-6)', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
           <h1 style={{ margin: 0 }}>My Projects</h1>
-          <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
             <Link href="/dashboard/projects/import" className="btn btn--outline">
               Import from Website
             </Link>
@@ -133,7 +155,7 @@ export default function MyProjectsPage() {
             className="my-projects-grid"
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(400px, 100%), 1fr))',
               gap: 'var(--space-4)',
             }}
           >
@@ -171,7 +193,7 @@ export default function MyProjectsPage() {
                 </div>
 
                 {project.one_sentence && (
-                  <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+                  <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>
                     {project.one_sentence}
                   </p>
                 )}
@@ -202,6 +224,23 @@ export default function MyProjectsPage() {
                       View Live
                     </Link>
                   )}
+                  <button
+                    onClick={() => handleDelete(project)}
+                    disabled={deletingId === project.id}
+                    className="btn btn--outline btn--sm"
+                    style={{
+                      color: 'var(--color-error, #dc2626)',
+                      borderColor: 'var(--color-error, #dc2626)',
+                      marginLeft: 'auto',
+                      opacity: deletingId === project.id ? 0.5 : 1,
+                      cursor: deletingId === project.id ? 'not-allowed' : 'pointer',
+                      minHeight: '44px',
+                      paddingLeft: 'var(--space-4)',
+                      paddingRight: 'var(--space-4)',
+                    }}
+                  >
+                    {deletingId === project.id ? 'Deleting...' : 'Delete'}
+                  </button>
                 </div>
               </div>
             ))}

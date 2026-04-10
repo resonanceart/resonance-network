@@ -61,11 +61,6 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     }
   }
 
-  // Mode-specific theme colors
-  const modeAccent = mode === 'project'
-    ? { bg: 'rgba(1, 105, 111, 0.08)', border: 'rgba(1, 105, 111, 0.25)', text: '#01696F', label: 'Project Page' }
-    : { bg: 'rgba(139, 92, 246, 0.08)', border: 'rgba(139, 92, 246, 0.25)', text: '#8B5CF6', label: 'Artist Profile' }
-
   async function handleScrape() {
     if (!url.trim()) return
     setStep('scraping')
@@ -103,9 +98,9 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
     try { await saveImportData('resonance_import_data', projectData) } catch { /* IndexedDB failed */ }
     try { sessionStorage.setItem('resonance_import_data', JSON.stringify(projectData)) } catch { /* too large for sessionStorage, IndexedDB has it */ }
     if (user) {
-      window.location.href = '/dashboard/projects/live-edit?import=true'
+      window.location.href = '/dashboard/projects/live-edit?new=true&import=true'
     } else {
-      const redirectPath = encodeURIComponent('/dashboard/projects/live-edit?import=true')
+      const redirectPath = encodeURIComponent('/dashboard/projects/live-edit?new=true&import=true')
       window.location.href = `/login?tab=signup&redirect=${redirectPath}`
     }
   }
@@ -127,135 +122,88 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
   }
 
   return (
-    <div style={{ paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-10)' }}>
-      <div className="container" style={{ maxWidth: '800px' }}>
-      <Link href={backLink.href} style={{ color: 'var(--color-accent)', textDecoration: 'none', fontSize: 'var(--text-sm)' }}>
-        &larr; {backLink.label}
+    <div style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-10)' }}>
+      <div className="container" style={{ maxWidth: '720px' }}>
+      <Link href={backLink.href} className="import-back-link">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 12L6 8l4-4"/></svg>
+        {backLink.label}
       </Link>
 
-      <h1 style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-2)', fontSize: 'clamp(1.5rem, 4vw, 2rem)' }}>
-        Create Your Page
+      <h1 className="import-title">
+        Import from Your Website
       </h1>
-      <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', fontSize: 'var(--text-base)' }}>
-        Paste your project website and we&apos;ll build your page automatically. You can edit everything before publishing.
+      <p className="import-subtitle">
+        Paste a URL and we&apos;ll build your {mode === 'project' ? 'project page' : 'artist profile'} automatically. Everything is editable before publishing.
       </p>
 
-      {/* Mode Toggle — visually distinct cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)', marginBottom: 'var(--space-5)' }}>
+      {/* Mode Toggle — large, clear cards */}
+      <div className="import-mode-grid">
         <button
           onClick={() => { setMode('project'); if (step === 'preview') { setStep('input'); setProjectData(null); setProfileData(null) } }}
-          style={{
-            padding: 'var(--space-4)',
-            borderRadius: '12px',
-            border: mode === 'project' ? '2px solid #01696F' : '1px solid var(--color-border)',
-            background: mode === 'project' ? 'rgba(1, 105, 111, 0.08)' : 'var(--color-surface)',
-            cursor: 'pointer',
-            textAlign: 'left',
-            transition: 'all 0.2s ease',
-          }}
+          className={`import-mode-card${mode === 'project' ? ' import-mode-card--active import-mode-card--project' : ''}`}
         >
-          <div style={{ fontSize: '1.5rem', marginBottom: 'var(--space-2)' }}>&#x1F3A8;</div>
-          <div style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: mode === 'project' ? '#01696F' : 'var(--color-text)', marginBottom: 'var(--space-1)' }}>
-            Project Page
-          </div>
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', lineHeight: 1.4 }}>
-            Import an artwork, installation, or creative project
-          </div>
+          <span className="import-mode-card__icon">&#x1F3A8;</span>
+          <span className="import-mode-card__label">Project Page</span>
+          <span className="import-mode-card__desc">Import an artwork, installation, or creative project</span>
         </button>
         <button
           onClick={() => { setMode('profile'); if (step === 'preview') { setStep('input'); setProjectData(null); setProfileData(null) } }}
-          style={{
-            padding: 'var(--space-4)',
-            borderRadius: '12px',
-            border: mode === 'profile' ? '2px solid #8B5CF6' : '1px solid var(--color-border)',
-            background: mode === 'profile' ? 'rgba(139, 92, 246, 0.08)' : 'var(--color-surface)',
-            cursor: 'pointer',
-            textAlign: 'left',
-            transition: 'all 0.2s ease',
-          }}
+          className={`import-mode-card${mode === 'profile' ? ' import-mode-card--active import-mode-card--profile' : ''}`}
         >
-          <div style={{ fontSize: '1.5rem', marginBottom: 'var(--space-2)' }}>&#x1F464;</div>
-          <div style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: mode === 'profile' ? '#8B5CF6' : 'var(--color-text)', marginBottom: 'var(--space-1)' }}>
-            Artist Profile
-          </div>
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', lineHeight: 1.4 }}>
-            Import your about page or portfolio bio
-          </div>
+          <span className="import-mode-card__icon">&#x1F464;</span>
+          <span className="import-mode-card__label">Artist Profile</span>
+          <span className="import-mode-card__desc">Import your about page or portfolio bio</span>
         </button>
-      </div>
-
-      {/* Active mode indicator */}
-      <div style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 'var(--space-2)',
-        padding: 'var(--space-2) var(--space-3)',
-        borderRadius: '8px',
-        background: modeAccent.bg,
-        border: `1px solid ${modeAccent.border}`,
-        fontSize: 'var(--text-xs)',
-        color: modeAccent.text,
-        fontWeight: 600,
-        marginBottom: 'var(--space-4)',
-      }}>
-        <span style={{ width: 8, height: 8, borderRadius: '50%', background: modeAccent.text }} />
-        {modeAccent.label}
       </div>
 
       {/* STEP: URL Input */}
       {(step === 'input' || step === 'error') && (
-        <div className="import-url-input">
-          <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
+        <div className="import-url-section">
+          <label className="import-url-label" htmlFor="import-url">
+            {mode === 'project' ? 'Project URL' : 'Profile / About URL'}
+          </label>
+          <div className="import-url-row">
             <input
+              id="import-url"
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder={mode === 'project' ? 'https://yourwebsite.com/project' : 'https://yourwebsite.com/about'}
               onKeyDown={(e) => e.key === 'Enter' && handleScrape()}
-              style={{
-                flex: 1,
-                padding: 'var(--space-3) var(--space-4)',
-                borderRadius: '12px',
-                border: '1px solid var(--color-border)',
-                background: 'var(--color-surface)',
-                color: 'var(--color-text)',
-                fontSize: 'var(--text-base)',
-              }}
+              className="import-url-input"
             />
             <button
               onClick={handleScrape}
               disabled={!url.trim()}
-              className="btn btn--primary"
+              className="btn btn--primary btn--xl import-url-btn"
             >
-              Build My Page
+              Build My Page &rarr;
             </button>
           </div>
           {step === 'error' && (
-            <div style={{ padding: 'var(--space-3) var(--space-4)', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '10px', color: '#ef4444', fontSize: 'var(--text-sm)' }}>
+            <div className="import-error">
               {error}
-              <button onClick={() => setStep('input')} style={{ marginLeft: 'var(--space-3)', textDecoration: 'underline', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
+              <button onClick={() => setStep('input')} className="import-error__retry">
                 Try again
               </button>
             </div>
           )}
 
-          <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)', marginTop: 'var(--space-4)' }}>
-            Don&apos;t have a website?{' '}
-            <Link href="/login?tab=signup&redirect=/dashboard/welcome" style={{ color: 'var(--color-accent)', textDecoration: 'underline' }}>
-              Skip and create your page from scratch
+          <div className="import-alt-action">
+            <span>Don&apos;t have a website?</span>
+            <Link href="/login?tab=signup&redirect=/dashboard/welcome" className="import-alt-action__link">
+              Create your page from scratch &rarr;
             </Link>
-          </p>
+          </div>
         </div>
       )}
 
       {/* STEP: Scraping */}
       {step === 'scraping' && (
-        <div style={{ textAlign: 'center', padding: 'var(--space-10) 0' }}>
+        <div className="import-scraping">
           <div className="dashboard-spinner" style={{ margin: '0 auto var(--space-4)' }} />
-          <p style={{ color: 'var(--color-text-muted)' }}>{progress}</p>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)' }}>
-            Reading {url}
-          </p>
+          <p className="import-scraping__status">{progress}</p>
+          <p className="import-scraping__url">Reading {url}</p>
         </div>
       )}
       </div>{/* end .container for input/scraping steps */}

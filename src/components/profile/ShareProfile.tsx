@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface ShareProfileProps {
   slug: string
@@ -13,10 +13,10 @@ export function ShareProfile({ slug, displayName }: ShareProfileProps) {
 
   const profileUrl = `https://resonancenetwork.org/profiles/${slug}`
   const tweetText = encodeURIComponent(
-    `I just created my profile on @ResonanceNetwork — a curated guild for immersive and regenerative art projects. Check it out and apply to join the network! ${profileUrl}`
+    `I just created my profile on @ResonanceNetwork, a curated guild for immersive and regenerative art projects. Check it out and apply to join the network! ${profileUrl}`
   )
 
-  const shareText = `I just created my profile on Resonance Network — a curated guild for immersive and regenerative art projects. Check it out and apply to join the network!`
+  const shareText = `I just created my profile on Resonance Network, a curated guild for immersive and regenerative art projects. Check it out and apply to join the network!`
 
   function copyLink() {
     navigator.clipboard.writeText(profileUrl).then(() => {
@@ -31,7 +31,10 @@ export function ShareProfile({ slug, displayName }: ShareProfileProps) {
     } catch {}
   }
 
-  const hasNativeShare = typeof window !== 'undefined' && !!navigator.share
+  const [hasNativeShare, setHasNativeShare] = useState(false)
+  useEffect(() => {
+    setHasNativeShare(!!navigator.share)
+  }, [])
 
   return (
     <div className="share-profile">

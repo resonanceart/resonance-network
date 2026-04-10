@@ -1,7 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ProjectGallery } from '@/components/ProjectGallery'
-import { ProjectCard } from '@/components/ProjectCard'
 import { AuthAwareCTA } from '@/components/AuthAwareCTA'
 import { getProjects } from '@/lib/data'
 import type { Metadata } from 'next'
@@ -30,17 +29,16 @@ export const metadata: Metadata = {
 export const revalidate = 60
 
 export default async function HomePage() {
-  const projects = await getProjects()
-  const liveProjects = projects.filter(p => p.source === 'supabase')
-  const conceptProjects = projects.filter(p => p.source !== 'supabase')
+  const allProjects = await getProjects()
+  const projects = allProjects.filter(p => p.source === 'supabase')
 
   return (
     <>
-      {/* Hero — full-width immersive image + tagline + 2 CTAs */}
+      {/* Hero, full-width immersive image + tagline + 2 CTAs */}
       <section className="site-hero">
         <Image
           src="/assets/images/projects/money-shot.png"
-          alt="Resonance — immersive spatial art installation"
+          alt="Resonance, immersive spatial art installation"
           className="site-hero__img"
           fill
           priority
@@ -59,7 +57,7 @@ export default async function HomePage() {
               className="btn btn--hero"
             />
             <AuthAwareCTA
-              loggedOutHref="/login?tab=signup&redirect=/dashboard/welcome"
+              loggedOutHref="/import?mode=profile"
               loggedOutLabel="Help Build Art"
               loggedInHref="/dashboard/profile/live-edit"
               loggedInLabel="Help Build Art"
@@ -69,10 +67,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Live Projects */}
+      {/* Projects — filters apply to both Live and AI Concept sections */}
       <section id="projects">
-        {liveProjects.length > 0 ? (
-          <ProjectGallery projects={liveProjects} />
+        {projects.length > 0 ? (
+          <ProjectGallery projects={projects} />
         ) : (
           <div className="container" style={{ padding: 'var(--space-10) 0', textAlign: 'center' }}>
             <p className="section-label">Projects</p>
@@ -80,20 +78,6 @@ export default async function HomePage() {
           </div>
         )}
       </section>
-
-      {/* AI Concept Projects */}
-      {conceptProjects.length > 0 && (
-        <section id="ai-concepts" style={{ borderTop: '1px solid var(--color-border)' }}>
-          <div className="container" style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-8)' }}>
-            <p className="section-label">AI Concept Projects</p>
-            <div className="project-grid">
-              {conceptProjects.map((project, i) => (
-                <ProjectCard key={project.id} project={project} index={i} transitionDelay={(i % 3) * 0.05} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Bottom CTA — clean, 3 buttons */}
       <section className="cta-bottom">

@@ -463,7 +463,7 @@ function DeleteAccountSection({ router, supabase }: { router: ReturnType<typeof 
             <button className="btn btn--sm settings-btn--danger" onClick={handleDelete} disabled={loading}>
               {loading ? 'Deleting...' : 'Yes, Permanently Delete My Account'}
             </button>
-            <button className="btn btn--outline btn--sm" onClick={reset}>Cancel — Keep My Account</button>
+            <button className="btn btn--outline btn--sm" onClick={reset}>Cancel, Keep My Account</button>
           </div>
         </div>
       )}

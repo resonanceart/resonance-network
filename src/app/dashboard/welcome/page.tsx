@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
-import { OnboardingWizard } from '@/components/OnboardingWizard'
 
 export default function WelcomePage() {
   const { user, loading: authLoading } = useAuth()
@@ -11,7 +10,6 @@ export default function WelcomePage() {
   const [displayName, setDisplayName] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [showWizard, setShowWizard] = useState(false)
   const [checkingStatus, setCheckingStatus] = useState(true)
 
   useEffect(() => {
@@ -25,21 +23,22 @@ export default function WelcomePage() {
     // Link any existing submissions
     fetch('/api/user/link-submissions', { method: 'POST' }).catch(() => {})
 
-    // Check if onboarding was already completed or name already set
-    fetch('/api/user/onboarding', { credentials: 'include' })
-      .then(r => r.json())
+    // Check if profile already has a name set — if so, skip welcome
+    fetch('/api/user/profile', { credentials: 'include' })
+      .then(r => {
+        if (!r.ok) throw new Error('Profile fetch failed')
+        return r.json()
+      })
       .then(data => {
-        if (data.onboarding_completed) {
-          router.push('/dashboard')
+        if (data.profile?.display_name?.trim() || data.profile?.onboarding_completed) {
+          // Use window.location for a full page load — router.push can get cached
+          window.location.href = '/dashboard?onboarded=1'
           return
         }
-        if (data.display_name) {
-          setDisplayName(data.display_name)
-          // Name already set — skip to wizard
-          if (data.display_name.trim()) setShowWizard(true)
-        }
       })
-      .catch(() => {})
+      .catch(() => {
+        // Profile API failed — don't block the user, just show the form
+      })
       .finally(() => setCheckingStatus(false))
   }, [user, authLoading, router])
 
@@ -54,19 +53,22 @@ export default function WelcomePage() {
       const res = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ display_name: displayName.trim() }),
+        body: JSON.stringify({ display_name: displayName.trim(), onboarding_completed: true }),
       })
-      if (!res.ok) throw new Error('Failed to save')
-      setShowWizard(true)
-    } catch {
-      setError('Something went wrong. Please try again.')
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        console.error('Welcome PUT failed:', res.status, data.error)
+        // Even if profile update fails, don't trap the user — send them to dashboard
+      }
+      // Use window.location for a hard redirect — prevents Next.js caching issues
+      window.location.href = '/dashboard?onboarded=1'
+    } catch (err) {
+      console.error('Welcome handleContinue error:', err)
+      // Don't trap the user — redirect anyway
+      window.location.href = '/dashboard?onboarded=1'
     } finally {
       setSaving(false)
     }
-  }
-
-  function handleWizardComplete() {
-    router.push('/dashboard?onboarded=1')
   }
 
   if (authLoading || checkingStatus) {
@@ -75,11 +77,6 @@ export default function WelcomePage() {
         <p style={{ color: 'var(--color-text-muted)' }}>Loading...</p>
       </div>
     )
-  }
-
-  // Show the onboarding wizard after name is set
-  if (showWizard) {
-    return <OnboardingWizard onComplete={handleWizardComplete} />
   }
 
   // Name entry step
@@ -126,7 +123,7 @@ export default function WelcomePage() {
         </button>
 
         <p style={{ marginTop: 'var(--space-6)', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
-          Next: a quick quiz to personalize your experience.
+          You can always edit your profile later.
         </p>
       </div>
     </div>

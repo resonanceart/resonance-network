@@ -3,17 +3,17 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
-  description: 'Resonance Network terms of service — the rules and guidelines for using our immersive art collaboration platform and connecting with creators.',
+  description: 'Resonance Network terms of service. The rules and guidelines for using our immersive art collaboration platform and connecting with creators.',
   alternates: { canonical: 'https://resonancenetwork.org/terms' },
   openGraph: {
-    title: 'Terms of Service — Resonance Network',
+    title: 'Terms of Service | Resonance Network',
     description: 'The rules and guidelines for using Resonance Network for immersive and regenerative projects.',
     url: 'https://resonancenetwork.org/terms',
     images: [{ url: '/og-image.jpg' }],
   },
   twitter: {
     card: 'summary',
-    title: 'Terms of Service — Resonance Network',
+    title: 'Terms of Service | Resonance Network',
     description: 'The rules and guidelines for using Resonance Network for immersive and regenerative projects.',
   },
 }

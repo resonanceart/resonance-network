@@ -61,7 +61,7 @@ export function ProfileBadges({ badges, badgeTypes }: ProfileBadgesProps) {
         const symbolText = type?.symbol || '●'
         const label = badge.label || type?.label || badge.badge_type
         const description = badge.description || type?.description || ''
-        const projectNote = badge.project_name ? ` — ${badge.project_name}` : ''
+        const projectNote = badge.project_name ? `, ${badge.project_name}` : ''
         const dateStr = badge.awarded_at
           ? new Date(badge.awarded_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
           : ''

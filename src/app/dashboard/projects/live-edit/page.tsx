@@ -64,12 +64,14 @@ function LiveProjectEditorInner() {
   const { user, loading: authLoading } = useAuth()
   const searchParams = useSearchParams()
   const existingId = searchParams.get('id')
+  const isNewProject = searchParams.get('new') === 'true'
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
   const [savedMessage, setSavedMessage] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [importProgress, setImportProgress] = useState<string | null>(null)
   const [activePanel, setActivePanel] = useState<EditSection>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [submissionId, setSubmissionId] = useState<string | null>(existingId)
@@ -119,6 +121,7 @@ function LiveProjectEditorInner() {
   const [newSocialUrl, setNewSocialUrl] = useState('')
 
   const lastChangeTime = useRef(0)
+  const projectFetchedRef = useRef(false)
   const markDirty = useCallback(() => { setHasChanges(true); lastChangeTime.current = Date.now() }, [])
 
   // Apply imported data from website scraper (called after existing project loads)
@@ -151,51 +154,29 @@ function LiveProjectEditorInner() {
       if (imported.suggestedScale) setScale(imported.suggestedScale as string)
       if (imported.leadArtistName) setLeadArtistName(imported.leadArtistName as string)
       if (imported.leadArtistBio) setStory(imported.leadArtistBio as string)
-      // Upload base64 hero image to Supabase Storage
+      // Set hero image URL (already uploaded to Supabase Storage by scrape API)
       if (imported.heroImageUrl) {
-        const heroUrl = imported.heroImageUrl as string
-        if (heroUrl.startsWith('data:')) {
-          fetch(heroUrl).then(r => r.blob()).then(blob => {
-            const file = new File([blob], `hero-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-            uploadFileToStorage(file, 'hero').then(url => {
-              if (url) { setHeroImageUrl(url); markDirty() }
-            })
-          }).catch(() => {})
-        } else {
-          setHeroImageUrl(heroUrl)
-        }
+        setHeroImageUrl(imported.heroImageUrl as string)
+        markDirty()
       }
-      // Upload base64 gallery images to Storage
+      // Set gallery images (already uploaded to Supabase Storage by scrape API)
       if (imported.galleryImages && Array.isArray(imported.galleryImages) && imported.galleryImages.length) {
         const galleryImgs = imported.galleryImages as Array<{ url: string; alt: string }>
-        const hasBase64 = galleryImgs.some(img => img.url.startsWith('data:'))
-        if (hasBase64) {
-          const results = await Promise.all(galleryImgs.map(async (img) => {
-            if (img.url.startsWith('data:')) {
-              try {
-                const blob = await fetch(img.url).then(r => r.blob())
-                const file = new File([blob], `gallery-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-                const url = await uploadFileToStorage(file, 'gallery')
-                return url ? { url, alt: img.alt } : null
-              } catch { return null }
-            }
-            return img
-          }))
-          const uploaded = results.filter(Boolean) as Array<{ url: string; alt: string }>
-          if (uploaded.length > 0) { setGalleryImages(uploaded); markDirty() }
-        } else {
-          setGalleryImages(galleryImgs)
-        }
+        setGalleryImages(galleryImgs)
+        markDirty()
       }
       if (imported.socialLinks && Array.isArray(imported.socialLinks) && imported.socialLinks.length) {
         setProjectSocialLinks(imported.socialLinks as Array<{platform: string; url: string}>)
       }
       markDirty()
+      setImportProgress('Import complete!')
+      setTimeout(() => setImportProgress(null), 3000)
       // Clean up storage
       clearImportData('resonance_import_data').catch(() => {})
       sessionStorage.removeItem('resonance_import_data')
     } catch (e) {
       console.error('Failed to apply imported project data:', e)
+      setImportProgress(null)
     }
   }
 
@@ -203,6 +184,8 @@ function LiveProjectEditorInner() {
   useEffect(() => {
     if (authLoading) return
     if (!user) { window.location.href = '/login'; return }
+    if (projectFetchedRef.current) return
+    projectFetchedRef.current = true
 
     // Get user profile for defaults
     fetch('/api/user/profile', { credentials: 'same-origin' })
@@ -216,7 +199,19 @@ function LiveProjectEditorInner() {
       })
       .catch(() => {})
 
-    // Always check for existing submissions — load most recent draft if no ID specified
+    // When creating a new project (?new=true), skip loading existing submissions
+    if (isNewProject) {
+      setSubmissionId(null)
+      // Still check for import data
+      const importParam = new URLSearchParams(window.location.search).get('import')
+      if (importParam === 'true') {
+        applyImportData()
+      }
+      setLoading(false)
+      return
+    }
+
+    // Check for existing submissions — load most recent draft if no ID specified
     {
       fetch('/api/user/projects', { credentials: 'include' })
         .then(r => r.json())
@@ -308,7 +303,7 @@ function LiveProjectEditorInner() {
         })
     }
 
-  }, [user, authLoading, existingId, markDirty])
+  }, [user, authLoading, existingId, isNewProject, markDirty])
 
   // Keep a ref to the latest saveDraft function to avoid stale closures
   const saveDraftRef = useRef(saveDraft)
@@ -476,13 +471,17 @@ function LiveProjectEditorInner() {
   async function uploadFileToStorage(file: File, type: string): Promise<string | null> {
     // Direct Supabase Storage upload (bypasses Next.js body limit)
     try {
+      const { slugify } = await import('@/lib/slugify')
       const { createSupabaseBrowserClient } = await import('@/lib/supabase-auth')
       const supabase = createSupabaseBrowserClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setErrorMessage('Not authenticated. Please sign in again.'); return null }
 
+      const nameSlug = slugify(leadArtistName || '') || 'user'
+      const projSlug = slugify(title || '') || 'project'
       const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-      const path = `${user.id}/${type}/${Date.now()}.${ext}`
+      const timestamp = Date.now()
+      const path = `${user.id}/${nameSlug}/projects/${projSlug}/${type}/${projSlug}-${type}-${timestamp}.${ext}`
 
       const { data, error } = await supabase.storage
         .from('profile-uploads')
@@ -606,7 +605,7 @@ function LiveProjectEditorInner() {
           <span className="live-editor__toolbar-title">{submissionStatus === 'approved' ? 'Managing Your Live Project' : 'Building Your Project'}</span>
           <div className="live-editor__toolbar-actions">
             {errorMessage && (
-              <div style={{ background: 'var(--color-error, #dc2626)', color: 'white', padding: '8px 16px', borderRadius: 8, fontSize: '14px', display: 'flex', alignItems: 'center', gap: 8, maxWidth: 400 }}>
+              <div style={{ background: 'var(--color-error, #dc2626)', color: 'white', padding: '8px 12px', borderRadius: 8, fontSize: '13px', display: 'flex', alignItems: 'center', gap: 8, maxWidth: '100%', width: '100%' }}>
                 <span style={{ flex: 1 }}>{errorMessage}</span>
                 <button onClick={() => setErrorMessage(null)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: 18 }}>&times;</button>
               </div>
@@ -661,10 +660,20 @@ function LiveProjectEditorInner() {
           <Link href="/dashboard">Dashboard</Link> <span>/</span> <span>{title || 'New Project'}</span>
         </nav>
 
-        {/* Import from website prompt */}
-        <div className="container" style={{ marginTop: 'var(--space-3)' }}>
-          <ImportPromptPopup mode="project" />
-        </div>
+        {/* Import from website prompt — only show for new projects, not when editing existing */}
+        {!submissionId && (
+          <div className="container" style={{ marginTop: 'var(--space-3)' }}>
+            <ImportPromptPopup mode="project" />
+          </div>
+        )}
+
+        {importProgress && (
+          <div className="container" style={{ marginTop: 'var(--space-2)' }}>
+            <div style={{ padding: '12px 16px', background: 'rgba(45, 212, 191, 0.1)', border: '1px solid rgba(45, 212, 191, 0.3)', borderRadius: '8px', color: 'var(--color-text)', fontSize: '14px' }}>
+              {importProgress}
+            </div>
+          </div>
+        )}
 
         {/* Hero */}
         <div className="editable-section" onClick={!isDraggingHero ? () => openPanel('hero') : undefined}>
@@ -689,6 +698,21 @@ function LiveProjectEditorInner() {
             } : undefined}
             onMouseUp={() => { if (isDraggingHero) { setIsDraggingHero(false); markDirty() } }}
             onMouseLeave={() => { if (isDraggingHero) { setIsDraggingHero(false); markDirty() } }}
+            onTouchStart={heroImageUrl ? (e) => {
+              const touch = e.touches[0]
+              setIsDraggingHero(true)
+              heroDragStartY.current = touch.clientY
+              heroDragStartPos.current = heroPositionY
+            } : undefined}
+            onTouchMove={isDraggingHero ? (e) => {
+              const touch = e.touches[0]
+              const delta = touch.clientY - heroDragStartY.current
+              const heroHeight = (e.currentTarget as HTMLElement).offsetHeight
+              const newPos = Math.max(0, Math.min(100, heroDragStartPos.current + (delta / heroHeight) * 100))
+              setHeroPositionY(newPos)
+              e.preventDefault()
+            } : undefined}
+            onTouchEnd={() => { if (isDraggingHero) { setIsDraggingHero(false); markDirty() } }}
           >
             {heroImageUrl && (
               <>
@@ -1512,7 +1536,7 @@ function LiveProjectEditorInner() {
       {settingsOpen && (
         <>
           <div className="live-editor__panel-backdrop" onClick={() => setSettingsOpen(false)} />
-          <div className="live-editor__panel" style={{ width: 'min(560px, 90vw)' }}>
+          <div className="live-editor__panel" style={{ width: 'min(560px, 100vw)' }}>
             <div className="live-editor__panel-header">
               <h3 className="live-editor__panel-title">Project Settings</h3>
               <button className="live-editor__panel-close" onClick={() => setSettingsOpen(false)}>&times;</button>
@@ -1581,7 +1605,7 @@ function LiveProjectEditorInner() {
                     ))}
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-3)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 'var(--space-3)' }}>
                   <div className="form-group">
                     <label className="form-label">Stage</label>
                     <select className="form-input" value={stage} onChange={e => { setStage(e.target.value); markDirty() }}>

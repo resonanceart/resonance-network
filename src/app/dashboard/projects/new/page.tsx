@@ -22,7 +22,7 @@ export default function NewProjectPage() {
       setLoading(false)
     } else {
       // Default: redirect to live editor
-      router.replace('/dashboard/projects/live-edit')
+      router.replace('/dashboard/projects/live-edit?new=true')
     }
   }, [user, authLoading, router])
 
@@ -45,14 +45,14 @@ export default function NewProjectPage() {
         <Link href="/dashboard/projects" style={{ color: 'var(--color-accent)', textDecoration: 'none', fontSize: 'var(--text-sm)' }}>
           &larr; Back to My Projects
         </Link>
-        <Link href="/dashboard/projects/live-edit" className="btn btn--outline btn--sm">
+        <Link href="/dashboard/projects/live-edit?new=true" className="btn btn--outline btn--sm">
           Use Page Builder
         </Link>
       </div>
       <h1 style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>Submit New Project (Classic Form)</h1>
       <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)' }}>
         The classic form is no longer available. Please use the{' '}
-        <Link href="/dashboard/projects/live-edit" style={{ color: 'var(--color-accent)' }}>
+        <Link href="/dashboard/projects/live-edit?new=true" style={{ color: 'var(--color-accent)' }}>
           Page Builder
         </Link>{' '}
         to create your project. You can access all form fields via the Settings panel in the toolbar.

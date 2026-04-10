@@ -24,21 +24,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = createSupabaseBrowserClient()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
+    // Recover session from cookies/storage. With the custom no-op lock
+    // this resolves immediately instead of blocking on navigator.locks.
+    supabase.auth.getSession().then(({ data: { session: s } }: { data: { session: Session | null } }) => {
+      setSession(s)
+      setUser(s?.user ?? null)
+      setLoading(false)
+    }).catch(() => {
       setLoading(false)
     })
 
+    // Listen for auth state changes (sign-in, sign-out, token refresh)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
+    } = supabase.auth.onAuthStateChange((_event: string, s: Session | null) => {
+      setSession(s)
+      setUser(s?.user ?? null)
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const signOut = async () => {

@@ -60,7 +60,7 @@ export async function generateMetadata({
   const data = await getPortfolioProject(params.slug, params['project-slug'])
   if (!data) return { title: 'Project Not Found' }
   return {
-    title: `${data.title} — ${data.profile_name} | Resonance Network`,
+    title: `${data.title} | ${data.profile_name} | Resonance Network`,
     description: data.tagline || data.description || `Portfolio project by ${data.profile_name}`,
     openGraph: {
       title: data.title,
@@ -89,19 +89,6 @@ export default async function PortfolioProjectPage({
 
   return (
     <main className="project-page">
-      {/* Breadcrumb */}
-      <nav className="project-page__breadcrumb" aria-label="Breadcrumb">
-        <Link href="/">Home</Link>
-        <span aria-hidden="true">/</span>
-        <Link href="/profiles">People</Link>
-        <span aria-hidden="true">/</span>
-        <Link href={`/profiles/${params.slug}`}>{project.profile_name}</Link>
-        <span aria-hidden="true">/</span>
-        <Link href={`/profiles/${params.slug}#work`}>Work</Link>
-        <span aria-hidden="true">/</span>
-        <span aria-current="page">{project.title}</span>
-      </nav>
-
       {/* Cover Image Hero */}
       {project.cover_image_url && (
         <div className="project-page__hero">

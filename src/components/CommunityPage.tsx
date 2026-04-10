@@ -1,7 +1,8 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
 import { CollaborationTaskCard } from '@/components/CollaborationTaskCard'
@@ -12,8 +13,12 @@ const CATEGORIES = ['Engineering', 'Architecture', 'Fabrication', 'Production', 
 
 export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks: CollaborationTask[] }) {
   const { user } = useAuth()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const projects = projectsData as Project[]
-  const [activeTab, setActiveTab] = useState<'people' | 'roles'>('roles')
+
+  const initialTab = searchParams.get('tab') === 'people' ? 'people' : 'roles'
+  const [activeTab, setActiveTab] = useState<'people' | 'roles'>(initialTab)
 
   // People tab state
   const [search, setSearch] = useState('')
@@ -26,14 +31,10 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
   const [selectedStage, setSelectedStage] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Read tab from URL on mount
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const tab = new URLSearchParams(window.location.search).get('tab')
-      if (tab === 'roles' || tab === 'needs') setActiveTab('roles')
-      else if (tab === 'people') setActiveTab('people')
-    }
-  }, [])
+  const switchTab = useCallback((tab: 'people' | 'roles') => {
+    setActiveTab(tab)
+    router.replace(`/collaborate?tab=${tab}`, { scroll: false })
+  }, [router])
 
   // People filtering
   const allSpecialties = useMemo(() => {
@@ -80,79 +81,28 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
 
   return (
     <>
-      {/* Page Header — no breadcrumb */}
-      <section className="page-header">
+      {/* Compact Header + Tabs — get to content fast */}
+      <section className="collab-header-section">
         <div className="container">
-          <p className="section-label">Community</p>
-          <h1>Community Connections Board</h1>
-          <p className="lead">
-            A curated community of creators, engineers, fabricators, and specialists building immersive and regenerative spatial projects — together.
-          </p>
-        </div>
-      </section>
+          <h1 className="collab-header__title">Community Connections Board</h1>
 
-      {/* Dual CTA — simplified */}
-      <section className="profiles-dual-cta">
-        <div className="container">
-          <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap', padding: 'var(--space-6) 0' }}>
-            <Link href="/dashboard/projects/live-edit" className="btn btn--primary btn--large">Share a Project</Link>
-            <Link href="/login?tab=signup&redirect=/dashboard/welcome" className="btn btn--outline btn--large">Join as Collaborator</Link>
-          </div>
-        </div>
-      </section>
 
-      {/* How Collaboration Works */}
-      <section className="collab-tabs-section">
-        <div className="container">
-          <div className="collab-how-it-works">
-            <h3>How Collaboration Works</h3>
-            <div className="collab-steps collab-steps--compact">
-              <div className="collab-step collab-step--pill"><span className="collab-step__number">1</span><strong>Browse projects that inspire you</strong></div>
-              <div className="collab-step collab-step--pill"><span className="collab-step__number">2</span><strong>Express interest in a role</strong></div>
-              <div className="collab-step collab-step--pill"><span className="collab-step__number">3</span><strong>Connect with the project team</strong></div>
-              <div className="collab-step collab-step--pill"><span className="collab-step__number">4</span><strong>Define scope together</strong></div>
-              <div className="collab-step collab-step--pill"><span className="collab-step__number">5</span><strong>Build something extraordinary</strong></div>
-            </div>
-          </div>
-
-          <div className="collab-benefits">
-            <h3>What You Gain</h3>
-            <div className="collab-benefits__grid">
-              <div className="collab-benefit-card">
-                <strong>Portfolio-worthy work</strong>
-                <p>Contribute to ambitious projects you can proudly showcase — not commercial campaigns, but values-aligned creative work.</p>
-              </div>
-              <div className="collab-benefit-card">
-                <strong>Credited contributions</strong>
-                <p>Your role is publicly documented on the project page and linked to your profile.</p>
-              </div>
-              <div className="collab-benefit-card">
-                <strong>Flexible commitment</strong>
-                <p>From a 2-hour plan review to an ongoing team role — contribute at the level that works for you.</p>
-              </div>
-              <div className="collab-benefit-card">
-                <strong>Meaningful relationships</strong>
-                <p>Build long-term connections with visionary creators and fellow specialists — a guild, not a gig.</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="collab-tabs" role="tablist" aria-label="Community view">
+          <div className="collab-tabs collab-tabs--prominent" role="tablist" aria-label="Community view">
             <button
               role="tab"
               aria-selected={activeTab === 'roles'}
-              className={`collab-tab${activeTab === 'roles' ? ' collab-tab--active' : ''}`}
-              onClick={() => setActiveTab('roles')}
+              className={`collab-tab collab-tab--roles${activeTab === 'roles' ? ' collab-tab--active' : ''}`}
+              onClick={() => switchTab('roles')}
             >
-              Available Roles ({tasks.length})
+              Open Roles <span className="collab-tab__count">{tasks.filter(t => t.source === 'supabase').length}</span>
             </button>
             <button
               role="tab"
               aria-selected={activeTab === 'people'}
-              className={`collab-tab${activeTab === 'people' ? ' collab-tab--active' : ''}`}
-              onClick={() => setActiveTab('people')}
+              className={`collab-tab collab-tab--people${activeTab === 'people' ? ' collab-tab--active' : ''}`}
+              onClick={() => switchTab('people')}
             >
-              People ({profiles.length})
+              People <span className="collab-tab__count">{profiles.length}</span>
             </button>
           </div>
         </div>
@@ -166,10 +116,8 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
               <div className="profiles-filter-bar">
                 <div className="profiles-type-tabs" role="tablist" aria-label="Filter by type">
                   {[
-                    { value: '', label: 'All' },
                     { value: 'artist', label: 'Artists' },
                     { value: 'collaborator', label: 'Collaborators' },
-                    { value: 'collective', label: 'Collectives' },
                   ].map(tab => (
                     <button
                       key={tab.value}
@@ -182,25 +130,6 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
                     </button>
                   ))}
                 </div>
-                <input
-                  type="search"
-                  placeholder="Search by name or specialty..."
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  className="profiles-filter-bar__search"
-                  aria-label="Search profiles"
-                />
-                <select
-                  value={selectedSpecialty}
-                  onChange={e => setSelectedSpecialty(e.target.value)}
-                  className="profiles-filter-bar__select"
-                  aria-label="Filter by specialty"
-                >
-                  <option value="">All Specialties</option>
-                  {allSpecialties.map(s => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
               </div>
             </div>
           </section>
@@ -280,66 +209,10 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
       {/* Open Roles Tab */}
       {activeTab === 'roles' && (
         <>
-          <section className="collab-filters">
-            <div className="container">
-              <div className="filters-compact">
-                <label htmlFor="collab-search" className="sr-only">Search collaboration opportunities</label>
-                <input
-                  id="collab-search"
-                  type="search"
-                  placeholder="Search opportunities..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="filter-search"
-                  aria-label="Search collaboration opportunities"
-                />
-                <select
-                  value={selectedCategory}
-                  onChange={e => setSelectedCategory(e.target.value)}
-                  className="filter-select"
-                  aria-label="Filter by category"
-                >
-                  <option value="">Category</option>
-                  {CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-                <select
-                  value={selectedLocation}
-                  onChange={e => setSelectedLocation(e.target.value)}
-                  className="filter-select"
-                  aria-label="Filter by location"
-                >
-                  <option value="">Location</option>
-                  {allLocations.map(loc => (
-                    <option key={loc} value={loc}>{loc}</option>
-                  ))}
-                </select>
-                <select
-                  value={selectedStage}
-                  onChange={e => setSelectedStage(e.target.value)}
-                  className="filter-select"
-                  aria-label="Filter by stage"
-                >
-                  <option value="">Stage</option>
-                  {STAGES.map(s => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              </div>
-              {(searchQuery || selectedCategory) && (
-                <p className="filter-count">
-                  {filteredTasks.length} {filteredTasks.length === 1 ? 'opportunity' : 'opportunities'}
-                  {selectedCategory && ` in ${selectedCategory}`}
-                  {searchQuery && ` matching "${searchQuery}"`}
-                </p>
-              )}
-            </div>
-          </section>
+
 
           {(() => {
             const liveTasks = filteredTasks.filter(t => t.source === 'supabase')
-            const conceptTasks = filteredTasks.filter(t => t.source !== 'supabase')
             return (
               <>
                 {/* Live Roles */}
@@ -354,27 +227,11 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
                       </div>
                     ) : (
                       <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: 'var(--space-6) 0' }}>
-                        {filteredTasks.length === 0
-                          ? 'No roles match your current filters. Try broadening your search.'
-                          : 'No live roles yet. Be the first to submit a project with open roles.'}
+                        No live roles yet. Be the first to submit a project with open roles.
                       </p>
                     )}
                   </div>
                 </section>
-
-                {/* AI Concept Roles */}
-                {conceptTasks.length > 0 && (
-                  <section className="collab-grid" style={{ borderTop: '1px solid var(--color-border)' }}>
-                    <div className="container" style={{ paddingTop: 'var(--space-6)' }}>
-                      <p className="section-label">AI Concept Roles</p>
-                      <div className="task-grid">
-                        {conceptTasks.map(task => (
-                          <CollaborationTaskCard key={task.id} task={task} />
-                        ))}
-                      </div>
-                    </div>
-                  </section>
-                )}
               </>
             )
           })()}
@@ -429,6 +286,45 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
           </section>
         </>
       )}
+
+      {/* How Collaboration Works — moved below content */}
+      <section className="collab-how-section">
+        <div className="container">
+          <h3 className="collab-how-section__title">How Collaboration Works</h3>
+          <div className="collab-steps collab-steps--compact">
+            <div className="collab-step collab-step--pill"><span className="collab-step__number">1</span><strong>Browse projects that inspire you</strong></div>
+            <div className="collab-step collab-step--pill"><span className="collab-step__number">2</span><strong>Express interest in a role</strong></div>
+            <div className="collab-step collab-step--pill"><span className="collab-step__number">3</span><strong>Connect with the project team</strong></div>
+            <div className="collab-step collab-step--pill"><span className="collab-step__number">4</span><strong>Define scope together</strong></div>
+            <div className="collab-step collab-step--pill"><span className="collab-step__number">5</span><strong>Build something extraordinary</strong></div>
+          </div>
+        </div>
+      </section>
+
+      {/* What You Gain — moved to bottom */}
+      <section className="collab-benefits-section">
+        <div className="container">
+          <h3 className="collab-benefits-section__title">What You Gain</h3>
+          <div className="collab-benefits__grid">
+            <div className="collab-benefit-card">
+              <strong>Portfolio-worthy work</strong>
+              <p>Contribute to ambitious projects you can proudly showcase, not commercial campaigns, but values-aligned creative work.</p>
+            </div>
+            <div className="collab-benefit-card">
+              <strong>Credited contributions</strong>
+              <p>Your role is publicly documented on the project page and linked to your profile.</p>
+            </div>
+            <div className="collab-benefit-card">
+              <strong>Flexible commitment</strong>
+              <p>From a 2-hour plan review to an ongoing team role, contribute at the level that works for you.</p>
+            </div>
+            <div className="collab-benefit-card">
+              <strong>Meaningful relationships</strong>
+              <p>Build long-term connections with visionary creators and fellow specialists, a guild, not a gig.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Bottom CTA */}
       <section className="profiles-cta">

@@ -95,7 +95,7 @@ function LoginForm() {
       password,
       options: {
         data: { full_name: name },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent('/dashboard/welcome')}`,
       },
     })
     if (error) {
@@ -121,8 +121,8 @@ function LoginForm() {
   }
 
   return (
-    <section className="section" style={{ maxWidth: '28rem', margin: '0 auto', padding: 'var(--space-8) var(--space-4)' }}>
-      <h1 className="section__title" style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
+    <section className="section" style={{ maxWidth: '28rem', width: '100%', margin: '0 auto', padding: 'var(--space-8) var(--space-4)', boxSizing: 'border-box' }}>
+      <h1 style={{ textAlign: 'center', marginBottom: 'var(--space-6)', fontSize: 'var(--text-2xl)', fontFamily: 'var(--font-display)', fontWeight: 600 }}>
         {tab === 'signin' ? 'Sign In' : 'Create Account'}
       </h1>
 
@@ -132,13 +132,18 @@ function LoginForm() {
         </div>
       )}
 
-      {!error && urlError && (
-        <div className="form-error" style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', borderRadius: '8px', background: 'rgba(220,38,38,0.08)' }}>
-          {urlErrorDesc
-            ? urlErrorDesc.replace(/\+/g, ' ')
-            : 'Authentication failed. Please try again.'}
-        </div>
-      )}
+      {!error && urlError && (() => {
+        const isPkce = urlErrorDesc && (urlErrorDesc.includes('PKCE') || urlErrorDesc.includes('code verifier'))
+        return (
+          <div className={isPkce ? 'form-success' : 'form-error'} style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', borderRadius: '8px', background: isPkce ? 'rgba(20,184,166,0.08)' : 'rgba(220,38,38,0.08)', color: isPkce ? 'var(--color-primary, #14b8a6)' : undefined }}>
+            {isPkce
+              ? 'Your email has been confirmed! Please sign in below to continue.'
+              : urlErrorDesc
+                ? urlErrorDesc.replace(/\+/g, ' ')
+                : 'Authentication failed. Please try again.'}
+          </div>
+        )
+      })()}
 
       {error === 'email_exists' && (
         <div className="form-error" style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', borderRadius: '8px', background: 'rgba(220,38,38,0.08)' }}>
@@ -254,7 +259,7 @@ function LoginForm() {
               </div>
               <span className="password-strength__label" style={{ color: passwordStrength.color }}>
                 {passwordStrength.label}
-                {password.length < 8 && ' — minimum 8 characters'}
+                {password.length < 8 && ', minimum 8 characters'}
               </span>
             </div>
           )}

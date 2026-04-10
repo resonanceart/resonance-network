@@ -90,13 +90,10 @@ export function CollaborationBoard({ tasks }: { tasks: CollaborationTask[] }) {
 
       <section className="collab-header">
         <div className="container">
-          <nav aria-label="Breadcrumb" className="breadcrumb">
-            <Link href="/">Home</Link> <span aria-hidden="true">/</span> <span>Collaborate</span>
-          </nav>
           <p className="section-label">Collaborate</p>
           <h1>Open Roles on Curated Projects</h1>
           <p className="lead">
-            Collaboration opportunities across curated projects — from structural engineering to grant writing to spatial audio design. Every role is tied to a real team with a clear vision.
+            Collaboration opportunities across curated projects, from structural engineering to grant writing to spatial audio design. Every role is tied to a real team with a clear vision.
           </p>
         </div>
       </section>

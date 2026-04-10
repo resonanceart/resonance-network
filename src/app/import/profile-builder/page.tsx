@@ -295,7 +295,7 @@ export default function ProfileBuilderPreview() {
               This is how your profile will look
             </h2>
             <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-5)', lineHeight: 1.6 }}>
-              Create your account to save this profile and customize it further — add skills, availability, work experience, and more.
+              Create your account to save this profile and customize it further. Add skills, availability, work experience, and more.
             </p>
             <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button onClick={handleCreateAccount} className="btn btn--primary" style={{ minWidth: '200px' }}>

@@ -132,19 +132,19 @@ export default function ProfilePreviewPage({ params }: { params: { id: string } 
       {actionStatus === 'approved' ? (
         <div className="draft-banner draft-banner--approved">
           <div className="container">
-            <strong>APPROVED</strong> — This profile is now live on the network.
+            <strong>APPROVED</strong>. This profile is now live on the network.
           </div>
         </div>
       ) : actionStatus === 'rejected' ? (
         <div className="draft-banner draft-banner--rejected">
           <div className="container">
-            <strong>REJECTED</strong> — This profile has been declined.
+            <strong>REJECTED</strong>. This profile has been declined.
           </div>
         </div>
       ) : (
         <div className="draft-banner">
           <div className="container">
-            <strong>DRAFT PREVIEW</strong> — This page is not public yet. Pending review by the Resonance Network team.
+            <strong>DRAFT PREVIEW</strong>. This page is not public yet. Pending review by the Resonance Network team.
           </div>
         </div>
       )}

@@ -111,7 +111,7 @@ function SkillsPanel({
             className="form-input"
             value={newCategory}
             onChange={e => setNewCategory(e.target.value as ProfileSkill['category'])}
-            style={{ width: 'auto', minWidth: 120 }}
+            style={{ width: 'auto', minWidth: 0, flex: '0 1 120px' }}
           >
             {SKILL_CATEGORIES.map(c => (
               <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
@@ -199,7 +199,7 @@ function ToolsPanel({
             className="form-input"
             value={newCategory}
             onChange={e => setNewCategory(e.target.value as ProfileTool['category'])}
-            style={{ width: 'auto', minWidth: 120 }}
+            style={{ width: 'auto', minWidth: 0, flex: '0 1 120px' }}
           >
             {TOOL_CATEGORIES.map(c => (
               <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
@@ -283,7 +283,7 @@ function SocialPanel({
             className="form-input"
             value={link.platform}
             onChange={e => updateLink(link.id, 'platform', e.target.value)}
-            style={{ width: 'auto', minWidth: 120 }}
+            style={{ width: 'auto', minWidth: 0, flex: '0 1 120px' }}
           >
             {SOCIAL_PLATFORMS.filter(p => p !== 'custom').map(p => (
               <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
@@ -321,7 +321,7 @@ function SocialPanel({
             value={link.label || ''}
             onChange={e => updateLink(link.id, 'label', e.target.value)}
             placeholder="Label (e.g. Portfolio)"
-            style={{ width: 140 }}
+            style={{ width: 'auto', minWidth: 0, flex: '0 1 140px' }}
           />
           <input
             className="form-input"
@@ -414,18 +414,68 @@ function TimelinePanel({
   )
 }
 
+// ─── Image Resize Helper ────────────────────────────────────────
+
+function resizeImageFile(file: File, maxDimension: number, quality: number = 0.85): Promise<File> {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/')) {
+      resolve(file)
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => {
+      const img = new Image()
+      img.onload = () => {
+        if (img.width <= maxDimension && img.height <= maxDimension) {
+          resolve(file)
+          return
+        }
+        const canvas = document.createElement('canvas')
+        let w = img.width
+        let h = img.height
+        if (w > h) {
+          if (w > maxDimension) { h = Math.round(h * (maxDimension / w)); w = maxDimension }
+        } else {
+          if (h > maxDimension) { w = Math.round(w * (maxDimension / h)); h = maxDimension }
+        }
+        canvas.width = w
+        canvas.height = h
+        const ctx = canvas.getContext('2d')
+        if (!ctx) { resolve(file); return }
+        ctx.drawImage(img, 0, 0, w, h)
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) { resolve(file); return }
+            const resized = new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() })
+            resolve(resized)
+          },
+          'image/jpeg',
+          quality
+        )
+      }
+      img.onerror = () => resolve(file)
+      img.src = reader.result as string
+    }
+    reader.onerror = () => resolve(file)
+    reader.readAsDataURL(file)
+  })
+}
+
 // ─── Upload Helper ───────────────────────────────────────────────
 
-async function uploadFile(file: File, type: string): Promise<{ url: string | null; error: string | null }> {
+async function uploadFile(file: File, type: string, displayName?: string): Promise<{ url: string | null; error: string | null }> {
   // Direct Supabase Storage upload (bypasses Next.js ~4.5MB body limit)
   try {
+    const { slugify } = await import('@/lib/slugify')
     const { createSupabaseBrowserClient } = await import('@/lib/supabase-auth')
     const supabase = createSupabaseBrowserClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { url: null, error: 'Not authenticated. Please sign in again.' }
 
+    const nameSlug = slugify(displayName || '') || 'user'
     const ext = file.name.split('.').pop()?.toLowerCase() || (file.type.includes('pdf') ? 'pdf' : 'jpg')
-    const path = `${user.id}/${type}/${Date.now()}.${ext}`
+    const timestamp = Date.now()
+    const path = `${user.id}/${nameSlug}/${type}/${nameSlug}-${type}-${timestamp}.${ext}`
 
     const { data, error } = await supabase.storage
       .from('profile-uploads')
@@ -462,6 +512,7 @@ export default function LiveProfileEditor() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [galleryUploading, setGalleryUploading] = useState(false)
+  const [importStatus, setImportStatus] = useState<string | null>(null)
   const [activePanel, setActivePanel] = useState<EditSection>(null)
   const [showWelcome, setShowWelcome] = useState(false)
 
@@ -519,6 +570,9 @@ export default function LiveProfileEditor() {
   // Refs for scroll-to-section
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const lastChangeTime = useRef(0)
+  const profileFetchedRef = useRef(false)
+  const savingRef = useRef(false)
+  const savingPromiseRef = useRef<Promise<void> | null>(null)
 
   // Track changes
   const markDirty = useCallback(() => {
@@ -530,6 +584,8 @@ export default function LiveProfileEditor() {
   useEffect(() => {
     if (authLoading) return
     if (!user) return
+    if (profileFetchedRef.current) return
+    profileFetchedRef.current = true
 
     fetch('/api/user/profile', { credentials: 'same-origin' })
       .then(r => r.json())
@@ -655,63 +711,24 @@ export default function LiveProfileEditor() {
                 setProfessionalTitle(imported.titles[0])
               }
               if (imported.website) setWebsite(imported.website)
-              // Upload base64 avatar to Storage (base64 too large for API body limit)
+              // Set image URLs (already uploaded to Supabase Storage by scrape API)
               if (imported.avatarUrl) {
-                const avatarSrc = imported.avatarUrl
-                if (avatarSrc.startsWith('data:')) {
-                  fetch(avatarSrc).then(r => r.blob()).then(blob => {
-                    const file = new File([blob], `avatar-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-                    uploadFile(file, 'avatar').then(({ url }) => {
-                      if (url) { setAvatarUrl(url); setHasChanges(true); lastChangeTime.current = Date.now() }
-                    })
-                  }).catch(() => {})
-                } else {
-                  setAvatarUrl(avatarSrc)
-                }
+                setAvatarUrl(imported.avatarUrl)
+                setHasChanges(true)
+                lastChangeTime.current = Date.now()
               }
-              // Upload base64 cover/hero image to Storage
               if (imported.heroImageUrl) {
-                const heroSrc = imported.heroImageUrl
-                if (heroSrc.startsWith('data:')) {
-                  fetch(heroSrc).then(r => r.blob()).then(blob => {
-                    const file = new File([blob], `cover-import.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-                    uploadFile(file, 'cover').then(({ url }) => {
-                      if (url) { setCoverImageUrl(url); setHasChanges(true); lastChangeTime.current = Date.now() }
-                    })
-                  }).catch(() => {})
-                } else {
-                  setCoverImageUrl(heroSrc)
-                }
+                setCoverImageUrl(imported.heroImageUrl)
+                setHasChanges(true)
+                lastChangeTime.current = Date.now()
               }
-              // Upload base64 gallery images to Storage
               if (imported.galleryImages && imported.galleryImages.length > 0) {
-                const galleryImgs = imported.galleryImages
-                const hasBase64 = galleryImgs.some(img => img.url.startsWith('data:'))
-                if (hasBase64) {
-                  Promise.all(galleryImgs.map(async (img, i) => {
-                    if (img.url.startsWith('data:')) {
-                      try {
-                        const blob = await fetch(img.url).then(r => r.blob())
-                        const file = new File([blob], `gallery-import-${i}.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type })
-                        const { url } = await uploadFile(file, 'gallery')
-                        return url ? { url, alt: img.alt || '', type: 'image' as const, order: i, isFeatured: i === 0 } : null
-                      } catch { return null }
-                    }
-                    return { url: img.url, alt: img.alt || '', type: 'image' as const, order: i, isFeatured: i === 0 }
-                  })).then(results => {
-                    const uploaded = results.filter(Boolean) as GalleryItem[]
-                    if (uploaded.length > 0) {
-                      setMediaGallery(uploaded)
-                      setHasChanges(true)
-                      lastChangeTime.current = Date.now()
-                    }
-                  })
-                } else {
-                  setMediaGallery(galleryImgs.map((img, i) => ({
-                    url: img.url, alt: img.alt || '', type: 'image' as const,
-                    order: i, isFeatured: i === 0,
-                  })))
-                }
+                setMediaGallery(imported.galleryImages.map((img, i) => ({
+                  url: img.url, alt: img.alt || '', type: 'image' as const,
+                  order: i, isFeatured: i === 0,
+                })))
+                setHasChanges(true)
+                lastChangeTime.current = Date.now()
               }
               if (imported.socialLinks && imported.socialLinks.length > 0) {
                 setSocialLinks(imported.socialLinks.map((link, i) => ({
@@ -729,12 +746,17 @@ export default function LiveProfileEditor() {
               }
               setHasChanges(true)
               lastChangeTime.current = Date.now()
+              // Dismiss welcome overlay — import data is now applied
+              setShowWelcome(false)
               // Clean up both storage locations
               clearImportData('resonance_profile_import').catch(() => {})
               sessionStorage.removeItem('resonance_profile_import')
+              setImportStatus('Profile imported successfully!')
+              setTimeout(() => setImportStatus(null), 5000)
             }
           } catch (e) {
             console.error('Failed to apply imported profile data:', e)
+            setImportStatus(null)
           }
         }
       })
@@ -759,81 +781,99 @@ export default function LiveProfileEditor() {
   }, [hasChanges])
 
   async function saveAll(silent = false) {
+    // If a save is already in flight, wait for it instead of skipping.
+    // This prevents the Preview button from navigating before data is
+    // persisted when an auto-save is running concurrently.
+    if (savingRef.current && savingPromiseRef.current) {
+      await savingPromiseRef.current
+      return
+    }
+    if (savingRef.current) return
+
+    savingRef.current = true
     setSaving(true)
     setErrorMessage(null)
-    try {
-      const res = await fetch('/api/user/profile', {
-        method: 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          display_name: displayName.trim(),
-          bio: bio.trim() || null,
-          location: location.trim() || null,
-          website: website.trim() || null,
-          skills: skills.length > 0 ? skills : null,
-          avatar_url: avatarUrl,
-          tools_and_materials: toolsAndMaterials.length > 0 ? toolsAndMaterials : null,
-          availability_status: availabilityStatus || null,
-          availability_note: availabilityNote.trim() || null,
-          cover_image_url: coverImageUrl,
-          cover_position: { x: 50, y: coverPositionY, scale: 1, avatarY: avatarPositionY },
-          professional_title: professionalTitle.trim() || null,
-          pronouns: pronouns.trim() || null,
-          location_secondary: locationSecondary.trim() || null,
-          availability_types: availabilityTypes,
-          social_links: socialLinks,
-          profile_skills: profileSkills,
-          profile_tools: profileTools,
-          artist_statement: artistStatement.trim() || null,
-          philosophy: philosophy.trim() || null,
-          achievements: achievements.length > 0 ? achievements : null,
-          timeline: timeline.length > 0 ? timeline : null,
-          accent_color: accentColor,
-          // Save all gallery items as unified array for consistent ordering
-          media_gallery: (() => {
-            const allItems = buildGalleryItems()
-            return allItems.length > 0 ? allItems.map(item => ({
-              id: item.id,
-              type: item.type,
-              url: item.url,
-              thumbnail: item.thumbnail,
-              title: item.title,
-              subtitle: item.subtitle,
-              order: item.order,
-            })) : null
-          })(),
-          past_work: null, // consolidated into media_gallery
-          resume_url: resumeUrl,
-          portfolio_pdf_url: portfolioPdfUrl,
-          media_links: null, // consolidated into media_gallery
-          links: links.length > 0 ? links : null,
-          pdf_documents: null, // consolidated into media_gallery
-          section_order: sectionOrder,
-          gallery_order: null, // no longer needed — order is in media_gallery
-        }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        console.error('Profile save failed:', res.status, data)
-        if (!silent) {
-          setErrorMessage(data.error || `Save failed (${res.status}). Please try again.`)
+
+    const doSave = async () => {
+      try {
+        const res = await fetch('/api/user/profile', {
+          method: 'PUT',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            display_name: displayName.trim(),
+            bio: bio.trim() || null,
+            location: location.trim() || null,
+            website: website.trim() || null,
+            skills: skills.length > 0 ? skills : null,
+            avatar_url: avatarUrl,
+            tools_and_materials: toolsAndMaterials.length > 0 ? toolsAndMaterials : null,
+            availability_status: availabilityStatus || null,
+            availability_note: availabilityNote.trim() || null,
+            cover_image_url: coverImageUrl,
+            cover_position: { x: 50, y: coverPositionY, scale: 1, avatarY: avatarPositionY },
+            professional_title: professionalTitle.trim() || null,
+            pronouns: pronouns.trim() || null,
+            location_secondary: locationSecondary.trim() || null,
+            availability_types: availabilityTypes,
+            social_links: socialLinks,
+            profile_skills: profileSkills,
+            profile_tools: profileTools,
+            artist_statement: artistStatement.trim() || null,
+            philosophy: philosophy.trim() || null,
+            achievements: achievements.length > 0 ? achievements : null,
+            timeline: timeline.length > 0 ? timeline : null,
+            accent_color: accentColor,
+            // Save all gallery items as unified array for consistent ordering
+            media_gallery: (() => {
+              const allItems = buildGalleryItems()
+              return allItems.length > 0 ? allItems.map(item => ({
+                id: item.id,
+                type: item.type,
+                url: item.url,
+                thumbnail: item.thumbnail,
+                title: item.title,
+                subtitle: item.subtitle,
+                order: item.order,
+              })) : null
+            })(),
+            past_work: null, // consolidated into media_gallery
+            resume_url: resumeUrl,
+            portfolio_pdf_url: portfolioPdfUrl,
+            media_links: null, // consolidated into media_gallery
+            links: links.length > 0 ? links : null,
+            pdf_documents: null, // consolidated into media_gallery
+            section_order: sectionOrder,
+            gallery_order: null, // no longer needed, order is in media_gallery
+          }),
+        })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          console.error('Profile save failed:', res.status, data)
+          if (!silent) {
+            setErrorMessage(data.error || `Save failed (${res.status}). Please try again.`)
+          }
+          return
         }
+        setHasChanges(false)
+        if (!silent) {
+          setSavedMessage(true)
+          setTimeout(() => setSavedMessage(false), 3000)
+        }
+      } catch (err) {
+        console.error('Profile save error:', err)
+        if (!silent) {
+          setErrorMessage('Network error. Please check your connection and try again.')
+        }
+      } finally {
         setSaving(false)
-        return
-      }
-      setHasChanges(false)
-      if (!silent) {
-        setSavedMessage(true)
-        setTimeout(() => setSavedMessage(false), 3000)
-      }
-    } catch (err) {
-      console.error('Profile save error:', err)
-      if (!silent) {
-        setErrorMessage('Network error. Please check your connection and try again.')
+        savingRef.current = false
+        savingPromiseRef.current = null
       }
     }
-    setSaving(false)
+
+    savingPromiseRef.current = doSave()
+    await savingPromiseRef.current
   }
 
   function openPanel(section: EditSection) {
@@ -853,7 +893,7 @@ export default function LiveProfileEditor() {
   // File upload wrapper with error feedback
   async function upload(file: File, type: string): Promise<string | null> {
     setUploadError(null)
-    const result = await uploadFile(file, type)
+    const result = await uploadFile(file, type, displayName)
     if (result.error) {
       setUploadError(result.error)
       return null
@@ -868,9 +908,10 @@ export default function LiveProfileEditor() {
       if (file) setUploadError('Image must be under 5MB')
       return
     }
-    // Upload immediately to Supabase Storage
+    // Resize and upload to Supabase Storage
     setUploadError(null)
-    const url = await upload(file, 'avatar')
+    const resized = await resizeImageFile(file, 400, 0.85)
+    const url = await upload(resized, 'avatar')
     if (url) {
       setAvatarUrl(url)
       markDirty()
@@ -900,9 +941,14 @@ export default function LiveProfileEditor() {
 
   async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file || file.size > 10 * 1024 * 1024) return
+    if (!file) return
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError('Cover image must be under 10MB')
+      return
+    }
     setSaving(true)
-    const url = await upload(file, 'cover')
+    const resized = await resizeImageFile(file, 1600)
+    const url = await upload(resized, 'cover')
     if (url) {
       setCoverImageUrl(url)
       markDirty()
@@ -941,12 +987,18 @@ export default function LiveProfileEditor() {
 
   async function handleGalleryUpload(files: FileList | null) {
     if (!files) return
-    for (const file of Array.from(files)) {
+    if (mediaGallery.length >= 50) {
+      setUploadError('Gallery is limited to 50 items. Remove some items before adding more.')
+      return
+    }
+    const filesToUpload = Array.from(files).slice(0, 50 - mediaGallery.length)
+    for (const file of filesToUpload) {
       if (file.size > 10 * 1024 * 1024) {
         setUploadError(`"${file.name}" is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 10MB.`)
         continue
       }
-      const url = await upload(file, 'gallery')
+      const resized = await resizeImageFile(file, 1600)
+      const url = await upload(resized, 'gallery')
       if (url) {
         setMediaGallery(prev => [...prev, {
           url,
@@ -1151,6 +1203,16 @@ export default function LiveProfileEditor() {
         <div className="live-editor__toolbar-inner container">
           <span className="live-editor__toolbar-title">Editing Your Profile</span>
           <div className="live-editor__toolbar-actions">
+            {importStatus && (
+              <span
+                className={importStatus.includes('warnings') ? 'live-editor__error' : 'live-editor__saved'}
+                onClick={() => setImportStatus(null)}
+                title="Click to dismiss"
+                style={{ cursor: 'pointer' }}
+              >
+                {importStatus}
+              </span>
+            )}
             {errorMessage && (
               <span className="live-editor__error" onClick={() => setErrorMessage(null)} title="Click to dismiss">
                 {errorMessage}
@@ -1164,7 +1226,7 @@ export default function LiveProfileEditor() {
               className="btn btn--primary btn--sm"
               disabled={saving || !hasChanges}
             >
-              {saving ? 'Saving...' : 'Save All Changes'}
+              {saving ? 'Saving...' : <><span className="hide-mobile">Save All Changes</span><span className="show-mobile">Save</span></>}
             </button>
             <button
               onClick={() => {
@@ -1205,7 +1267,7 @@ export default function LiveProfileEditor() {
                 disabled={saving || !displayName.trim() || !bio.trim()}
                 style={{ borderColor: 'var(--color-success, #4ade80)', color: 'var(--color-success, #4ade80)' }}
               >
-                Submit for Review
+                <span className="hide-mobile">Submit for Review</span><span className="show-mobile">Submit</span>
               </button>
             )}
             {profileVisibility === 'pending' && (
@@ -1230,13 +1292,6 @@ export default function LiveProfileEditor() {
 
       {/* ── Profile Preview — exact same structure as public page ── */}
       <article className="profile-page" style={{ marginTop: '53px' }}>
-        {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="breadcrumb container" style={{ paddingTop: 'var(--space-4)' }}>
-          <Link href="/dashboard">Dashboard</Link> <span aria-hidden="true">/</span>
-          <span>Edit Profile</span> <span aria-hidden="true">/</span>
-          <span>{displayName || 'Your Name'}</span>
-        </nav>
-
         {/* Import from website prompt */}
         <div className="container" style={{ marginTop: 'var(--space-3)' }}>
           <ImportPromptPopup mode="profile" />
@@ -1260,6 +1315,18 @@ export default function LiveProfileEditor() {
             } : undefined}
             onMouseUp={() => { if (isDraggingCover) { setIsDraggingCover(false); markDirty() } }}
             onMouseLeave={() => { if (isDraggingCover) { setIsDraggingCover(false); markDirty() } }}
+            onTouchStart={coverImageUrl ? (e) => {
+              setIsDraggingCover(true)
+              coverDragStartY.current = e.touches[0].clientY
+              coverDragStartPos.current = coverPositionY
+            } : undefined}
+            onTouchMove={isDraggingCover ? (e) => {
+              const delta = e.touches[0].clientY - coverDragStartY.current
+              const bannerHeight = (e.currentTarget as HTMLElement).offsetHeight
+              const newPos = Math.max(0, Math.min(100, coverDragStartPos.current + (delta / bannerHeight) * 100))
+              setCoverPositionY(newPos)
+            } : undefined}
+            onTouchEnd={() => { if (isDraggingCover) { setIsDraggingCover(false); markDirty() } }}
           >
             {coverImageUrl && (
               <>
@@ -1303,7 +1370,7 @@ export default function LiveProfileEditor() {
                   <div className="editable-section__overlay"><span>Edit photo</span></div>
                 </div>
 
-                {/* Skills, Location, Social — below photo */}
+                {/* Skills, Location — below photo */}
                 <div ref={setSectionRef('skills')} className={`editable-section${activePanel === 'skills' ? ' editable-section--active' : ''}`} onClick={() => openPanel('skills')} style={{ marginTop: 'var(--space-3)', fontSize: 'var(--text-xs)' }}>
                   {profileSkills.length > 0 ? (
                     <div style={{ marginBottom: 'var(--space-2)' }}>
@@ -1326,8 +1393,13 @@ export default function LiveProfileEditor() {
                       <ProfileAvailabilityBadge status={availabilityStatus as 'open' | 'busy' | 'unavailable'} note={availabilityNote} />
                     </div>
                   )}
-                  {socialLinks.length > 0 && (
-                    <div ref={setSectionRef('social')} style={{ marginTop: 'var(--space-2)' }} onClick={(e) => { e.stopPropagation(); openPanel('social') }}>
+                  <div className="editable-section__overlay"><span>Edit skills</span></div>
+                </div>
+
+                {/* Social Links — separate editable section */}
+                <div ref={setSectionRef('social')} className={`editable-section${activePanel === 'social' ? ' editable-section--active' : ''}`} onClick={() => openPanel('social')} style={{ marginTop: 'var(--space-3)', fontSize: 'var(--text-xs)' }}>
+                  {socialLinks.length > 0 ? (
+                    <>
                       <p className="profile-header-grid__sidebar-label">Social</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                         {[...socialLinks].sort((a, b) => a.display_order - b.display_order).map(link => (
@@ -1336,14 +1408,11 @@ export default function LiveProfileEditor() {
                           </a>
                         ))}
                       </div>
-                    </div>
+                    </>
+                  ) : (
+                    <p className="live-editor__placeholder-text" style={{ fontSize: 'var(--text-xs)' }}>Add social links</p>
                   )}
-                  {socialLinks.length === 0 && (
-                    <div ref={setSectionRef('social')} onClick={(e) => { e.stopPropagation(); openPanel('social') }}>
-                      <p className="live-editor__placeholder-text" style={{ fontSize: 'var(--text-xs)' }}>Add social links</p>
-                    </div>
-                  )}
-                  <div className="editable-section__overlay"><span>Edit skills</span></div>
+                  <div className="editable-section__overlay"><span>Edit social links</span></div>
                 </div>
               </div>
 
@@ -1475,8 +1544,8 @@ export default function LiveProfileEditor() {
               Accepted: JPG, PNG, WebP, GIF, HEIC, AVIF, BMP, TIFF, SVG (max 10MB) · PDF (max 10MB) · Drag tiles to reorder
             </p>
             {/* Add buttons */}
-            <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-2)', flexWrap: 'wrap' }}>
-              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer' }}>
+            <div className="live-editor__gallery-controls" style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-2)', flexWrap: 'wrap' }}>
+              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer', flex: '1 1 auto' }}>
                 <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,image/avif,image/bmp,image/tiff,image/svg+xml" multiple onChange={async (e) => {
                   setGalleryUploading(true)
                   setUploadError(null)
@@ -1485,7 +1554,7 @@ export default function LiveProfileEditor() {
                 }} style={{ display: 'none' }} />
                 {galleryUploading ? 'Uploading...' : '+ Add Images'}
               </label>
-              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer', position: 'relative' }}>
+              <label className="btn btn--outline btn--sm" style={{ cursor: 'pointer', position: 'relative', flex: '1 1 auto' }}>
                 <input type="file" accept=".pdf,application/pdf" multiple onChange={async (e) => {
                   const files = e.target.files
                   if (!files || files.length === 0) return
@@ -1509,7 +1578,7 @@ export default function LiveProfileEditor() {
               </label>
               {showAddLink ? (
                 <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-end', flexWrap: 'wrap', flex: 1 }}>
-                  <div className="form-group" style={{ margin: 0, flex: 1, minWidth: 120 }}>
+                  <div className="form-group" style={{ margin: 0, flex: '1 1 120px', minWidth: 0 }}>
                     <label className="form-label" style={{ fontSize: 'var(--text-xs)' }}>URL</label>
                     <input className="form-input" value={newLinkUrl} onChange={e => setNewLinkUrl(e.target.value)} placeholder="https://..." style={{ fontSize: 'var(--text-sm)' }} />
                   </div>
@@ -1542,7 +1611,7 @@ export default function LiveProfileEditor() {
                   <button className="btn btn--ghost btn--sm" onClick={() => { setShowAddLink(false); setNewLinkThumbnail(null) }}>Cancel</button>
                 </div>
               ) : (
-                <button className="btn btn--outline btn--sm" onClick={() => setShowAddLink(true)}>+ Add Link</button>
+                <button className="btn btn--outline btn--sm" style={{ flex: '1 1 auto' }} onClick={() => setShowAddLink(true)}>+ Add Link</button>
               )}
             </div>
           </div>
@@ -1578,7 +1647,7 @@ export default function LiveProfileEditor() {
                       <span className="profile-timeline__year-label">{entry.year}</span>
                       <div className="profile-timeline__content">
                         <strong>{entry.title}</strong>
-                        {entry.organization && <span> — {entry.organization}</span>}
+                        {entry.organization && <span>, {entry.organization}</span>}
                         {entry.description && <p style={{ margin: 'var(--space-1) 0 0', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>{entry.description}</p>}
                       </div>
                     </div>
@@ -1765,6 +1834,18 @@ export default function LiveProfileEditor() {
                         } : undefined}
                         onMouseUp={() => { if (isDraggingAvatar) { setIsDraggingAvatar(false); markDirty() } }}
                         onMouseLeave={() => { if (isDraggingAvatar) { setIsDraggingAvatar(false); markDirty() } }}
+                        onTouchStart={(e) => {
+                          setIsDraggingAvatar(true)
+                          avatarDragStartY.current = e.touches[0].clientY
+                          avatarDragStartPos.current = avatarPositionY
+                        }}
+                        onTouchMove={isDraggingAvatar ? (e) => {
+                          const delta = e.touches[0].clientY - avatarDragStartY.current
+                          const containerHeight = (e.currentTarget as HTMLElement).offsetHeight
+                          const newPos = Math.max(0, Math.min(100, avatarDragStartPos.current + (delta / containerHeight) * 100))
+                          setAvatarPositionY(newPos)
+                        } : undefined}
+                        onTouchEnd={() => { if (isDraggingAvatar) { setIsDraggingAvatar(false); markDirty() } }}
                       >
                         <img src={avatarUrl} alt="Profile" draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: `center ${avatarPositionY}%`, pointerEvents: 'none' }} />
                         {isDraggingAvatar && (
@@ -1814,7 +1895,9 @@ export default function LiveProfileEditor() {
                       <option value="they/them">they/them</option>
                       <option value="he/they">he/they</option>
                       <option value="she/they">she/they</option>
+                      <option value="ze/zir">ze/zir</option>
                       <option value="any pronouns">any pronouns</option>
+                      <option value="prefer not to say">prefer not to say</option>
                     </select>
                   </div>
                   <div className="form-group">
@@ -2029,7 +2112,7 @@ export default function LiveProfileEditor() {
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                         <input type="text" className="form-input" placeholder="Label (e.g. Studio, Fundraiser)" value={link.label} onChange={e => updateMediaLink(i, 'label', e.target.value)} />
                         <input type="url" className="form-input" placeholder="https://..." value={link.url} onChange={e => updateMediaLink(i, 'url', e.target.value)} />
-                        <select className="form-input" value={link.type} onChange={e => updateMediaLink(i, 'type', e.target.value)} style={{ width: '160px' }}>
+                        <select className="form-input" value={link.type} onChange={e => updateMediaLink(i, 'type', e.target.value)} style={{ width: 'auto', minWidth: 0, flex: '0 1 160px', maxWidth: '100%' }}>
                           <option value="website">Website</option>
                           <option value="fundraiser">Fundraiser</option>
                           <option value="other">Other</option>
@@ -2442,6 +2525,174 @@ export default function LiveProfileEditor() {
         .live-editor__gallery-dropzone--drag {
           border-color: var(--color-accent, #01696F) !important;
           background: rgba(1, 105, 111, 0.08) !important;
+        }
+
+        /* ── Mobile text toggle utilities ─────────────────── */
+        .show-mobile { display: none; }
+        .hide-mobile { display: inline; }
+
+        /* ── Mobile responsive ────────────────────────────── */
+        @media (max-width: 767px) {
+          .show-mobile { display: inline; }
+          .hide-mobile { display: none; }
+          .live-editor__gallery-controls {
+            flex-direction: column;
+          }
+          .live-editor__toolbar {
+            height: auto;
+            min-height: 48px;
+            padding: var(--space-2) 0;
+          }
+          .live-editor__toolbar-inner {
+            flex-wrap: wrap;
+            gap: var(--space-2);
+          }
+          .live-editor__toolbar-title {
+            font-size: var(--text-xs);
+            flex-shrink: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .live-editor__toolbar-actions {
+            gap: var(--space-2);
+            flex-wrap: wrap;
+          }
+          .live-editor__toolbar-actions .btn--sm {
+            font-size: var(--text-xs);
+            padding: 6px 10px;
+            min-height: 36px;
+          }
+
+          /* Panels: bottom sheet style */
+          .live-editor__panel {
+            top: auto;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            max-width: 100%;
+            height: 85vh;
+            border-left: none;
+            border-top: 1px solid var(--color-border);
+            border-radius: 16px 16px 0 0;
+            animation: slideUpSheet 0.25s ease-out;
+          }
+          @keyframes slideUpSheet {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+          }
+          .live-editor__panel-header {
+            padding: var(--space-3) var(--space-4);
+          }
+          .live-editor__panel-body {
+            padding: var(--space-4);
+          }
+          .live-editor__panel-footer {
+            padding: var(--space-3) var(--space-4);
+          }
+          .live-editor__panel-close {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          /* Make "Click to edit" overlays always visible on touch */
+          .editable-section__overlay {
+            opacity: 0.85;
+            font-size: 10px;
+            padding: 3px 8px;
+          }
+          .editable-section:hover .editable-section__overlay {
+            opacity: 1;
+          }
+
+          /* Gallery remove buttons always visible on touch */
+          .live-editor__gallery-remove {
+            opacity: 1;
+            width: 32px;
+            height: 32px;
+            font-size: 18px;
+          }
+
+          /* Tag remove buttons bigger for touch */
+          .live-editor__tag-remove {
+            font-size: 18px;
+            padding: 2px 6px;
+            min-width: 28px;
+            min-height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          /* Gallery grid: 2 columns on small screens */
+          .live-editor__gallery-grid {
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+          }
+
+          /* Social/timeline entries: stack vertically */
+          .live-editor__social-entry {
+            flex-direction: column;
+          }
+          .live-editor__social-entry .form-select {
+            width: 100%;
+          }
+          .live-editor__add-row {
+            flex-direction: column;
+          }
+          .live-editor__add-row .form-select {
+            width: 100%;
+          }
+
+          /* Upload zones: adequate touch targets */
+          .live-editor__upload-zone {
+            min-height: 80px;
+            padding: var(--space-4) var(--space-3);
+          }
+
+          /* Form inputs: min 44px touch target */
+          .form-input,
+          .form-textarea,
+          .form-select {
+            min-height: 44px;
+            font-size: 16px; /* prevent iOS zoom on focus */
+          }
+        }
+
+        @media (max-width: 480px) {
+          .live-editor__toolbar-actions {
+            width: 100%;
+            justify-content: flex-end;
+          }
+          .live-editor__toolbar-actions .btn--ghost.btn--sm {
+            padding: 5px 6px;
+          }
+          .live-editor__panel {
+            height: 90vh;
+          }
+        }
+
+        @media (max-width: 390px) {
+          .live-editor__toolbar-title {
+            font-size: 11px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .live-editor__toolbar-actions .btn--sm {
+            font-size: 10px;
+            padding: 4px 6px;
+            min-height: 32px;
+          }
+          .live-editor__unsaved,
+          .live-editor__saved,
+          .live-editor__autosave {
+            display: none;
+          }
         }
 
         /* Welcome overlay */

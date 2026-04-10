@@ -1,5 +1,17 @@
 import * as cheerio from 'cheerio'
 
+/** Extract text from a cheerio element, inserting spaces around block-level breaks */
+function safeText($el: cheerio.Cheerio<any>, $: cheerio.CheerioAPI): string {
+  // Replace <br> tags with spaces before extracting text
+  const clone = $el.clone()
+  clone.find('br').replaceWith(' ')
+  clone.find('div, p, li, h1, h2, h3, h4, h5, h6').each((_, el) => {
+    $(el).prepend(' ')
+    $(el).append(' ')
+  })
+  return clone.text().replace(/\s+/g, ' ').trim()
+}
+
 export interface ScrapedProject {
   title: string
   shortDescription: string
@@ -79,6 +91,27 @@ function resolveUrl(src: string, baseUrl: string): string {
 function isSquarespace($: cheerio.CheerioAPI): boolean {
   const html = $.html()
   return html.includes('squarespace') || html.includes('sqs-') || html.includes('fluid-engine')
+}
+
+/** Detect if page is built on Wix */
+function isWix($: cheerio.CheerioAPI): boolean {
+  const html = $.html()
+  return html.includes('wix.com') || html.includes('wixstatic.com') || html.includes('wix-warmup-data')
+}
+
+/**
+ * Upgrade Wix image URLs to high resolution.
+ * Wix SSR sends LQIP (Low Quality Image Placeholder) with tiny dimensions and blur.
+ * The URL structure is: /media/{id}/v1/fill/w_49,h_39,...,blur_2,.../filename
+ * We rewrite to request full-resolution: w_1920,h_1920,q_90
+ */
+function upgradeWixImageUrl(url: string): string {
+  if (!url.includes('wixstatic.com/media/')) return url
+  // Match the /v1/fill/.../ segment and replace with high-quality params
+  return url.replace(
+    /\/v1\/fill\/[^/]+\//,
+    '/v1/fill/w_1920,h_1920,al_c,q_90,enc_auto,quality_auto/'
+  )
 }
 
 function extractSocialLinks($: cheerio.CheerioAPI, baseUrl: string): Array<{ platform: string; url: string }> {
@@ -170,19 +203,26 @@ function scoreImageForHero(el: any | null, $: cheerio.CheerioAPI, url: string): 
 function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: string; alt: string; heroScore: number }> {
   const images: Array<{ url: string; alt: string; heroScore: number }> = []
   const seen = new Set<string>()
+  const wixSite = isWix($)
 
   // Get og:image — but only add it if it does NOT look like a site-wide default
   const ogImage = $('meta[property="og:image"]').attr('content')
   if (ogImage && !isLikelySiteDefault(ogImage)) {
-    const resolved = resolveUrl(ogImage, baseUrl)
+    let resolved = resolveUrl(ogImage, baseUrl)
+    if (wixSite) resolved = upgradeWixImageUrl(resolved)
     seen.add(resolved)
     // og:image gets a moderate baseline score — real content images from main area can beat it
     images.push({ url: resolved, alt: 'Hero image', heroScore: 10 })
   }
 
-  // Get all img tags — check src, data-src (lazy load), srcset
+  // Get all img tags — prefer lazy-load attributes over src (which may be a placeholder)
   $('img').each((_, el) => {
-    let src = $(el).attr('src') || $(el).attr('data-src') || ''
+    // Prefer real-image lazy-load attributes over src (which may be a data: URI placeholder)
+    let src = $(el).attr('data-lazy-src')
+      || $(el).attr('data-src')
+      || $(el).attr('data-original')
+      || $(el).attr('src')
+      || ''
 
     // For Squarespace, also check srcset for highest-res version
     const srcset = $(el).attr('srcset')
@@ -195,16 +235,23 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
       }
     }
 
-    if (!src) return
-    const resolved = resolveUrl(src, baseUrl)
+    if (!src || src.startsWith('data:')) return
+    let resolved = resolveUrl(src, baseUrl)
+
+    // Wix: upgrade LQIP placeholders (tiny, blurred) to full resolution
+    if (wixSite) resolved = upgradeWixImageUrl(resolved)
+
+    // Deduplicate after URL upgrade (Wix LQIPs with different blur params → same upgraded URL)
+    if (seen.has(resolved)) return
 
     // Skip duplicates, tiny images, icons, tracking pixels
-    if (seen.has(resolved)) return
     if (/favicon|1x1|spacer|pixel|badge|icon/i.test(resolved)) return
-    // Skip very small specified dimensions
-    const width = parseInt($(el).attr('width') || '0')
-    const height = parseInt($(el).attr('height') || '0')
-    if ((width > 0 && width < 50) || (height > 0 && height < 50)) return
+    // Skip very small specified dimensions (but not for Wix — SSR dimensions are fake placeholders)
+    if (!wixSite) {
+      const width = parseInt($(el).attr('width') || '0')
+      const height = parseInt($(el).attr('height') || '0')
+      if ((width > 0 && width < 50) || (height > 0 && height < 50)) return
+    }
 
     seen.add(resolved)
     const heroScore = scoreImageForHero(el, $, resolved)
@@ -221,7 +268,21 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
     images.push({ url: resolved, alt: '', heroScore: scoreImageForHero(null, $, resolved) })
   })
 
-  // Squarespace-specific: background images in inline styles
+  // WordPress/lightbox: <a> tags linking directly to image files (gallery lightboxes)
+  $('a[href]').each((_, el) => {
+    const href = $(el).attr('href') || ''
+    if (!/\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(href)) return
+    const resolved = resolveUrl(href, baseUrl)
+    if (seen.has(resolved)) return
+    // Only include if inside a gallery or portfolio container
+    const parent = $(el).closest('.gallery, .portfolio, [class*="gallery"], [class*="portfolio"], .wp-block-gallery, main, article')
+    if (parent.length === 0) return
+    seen.add(resolved)
+    const alt = $(el).find('img').attr('alt') || ''
+    images.push({ url: resolved, alt, heroScore: scoreImageForHero(null, $, resolved) })
+  })
+
+  // Background images in inline styles
   $('[style*="background-image"]').each((_, el) => {
     const style = $(el).attr('style') || ''
     const match = style.match(/url\(['"]?(.*?)['"]?\)/)
@@ -492,7 +553,7 @@ export async function scrapeProjectPage(url: string): Promise<ScrapedProject> {
   const ogDesc = $('meta[property="og:description"]').attr('content')
   const metaDesc = $('meta[name="description"]').attr('content')
   const pageTitle = $('title').text().trim()
-  const h1 = $('h1').first().text().trim()
+  const h1 = safeText($('h1').first(), $)
   const currentPath = new URL(url).pathname
 
   // Best title — clean up "PROJECT — SITE NAME" format
@@ -698,7 +759,7 @@ export async function scrapeProfilePage(url: string): Promise<ScrapedProfile> {
   const currentPath = new URL(url).pathname
 
   const ogTitle = $('meta[property="og:title"]').attr('content')
-  const h1 = $('h1').first().text().trim()
+  const h1 = safeText($('h1').first(), $)
   const siteName = $('meta[property="og:site_name"]').attr('content') || ''
 
   // For about pages, prefer site name over page title

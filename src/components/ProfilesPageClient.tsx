@@ -37,16 +37,13 @@ export function ProfilesPageClient({ profiles }: { profiles: Profile[] }) {
     <>
       <section className="page-header">
         <div className="container">
-          <nav aria-label="Breadcrumb" className="breadcrumb">
-            <Link href="/">Home</Link> <span aria-hidden="true">/</span> <span>People</span>
-          </nav>
           <p className="section-label">Community</p>
           <h1>The People Behind the Work</h1>
           <p className="lead">
-            Artists, architects, engineers, and makers building extraordinary things — together.
+            Artists, architects, engineers, and makers building extraordinary things, together.
           </p>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-3)' }}>
-            Resonance Network is a growing community. The people you see here are the first — more profiles are added as new creators and collaborators join.
+            Resonance Network is a growing community. The people you see here are the first. More profiles are added as new creators and collaborators join.
           </p>
         </div>
       </section>

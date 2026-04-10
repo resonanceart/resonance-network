@@ -173,7 +173,7 @@ export async function POST(request: Request) {
       if (recipientEmail) {
         await sendEmail({
           to: recipientEmail,
-          subject: `You earned a badge: ${badgeLabel} ${badgeSymbol} — Resonance Network`,
+          subject: `You earned a badge: ${badgeLabel} ${badgeSymbol} | Resonance Network`,
           html: `
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a19;">
               <h2 style="color: #01696F;">Congratulations, ${userProfile?.display_name || 'there'}! ${badgeSymbol}</h2>
@@ -186,7 +186,7 @@ export async function POST(request: Request) {
               </div>
               <p>View your profile on <a href="https://resonancenetwork.org/dashboard" style="color: #01696F;">Resonance Network</a>.</p>
               <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 24px 0;" />
-              <p style="color: #999; font-size: 12px;">Resonance Network — Connecting Community Through Passion and Purpose</p>
+              <p style="color: #999; font-size: 12px;">Resonance Network | Connecting Community Through Passion and Purpose</p>
             </div>
           `,
         })

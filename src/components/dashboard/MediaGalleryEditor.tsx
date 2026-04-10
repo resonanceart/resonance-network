@@ -15,9 +15,10 @@ export interface MediaItem {
 interface MediaGalleryEditorProps {
   items: MediaItem[];
   onChange: (items: MediaItem[]) => void;
+  onUpload?: (file: File, type: string) => Promise<string | null>;
 }
 
-export default function MediaGalleryEditor({ items, onChange }: MediaGalleryEditorProps) {
+export default function MediaGalleryEditor({ items, onChange, onUpload }: MediaGalleryEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sorted = [...items].sort((a, b) => a.order - b.order);
@@ -48,36 +49,105 @@ export default function MediaGalleryEditor({ items, onChange }: MediaGalleryEdit
     onChange(next);
   }
 
-  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    const img = new Image();
-    img.onload = () => {
-      const maxWidth = 1200;
-      let width = img.width;
-      let height = img.height;
-
-      if (width > maxWidth) {
-        height = Math.round((height * maxWidth) / width);
-        width = maxWidth;
-      }
-
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      ctx.drawImage(img, 0, 0, width, height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-
-      const nextOrder = sorted.length > 0 ? sorted[sorted.length - 1].order + 1 : 0;
-      onChange([...sorted, { url: dataUrl, alt: '', type: 'image', order: nextOrder }]);
-    };
-
-    img.src = URL.createObjectURL(file);
     e.target.value = '';
+
+    const nextOrder = sorted.length > 0 ? sorted[sorted.length - 1].order + 1 : 0;
+
+    // Try to resize; fall back to original file on any failure
+    let fileToUpload: File = file;
+    try {
+      const resized = await resizeImage(file, 1200);
+      if (resized) fileToUpload = resized;
+    } catch {
+      // Resize failed, upload original
+    }
+
+    if (onUpload) {
+      const url = await onUpload(fileToUpload, 'gallery');
+      if (url) {
+        onChange([...sorted, { url, alt: '', type: 'image', order: nextOrder }]);
+      }
+    } else {
+      const dataUrl = await fileToDataUrl(fileToUpload);
+      if (dataUrl) {
+        onChange([...sorted, { url: dataUrl, alt: '', type: 'image', order: nextOrder }]);
+      }
+    }
+  }
+
+  function resizeImage(file: File, maxWidth: number): Promise<File | null> {
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => resolve(null), 10_000);
+      const objectUrl = URL.createObjectURL(file);
+
+      const img = new Image();
+      img.onload = () => {
+        try {
+          let width = img.width;
+          let height = img.height;
+
+          if (width <= maxWidth) {
+            clearTimeout(timeout);
+            URL.revokeObjectURL(objectUrl);
+            resolve(null); // No resize needed, use original
+            return;
+          }
+
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            clearTimeout(timeout);
+            URL.revokeObjectURL(objectUrl);
+            resolve(null);
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => {
+              clearTimeout(timeout);
+              URL.revokeObjectURL(objectUrl);
+              if (!blob) { resolve(null); return; }
+              const resized = new File(
+                [blob],
+                file.name.replace(/\.[^.]+$/, '.jpg'),
+                { type: 'image/jpeg' }
+              );
+              resolve(resized);
+            },
+            'image/jpeg',
+            0.85
+          );
+        } catch {
+          clearTimeout(timeout);
+          URL.revokeObjectURL(objectUrl);
+          resolve(null);
+        }
+      };
+      img.onerror = () => {
+        clearTimeout(timeout);
+        URL.revokeObjectURL(objectUrl);
+        resolve(null); // Image can't be decoded, use original
+      };
+      img.src = objectUrl;
+    });
+  }
+
+  function fileToDataUrl(file: File): Promise<string | null> {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
   }
 
   function handleAddVideo() {
@@ -199,8 +269,9 @@ export default function MediaGalleryEditor({ items, onChange }: MediaGalleryEdit
                 disabled={index === 0}
                 style={{
                   flex: 1,
-                  padding: '2px',
-                  fontSize: 'var(--text-xs, 12px)',
+                  padding: '8px',
+                  fontSize: '16px',
+                  minHeight: '40px',
                   cursor: index === 0 ? 'default' : 'pointer',
                   opacity: index === 0 ? 0.3 : 1,
                   border: '1px solid var(--color-border)',
@@ -217,8 +288,9 @@ export default function MediaGalleryEditor({ items, onChange }: MediaGalleryEdit
                 disabled={index === sorted.length - 1}
                 style={{
                   flex: 1,
-                  padding: '2px',
-                  fontSize: 'var(--text-xs, 12px)',
+                  padding: '8px',
+                  fontSize: '16px',
+                  minHeight: '40px',
                   cursor: index === sorted.length - 1 ? 'default' : 'pointer',
                   opacity: index === sorted.length - 1 ? 0.3 : 1,
                   border: '1px solid var(--color-border)',
@@ -235,19 +307,20 @@ export default function MediaGalleryEditor({ items, onChange }: MediaGalleryEdit
       </div>
 
       {/* Action buttons */}
-      <div style={{ display: 'flex', gap: 'var(--space-2, 8px)', marginTop: 'var(--space-2, 8px)' }}>
+      <div style={{ display: 'flex', gap: 'var(--space-2, 8px)', marginTop: 'var(--space-2, 8px)', flexWrap: 'wrap' }}>
         <button
           type="button"
           className="media-gallery-editor__add-btn"
           onClick={() => fileInputRef.current?.click()}
           style={{
-            padding: 'var(--space-2, 8px) var(--space-2, 8px)',
+            padding: 'var(--space-3, 12px) var(--space-4, 16px)',
             fontSize: 'var(--text-sm, 14px)',
             cursor: 'pointer',
             border: '1px solid var(--color-border)',
             borderRadius: '4px',
             background: 'var(--color-surface)',
             color: 'var(--color-primary)',
+            minHeight: '44px',
           }}
         >
           + Add Image
@@ -256,13 +329,14 @@ export default function MediaGalleryEditor({ items, onChange }: MediaGalleryEdit
           type="button"
           onClick={handleAddVideo}
           style={{
-            padding: 'var(--space-2, 8px) var(--space-2, 8px)',
+            padding: 'var(--space-3, 12px) var(--space-4, 16px)',
             fontSize: 'var(--text-sm, 14px)',
             cursor: 'pointer',
             border: '1px solid var(--color-border)',
             borderRadius: '4px',
             background: 'var(--color-surface)',
             color: 'var(--color-primary)',
+            minHeight: '44px',
           }}
         >
           + Add Video

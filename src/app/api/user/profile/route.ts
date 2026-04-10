@@ -222,7 +222,7 @@ export async function PUT(request: Request) {
     // Sanitize updatable fields
     const updates: Record<string, unknown> = {}
     if (body.display_name !== undefined) updates.display_name = sanitizeText(body.display_name, 200)
-    if (body.bio !== undefined) updates.bio = sanitizeText(body.bio, 5000)
+    if (body.bio !== undefined) updates.bio = sanitizeText(body.bio, 3000)
     if (body.location !== undefined) updates.location = sanitizeText(body.location, 200)
     if (body.website !== undefined) updates.website = sanitizeText(body.website, 500)
     if (body.avatar_url !== undefined) {
@@ -261,7 +261,15 @@ export async function PUT(request: Request) {
 
     // Handle profile_extended fields
     const extendedFields: Record<string, unknown> = {}
-    if (body.media_gallery !== undefined) extendedFields.media_gallery = body.media_gallery
+    if (body.media_gallery !== undefined) {
+      if (body.media_gallery === null) {
+        extendedFields.media_gallery = null
+      } else if (Array.isArray(body.media_gallery) && body.media_gallery.length <= 100) {
+        extendedFields.media_gallery = body.media_gallery.filter((item: Record<string, unknown>) =>
+          item && typeof item.type === 'string' && typeof item.url === 'string'
+        ).slice(0, 100)
+      }
+    }
     if (body.extended_projects !== undefined) extendedFields.projects = body.extended_projects
     if (body.extended_links !== undefined) extendedFields.links = body.extended_links
     if (body.timeline !== undefined) extendedFields.timeline = body.timeline
@@ -321,13 +329,13 @@ export async function PUT(request: Request) {
     if (body.projects !== undefined && extendedFields.projects === undefined) extendedFields.projects = body.projects
     if (body.links !== undefined && extendedFields.links === undefined) extendedFields.links = body.links
     if (body.achievements !== undefined && extendedFields.achievements === undefined) extendedFields.achievements = body.achievements
-    if (body.philosophy !== undefined && extendedFields.philosophy === undefined) extendedFields.philosophy = sanitizeText(body.philosophy || '', 5000)
+    if (body.philosophy !== undefined && extendedFields.philosophy === undefined) extendedFields.philosophy = sanitizeText(body.philosophy || '', 500)
 
     // Enhanced profile fields
     if (body.professional_title !== undefined) extendedFields.professional_title = sanitizeText(body.professional_title, 200)
     if (body.pronouns !== undefined) extendedFields.pronouns = sanitizeText(body.pronouns, 100)
     if (body.location_secondary !== undefined) extendedFields.location_secondary = sanitizeText(body.location_secondary, 200)
-    if (body.artist_statement !== undefined) extendedFields.artist_statement = sanitizeText(body.artist_statement, 10000)
+    if (body.artist_statement !== undefined) extendedFields.artist_statement = sanitizeText(body.artist_statement, 2000)
     if (body.accent_color !== undefined) extendedFields.accent_color = sanitizeText(body.accent_color, 20)
     if (body.bio_excerpt !== undefined) extendedFields.bio_excerpt = sanitizeText(body.bio_excerpt, 500)
     if (body.primary_website_url !== undefined) extendedFields.primary_website_url = sanitizeText(body.primary_website_url, 500)
@@ -425,26 +433,36 @@ export async function PUT(request: Request) {
 
     // Send email notification when profile submitted for review
     if (body.profile_visibility === 'pending' && profile) {
-      const displayName = String(profile.display_name || 'Unknown')
-      const userEmail = String(profile.email || '')
-      try {
-        // Notify admin
-        await sendNotification({
-          to: ['resonanceartcollective@gmail.com'],
-          subject: `New Profile Submitted for Review: ${displayName}`,
-          body: `${displayName} has submitted their profile for review.\n\nEmail: ${userEmail}\nUser ID: ${user.id}\n\nReview profiles in the admin dashboard.`,
-        })
-        // Confirm to user
-        if (userEmail) {
+      // Only notify on first submission, not repeated saves
+      const { data: currentProfile } = await supabaseAdmin
+        .from('user_profiles')
+        .select('profile_visibility')
+        .eq('id', user.id)
+        .single()
+      const wasAlreadyPending = currentProfile?.profile_visibility === 'pending'
+
+      if (!wasAlreadyPending) {
+        const displayName = String(profile.display_name || 'Unknown')
+        const userEmail = String(profile.email || '')
+        try {
+          // Notify admin
           await sendNotification({
-            to: [userEmail],
-            subject: 'Profile Submitted — Resonance Network',
-            body: `Hi ${displayName},\n\nYour profile has been submitted for review. Our team will review it shortly and you'll be notified when it's published.\n\nIn the meantime, you can continue editing your profile.\n\nThank you,\nResonance Network`,
+            to: ['resonanceartcollective@gmail.com'],
+            subject: `New Profile Submitted for Review: ${displayName}`,
+            body: `${displayName} has submitted their profile for review.\n\nEmail: ${userEmail}\nUser ID: ${user.id}\n\nReview profiles in the admin dashboard.`,
           })
+          // Confirm to user
+          if (userEmail) {
+            await sendNotification({
+              to: [userEmail],
+              subject: 'Profile Submitted | Resonance Network',
+              body: `Hi ${displayName},\n\nYour profile has been submitted for review. Our team will review it shortly and you'll be notified when it's published.\n\nIn the meantime, you can continue editing your profile.\n\nThank you,\nResonance Network`,
+            })
+          }
+        } catch (e) {
+          console.error('Failed to send review notification:', e)
+          // Don't fail the request if email fails
         }
-      } catch (e) {
-        console.error('Failed to send review notification:', e)
-        // Don't fail the request if email fails
       }
     }
 
@@ -458,6 +476,36 @@ export async function PUT(request: Request) {
 
       if (extError) {
         console.error('Extended profile upsert error:', extError.message)
+        // Retry with only base-migration columns (guaranteed to exist)
+        // Enhancement columns (accent_color, cover_position, section_order, gallery_order,
+        // gallery_layout, gallery_columns, etc.) may not exist if migrations haven't been applied
+        const coreColumns = [
+          'media_gallery', 'cover_image_url', 'philosophy', 'timeline',
+          'tools_and_materials', 'availability_status', 'availability_note',
+          'projects', 'links', 'testimonials', 'achievements',
+        ]
+        const coreFields: Record<string, unknown> = {}
+        for (const key of coreColumns) {
+          if (key in extendedFields) coreFields[key] = extendedFields[key]
+        }
+        if (Object.keys(coreFields).length > 0) {
+          const { data: retryData, error: retryError } = await supabaseAdmin
+            .from('profile_extended')
+            .upsert({ id: user.id, ...coreFields }, { onConflict: 'id' })
+            .select()
+            .single()
+          if (retryError) {
+            console.error('Extended profile retry error:', retryError.message)
+            // Return the error to the client so they know the save failed
+            return NextResponse.json(
+              { error: `Profile media save failed: ${retryError.message}`, profile },
+              { status: 500 }
+            )
+          } else {
+            extendedProfile = retryData
+            console.log('Extended profile saved with core columns only (some enhancement columns may be missing)')
+          }
+        }
       } else {
         extendedProfile = data
       }

@@ -22,7 +22,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const project = await getProjectBySlug(params.slug)
   if (!project) return {}
-  const title = `${project.title} — ${project.domains.slice(0, 2).join(' & ')} | Resonance Network`
+  const domainStr = project.domains.slice(0, 2).join(' & ')
+  const title = domainStr
+    ? `${project.title}, ${domainStr}`
+    : project.title
   return {
     title,
     description: `${project.shortDescription} Explore this ${project.stage.toLowerCase()} stage ${project.domains[0]?.toLowerCase() || 'creative'} project on Resonance Network.`,
@@ -165,11 +168,6 @@ export default async function ProjectPage({ params }: { params: { slug: string }
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(getBreadcrumbJsonLd(project)) }}
       />
-
-      {/* Breadcrumb navigation */}
-      <nav aria-label="Breadcrumb" className="breadcrumb container" style={{ paddingTop: 'var(--space-4)' }}>
-        <Link href="/">Home</Link> <span aria-hidden="true">/</span> <Link href="/#projects">Projects</Link> <span aria-hidden="true">/</span> <span>{project.title}</span>
-      </nav>
 
       {/* Hero */}
       <section className="project-hero">
@@ -480,7 +478,7 @@ export default async function ProjectPage({ params }: { params: { slug: string }
 
       {/* Materials */}
       {project.materials && (
-        <section style={{ padding: 'var(--space-12) 0', borderTop: '1px solid var(--color-border)' }}>
+        <section style={{ padding: 'var(--space-8) 0', borderTop: '1px solid var(--color-border)' }}>
           <div className="container">
             <p className="section-label">Materials &amp; Processes</p>
             <p className="overview-body">{project.materials}</p>
@@ -550,7 +548,7 @@ export default async function ProjectPage({ params }: { params: { slug: string }
 
       {/* Bottom nav */}
       <nav className="project-nav" aria-label="Related pages">
-        <div className="container" style={{ display: 'flex', gap: 'var(--space-4)', paddingBottom: 'var(--space-8)', flexWrap: 'wrap' }}>
+        <div className="container" style={{ display: 'flex', gap: 'var(--space-4)', paddingBottom: 'var(--space-8)', flexWrap: 'wrap', justifyContent: 'center' }}>
           <Link href="/" className="btn btn--outline">All Projects</Link>
           <Link href="/collaborate" className="btn btn--outline">All Open Roles</Link>
           <Link href="/join" className="btn btn--outline">Share Your Project</Link>

@@ -57,10 +57,15 @@ export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
       const { data } = await res.json()
 
       if (activeTab === 'project') {
-        await saveImportData('resonance_import_data', data)
-        window.location.href = '/dashboard/projects/live-edit?import=true'
+        const key = 'resonance_import_data'
+        await saveImportData(key, data).catch(() => {})
+        // sessionStorage fallback for mobile Safari IndexedDB quirks
+        try { sessionStorage.setItem(key, JSON.stringify(data)) } catch { /* ignore */ }
+        window.location.href = '/dashboard/projects/live-edit?new=true&import=true'
       } else {
-        await saveImportData('resonance_profile_import', data)
+        const key = 'resonance_profile_import'
+        await saveImportData(key, data).catch(() => {})
+        try { sessionStorage.setItem(key, JSON.stringify(data)) } catch { /* ignore */ }
         window.location.href = '/dashboard/profile/live-edit?import=profile'
       }
     } catch (err) {
@@ -78,7 +83,7 @@ export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
     : null
 
   return (
-    <div style={{
+    <div className="import-prompt-popup" style={{
       background: 'var(--color-surface)',
       border: '1px solid var(--color-border)',
       borderRadius: '12px',
@@ -116,7 +121,7 @@ export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
 
       {/* Tabs (only in "both" mode) */}
       {showTabs && tabs && (
-        <div style={{
+        <div className="import-prompt-popup__tabs" style={{
           display: 'flex', gap: 'var(--space-2)',
           marginBottom: 'var(--space-4)',
           borderBottom: '1px solid var(--color-border)',
@@ -143,7 +148,7 @@ export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
       )}
 
       {/* URL input + submit */}
-      <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+      <div className="import-prompt-popup__input-row" style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
         <input
           type="url"
           value={url}
@@ -208,7 +213,7 @@ export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
       <p style={{ margin: 0, marginTop: 'var(--space-3)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>
         No website?{' '}
         <a
-          href={activeTab === 'project' ? '/dashboard/projects/live-edit' : '/dashboard/profile/live-edit'}
+          href={activeTab === 'project' ? '/dashboard/projects/live-edit?new=true' : '/dashboard/profile/live-edit'}
           style={{ color: 'var(--color-accent, #6366f1)', textDecoration: 'underline', fontWeight: 500 }}
         >
           Start from scratch instead
