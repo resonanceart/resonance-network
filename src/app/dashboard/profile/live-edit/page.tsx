@@ -516,6 +516,27 @@ export default function LiveProfileEditor() {
   const [activePanel, setActivePanel] = useState<EditSection>(null)
   const [showWelcome, setShowWelcome] = useState(false)
 
+  // ─── Claim flow state ───
+  // adminEditAs: when present, the admin is editing a different user's profile.
+  // Read from ?admin_edit_as=USER_ID on mount. Saves/loads pass this via the
+  // x-admin-edit-as header — backend support will land in a follow-up.
+  const [adminEditAs, setAdminEditAs] = useState<string | null>(null)
+  const [adminEditTargetEmail, setAdminEditTargetEmail] = useState<string | null>(null)
+  const [isCurrentUserAdmin, setIsCurrentUserAdmin] = useState(false)
+  // Claimable profile metadata — populated when the loaded profile row has
+  // is_claimable=true. Drives the claimable banner + send-invite actions.
+  const [claimableMeta, setClaimableMeta] = useState<{
+    isClaimable: boolean
+    targetEmail: string | null
+    sourceUrl: string | null
+    sendCount: number
+  } | null>(null)
+  // Welcome banner shown once after ?welcome=claimed redirect from /claim.
+  const [showWelcomeClaimed, setShowWelcomeClaimed] = useState(false)
+  // Send-claim-invite action state
+  const [claimInviteSending, setClaimInviteSending] = useState(false)
+  const [claimInviteMessage, setClaimInviteMessage] = useState<string | null>(null)
+
   // ALL profile fields as state — these drive the live preview
   const [displayName, setDisplayName] = useState('')
   const [professionalTitle, setProfessionalTitle] = useState('')
@@ -587,11 +608,56 @@ export default function LiveProfileEditor() {
     if (profileFetchedRef.current) return
     profileFetchedRef.current = true
 
-    fetch('/api/user/profile', { credentials: 'same-origin' })
+    // Read claim-flow query params before the fetch so we can forward them
+    // to the API and show the right banners after load.
+    let adminEditAsFromUrl: string | null = null
+    let welcomeClaimedFromUrl = false
+    try {
+      const params = new URLSearchParams(window.location.search)
+      adminEditAsFromUrl = params.get('admin_edit_as')
+      welcomeClaimedFromUrl = params.get('welcome') === 'claimed'
+      // Clean the welcome param out of the URL so it doesn't re-trigger on refresh
+      if (welcomeClaimedFromUrl) {
+        params.delete('welcome')
+        const qs = params.toString()
+        const clean = window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash
+        window.history.replaceState({}, '', clean)
+      }
+    } catch { /* non-browser env / ignore */ }
+
+    if (adminEditAsFromUrl) setAdminEditAs(adminEditAsFromUrl)
+    if (welcomeClaimedFromUrl) setShowWelcomeClaimed(true)
+
+    // Build request — forward admin_edit_as as both query param and header.
+    // Backend currently ignores both (pending follow-up); we send them
+    // consistently so that once the API supports it the override just works.
+    const fetchUrl = adminEditAsFromUrl
+      ? `/api/user/profile?admin_edit_as=${encodeURIComponent(adminEditAsFromUrl)}`
+      : '/api/user/profile'
+    const fetchHeaders: Record<string, string> = {}
+    if (adminEditAsFromUrl) fetchHeaders['x-admin-edit-as'] = adminEditAsFromUrl
+
+    fetch(fetchUrl, { credentials: 'same-origin', headers: fetchHeaders })
       .then(r => r.json())
       .then(async data => {
         const p = data.profile
         const ext = data.extendedProfile || {}
+        // ─── Claim flow: derive admin role + claimable metadata ───
+        if (p) {
+          setIsCurrentUserAdmin(p.role === 'admin')
+          if (p.is_claimable) {
+            setClaimableMeta({
+              isClaimable: true,
+              targetEmail: p.target_email || null,
+              sourceUrl: p.original_source_url || null,
+              sendCount: typeof p.claim_send_count === 'number' ? p.claim_send_count : 0,
+            })
+            // When editing as admin, surface the invitee's email in the banner
+            if (adminEditAsFromUrl) setAdminEditTargetEmail(p.target_email || null)
+          } else {
+            setClaimableMeta(null)
+          }
+        }
         if (p) {
           setDisplayName(p.display_name || '')
           setBio(p.bio || '')
@@ -796,10 +862,17 @@ export default function LiveProfileEditor() {
 
     const doSave = async () => {
       try {
-        const res = await fetch('/api/user/profile', {
+        // Forward admin_edit_as header so saves go to the target profile when
+        // an admin is editing someone else's profile. Backend support pending.
+        const saveHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (adminEditAs) saveHeaders['x-admin-edit-as'] = adminEditAs
+        const saveUrl = adminEditAs
+          ? `/api/user/profile?admin_edit_as=${encodeURIComponent(adminEditAs)}`
+          : '/api/user/profile'
+        const res = await fetch(saveUrl, {
           method: 'PUT',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: saveHeaders,
           body: JSON.stringify({
             display_name: displayName.trim(),
             bio: bio.trim() || null,
@@ -875,6 +948,78 @@ export default function LiveProfileEditor() {
     savingPromiseRef.current = doSave()
     await savingPromiseRef.current
   }
+
+  // ─── Claim-flow handlers ───
+  // Send or resend the claim invite email. profile.id == auth user id == the
+  // param we pass to /api/admin/send-claim-invite.
+  const sendClaimInvite = useCallback(async () => {
+    if (!claimableMeta?.isClaimable) return
+    const profileId = adminEditAs || user?.id
+    if (!profileId) return
+    setClaimInviteMessage(null)
+    setClaimInviteSending(true)
+    try {
+      const res = await fetch('/api/admin/send-claim-invite', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile_id: profileId }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data?.success) {
+        const sentTo = data.sent_to || claimableMeta.targetEmail || 'the artist'
+        const newCount = typeof data.send_count === 'number' ? data.send_count : claimableMeta.sendCount + 1
+        setClaimableMeta((prev) => (prev ? { ...prev, sendCount: newCount } : prev))
+        if (data.email_sent === false) {
+          setClaimInviteMessage(`Token generated, but email delivery failed (${data.email_error || 'unknown'}). You may need to send the link manually.`)
+        } else {
+          setClaimInviteMessage(`Invite sent to ${sentTo}.`)
+        }
+      } else if (res.status === 401) {
+        setClaimInviteMessage('Unauthorized — make sure you are logged in as an admin.')
+      } else if (res.status === 404) {
+        setClaimInviteMessage('Claimable profile not found. Refresh and try again.')
+      } else {
+        setClaimInviteMessage(data?.message || 'Failed to send invite. Try again.')
+      }
+    } catch {
+      setClaimInviteMessage('Network error while sending invite.')
+    } finally {
+      setClaimInviteSending(false)
+      setTimeout(() => setClaimInviteMessage(null), 6000)
+    }
+  }, [claimableMeta, adminEditAs, user?.id])
+
+  // Delete a claimable (unclaimed) profile. Uses the existing admin users
+  // DELETE endpoint which also removes the auth user.
+  const deleteClaimableProfile = useCallback(async () => {
+    if (!claimableMeta?.isClaimable) return
+    const profileId = adminEditAs || user?.id
+    if (!profileId) return
+    const confirmed = window.confirm(
+      'Delete this claimable profile? This cannot be undone. The placeholder user will be removed.'
+    )
+    if (!confirmed) return
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-csrf-token': 'resonance',
+        },
+        body: JSON.stringify({ userId: profileId }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data?.success) {
+        window.location.href = '/admin'
+      } else {
+        setClaimInviteMessage(data?.message || 'Failed to delete profile.')
+      }
+    } catch {
+      setClaimInviteMessage('Network error while deleting.')
+    }
+  }, [claimableMeta, adminEditAs, user?.id])
 
   function openPanel(section: EditSection) {
     setActivePanel(section)
@@ -1250,10 +1395,15 @@ export default function LiveProfileEditor() {
                   await saveAllRef.current(true)
                   // Set profile_visibility to pending
                   try {
-                    const res = await fetch('/api/user/profile', {
+                    const submitHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
+                    if (adminEditAs) submitHeaders['x-admin-edit-as'] = adminEditAs
+                    const submitUrl = adminEditAs
+                      ? `/api/user/profile?admin_edit_as=${encodeURIComponent(adminEditAs)}`
+                      : '/api/user/profile'
+                    const res = await fetch(submitUrl, {
                       method: 'PUT',
                       credentials: 'include',
-                      headers: { 'Content-Type': 'application/json' },
+                      headers: submitHeaders,
                       body: JSON.stringify({ profile_visibility: 'pending' }),
                     })
                     if (res.ok) {
@@ -1296,6 +1446,159 @@ export default function LiveProfileEditor() {
         <div className="container" style={{ marginTop: 'var(--space-3)' }}>
           <ImportPromptPopup mode="profile" />
         </div>
+
+        {/* ── Claim-flow banners ── */}
+        {(adminEditAs || claimableMeta?.isClaimable || showWelcomeClaimed) && (
+          <div className="container" style={{ marginTop: 'var(--space-3)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+            {/* Admin edit-as banner */}
+            {adminEditAs && (
+              <div
+                role="status"
+                style={{
+                  background: 'rgba(99, 102, 241, 0.08)',
+                  border: '1px solid rgba(99, 102, 241, 0.3)',
+                  borderRadius: 'var(--radius-md, 8px)',
+                  padding: 'var(--space-3) var(--space-4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: 'var(--space-3)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <span style={{ fontSize: '1.25rem' }} aria-hidden="true">🛠️</span>
+                  <div>
+                    <strong style={{ color: 'var(--color-text)' }}>Editing as admin</strong>
+                    <div style={{ fontSize: 'var(--text-sm, 0.875rem)', color: 'var(--color-text-muted, #888)' }}>
+                      Your saves go to {adminEditTargetEmail ? <code>{adminEditTargetEmail}</code> : 'this profile'}, not your own account.
+                    </div>
+                  </div>
+                </div>
+                <Link href="/admin" className="btn btn--outline" style={{ textDecoration: 'none' }}>
+                  Back to admin
+                </Link>
+              </div>
+            )}
+
+            {/* Claimable profile banner */}
+            {claimableMeta?.isClaimable && (
+              <div
+                role="status"
+                style={{
+                  background: 'rgba(20, 184, 166, 0.08)',
+                  border: '1px solid rgba(20, 184, 166, 0.3)',
+                  borderRadius: 'var(--radius-md, 8px)',
+                  padding: 'var(--space-4)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 'var(--space-3)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
+                  <span style={{ fontSize: '1.5rem', lineHeight: 1 }} aria-hidden="true">🔐</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <strong style={{ color: 'var(--color-text)', display: 'block', fontSize: 'var(--text-lg, 1.125rem)' }}>
+                      Claimable Profile
+                    </strong>
+                    <div style={{ fontSize: 'var(--text-sm, 0.875rem)', color: 'var(--color-text-muted, #888)', marginTop: '4px' }}>
+                      {claimableMeta.targetEmail ? (
+                        <>For: <code>{claimableMeta.targetEmail}</code> — waiting to be claimed.</>
+                      ) : (
+                        'Waiting to be claimed.'
+                      )}
+                    </div>
+                    <div style={{ fontSize: 'var(--text-sm, 0.875rem)', color: 'var(--color-text-muted, #888)', marginTop: '4px' }}>
+                      This profile is a draft. Polish it, then send the artist an invite so they can claim it and take ownership.
+                    </div>
+                  </div>
+                </div>
+
+                {claimInviteMessage && (
+                  <div
+                    style={{
+                      padding: 'var(--space-2) var(--space-3)',
+                      background: 'var(--color-surface, rgba(255,255,255,0.04))',
+                      borderRadius: 'var(--radius-sm, 4px)',
+                      fontSize: 'var(--text-sm, 0.875rem)',
+                      color: 'var(--color-text)',
+                    }}
+                  >
+                    {claimInviteMessage}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+                  <button
+                    type="button"
+                    className="btn btn--primary"
+                    onClick={sendClaimInvite}
+                    disabled={claimInviteSending}
+                  >
+                    {claimInviteSending
+                      ? 'Sending…'
+                      : claimableMeta.sendCount > 0
+                        ? `Resend Invite (${claimableMeta.sendCount} sent)`
+                        : 'Send Claim Invite'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn--outline"
+                    onClick={deleteClaimableProfile}
+                    style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.4)' }}
+                  >
+                    Delete Profile
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Welcome-claimed banner (dismissible) */}
+            {showWelcomeClaimed && (
+              <div
+                role="status"
+                style={{
+                  background: 'rgba(20, 184, 166, 0.08)',
+                  border: '1px solid rgba(20, 184, 166, 0.3)',
+                  borderRadius: 'var(--radius-md, 8px)',
+                  padding: 'var(--space-4)',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                  gap: 'var(--space-3)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)', flex: 1 }}>
+                  <span style={{ fontSize: '1.5rem', lineHeight: 1 }} aria-hidden="true">✨</span>
+                  <div>
+                    <strong style={{ color: 'var(--color-text)', display: 'block', fontSize: 'var(--text-lg, 1.125rem)' }}>
+                      Welcome to Resonance Network{displayName ? `, ${displayName}` : ''}
+                    </strong>
+                    <div style={{ fontSize: 'var(--text-sm, 0.875rem)', color: 'var(--color-text-muted, #888)', marginTop: '4px' }}>
+                      Your profile is yours to edit — polish anything you want, and hit Publish when you&apos;re ready.
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowWelcomeClaimed(false)}
+                  aria-label="Dismiss welcome message"
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--color-text-muted, #888)',
+                    cursor: 'pointer',
+                    fontSize: '1.25rem',
+                    lineHeight: 1,
+                    padding: '4px 8px',
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Row 1: Banner */}
         <div ref={setSectionRef('cover')} className={`editable-section${activePanel === 'cover' ? ' editable-section--active' : ''}`} onClick={() => openPanel('cover')}>

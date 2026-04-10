@@ -1,5 +1,6 @@
 'use client'
 import { useState, useMemo, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase-client'
 import { useAuth } from '@/components/AuthProvider'
 import '@/styles/admin.css'
@@ -58,11 +59,96 @@ interface InterestEntry {
 
 export default function AdminPage() {
   const { user } = useAuth()
+  const router = useRouter()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
   const [checkingRole, setCheckingRole] = useState(true)
+
+  // "Build Profile for Artist" modal state
+  const [showClaimableModal, setShowClaimableModal] = useState(false)
+  const [claimableEmail, setClaimableEmail] = useState('')
+  const [claimableDisplayName, setClaimableDisplayName] = useState('')
+  const [claimableImportUrl, setClaimableImportUrl] = useState('')
+  const [claimableSubmitting, setClaimableSubmitting] = useState(false)
+  const [claimableError, setClaimableError] = useState<string | null>(null)
+
+  function resetClaimableForm() {
+    setClaimableEmail('')
+    setClaimableDisplayName('')
+    setClaimableImportUrl('')
+    setClaimableError(null)
+    setClaimableSubmitting(false)
+  }
+
+  async function handleCreateClaimableProfile(e: React.FormEvent) {
+    e.preventDefault()
+    setClaimableError(null)
+
+    const email = claimableEmail.trim()
+    const displayName = claimableDisplayName.trim()
+    const importUrl = claimableImportUrl.trim()
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setClaimableError('Please enter a valid email address.')
+      return
+    }
+    if (!displayName) {
+      setClaimableError('Display name is required.')
+      return
+    }
+
+    setClaimableSubmitting(true)
+    try {
+      const res = await fetch('/api/admin/create-claimable-profile', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password || '',
+        },
+        body: JSON.stringify({
+          email,
+          display_name: displayName,
+          import_url: importUrl || undefined,
+          adminPassword: password || 'auto',
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok || !data?.success) {
+        if (data?.error === 'email_exists') {
+          setClaimableError(
+            'This email already has an account on Resonance Network. Ask them to log in instead.'
+          )
+        } else if (data?.error === 'already_claimable') {
+          setClaimableError(
+            'There\u2019s already a pending claimable profile for this email. Open it from the Profiles list.'
+          )
+        } else {
+          setClaimableError(data?.message || 'Server error \u2014 try again.')
+        }
+        setClaimableSubmitting(false)
+        return
+      }
+
+      const newUserId: string | undefined = data.user_id || data.profile_id
+      if (!newUserId) {
+        setClaimableError('Profile created but no id returned. Refresh and open it manually.')
+        setClaimableSubmitting(false)
+        return
+      }
+
+      // Land the admin straight in the profile editor, editing AS the new user.
+      setShowClaimableModal(false)
+      resetClaimableForm()
+      router.push(`/dashboard/profile/live-edit?admin_edit_as=${encodeURIComponent(newUserId)}`)
+    } catch {
+      setClaimableError('Network error \u2014 try again.')
+      setClaimableSubmitting(false)
+    }
+  }
 
   // Auto-authenticate if user has admin role
   useEffect(() => {
@@ -527,13 +613,21 @@ export default function AdminPage() {
                     <h1 className="admin-content__title">User Profiles</h1>
                     <p className="admin-content__subtitle">{userProfiles.length} profiles total</p>
                   </div>
-                  <div className="admin-filters">
+                  <div className="admin-filters" style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap', alignItems: 'center' }}>
                     <select className="admin-filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
                       <option value="all">All Status</option>
                       <option value="draft">Draft</option>
                       <option value="pending">Pending</option>
                       <option value="published">Published</option>
                     </select>
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn--primary"
+                      onClick={() => { resetClaimableForm(); setShowClaimableModal(true) }}
+                      style={{ marginLeft: 'auto' }}
+                    >
+                      + Build Profile for Artist
+                    </button>
                   </div>
                   {actionMsg && <p style={{padding:'8px 16px', background:'var(--color-surface, #111)', border:'1px solid var(--color-border, #222)', borderRadius:8, marginBottom:16, fontSize:13, color:'var(--color-primary, #14b8a6)'}}>{actionMsg}</p>}
                   <table className="admin-table">
@@ -785,6 +879,246 @@ export default function AdminPage() {
           )}
         </div>
       </main>
+
+      {/* ── "Build Profile for Artist" Modal ──────────────────────── */}
+      {showClaimableModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="build-profile-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !claimableSubmitting) {
+              setShowClaimableModal(false)
+            }
+          }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 3000,
+            padding: 'var(--space-4)',
+          }}
+        >
+          <div
+            style={{
+              background: 'var(--color-surface, #111)',
+              border: '1px solid var(--color-border, #222)',
+              borderRadius: 16,
+              padding: 'var(--space-6)',
+              maxWidth: 480,
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 24px 64px rgba(0,0,0,0.4)',
+            }}
+          >
+            <h2
+              id="build-profile-title"
+              style={{
+                margin: 0,
+                marginBottom: 'var(--space-2)',
+                fontFamily: 'var(--font-display, serif)',
+                fontSize: 'var(--text-2xl, 24px)',
+                color: 'var(--color-text, #fff)',
+              }}
+            >
+              Build Profile for Artist
+            </h2>
+            <p
+              style={{
+                margin: 0,
+                marginBottom: 'var(--space-5)',
+                color: 'var(--color-text-muted, #aaa)',
+                fontSize: 'var(--text-sm, 14px)',
+                lineHeight: 1.5,
+              }}
+            >
+              Create a curated profile for an artist. They&rsquo;ll receive an email to claim it and set their password.
+            </p>
+
+            <form onSubmit={handleCreateClaimableProfile}>
+              <div style={{ marginBottom: 'var(--space-4)' }}>
+                <label
+                  htmlFor="claimable-email"
+                  style={{
+                    display: 'block',
+                    fontSize: 'var(--text-sm, 13px)',
+                    color: 'var(--color-text, #fff)',
+                    marginBottom: 'var(--space-1)',
+                    fontWeight: 500,
+                  }}
+                >
+                  Artist&rsquo;s Email <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  id="claimable-email"
+                  type="email"
+                  value={claimableEmail}
+                  onChange={(e) => setClaimableEmail(e.target.value)}
+                  placeholder="artist@example.com"
+                  required
+                  autoFocus
+                  disabled={claimableSubmitting}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    background: 'var(--color-bg, #000)',
+                    border: '1px solid var(--color-border, #222)',
+                    borderRadius: 8,
+                    color: 'var(--color-text, #fff)',
+                    fontSize: 'var(--text-base, 14px)',
+                    fontFamily: 'inherit',
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: 'var(--space-4)' }}>
+                <label
+                  htmlFor="claimable-display-name"
+                  style={{
+                    display: 'block',
+                    fontSize: 'var(--text-sm, 13px)',
+                    color: 'var(--color-text, #fff)',
+                    marginBottom: 'var(--space-1)',
+                    fontWeight: 500,
+                  }}
+                >
+                  Display Name <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  id="claimable-display-name"
+                  type="text"
+                  value={claimableDisplayName}
+                  onChange={(e) => setClaimableDisplayName(e.target.value)}
+                  placeholder="Marin Cosmos"
+                  required
+                  disabled={claimableSubmitting}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    background: 'var(--color-bg, #000)',
+                    border: '1px solid var(--color-border, #222)',
+                    borderRadius: 8,
+                    color: 'var(--color-text, #fff)',
+                    fontSize: 'var(--text-base, 14px)',
+                    fontFamily: 'inherit',
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: 'var(--space-5)' }}>
+                <label
+                  htmlFor="claimable-import-url"
+                  style={{
+                    display: 'block',
+                    fontSize: 'var(--text-sm, 13px)',
+                    color: 'var(--color-text, #fff)',
+                    marginBottom: 'var(--space-1)',
+                    fontWeight: 500,
+                  }}
+                >
+                  Import from Website <span style={{ color: 'var(--color-text-muted, #888)', fontWeight: 400 }}>(optional)</span>
+                </label>
+                <input
+                  id="claimable-import-url"
+                  type="url"
+                  value={claimableImportUrl}
+                  onChange={(e) => setClaimableImportUrl(e.target.value)}
+                  placeholder="https://example.com"
+                  disabled={claimableSubmitting}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    background: 'var(--color-bg, #000)',
+                    border: '1px solid var(--color-border, #222)',
+                    borderRadius: 8,
+                    color: 'var(--color-text, #fff)',
+                    fontSize: 'var(--text-base, 14px)',
+                    fontFamily: 'inherit',
+                  }}
+                />
+                <p
+                  style={{
+                    margin: 0,
+                    marginTop: 'var(--space-1)',
+                    fontSize: 'var(--text-xs, 12px)',
+                    color: 'var(--color-text-muted, #888)',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  If provided, we&rsquo;ll scrape the site to pre-fill the profile. You can edit everything afterward.
+                </p>
+              </div>
+
+              {claimableError && (
+                <div
+                  role="alert"
+                  style={{
+                    padding: '10px 12px',
+                    background: 'rgba(220,38,38,0.1)',
+                    border: '1px solid rgba(220,38,38,0.3)',
+                    borderRadius: 8,
+                    color: '#ef4444',
+                    fontSize: 'var(--text-sm, 13px)',
+                    marginBottom: 'var(--space-4)',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {claimableError}
+                </div>
+              )}
+
+              {claimableSubmitting && claimableImportUrl.trim() && (
+                <div
+                  style={{
+                    padding: '10px 12px',
+                    background: 'rgba(20,184,166,0.08)',
+                    border: '1px solid rgba(20,184,166,0.3)',
+                    borderRadius: 8,
+                    color: 'var(--color-primary, #14b8a6)',
+                    fontSize: 'var(--text-sm, 13px)',
+                    marginBottom: 'var(--space-4)',
+                  }}
+                >
+                  Importing from {claimableImportUrl.trim()}... This can take up to 30 seconds.
+                </div>
+              )}
+
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 'var(--space-2)',
+                  justifyContent: 'flex-end',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <button
+                  type="button"
+                  className="admin-btn admin-btn--outline"
+                  onClick={() => { setShowClaimableModal(false); resetClaimableForm() }}
+                  disabled={claimableSubmitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="admin-btn admin-btn--primary"
+                  disabled={claimableSubmitting}
+                >
+                  {claimableSubmitting
+                    ? (claimableImportUrl.trim() ? 'Importing...' : 'Creating...')
+                    : (claimableImportUrl.trim() ? 'Create & Import' : 'Create Profile')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
