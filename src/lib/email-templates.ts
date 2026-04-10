@@ -229,6 +229,35 @@ export function submissionRejected(name: string, type: 'project' | 'profile', ti
   }
 }
 
+export function claimInvite(artistName: string, claimUrl: string, sourceUrl: string): { subject: string; html: string; text: string } {
+  const first = artistName?.split(' ')[0] || 'there'
+  const subject = 'Your Resonance Network profile is ready'
+  const html = baseLayout(`
+      <p style="margin:0 0 16px;font-size:16px;color:#1a1a1a">Hi ${first},</p>
+      ${paragraph(`We built a curated profile for you on Resonance Network &mdash; based on your work at <a href="${sourceUrl}" style="color:#14b8a6;text-decoration:none">${sourceUrl}</a>.`)}
+      ${paragraph('Take a look, make any edits you want, and publish it when you\'re ready.')}
+      ${ctaButton('View Your Profile', claimUrl)}
+      ${paragraph('Resonance Network is a curated platform for artists, architects, and immersive creators. We invited you because your work resonates with what we\'re building.')}
+      <p style="margin:24px 0 0;font-size:12px;color:#aaa;line-height:1.6">This invite expires in 30 days. If this wasn't meant for you, just ignore this email.</p>
+      <p style="margin:24px 0 0;font-size:14px;color:#999">&mdash; Elliot<br/>Resonance Art Collective</p>
+    `)
+  const text = `Hi ${first},
+
+We built a curated profile for you on Resonance Network — based on your work at ${sourceUrl}.
+
+Take a look, make any edits you want, and publish it when you're ready.
+
+View your profile: ${claimUrl}
+
+Resonance Network is a curated platform for artists, architects, and immersive creators. We invited you because your work resonates with what we're building.
+
+This invite expires in 30 days. If this wasn't meant for you, just ignore this email.
+
+— Elliot
+Resonance Art Collective`
+  return { subject, html, text }
+}
+
 export function passwordResetEmail(name: string, resetUrl: string): { subject: string; html: string } {
   return {
     subject: 'Reset your password | Resonance Network',
