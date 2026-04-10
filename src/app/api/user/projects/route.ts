@@ -206,11 +206,14 @@ export async function DELETE(request: Request) {
     }
 
     // Delete related collaboration_tasks first (if any exist)
-    await supabaseAdmin
-      .from('collaboration_tasks')
-      .delete()
-      .eq('submission_id', submissionId)
-      .catch(() => {}) // Table may not exist
+    try {
+      await supabaseAdmin
+        .from('collaboration_tasks')
+        .delete()
+        .eq('submission_id', submissionId)
+    } catch {
+      // Table may not exist
+    }
 
     // Delete the submission — try supabaseAdmin first, fall back to user client
     const { error: deleteError } = await supabaseAdmin
