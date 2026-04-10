@@ -489,9 +489,31 @@ export async function PUT(request: Request) {
 
     let profile = null
     if (Object.keys(updates).length > 0) {
+      // Capture a single-level "undo" snapshot of the current row BEFORE
+      // overwriting it. Exclude the snapshot fields themselves to avoid
+      // recursive nesting across successive saves.
+      const { data: currentRow } = await supabaseAdmin
+        .from('user_profiles')
+        .select('*')
+        .eq('id', targetId)
+        .maybeSingle()
+
+      const updatePayload: Record<string, unknown> = { ...updates }
+      if (currentRow) {
+        const {
+          previous_snapshot: _ps,
+          previous_snapshot_at: _psa,
+          ...snapshot
+        } = currentRow as Record<string, unknown>
+        void _ps
+        void _psa
+        updatePayload.previous_snapshot = snapshot
+        updatePayload.previous_snapshot_at = new Date().toISOString()
+      }
+
       const { data, error } = await supabaseAdmin
         .from('user_profiles')
-        .update(updates)
+        .update(updatePayload)
         .eq('id', targetId)
         .select()
         .single()
@@ -558,9 +580,30 @@ export async function PUT(request: Request) {
 
     let extendedProfile = null
     if (Object.keys(extendedFields).length > 0) {
+      // Capture single-level undo snapshot for profile_extended. If the
+      // row doesn't exist yet (first save) we simply don't set a snapshot.
+      const { data: currentExtRow } = await supabaseAdmin
+        .from('profile_extended')
+        .select('*')
+        .eq('id', targetId)
+        .maybeSingle()
+
+      const extendedPayload: Record<string, unknown> = { ...extendedFields }
+      if (currentExtRow) {
+        const {
+          previous_snapshot: _eps,
+          previous_snapshot_at: _epsa,
+          ...extSnapshot
+        } = currentExtRow as Record<string, unknown>
+        void _eps
+        void _epsa
+        extendedPayload.previous_snapshot = extSnapshot
+        extendedPayload.previous_snapshot_at = new Date().toISOString()
+      }
+
       const { data, error: extError } = await supabaseAdmin
         .from('profile_extended')
-        .upsert({ id: targetId, ...extendedFields }, { onConflict: 'id' })
+        .upsert({ id: targetId, ...extendedPayload }, { onConflict: 'id' })
         .select()
         .single()
 
@@ -581,6 +624,12 @@ export async function PUT(request: Request) {
         const coreFields: Record<string, unknown> = {}
         for (const key of coreColumns) {
           if (key in extendedFields) coreFields[key] = extendedFields[key]
+        }
+        // Preserve the previously-captured snapshot on the retry path so
+        // undo still works even when enhancement columns are unavailable.
+        if (extendedPayload.previous_snapshot !== undefined) {
+          coreFields.previous_snapshot = extendedPayload.previous_snapshot
+          coreFields.previous_snapshot_at = extendedPayload.previous_snapshot_at
         }
         if (Object.keys(coreFields).length > 0) {
           const { data: retryData, error: retryError } = await supabaseAdmin
