@@ -216,6 +216,27 @@ export default function AdminPage() {
     }
   }
 
+  async function handleDeleteProject(projectId: string, projectTitle: string) {
+    if (!confirm(`Are you sure you want to delete "${projectTitle}"? This will permanently delete this project and all its data.`)) return
+    setActionMsg('')
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'x-csrf-token': 'resonance' },
+        body: JSON.stringify({ projectId, adminPassword: password }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setActionMsg(`Project "${projectTitle}" deleted successfully.`)
+        setProjects(prev => prev.filter(p => p.id !== projectId))
+      } else {
+        setActionMsg(data.message || 'Failed to delete project.')
+      }
+    } catch {
+      setActionMsg('Network error.')
+    }
+  }
+
   async function handleRoleChange(userId: string, newRole: string) {
     setActionMsg('')
     try {
@@ -540,6 +561,7 @@ export default function AdminPage() {
                               {up.profile_visibility === 'published' && (
                                 <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleUserProfileAction(up.id, 'reject')}>Unpublish</button>
                               )}
+                              <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleDeleteUser(up.id, up.display_name)}>Delete</button>
                             </div>
                           </td>
                         </tr>
@@ -587,6 +609,7 @@ export default function AdminPage() {
                                   <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleAction('project', p.id, 'reject')}>Reject</button>
                                 </>
                               )}
+                              <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleDeleteProject(p.id, p.project_title)}>Delete</button>
                             </div>
                           </td>
                         </tr>

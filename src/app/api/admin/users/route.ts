@@ -123,9 +123,29 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ success: false, message: 'Server misconfigured: missing service role key.' }, { status: 500 })
     }
 
+    // Handle project deletion
+    const projectId = sanitizeText(body.projectId, 50)
+    if (projectId) {
+      // Delete related collaboration_tasks first
+      try {
+        await supabaseAdmin.from('collaboration_tasks').delete().eq('submission_id', projectId)
+      } catch {
+        // Table may not exist
+      }
+      const { error: delError } = await supabaseAdmin
+        .from('project_submissions')
+        .delete()
+        .eq('id', projectId)
+      if (delError) {
+        return NextResponse.json({ success: false, message: `Failed to delete project: ${delError.message}` }, { status: 500 })
+      }
+      return NextResponse.json({ success: true, message: 'Project deleted successfully.' })
+    }
+
+    // Handle user deletion
     const userId = sanitizeText(body.userId, 50)
     if (!userId) {
-      return NextResponse.json({ success: false, message: 'Missing user ID.' }, { status: 400 })
+      return NextResponse.json({ success: false, message: 'Missing user ID or project ID.' }, { status: 400 })
     }
 
     // Delete auth user first — CASCADE handles user_profiles and all related tables

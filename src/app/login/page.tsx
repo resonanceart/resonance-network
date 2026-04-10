@@ -132,13 +132,18 @@ function LoginForm() {
         </div>
       )}
 
-      {!error && urlError && (
-        <div className="form-error" style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', borderRadius: '8px', background: 'rgba(220,38,38,0.08)' }}>
-          {urlErrorDesc
-            ? urlErrorDesc.replace(/\+/g, ' ')
-            : 'Authentication failed. Please try again.'}
-        </div>
-      )}
+      {!error && urlError && (() => {
+        const isPkce = urlErrorDesc && (urlErrorDesc.includes('PKCE') || urlErrorDesc.includes('code verifier'))
+        return (
+          <div className={isPkce ? 'form-success' : 'form-error'} style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', borderRadius: '8px', background: isPkce ? 'rgba(20,184,166,0.08)' : 'rgba(220,38,38,0.08)', color: isPkce ? 'var(--color-primary, #14b8a6)' : undefined }}>
+            {isPkce
+              ? 'Your email has been confirmed! Please sign in below to continue.'
+              : urlErrorDesc
+                ? urlErrorDesc.replace(/\+/g, ' ')
+                : 'Authentication failed. Please try again.'}
+          </div>
+        )
+      })()}
 
       {error === 'email_exists' && (
         <div className="form-error" style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', borderRadius: '8px', background: 'rgba(220,38,38,0.08)' }}>
