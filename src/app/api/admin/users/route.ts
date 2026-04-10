@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { timingSafeEqual } from 'crypto'
 import { supabaseAdmin } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, getClientIp } from '@/lib/sanitize'
 import { validateCsrf } from '@/lib/csrf'
@@ -114,8 +115,26 @@ export async function DELETE(request: Request) {
 
     const body = await request.json()
 
+    // Verify admin access: password (timing-safe) OR authenticated admin user
     const adminPassword = body.adminPassword || request.headers.get('x-admin-password')
-    if (!verifyAdminPassword(adminPassword)) {
+    let isAdmin = verifyAdminPassword(adminPassword)
+
+    if (!isAdmin) {
+      try {
+        const supabase = await createSupabaseServerClient()
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        if (authUser) {
+          const { data: profile } = await supabaseAdmin
+            .from('user_profiles')
+            .select('role')
+            .eq('id', authUser.id)
+            .single()
+          if (profile?.role === 'admin') isAdmin = true
+        }
+      } catch {}
+    }
+
+    if (!isAdmin) {
       return NextResponse.json({ success: false, message: 'Unauthorized.' }, { status: 401 })
     }
 
