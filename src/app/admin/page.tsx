@@ -174,7 +174,7 @@ export default function AdminPage() {
     }
   }
 
-  async function handleAction(type: 'project' | 'profile', id: string, action: 'approve' | 'reject') {
+  async function handleAction(type: 'project' | 'profile', id: string, action: 'approve' | 'reject' | 'unpublish') {
     setActionMsg('')
     try {
       const res = await fetch('/api/admin/approve', {
@@ -184,7 +184,8 @@ export default function AdminPage() {
       })
       const data = await res.json()
       if (data.success) {
-        setActionMsg(`${action === 'approve' ? 'Approved' : 'Rejected'} successfully.`)
+        const label = action === 'approve' ? 'Approved' : action === 'unpublish' ? 'Unpublished' : 'Rejected'
+        setActionMsg(`${label} successfully.`)
         fetchData()
       } else {
         setActionMsg(data.message || 'Action failed.')
@@ -601,13 +602,16 @@ export default function AdminPage() {
                           <td><span className={`admin-badge admin-badge--${p.status}`}>{p.status}</span></td>
                           <td className="admin-table__date">{new Date(p.created_at).toLocaleDateString()}</td>
                           <td>
-                            <div style={{display:'flex',gap:6}}>
+                            <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
                               <a href={`/preview/project/${p.id}`} target="_blank" rel="noopener noreferrer" className="admin-btn admin-btn--outline admin-btn--sm">Preview</a>
                               {(p.status === 'new' || p.status === 'draft') && (
                                 <>
                                   <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={() => handleAction('project', p.id, 'approve')}>Approve</button>
                                   <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleAction('project', p.id, 'reject')}>Reject</button>
                                 </>
+                              )}
+                              {p.status === 'approved' && (
+                                <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleAction('project', p.id, 'unpublish')}>Unpublish</button>
                               )}
                               <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleDeleteProject(p.id, p.project_title)}>Delete</button>
                             </div>
