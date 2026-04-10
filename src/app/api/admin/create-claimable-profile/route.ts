@@ -266,18 +266,24 @@ export async function POST(request: Request) {
       )
     }
 
-    // Insert user_profiles row. email is NOT NULL, so we store the placeholder
-    // here (it is swapped to target_email when the user claims).
-    const { error: profileError } = await supabaseAdmin.from('user_profiles').insert({
-      id: createdUser.id,
-      display_name: displayName,
-      email: placeholderEmail,
-      target_email: email,
-      is_claimable: true,
-      created_by_admin: true,
-      original_source_url: importUrl,
-      profile_visibility: 'draft',
-    })
+    // Upsert user_profiles row. The handle_new_user trigger may have inserted
+    // a minimal row already (id + email + display_name) — upsert lets us
+    // overwrite it with the full claimable shape without a PK conflict.
+    // email is NOT NULL, so we store the placeholder here (it is swapped to
+    // target_email when the user claims).
+    const { error: profileError } = await supabaseAdmin.from('user_profiles').upsert(
+      {
+        id: createdUser.id,
+        display_name: displayName,
+        email: placeholderEmail,
+        target_email: email,
+        is_claimable: true,
+        created_by_admin: true,
+        original_source_url: importUrl,
+        profile_visibility: 'draft',
+      },
+      { onConflict: 'id' }
+    )
 
     if (profileError) {
       console.error(
