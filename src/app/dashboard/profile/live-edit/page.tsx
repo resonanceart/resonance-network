@@ -537,6 +537,11 @@ export default function LiveProfileEditor() {
   // Send-claim-invite action state
   const [claimInviteSending, setClaimInviteSending] = useState(false)
   const [claimInviteMessage, setClaimInviteMessage] = useState<string | null>(null)
+  // ─── Undo-last-save state ───
+  // Timestamp of the most recent snapshot stored on user_profiles.previous_snapshot_at.
+  // When set and recent (<24h), an "Undo last save" button is shown next to Save.
+  const [previousSnapshotAt, setPreviousSnapshotAt] = useState<string | null>(null)
+  const [undoing, setUndoing] = useState(false)
 
   // ALL profile fields as state — these drive the live preview
   const [displayName, setDisplayName] = useState('')
@@ -667,6 +672,16 @@ export default function LiveProfileEditor() {
           setSkills(p.skills || [])
           setAvatarUrl(p.avatar_url || null)
           setProfileVisibility(p.profile_visibility || 'draft')
+          // Track the most recent undo-snapshot timestamp from either table
+          // so the "Undo last save" button only appears when there's actually
+          // something to revert. We pick whichever is newer.
+          const userSnapAt = (p.previous_snapshot_at as string | null) || null
+          const extSnapAt = (ext?.previous_snapshot_at as string | null) || null
+          const newest =
+            userSnapAt && extSnapAt
+              ? (new Date(userSnapAt).getTime() > new Date(extSnapAt).getTime() ? userSnapAt : extSnapAt)
+              : (userSnapAt || extSnapAt)
+          setPreviousSnapshotAt(newest)
           setSlug(
             (p.display_name || '')
               .toLowerCase()
@@ -949,6 +964,56 @@ export default function LiveProfileEditor() {
     savingPromiseRef.current = doSave()
     await savingPromiseRef.current
   }
+
+  // ─── Undo last save ───
+  // Reverts user_profiles + profile_extended to the previous_snapshot that
+  // the PUT handler stashed before the most recent save. This is a ONE-LEVEL
+  // undo; calling it again swaps back to the previously-current state (redo).
+  async function undoLastSave() {
+    if (!previousSnapshotAt || undoing) return
+    const stamp = new Date(previousSnapshotAt).toLocaleString()
+    const ok = window.confirm(
+      `Revert to the version saved at ${stamp}? Your current unsaved changes will be lost and swapped with the previous snapshot.`
+    )
+    if (!ok) return
+    setUndoing(true)
+    setErrorMessage(null)
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (adminEditAs) headers['x-admin-edit-as'] = adminEditAs
+      const url = adminEditAs
+        ? `/api/user/profile/undo?admin_edit_as=${encodeURIComponent(adminEditAs)}`
+        : '/api/user/profile/undo'
+      const res = await fetch(url, {
+        method: 'POST',
+        credentials: 'include',
+        headers,
+      })
+      if (res.ok) {
+        // Reload so every piece of state is re-fetched fresh from the server.
+        window.location.reload()
+        return
+      }
+      const data = await res.json().catch(() => ({} as { message?: string; error?: string }))
+      if (data?.error === 'nothing_to_undo') {
+        setErrorMessage('No previous snapshot to restore.')
+      } else {
+        setErrorMessage(data?.message || data?.error || 'Failed to undo last save.')
+      }
+    } catch {
+      setErrorMessage('Network error. Please try again.')
+    } finally {
+      setUndoing(false)
+    }
+  }
+
+  // Only show undo when a snapshot exists AND it was captured in the last 24h.
+  const canUndo = (() => {
+    if (!previousSnapshotAt) return false
+    const t = new Date(previousSnapshotAt).getTime()
+    if (Number.isNaN(t)) return false
+    return Date.now() - t < 24 * 60 * 60 * 1000
+  })()
 
   // ─── Claim-flow handlers ───
   // Send or resend the claim invite email. profile.id == auth user id == the
@@ -1367,6 +1432,18 @@ export default function LiveProfileEditor() {
             {saving && hasChanges && <span className="live-editor__autosave">Auto-saving...</span>}
             {hasChanges && !saving && !errorMessage && <span className="live-editor__unsaved">Unsaved changes</span>}
             {savedMessage && <span className="live-editor__saved">Saved!</span>}
+            {canUndo && (
+              <button
+                onClick={undoLastSave}
+                className="btn btn--outline btn--sm"
+                disabled={undoing || saving}
+                title={previousSnapshotAt ? `Revert to version saved ${new Date(previousSnapshotAt).toLocaleString()}` : 'Revert to previous save'}
+              >
+                {undoing
+                  ? 'Reverting...'
+                  : <><span className="hide-mobile">Undo last save</span><span className="show-mobile">Undo</span></>}
+              </button>
+            )}
             <button
               onClick={() => saveAll(false)}
               className="btn btn--primary btn--sm"
