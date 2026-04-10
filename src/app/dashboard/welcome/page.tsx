@@ -25,14 +25,20 @@ export default function WelcomePage() {
 
     // Check if profile already has a name set — if so, skip welcome
     fetch('/api/user/profile', { credentials: 'include' })
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error('Profile fetch failed')
+        return r.json()
+      })
       .then(data => {
         if (data.profile?.display_name?.trim() || data.profile?.onboarding_completed) {
-          router.push('/dashboard?onboarded=1')
+          // Use window.location for a full page load — router.push can get cached
+          window.location.href = '/dashboard?onboarded=1'
           return
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        // Profile API failed — don't block the user, just show the form
+      })
       .finally(() => setCheckingStatus(false))
   }, [user, authLoading, router])
 
@@ -49,10 +55,17 @@ export default function WelcomePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ display_name: displayName.trim(), onboarding_completed: true }),
       })
-      if (!res.ok) throw new Error('Failed to save')
-      router.push('/dashboard?onboarded=1')
-    } catch {
-      setError('Something went wrong. Please try again.')
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        console.error('Welcome PUT failed:', res.status, data.error)
+        // Even if profile update fails, don't trap the user — send them to dashboard
+      }
+      // Use window.location for a hard redirect — prevents Next.js caching issues
+      window.location.href = '/dashboard?onboarded=1'
+    } catch (err) {
+      console.error('Welcome handleContinue error:', err)
+      // Don't trap the user — redirect anyway
+      window.location.href = '/dashboard?onboarded=1'
     } finally {
       setSaving(false)
     }
