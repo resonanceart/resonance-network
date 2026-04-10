@@ -12,6 +12,7 @@ import { ShareProfile } from '@/components/profile/ShareProfile'
 import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components/profile/SmartGallery'
 import { loadImportData, clearImportData } from '@/lib/import-store'
 import ImportPromptPopup from '@/components/dashboard/ImportPromptPopup'
+import { claimCopy, claimableBannerCopy } from '@/lib/claim-copy'
 import type { ProfileSkill, ProfileTool, ProfileSocialLink } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -516,6 +517,27 @@ export default function LiveProfileEditor() {
   const [activePanel, setActivePanel] = useState<EditSection>(null)
   const [showWelcome, setShowWelcome] = useState(false)
 
+  // ─── Claim flow state ───
+  // adminEditAs: when present, the admin is editing a different user's profile.
+  // Read from ?admin_edit_as=USER_ID on mount. Saves/loads pass this via the
+  // x-admin-edit-as header — backend support will land in a follow-up.
+  const [adminEditAs, setAdminEditAs] = useState<string | null>(null)
+  const [adminEditTargetEmail, setAdminEditTargetEmail] = useState<string | null>(null)
+  const [isCurrentUserAdmin, setIsCurrentUserAdmin] = useState(false)
+  // Claimable profile metadata — populated when the loaded profile row has
+  // is_claimable=true. Drives the claimable banner + send-invite actions.
+  const [claimableMeta, setClaimableMeta] = useState<{
+    isClaimable: boolean
+    targetEmail: string | null
+    sourceUrl: string | null
+    sendCount: number
+  } | null>(null)
+  // Welcome banner shown once after ?welcome=claimed redirect from /claim.
+  const [showWelcomeClaimed, setShowWelcomeClaimed] = useState(false)
+  // Send-claim-invite action state
+  const [claimInviteSending, setClaimInviteSending] = useState(false)
+  const [claimInviteMessage, setClaimInviteMessage] = useState<string | null>(null)
+
   // ALL profile fields as state — these drive the live preview
   const [displayName, setDisplayName] = useState('')
   const [professionalTitle, setProfessionalTitle] = useState('')
@@ -587,11 +609,56 @@ export default function LiveProfileEditor() {
     if (profileFetchedRef.current) return
     profileFetchedRef.current = true
 
-    fetch('/api/user/profile', { credentials: 'same-origin' })
+    // Read claim-flow query params before the fetch so we can forward them
+    // to the API and show the right banners after load.
+    let adminEditAsFromUrl: string | null = null
+    let welcomeClaimedFromUrl = false
+    try {
+      const params = new URLSearchParams(window.location.search)
+      adminEditAsFromUrl = params.get('admin_edit_as')
+      welcomeClaimedFromUrl = params.get('welcome') === 'claimed'
+      // Clean the welcome param out of the URL so it doesn't re-trigger on refresh
+      if (welcomeClaimedFromUrl) {
+        params.delete('welcome')
+        const qs = params.toString()
+        const clean = window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash
+        window.history.replaceState({}, '', clean)
+      }
+    } catch { /* non-browser env / ignore */ }
+
+    if (adminEditAsFromUrl) setAdminEditAs(adminEditAsFromUrl)
+    if (welcomeClaimedFromUrl) setShowWelcomeClaimed(true)
+
+    // Build request — forward admin_edit_as as both query param and header.
+    // Backend currently ignores both (pending follow-up); we send them
+    // consistently so that once the API supports it the override just works.
+    const fetchUrl = adminEditAsFromUrl
+      ? `/api/user/profile?admin_edit_as=${encodeURIComponent(adminEditAsFromUrl)}`
+      : '/api/user/profile'
+    const fetchHeaders: Record<string, string> = {}
+    if (adminEditAsFromUrl) fetchHeaders['x-admin-edit-as'] = adminEditAsFromUrl
+
+    fetch(fetchUrl, { credentials: 'same-origin', headers: fetchHeaders })
       .then(r => r.json())
       .then(async data => {
         const p = data.profile
         const ext = data.extendedProfile || {}
+        // ─── Claim flow: derive admin role + claimable metadata ───
+        if (p) {
+          setIsCurrentUserAdmin(p.role === 'admin')
+          if (p.is_claimable) {
+            setClaimableMeta({
+              isClaimable: true,
+              targetEmail: p.target_email || null,
+              sourceUrl: p.original_source_url || null,
+              sendCount: typeof p.claim_send_count === 'number' ? p.claim_send_count : 0,
+            })
+            // When editing as admin, surface the invitee's email in the banner
+            if (adminEditAsFromUrl) setAdminEditTargetEmail(p.target_email || null)
+          } else {
+            setClaimableMeta(null)
+          }
+        }
         if (p) {
           setDisplayName(p.display_name || '')
           setBio(p.bio || '')
@@ -796,10 +863,17 @@ export default function LiveProfileEditor() {
 
     const doSave = async () => {
       try {
-        const res = await fetch('/api/user/profile', {
+        // Forward admin_edit_as header so saves go to the target profile when
+        // an admin is editing someone else's profile. Backend support pending.
+        const saveHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (adminEditAs) saveHeaders['x-admin-edit-as'] = adminEditAs
+        const saveUrl = adminEditAs
+          ? `/api/user/profile?admin_edit_as=${encodeURIComponent(adminEditAs)}`
+          : '/api/user/profile'
+        const res = await fetch(saveUrl, {
           method: 'PUT',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: saveHeaders,
           body: JSON.stringify({
             display_name: displayName.trim(),
             bio: bio.trim() || null,
@@ -875,6 +949,78 @@ export default function LiveProfileEditor() {
     savingPromiseRef.current = doSave()
     await savingPromiseRef.current
   }
+
+  // ─── Claim-flow handlers ───
+  // Send or resend the claim invite email. profile.id == auth user id == the
+  // param we pass to /api/admin/send-claim-invite.
+  const sendClaimInvite = useCallback(async () => {
+    if (!claimableMeta?.isClaimable) return
+    const profileId = adminEditAs || user?.id
+    if (!profileId) return
+    setClaimInviteMessage(null)
+    setClaimInviteSending(true)
+    try {
+      const res = await fetch('/api/admin/send-claim-invite', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile_id: profileId }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data?.success) {
+        const sentTo = data.sent_to || claimableMeta.targetEmail || 'the artist'
+        const newCount = typeof data.send_count === 'number' ? data.send_count : claimableMeta.sendCount + 1
+        setClaimableMeta((prev) => (prev ? { ...prev, sendCount: newCount } : prev))
+        if (data.email_sent === false) {
+          setClaimInviteMessage(`Token generated, but email delivery failed (${data.email_error || 'unknown'}). You may need to send the link manually.`)
+        } else {
+          setClaimInviteMessage(`Invite sent to ${sentTo}.`)
+        }
+      } else if (res.status === 401) {
+        setClaimInviteMessage('Unauthorized — make sure you are logged in as an admin.')
+      } else if (res.status === 404) {
+        setClaimInviteMessage('Claimable profile not found. Refresh and try again.')
+      } else {
+        setClaimInviteMessage(data?.message || 'Failed to send invite. Try again.')
+      }
+    } catch {
+      setClaimInviteMessage('Network error while sending invite.')
+    } finally {
+      setClaimInviteSending(false)
+      setTimeout(() => setClaimInviteMessage(null), 6000)
+    }
+  }, [claimableMeta, adminEditAs, user?.id])
+
+  // Delete a claimable (unclaimed) profile. Uses the existing admin users
+  // DELETE endpoint which also removes the auth user.
+  const deleteClaimableProfile = useCallback(async () => {
+    if (!claimableMeta?.isClaimable) return
+    const profileId = adminEditAs || user?.id
+    if (!profileId) return
+    const confirmed = window.confirm(
+      'Delete this claimable profile? This cannot be undone. The placeholder user will be removed.'
+    )
+    if (!confirmed) return
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-csrf-token': 'resonance',
+        },
+        body: JSON.stringify({ userId: profileId }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data?.success) {
+        window.location.href = '/admin'
+      } else {
+        setClaimInviteMessage(data?.message || 'Failed to delete profile.')
+      }
+    } catch {
+      setClaimInviteMessage('Network error while deleting.')
+    }
+  }, [claimableMeta, adminEditAs, user?.id])
 
   function openPanel(section: EditSection) {
     setActivePanel(section)
@@ -1250,10 +1396,15 @@ export default function LiveProfileEditor() {
                   await saveAllRef.current(true)
                   // Set profile_visibility to pending
                   try {
-                    const res = await fetch('/api/user/profile', {
+                    const submitHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
+                    if (adminEditAs) submitHeaders['x-admin-edit-as'] = adminEditAs
+                    const submitUrl = adminEditAs
+                      ? `/api/user/profile?admin_edit_as=${encodeURIComponent(adminEditAs)}`
+                      : '/api/user/profile'
+                    const res = await fetch(submitUrl, {
                       method: 'PUT',
                       credentials: 'include',
-                      headers: { 'Content-Type': 'application/json' },
+                      headers: submitHeaders,
                       body: JSON.stringify({ profile_visibility: 'pending' }),
                     })
                     if (res.ok) {
@@ -1296,6 +1447,129 @@ export default function LiveProfileEditor() {
         <div className="container" style={{ marginTop: 'var(--space-3)' }}>
           <ImportPromptPopup mode="profile" />
         </div>
+
+        {/* ── Claim-flow banners ── */}
+        {(adminEditAs || claimableMeta?.isClaimable || showWelcomeClaimed) && (
+          <div className="container" style={{ marginTop: 'var(--space-3)' }}>
+            {/* Admin edit-as banner */}
+            {adminEditAs && (
+              <div className="admin-edit-banner" role="status">
+                <div className="admin-edit-banner__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                </div>
+                <div className="admin-edit-banner__content">
+                  <p className="admin-edit-banner__heading">
+                    {claimableBannerCopy.adminEditAsBanner(adminEditTargetEmail || claimableMeta?.targetEmail || 'this artist')}
+                  </p>
+                  <p className="admin-edit-banner__subtext">
+                    <Link href="/admin">{claimableBannerCopy.adminEditAsBack}</Link>
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Claimable profile banner */}
+            {claimableMeta?.isClaimable && (
+              <div className="claimable-banner" role="status">
+                <div className="claimable-banner__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </div>
+                <div className="claimable-banner__content">
+                  <h2 className="claimable-banner__heading">
+                    {claimableBannerCopy.heading}
+                    <span className="claimable-banner__pill">Draft</span>
+                  </h2>
+                  <p className="claimable-banner__subtext">
+                    {claimableBannerCopy.subtext(displayName || claimableMeta.targetEmail || 'this artist')}
+                  </p>
+                  <p className="claimable-banner__subtext">{claimableBannerCopy.infoLine}</p>
+
+                  {(claimableMeta.targetEmail || claimableMeta.sourceUrl) && (
+                    <div className="claimable-banner__info">
+                      {claimableMeta.targetEmail && (
+                        <span className="claimable-banner__info-item">
+                          <span className="claimable-banner__info-label">For:</span>
+                          <span className="claimable-banner__info-value">{claimableMeta.targetEmail}</span>
+                        </span>
+                      )}
+                      {claimableMeta.sendCount > 0 && (
+                        <span className="claimable-banner__info-item">
+                          <span className="claimable-banner__info-label">Invites sent:</span>
+                          <span className="claimable-banner__info-value">{claimableMeta.sendCount}</span>
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {claimInviteMessage && (
+                    <p className="claimable-banner__subtext" role="status">{claimInviteMessage}</p>
+                  )}
+
+                  <div className="claimable-banner__actions">
+                    <button
+                      type="button"
+                      className="claimable-banner__btn claimable-banner__btn--primary"
+                      onClick={sendClaimInvite}
+                      disabled={claimInviteSending}
+                    >
+                      {claimInviteSending
+                        ? 'Sending…'
+                        : claimableMeta.sendCount > 0
+                          ? claimableBannerCopy.resendButton(`${claimableMeta.sendCount}×`)
+                          : claimableBannerCopy.sendButton}
+                    </button>
+                    <button
+                      type="button"
+                      className="claimable-banner__btn claimable-banner__btn--danger"
+                      onClick={deleteClaimableProfile}
+                      disabled={claimInviteSending}
+                    >
+                      {claimableBannerCopy.deleteButton}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Welcome-claimed banner (dismissible) */}
+            {showWelcomeClaimed && (
+              <div className="claimable-banner" role="status">
+                <div className="claimable-banner__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                </div>
+                <div className="claimable-banner__content">
+                  <h2 className="claimable-banner__heading">
+                    Welcome to Resonance Network{displayName ? `, ${displayName}` : ''}
+                  </h2>
+                  <p
+                    className="claimable-banner__subtext"
+                    // claim-copy.ts line ~36 has a literal &mdash; entity — replace at consumption.
+                    dangerouslySetInnerHTML={{
+                      __html: claimCopy.welcomeBanner(displayName || 'friend').replace(/&mdash;/g, '—'),
+                    }}
+                  />
+                  <div className="claimable-banner__actions">
+                    <button
+                      type="button"
+                      className="claimable-banner__btn claimable-banner__btn--secondary"
+                      onClick={() => setShowWelcomeClaimed(false)}
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Row 1: Banner */}
         <div ref={setSectionRef('cover')} className={`editable-section${activePanel === 'cover' ? ' editable-section--active' : ''}`} onClick={() => openPanel('cover')}>

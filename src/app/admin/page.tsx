@@ -1,7 +1,9 @@
 'use client'
 import { useState, useMemo, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase-client'
 import { useAuth } from '@/components/AuthProvider'
+import { adminClaimCopy } from '@/lib/claim-copy'
 import '@/styles/admin.css'
 
 type AdminView = 'overview' | 'review' | 'users' | 'projects' | 'profiles' | 'user_profiles' | 'messages' | 'interests' | 'activity'
@@ -58,11 +60,96 @@ interface InterestEntry {
 
 export default function AdminPage() {
   const { user } = useAuth()
+  const router = useRouter()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
   const [checkingRole, setCheckingRole] = useState(true)
+
+  // "Build Profile for Artist" modal state
+  const [showClaimableModal, setShowClaimableModal] = useState(false)
+  const [claimableEmail, setClaimableEmail] = useState('')
+  const [claimableDisplayName, setClaimableDisplayName] = useState('')
+  const [claimableImportUrl, setClaimableImportUrl] = useState('')
+  const [claimableSubmitting, setClaimableSubmitting] = useState(false)
+  const [claimableError, setClaimableError] = useState<string | null>(null)
+
+  function resetClaimableForm() {
+    setClaimableEmail('')
+    setClaimableDisplayName('')
+    setClaimableImportUrl('')
+    setClaimableError(null)
+    setClaimableSubmitting(false)
+  }
+
+  async function handleCreateClaimableProfile(e: React.FormEvent) {
+    e.preventDefault()
+    setClaimableError(null)
+
+    const email = claimableEmail.trim()
+    const displayName = claimableDisplayName.trim()
+    const importUrl = claimableImportUrl.trim()
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setClaimableError('Please enter a valid email address.')
+      return
+    }
+    if (!displayName) {
+      setClaimableError('Display name is required.')
+      return
+    }
+
+    setClaimableSubmitting(true)
+    try {
+      const res = await fetch('/api/admin/create-claimable-profile', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password || '',
+        },
+        body: JSON.stringify({
+          email,
+          display_name: displayName,
+          import_url: importUrl || undefined,
+          adminPassword: password || 'auto',
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok || !data?.success) {
+        if (data?.error === 'email_exists') {
+          setClaimableError(
+            'This email already has an account on Resonance Network. Ask them to log in instead.'
+          )
+        } else if (data?.error === 'already_claimable') {
+          setClaimableError(
+            'There\u2019s already a pending claimable profile for this email. Open it from the Profiles list.'
+          )
+        } else {
+          setClaimableError(data?.message || 'Server error \u2014 try again.')
+        }
+        setClaimableSubmitting(false)
+        return
+      }
+
+      const newUserId: string | undefined = data.user_id || data.profile_id
+      if (!newUserId) {
+        setClaimableError('Profile created but no id returned. Refresh and open it manually.')
+        setClaimableSubmitting(false)
+        return
+      }
+
+      // Land the admin straight in the profile editor, editing AS the new user.
+      setShowClaimableModal(false)
+      resetClaimableForm()
+      router.push(`/dashboard/profile/live-edit?admin_edit_as=${encodeURIComponent(newUserId)}`)
+    } catch {
+      setClaimableError('Network error \u2014 try again.')
+      setClaimableSubmitting(false)
+    }
+  }
 
   // Auto-authenticate if user has admin role
   useEffect(() => {
@@ -527,13 +614,21 @@ export default function AdminPage() {
                     <h1 className="admin-content__title">User Profiles</h1>
                     <p className="admin-content__subtitle">{userProfiles.length} profiles total</p>
                   </div>
-                  <div className="admin-filters">
+                  <div className="admin-filters" style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap', alignItems: 'center' }}>
                     <select className="admin-filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
                       <option value="all">All Status</option>
                       <option value="draft">Draft</option>
                       <option value="pending">Pending</option>
                       <option value="published">Published</option>
                     </select>
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn--primary"
+                      onClick={() => { resetClaimableForm(); setShowClaimableModal(true) }}
+                      style={{ marginLeft: 'auto' }}
+                    >
+                      + Build Profile for Artist
+                    </button>
                   </div>
                   {actionMsg && <p style={{padding:'8px 16px', background:'var(--color-surface, #111)', border:'1px solid var(--color-border, #222)', borderRadius:8, marginBottom:16, fontSize:13, color:'var(--color-primary, #14b8a6)'}}>{actionMsg}</p>}
                   <table className="admin-table">
@@ -785,6 +880,144 @@ export default function AdminPage() {
           )}
         </div>
       </main>
+
+      {/* ── "Build Profile for Artist" Modal ──────────────────────── */}
+      {showClaimableModal && (
+        <div
+          className="admin-modal__overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="build-profile-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !claimableSubmitting) {
+              setShowClaimableModal(false)
+            }
+          }}
+        >
+          <div className="admin-modal__card admin-modal--build-profile">
+            <button
+              type="button"
+              className="admin-modal__close"
+              aria-label="Close"
+              onClick={() => { if (!claimableSubmitting) { setShowClaimableModal(false); resetClaimableForm() } }}
+              disabled={claimableSubmitting}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+
+            <div className="admin-modal__brand">
+              <span className="admin-modal__brand-mark" aria-hidden="true" />
+              <span className="admin-modal__brand-label">Resonance Network</span>
+            </div>
+
+            <h2 id="build-profile-title" className="admin-modal__title">
+              {adminClaimCopy.modalTitle}
+            </h2>
+            <p className="admin-modal__subtitle">
+              {adminClaimCopy.modalSubtitle}
+            </p>
+
+            <form onSubmit={handleCreateClaimableProfile} className="admin-modal__form">
+              <div className="admin-modal__field">
+                <label htmlFor="claimable-email" className="admin-modal__label">
+                  {adminClaimCopy.emailLabel}
+                  <span className="admin-modal__label-required" aria-hidden="true">*</span>
+                </label>
+                <input
+                  id="claimable-email"
+                  type="email"
+                  className="admin-modal__input"
+                  value={claimableEmail}
+                  onChange={(e) => setClaimableEmail(e.target.value)}
+                  placeholder="artist@example.com"
+                  required
+                  autoFocus
+                  disabled={claimableSubmitting}
+                />
+                {/* Note: adminClaimCopy.emailHint says "(optional)" but backend
+                    requires this field — override with our own required copy. */}
+                <p className="admin-modal__help">
+                  Where we&rsquo;ll send the claim invite. Required.
+                </p>
+              </div>
+
+              <div className="admin-modal__field">
+                <label htmlFor="claimable-display-name" className="admin-modal__label">
+                  {adminClaimCopy.displayNameLabel}
+                  <span className="admin-modal__label-required" aria-hidden="true">*</span>
+                </label>
+                <input
+                  id="claimable-display-name"
+                  type="text"
+                  className="admin-modal__input"
+                  value={claimableDisplayName}
+                  onChange={(e) => setClaimableDisplayName(e.target.value)}
+                  placeholder="Marin Cosmos"
+                  required
+                  disabled={claimableSubmitting}
+                />
+                <p className="admin-modal__help">
+                  {adminClaimCopy.displayNameHint.replace(/&mdash;/g, '—')}
+                </p>
+              </div>
+
+              <div className="admin-modal__field">
+                <label htmlFor="claimable-import-url" className="admin-modal__label">
+                  {adminClaimCopy.importUrlLabel}
+                </label>
+                <input
+                  id="claimable-import-url"
+                  type="url"
+                  className="admin-modal__input"
+                  value={claimableImportUrl}
+                  onChange={(e) => setClaimableImportUrl(e.target.value)}
+                  placeholder="https://example.com"
+                  disabled={claimableSubmitting}
+                />
+                <p className="admin-modal__help">
+                  {adminClaimCopy.importUrlHint.replace(/&mdash;/g, '—')}
+                </p>
+              </div>
+
+              {claimableError && (
+                <div role="alert" className="admin-modal__error">
+                  {claimableError}
+                </div>
+              )}
+
+              {claimableSubmitting && claimableImportUrl.trim() && (
+                <p className="admin-modal__help">
+                  {adminClaimCopy.submittingWithUrl(claimableImportUrl.trim())}
+                </p>
+              )}
+
+              <div className="admin-modal__actions">
+                <button
+                  type="button"
+                  className="admin-modal__btn admin-modal__btn--secondary"
+                  onClick={() => { setShowClaimableModal(false); resetClaimableForm() }}
+                  disabled={claimableSubmitting}
+                >
+                  {adminClaimCopy.cancelButton}
+                </button>
+                <button
+                  type="submit"
+                  className="admin-modal__btn admin-modal__btn--primary"
+                  disabled={claimableSubmitting}
+                >
+                  {claimableSubmitting
+                    ? (claimableImportUrl.trim() ? adminClaimCopy.submittingWithUrl(claimableImportUrl.trim()) : adminClaimCopy.submittingNoUrl)
+                    : (claimableImportUrl.trim() ? adminClaimCopy.submitButton : adminClaimCopy.submitButtonNoUrl)}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
