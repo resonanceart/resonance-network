@@ -23,11 +23,11 @@ export default function WelcomePage() {
     // Link any existing submissions
     fetch('/api/user/link-submissions', { method: 'POST' }).catch(() => {})
 
-    // Check if onboarding was already completed or name already set
-    fetch('/api/user/onboarding', { credentials: 'include' })
+    // Check if profile already has a name set — if so, skip welcome
+    fetch('/api/user/profile', { credentials: 'include' })
       .then(r => r.json())
       .then(data => {
-        if (data.onboarding_completed || (data.display_name && data.display_name.trim())) {
+        if (data.profile?.display_name?.trim() || data.profile?.onboarding_completed) {
           router.push('/dashboard?onboarded=1')
           return
         }
