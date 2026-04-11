@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
 import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabilityBadge'
@@ -12,7 +13,7 @@ import { ShareProfile } from '@/components/profile/ShareProfile'
 import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components/profile/SmartGallery'
 import { loadImportData, clearImportData } from '@/lib/import-store'
 import ImportPromptPopup from '@/components/dashboard/ImportPromptPopup'
-import { claimCopy, claimableBannerCopy } from '@/lib/claim-copy'
+import { claimCopy, claimableBannerCopy, importOverwriteModal } from '@/lib/claim-copy'
 import type { ProfileSkill, ProfileTool, ProfileSocialLink } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -504,8 +505,24 @@ async function uploadFile(file: File, type: string, displayName?: string): Promi
 
 // ─── Main Page Component ──────────────────────────────────────────
 
+// Shape of the data stashed by the scraper flow in IndexedDB / sessionStorage
+// under the key `resonance_profile_import`. Kept loose on purpose — only the
+// fields we know how to map are applied.
+type ImportedProfileData = {
+  name?: string
+  bio?: string
+  titles?: string[]
+  education?: string[]
+  avatarUrl?: string | null
+  heroImageUrl?: string | null
+  galleryImages?: Array<{ url: string; alt: string }>
+  socialLinks?: Array<{ platform: string; url: string }>
+  website?: string
+}
+
 export default function LiveProfileEditor() {
   const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
@@ -542,6 +559,17 @@ export default function LiveProfileEditor() {
   // When set and recent (<24h), an "Undo last save" button is shown next to Save.
   const [previousSnapshotAt, setPreviousSnapshotAt] = useState<string | null>(null)
   const [undoing, setUndoing] = useState(false)
+
+  // ─── Import-overwrite confirmation gate ───
+  // When the user lands on /dashboard/profile/live-edit?import=profile and
+  // already has meaningful profile data, we stash the scraped payload here
+  // and render a confirmation modal instead of auto-applying. This prevents
+  // silent overwrites of existing profiles (see fix(import) for context).
+  const [pendingImport, setPendingImport] = useState<{
+    data: ImportedProfileData
+    isAdmin: boolean
+  } | null>(null)
+  const [createNewHint, setCreateNewHint] = useState<string | null>(null)
 
   // ALL profile fields as state — these drive the live preview
   const [displayName, setDisplayName] = useState('')
@@ -606,6 +634,107 @@ export default function LiveProfileEditor() {
     setHasChanges(true)
     lastChangeTime.current = Date.now()
   }, [])
+
+  // Apply scraped import payload by calling all the relevant setters. Used
+  // both for the "brand new user" auto-apply path and from the confirmation
+  // modal's "Overwrite" button. Setters returned from useState are stable,
+  // so the empty dep array is safe.
+  const applyImportedData = useCallback((imported: ImportedProfileData) => {
+    if (imported.name) {
+      setDisplayName(imported.name)
+      setSlug(
+        imported.name
+          .toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^a-z0-9-]/g, '')
+      )
+    }
+    if (imported.bio) setBio(imported.bio)
+    if (imported.titles && imported.titles.length > 0) {
+      setProfessionalTitle(imported.titles[0])
+    }
+    if (imported.website) setWebsite(imported.website)
+    if (imported.avatarUrl) setAvatarUrl(imported.avatarUrl)
+    if (imported.heroImageUrl) setCoverImageUrl(imported.heroImageUrl)
+    if (imported.galleryImages && imported.galleryImages.length > 0) {
+      setMediaGallery(
+        imported.galleryImages.map((img, i) => ({
+          url: img.url,
+          alt: img.alt || '',
+          type: 'image' as const,
+          order: i,
+          isFeatured: i === 0,
+        }))
+      )
+    }
+    if (imported.socialLinks && imported.socialLinks.length > 0) {
+      setSocialLinks(
+        imported.socialLinks.map((link, i) => ({
+          id: `import-${Date.now()}-${i}`,
+          platform: link.platform as SocialEntry['platform'],
+          url: link.url,
+          display_order: i,
+        }))
+      )
+    }
+    if (imported.education && imported.education.length > 0) {
+      setTimeline(
+        imported.education.map((ed) => ({
+          year: '',
+          title: ed,
+          category: 'education',
+          organization: '',
+          description: '',
+        }))
+      )
+    }
+    setHasChanges(true)
+    lastChangeTime.current = Date.now()
+    setShowWelcome(false)
+  }, [])
+
+  // Clean up the import stash (IndexedDB + sessionStorage) and strip
+  // ?import=profile from the URL. Called from all modal exit paths.
+  const clearImportStashAndStripUrl = useCallback(() => {
+    clearImportData('resonance_profile_import').catch(() => {})
+    try { sessionStorage.removeItem('resonance_profile_import') } catch { /* ignore */ }
+    try {
+      router.replace('/dashboard/profile/live-edit', { scroll: false })
+    } catch { /* ignore */ }
+  }, [router])
+
+  // Confirmation modal — "Overwrite with imported data"
+  const handleConfirmImport = useCallback(() => {
+    if (!pendingImport) return
+    applyImportedData(pendingImport.data)
+    setPendingImport(null)
+    setCreateNewHint(null)
+    clearImportStashAndStripUrl()
+    setImportStatus('Profile imported successfully!')
+    setTimeout(() => setImportStatus(null), 5000)
+  }, [pendingImport, applyImportedData, clearImportStashAndStripUrl])
+
+  // Confirmation modal — "Cancel — keep my profile"
+  const handleCancelImport = useCallback(() => {
+    setPendingImport(null)
+    setCreateNewHint(null)
+    clearImportStashAndStripUrl()
+  }, [clearImportStashAndStripUrl])
+
+  // Confirmation modal — "Create a new profile instead"
+  // Admin → send them to /admin so they can use Build Profile for Artist.
+  // Non-admin → show an inline hint (option is admin-only).
+  const handleCreateNewInstead = useCallback(() => {
+    if (!pendingImport) return
+    if (pendingImport.isAdmin) {
+      setPendingImport(null)
+      setCreateNewHint(null)
+      clearImportStashAndStripUrl()
+      router.push('/admin')
+    } else {
+      setCreateNewHint(importOverwriteModal.createNewNonAdminHint)
+    }
+  }, [pendingImport, clearImportStashAndStripUrl, router])
 
   // Fetch profile on mount (middleware handles auth redirect for unauthenticated users)
   useEffect(() => {
@@ -759,82 +888,63 @@ export default function LiveProfileEditor() {
         }
 
         // Apply imported profile data from website scraper (IndexedDB first, sessionStorage fallback)
+        //
+        // GATE: Previously this block auto-applied scraped content to the
+        // currently logged-in user's profile, which silently overwrote any
+        // existing data. We now check whether the current profile has
+        // meaningful content and, if so, defer to a confirmation modal
+        // (see pendingImport state + the handlers above). Only brand-new
+        // profiles (no bio, no gallery, not published, no display_name)
+        // get the auto-apply path.
         const params = new URLSearchParams(window.location.search)
         if (params.get('import') === 'profile') {
           try {
-            let imported: {
-              name?: string; bio?: string; titles?: string[]; education?: string[];
-              avatarUrl?: string | null; heroImageUrl?: string | null;
-              galleryImages?: Array<{ url: string; alt: string }>;
-              socialLinks?: Array<{ platform: string; url: string }>; website?: string;
-            } | null = null
+            let imported: ImportedProfileData | null = null
 
             // Try IndexedDB first (used by ImportPromptPopup)
             try {
-              imported = await loadImportData<typeof imported>('resonance_profile_import')
+              imported = await loadImportData<ImportedProfileData>('resonance_profile_import')
             } catch { /* ignore */ }
 
             // Fallback to sessionStorage (used by ImportFromWebsite)
             if (!imported) {
               try {
                 const raw = sessionStorage.getItem('resonance_profile_import')
-                if (raw) imported = JSON.parse(raw)
+                if (raw) imported = JSON.parse(raw) as ImportedProfileData
               } catch { /* ignore */ }
             }
 
             if (imported) {
-              // Apply imported data — overwrite fields with scraped content
-              if (imported.name) setDisplayName(imported.name)
-              if (imported.name) {
-                setSlug(imported.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''))
+              // Does the current user already have profile data worth protecting?
+              const existingGallery =
+                ext && Array.isArray((ext as Record<string, unknown>).media_gallery)
+                  ? ((ext as Record<string, unknown>).media_gallery as unknown[])
+                  : []
+              const hasExistingData = Boolean(
+                (p?.bio && typeof p.bio === 'string' && p.bio.trim().length > 10) ||
+                existingGallery.length > 0 ||
+                p?.profile_visibility === 'published' ||
+                (p?.display_name &&
+                  typeof p.display_name === 'string' &&
+                  p.display_name.trim().length > 0 &&
+                  !p.display_name.toLowerCase().startsWith('placeholder'))
+              )
+
+              if (hasExistingData) {
+                // Defer — render the confirmation modal, do not touch state yet.
+                setPendingImport({
+                  data: imported,
+                  isAdmin: p?.role === 'admin',
+                })
+              } else {
+                // Safe path — brand-new profile, apply immediately and clean up.
+                applyImportedData(imported)
+                await clearImportData('resonance_profile_import').catch(() => {})
+                try { sessionStorage.removeItem('resonance_profile_import') } catch { /* ignore */ }
+                try { router.replace('/dashboard/profile/live-edit', { scroll: false }) } catch { /* ignore */ }
+                setImportStatus('Profile imported successfully!')
+                setTimeout(() => setImportStatus(null), 5000)
               }
-              if (imported.bio) setBio(imported.bio)
-              if (imported.titles && imported.titles.length > 0) {
-                setProfessionalTitle(imported.titles[0])
-              }
-              if (imported.website) setWebsite(imported.website)
-              // Set image URLs (already uploaded to Supabase Storage by scrape API)
-              if (imported.avatarUrl) {
-                setAvatarUrl(imported.avatarUrl)
-                setHasChanges(true)
-                lastChangeTime.current = Date.now()
-              }
-              if (imported.heroImageUrl) {
-                setCoverImageUrl(imported.heroImageUrl)
-                setHasChanges(true)
-                lastChangeTime.current = Date.now()
-              }
-              if (imported.galleryImages && imported.galleryImages.length > 0) {
-                setMediaGallery(imported.galleryImages.map((img, i) => ({
-                  url: img.url, alt: img.alt || '', type: 'image' as const,
-                  order: i, isFeatured: i === 0,
-                })))
-                setHasChanges(true)
-                lastChangeTime.current = Date.now()
-              }
-              if (imported.socialLinks && imported.socialLinks.length > 0) {
-                setSocialLinks(imported.socialLinks.map((link, i) => ({
-                  id: `import-${Date.now()}-${i}`,
-                  platform: link.platform as SocialEntry['platform'],
-                  url: link.url,
-                  display_order: i,
-                })))
-              }
-              if (imported.education && imported.education.length > 0) {
-                setTimeline(imported.education.map((ed) => ({
-                  year: '', title: ed, category: 'education',
-                  organization: '', description: '',
-                })))
-              }
-              setHasChanges(true)
-              lastChangeTime.current = Date.now()
-              // Dismiss welcome overlay — import data is now applied
-              setShowWelcome(false)
-              // Clean up both storage locations
-              clearImportData('resonance_profile_import').catch(() => {})
-              sessionStorage.removeItem('resonance_profile_import')
-              setImportStatus('Profile imported successfully!')
-              setTimeout(() => setImportStatus(null), 5000)
             }
           } catch (e) {
             console.error('Failed to apply imported profile data:', e)
@@ -2046,6 +2156,100 @@ export default function LiveProfileEditor() {
             <button className="btn btn--primary" onClick={() => setShowWelcome(false)}>
               Got it, let&apos;s go!
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Import-overwrite confirmation modal — blocks silent overwrites
+          of existing profiles when ?import=profile redirects here with a
+          scraped payload in IndexedDB / sessionStorage. See applyImportedData
+          + pendingImport state for the gating logic. */}
+      {pendingImport && (
+        <div
+          className="admin-modal__overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="import-overwrite-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleCancelImport()
+          }}
+        >
+          <div className="admin-modal__card">
+            <button
+              type="button"
+              className="admin-modal__close"
+              aria-label={importOverwriteModal.cancelButton}
+              onClick={handleCancelImport}
+            >
+              &times;
+            </button>
+            <h2 id="import-overwrite-title" className="admin-modal__title">
+              {importOverwriteModal.title}
+            </h2>
+            <p className="admin-modal__subtitle">
+              {importOverwriteModal.intro}
+            </p>
+            <ul
+              style={{
+                margin: '0 0 16px 20px',
+                padding: 0,
+                color: '#555',
+                fontSize: 14,
+                lineHeight: 1.6,
+              }}
+            >
+              {importOverwriteModal.bulletList.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+            <p
+              className="admin-modal__subtitle"
+              style={{ fontWeight: 600, marginBottom: 16 }}
+            >
+              {importOverwriteModal.confirm}
+            </p>
+            {createNewHint && (
+              <p className="admin-modal__help" role="status" style={{ marginBottom: 12 }}>
+                {createNewHint}
+              </p>
+            )}
+            <div
+              className="admin-modal__actions"
+              style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}
+            >
+              <button
+                type="button"
+                className="admin-modal__btn admin-modal__btn--primary"
+                style={{ background: '#b91c1c' }}
+                onClick={handleConfirmImport}
+              >
+                {importOverwriteModal.overwriteButton}
+              </button>
+              <button
+                type="button"
+                className="admin-modal__btn admin-modal__btn--secondary"
+                onClick={handleCancelImport}
+              >
+                {importOverwriteModal.cancelButton}
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateNewInstead}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#0f9488',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  textDecoration: 'underline',
+                  padding: '10px',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                {importOverwriteModal.createNewButton}
+              </button>
+            </div>
           </div>
         </div>
       )}

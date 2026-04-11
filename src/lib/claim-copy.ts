@@ -82,3 +82,35 @@ export const claimableBannerCopy = {
     `You're editing as ${artistName}. Changes will be saved to their profile.`,
   adminEditAsBack: 'Back to admin',
 }
+
+export const importOverwriteModal = {
+  title: 'Import will overwrite your profile',
+  intro: 'You\'re about to import data from an external website. This will replace your current:',
+  bulletList: [
+    'Display name and slug',
+    'Bio',
+    'Avatar and cover image',
+    'Gallery items',
+    'Social links',
+    'Education / timeline',
+  ],
+  confirm: 'Are you sure you want to continue?',
+
+  cancelButton: 'Cancel — keep my profile',
+  overwriteButton: 'Overwrite with imported data',
+  createNewButton: 'Create a new profile instead',
+
+  createNewAdminHint: 'Use "Build Profile for Artist" in the admin dashboard instead.',
+  createNewNonAdminHint:
+    'This option is only available to admins — please cancel or choose one of the other actions.',
+}
+
+export const importAdminBlockBanner = {
+  heading: 'You\'re signed in as an admin',
+  body:
+    'Importing into your own profile would overwrite the Resonance Art Collective account. To build a profile for another artist, use "Build Profile for Artist" in /admin.',
+  continueHint:
+    'To continue importing into your own profile anyway, click below — you\'ll get a confirmation prompt.',
+  continueButton: 'Continue anyway',
+  goToAdminButton: 'Go to admin dashboard',
+}
