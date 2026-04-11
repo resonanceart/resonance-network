@@ -13,7 +13,7 @@ import { ShareProfile } from '@/components/profile/ShareProfile'
 import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components/profile/SmartGallery'
 import { loadImportData, clearImportData } from '@/lib/import-store'
 import ImportPromptPopup from '@/components/dashboard/ImportPromptPopup'
-import { claimCopy, claimableBannerCopy, importOverwriteModal } from '@/lib/claim-copy'
+import { claimCopy, claimableBannerCopy, importOverwriteModal, reimportModal } from '@/lib/claim-copy'
 import type { ProfileSkill, ProfileTool, ProfileSocialLink } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -554,6 +554,12 @@ export default function LiveProfileEditor() {
   // Send-claim-invite action state
   const [claimInviteSending, setClaimInviteSending] = useState(false)
   const [claimInviteMessage, setClaimInviteMessage] = useState<string | null>(null)
+  // Re-import-from-website modal state (admin-only, claimable profiles only)
+  const [showReimportModal, setShowReimportModal] = useState(false)
+  const [reimportUrl, setReimportUrl] = useState('')
+  const [reimportMode, setReimportMode] = useState<'replace' | 'fill_empty'>('fill_empty')
+  const [reimportRunning, setReimportRunning] = useState(false)
+  const [reimportError, setReimportError] = useState<string | null>(null)
   // ─── Undo-last-save state ───
   // Timestamp of the most recent snapshot stored on user_profiles.previous_snapshot_at.
   // When set and recent (<24h), an "Undo last save" button is shown next to Save.
@@ -1197,6 +1203,88 @@ export default function LiveProfileEditor() {
     }
   }, [claimableMeta, adminEditAs, user?.id])
 
+  // Open the re-import modal. Prefills the URL input with the profile's
+  // original_source_url so admins don't have to paste it again.
+  const openReimportModal = useCallback(() => {
+    setReimportUrl(claimableMeta?.sourceUrl || '')
+    setReimportMode('fill_empty')
+    setReimportError(null)
+    setShowReimportModal(true)
+  }, [claimableMeta?.sourceUrl])
+
+  const closeReimportModal = useCallback(() => {
+    if (reimportRunning) return
+    setShowReimportModal(false)
+    setReimportError(null)
+  }, [reimportRunning])
+
+  // Run the re-import. Calls /api/admin/reimport-profile, then hydrates the
+  // editor state via applyImportedData (no page reload), and closes the modal
+  // on success. On failure we keep the modal open and show an inline error.
+  const handleRunReimport = useCallback(async () => {
+    const url = reimportUrl.trim()
+    if (!url) {
+      setReimportError(reimportModal.urlRequired)
+      return
+    }
+    // Lightweight client-side URL sanity check — the server does the real
+    // validation via validateScrapeUrl.
+    try {
+      const withScheme = /^https?:\/\//i.test(url) ? url : `https://${url}`
+      new URL(withScheme)
+    } catch {
+      setReimportError(reimportModal.invalidUrl)
+      return
+    }
+
+    const profileId = adminEditAs || user?.id
+    if (!profileId) {
+      setReimportError('Missing profile id — reload the page and try again.')
+      return
+    }
+
+    setReimportRunning(true)
+    setReimportError(null)
+
+    try {
+      const normalizedUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`
+      const res = await fetch('/api/admin/reimport-profile', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profile_id: profileId,
+          import_url: normalizedUrl,
+          mode: reimportMode,
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok || !data?.success) {
+        setReimportError(data?.message || reimportModal.genericError)
+        setReimportRunning(false)
+        return
+      }
+
+      // Hydrate editor state from the scraped payload so the admin sees the
+      // refreshed data immediately — no page reload needed.
+      if (data.imported) {
+        applyImportedData(data.imported as ImportedProfileData)
+      }
+      // Reflect the new source URL in the banner metadata.
+      setClaimableMeta((prev) =>
+        prev ? { ...prev, sourceUrl: normalizedUrl } : prev
+      )
+      setClaimInviteMessage(reimportModal.successMessage)
+      setTimeout(() => setClaimInviteMessage(null), 6000)
+      setShowReimportModal(false)
+    } catch {
+      setReimportError(reimportModal.genericError)
+    } finally {
+      setReimportRunning(false)
+    }
+  }, [reimportUrl, reimportMode, adminEditAs, user?.id, applyImportedData])
+
   function openPanel(section: EditSection) {
     setActivePanel(section)
     // Scroll the section into view
@@ -1710,6 +1798,14 @@ export default function LiveProfileEditor() {
                         : claimableMeta.sendCount > 0
                           ? claimableBannerCopy.resendButton(`${claimableMeta.sendCount}×`)
                           : claimableBannerCopy.sendButton}
+                    </button>
+                    <button
+                      type="button"
+                      className="claimable-banner__btn claimable-banner__btn--secondary"
+                      onClick={openReimportModal}
+                      disabled={claimInviteSending || reimportRunning}
+                    >
+                      {reimportModal.bannerButton}
                     </button>
                     <button
                       type="button"
@@ -2248,6 +2344,244 @@ export default function LiveProfileEditor() {
                 }}
               >
                 {importOverwriteModal.createNewButton}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Re-import from website modal — admin-only, claimable profiles only.
+          Runs the scraper against a URL and hydrates editor state without a
+          page reload. The server enforces admin + claimable + created_by_admin. */}
+      {showReimportModal && (
+        <div
+          className="admin-modal__overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reimport-modal-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeReimportModal()
+          }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(10, 10, 20, 0.72)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 16,
+            zIndex: 1000,
+          }}
+        >
+          <div
+            className="admin-modal__card"
+            style={{
+              background: '#fff',
+              borderRadius: 12,
+              padding: 24,
+              maxWidth: 520,
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+              position: 'relative',
+            }}
+          >
+            <button
+              type="button"
+              className="admin-modal__close"
+              aria-label={reimportModal.cancelButton}
+              onClick={closeReimportModal}
+              disabled={reimportRunning}
+              style={{
+                position: 'absolute',
+                top: 12,
+                right: 12,
+                background: 'none',
+                border: 'none',
+                fontSize: 24,
+                cursor: reimportRunning ? 'not-allowed' : 'pointer',
+                color: '#666',
+                padding: 4,
+                lineHeight: 1,
+              }}
+            >
+              &times;
+            </button>
+            <h2
+              id="reimport-modal-title"
+              className="admin-modal__title"
+              style={{ margin: '0 0 8px 0', fontSize: 20, color: '#111', paddingRight: 32 }}
+            >
+              {reimportModal.title}
+            </h2>
+            <p
+              className="admin-modal__subtitle"
+              style={{ margin: '0 0 20px 0', fontSize: 14, color: '#555', lineHeight: 1.5 }}
+            >
+              {reimportModal.subtitle}
+            </p>
+
+            <div className="admin-modal__field" style={{ marginBottom: 20 }}>
+              <label
+                htmlFor="reimport-url-input"
+                className="admin-modal__label"
+                style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#333', marginBottom: 6 }}
+              >
+                {reimportModal.urlLabel}
+              </label>
+              <input
+                id="reimport-url-input"
+                type="url"
+                className="admin-modal__input"
+                value={reimportUrl}
+                onChange={(e) => { setReimportUrl(e.target.value); setReimportError(null) }}
+                placeholder="https://artist-website.com"
+                disabled={reimportRunning}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  fontSize: 14,
+                  border: '1px solid #ddd',
+                  borderRadius: 8,
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+              />
+              <p
+                className="admin-modal__help"
+                style={{ margin: '6px 0 0 0', fontSize: 12, color: '#777' }}
+              >
+                {reimportModal.urlHint}
+              </p>
+            </div>
+
+            <fieldset style={{ border: 'none', padding: 0, margin: '0 0 20px 0' }}>
+              <legend
+                className="admin-modal__label"
+                style={{ fontSize: 13, fontWeight: 600, color: '#333', marginBottom: 10, padding: 0 }}
+              >
+                {reimportModal.modeLabel}
+              </legend>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  padding: 12,
+                  border: `1px solid ${reimportMode === 'fill_empty' ? '#0f9488' : '#e5e5e5'}`,
+                  background: reimportMode === 'fill_empty' ? 'rgba(15, 148, 136, 0.06)' : 'transparent',
+                  borderRadius: 8,
+                  cursor: reimportRunning ? 'not-allowed' : 'pointer',
+                  marginBottom: 8,
+                }}
+              >
+                <input
+                  type="radio"
+                  name="reimport-mode"
+                  value="fill_empty"
+                  checked={reimportMode === 'fill_empty'}
+                  onChange={() => setReimportMode('fill_empty')}
+                  disabled={reimportRunning}
+                  style={{ marginTop: 3, flexShrink: 0 }}
+                />
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: '#111' }}>
+                    {reimportModal.modeFillEmptyLabel}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#777', marginTop: 2 }}>
+                    {reimportModal.modeFillEmptyHint}
+                  </div>
+                </div>
+              </label>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  padding: 12,
+                  border: `1px solid ${reimportMode === 'replace' ? '#b91c1c' : '#e5e5e5'}`,
+                  background: reimportMode === 'replace' ? 'rgba(185, 28, 28, 0.06)' : 'transparent',
+                  borderRadius: 8,
+                  cursor: reimportRunning ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <input
+                  type="radio"
+                  name="reimport-mode"
+                  value="replace"
+                  checked={reimportMode === 'replace'}
+                  onChange={() => setReimportMode('replace')}
+                  disabled={reimportRunning}
+                  style={{ marginTop: 3, flexShrink: 0 }}
+                />
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: '#111' }}>
+                    {reimportModal.modeReplaceLabel}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#777', marginTop: 2 }}>
+                    {reimportModal.modeReplaceHint}
+                  </div>
+                </div>
+              </label>
+            </fieldset>
+
+            {reimportError && (
+              <p
+                role="alert"
+                style={{
+                  margin: '0 0 16px 0',
+                  padding: '10px 12px',
+                  background: 'rgba(185, 28, 28, 0.08)',
+                  border: '1px solid rgba(185, 28, 28, 0.3)',
+                  borderRadius: 8,
+                  fontSize: 13,
+                  color: '#b91c1c',
+                }}
+              >
+                {reimportError}
+              </p>
+            )}
+
+            <div
+              className="admin-modal__actions"
+              style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' }}
+            >
+              <button
+                type="button"
+                className="admin-modal__btn admin-modal__btn--secondary"
+                onClick={closeReimportModal}
+                disabled={reimportRunning}
+                style={{
+                  padding: '10px 18px',
+                  border: '1px solid #ddd',
+                  background: '#fff',
+                  color: '#333',
+                  borderRadius: 8,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  cursor: reimportRunning ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {reimportModal.cancelButton}
+              </button>
+              <button
+                type="button"
+                className="admin-modal__btn admin-modal__btn--primary"
+                onClick={handleRunReimport}
+                disabled={reimportRunning || !reimportUrl.trim()}
+                style={{
+                  padding: '10px 18px',
+                  border: 'none',
+                  background: reimportRunning || !reimportUrl.trim() ? '#9ca3af' : '#0f9488',
+                  color: '#fff',
+                  borderRadius: 8,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: reimportRunning || !reimportUrl.trim() ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {reimportRunning ? reimportModal.runningButton : reimportModal.runButton}
               </button>
             </div>
           </div>
