@@ -114,6 +114,81 @@ function upgradeWixImageUrl(url: string): string {
   )
 }
 
+/** Detect if page is built on Shopify */
+function isShopify($: cheerio.CheerioAPI): boolean {
+  const html = $.html()
+  return (
+    html.includes('cdn.shopify.com') ||
+    html.includes('shopifycdn.com') ||
+    html.includes('Shopify.theme') ||
+    html.includes('shopify-section') ||
+    /<meta[^>]+shopify/i.test(html)
+  )
+}
+
+/**
+ * Upgrade Shopify CDN image URLs to the largest available resolution.
+ * Shopify CDN URLs commonly include ?width=N or ?v=N&width=N query params.
+ * Strategy: if width param is present, rewrite to width=2000; otherwise leave as-is.
+ * Also handles the legacy _400x.jpg / _800x1000.jpg filename suffix (_{W}x{H}.ext).
+ */
+function upgradeShopifyImageUrl(url: string): string {
+  if (!/cdn\.shopify\.com|shopifycdn\.com/i.test(url)) return url
+  let upgraded = url
+
+  // Rewrite ?width=N or &width=N query param to width=2000
+  upgraded = upgraded.replace(/([?&])width=\d+/gi, '$1width=2000')
+
+  // Rewrite legacy _{W}x.ext or _{W}x{H}.ext suffix (e.g. _400x.jpg, _600x600.jpg)
+  // to _2000x.ext for the largest variant
+  upgraded = upgraded.replace(
+    /_(\d+)x(\d*)(\.(?:jpe?g|png|webp|gif|avif))(\?|$)/i,
+    '_2000x$3$4'
+  )
+
+  return upgraded
+}
+
+/**
+ * Parse a srcset attribute and return the URL of the largest candidate.
+ * Handles width descriptors (e.g. "url 400w, url 800w") and density descriptors
+ * (e.g. "url 1x, url 2x"). Falls back to the last entry if parsing fails.
+ */
+function pickLargestFromSrcset(srcset: string): string | null {
+  if (!srcset) return null
+  const parts = srcset
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  if (parts.length === 0) return null
+
+  let bestUrl: string | null = null
+  let bestScore = -1
+  for (const part of parts) {
+    const tokens = part.split(/\s+/)
+    const candidateUrl = tokens[0]
+    if (!candidateUrl) continue
+    const descriptor = tokens[1] || ''
+    let score = 0
+    const widthMatch = descriptor.match(/^(\d+(?:\.\d+)?)w$/i)
+    const densityMatch = descriptor.match(/^(\d+(?:\.\d+)?)x$/i)
+    if (widthMatch) {
+      score = parseFloat(widthMatch[1])
+    } else if (densityMatch) {
+      // Density (2x, 3x) — treat each x as 1000 so density wins over tiny widths
+      score = parseFloat(densityMatch[1]) * 1000
+    } else {
+      // No descriptor — fall back to string length as a weak tiebreaker
+      score = candidateUrl.length
+    }
+    if (score > bestScore) {
+      bestScore = score
+      bestUrl = candidateUrl
+    }
+  }
+  return bestUrl
+}
+
 function extractSocialLinks($: cheerio.CheerioAPI, baseUrl: string): Array<{ platform: string; url: string }> {
   const links: Array<{ platform: string; url: string }> = []
   const seen = new Set<string>()
@@ -204,75 +279,152 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
   const images: Array<{ url: string; alt: string; heroScore: number }> = []
   const seen = new Set<string>()
   const wixSite = isWix($)
+  const shopifySite = isShopify($)
+
+  const allImgs = $('img')
+  const totalImgElements = allImgs.length
+  let filteredEmpty = 0
+  let filteredDataUri = 0
+  let filteredDuplicate = 0
+  let filteredPattern = 0
+  let filteredTiny = 0
+  let acceptedFromImgTag = 0
+
+  console.log(
+    `[scraper] extractImages: site=${baseUrl} totalImgElements=${totalImgElements} platform=${
+      shopifySite ? 'shopify' : wixSite ? 'wix' : 'generic'
+    }`
+  )
 
   // Get og:image — but only add it if it does NOT look like a site-wide default
   const ogImage = $('meta[property="og:image"]').attr('content')
   if (ogImage && !isLikelySiteDefault(ogImage)) {
     let resolved = resolveUrl(ogImage, baseUrl)
     if (wixSite) resolved = upgradeWixImageUrl(resolved)
+    if (shopifySite) resolved = upgradeShopifyImageUrl(resolved)
     seen.add(resolved)
     // og:image gets a moderate baseline score — real content images from main area can beat it
     images.push({ url: resolved, alt: 'Hero image', heroScore: 10 })
+    console.log(`[scraper] accepted og:image: ${resolved}`)
+  } else if (ogImage) {
+    console.log(`[scraper] rejected og:image (site default pattern): ${ogImage}`)
   }
 
   // Get all img tags — prefer lazy-load attributes over src (which may be a placeholder)
-  $('img').each((_, el) => {
-    // Prefer real-image lazy-load attributes over src (which may be a data: URI placeholder)
-    let src = $(el).attr('data-lazy-src')
-      || $(el).attr('data-src')
-      || $(el).attr('data-original')
-      || $(el).attr('src')
-      || ''
+  allImgs.each((_, el) => {
+    const rawSrc = ($(el).attr('src') || '').trim()
+    // Detect placeholder src values: data: URIs (inline SVG/png spinners) or
+    // known placeholder paths. When the real src looks like a placeholder,
+    // we skip it and fall through to a lazy-load attribute.
+    const srcLooksLikePlaceholder =
+      !rawSrc ||
+      rawSrc.startsWith('data:') ||
+      /placeholder|lazy|blank|transparent|1x1|spacer|pixel\.(gif|png)/i.test(rawSrc)
 
-    // For Squarespace, also check srcset for highest-res version
-    const srcset = $(el).attr('srcset')
+    // Prefer real-image lazy-load attributes over src
+    let src =
+      $(el).attr('data-lazy-src') ||
+      $(el).attr('data-src') ||
+      $(el).attr('data-original') ||
+      $(el).attr('data-hi-res-src') ||
+      $(el).attr('data-full') ||
+      ''
+    if (!src && !srcLooksLikePlaceholder) src = rawSrc
+
+    // Srcset variants — prefer the lazy-load ones when the visible src is a
+    // placeholder. Accepted attrs: srcset, data-srcset, data-lazy-srcset,
+    // data-original-set.
+    const srcset =
+      $(el).attr('data-srcset') ||
+      $(el).attr('data-lazy-srcset') ||
+      $(el).attr('data-original-set') ||
+      $(el).attr('srcset') ||
+      ''
     if (srcset) {
-      const candidates = srcset.split(',').map(s => s.trim())
-      const last = candidates[candidates.length - 1]
-      if (last) {
-        const srcsetUrl = last.split(/\s+/)[0]
-        if (srcsetUrl) src = srcsetUrl
-      }
+      const largest = pickLargestFromSrcset(srcset)
+      if (largest) src = largest
     }
 
-    if (!src || src.startsWith('data:')) return
+    // Last-resort fall back to raw src (even if it looked like a placeholder,
+    // something is better than nothing when no lazy attrs were present).
+    if (!src) src = rawSrc
+
+    if (!src) {
+      filteredEmpty++
+      return
+    }
+    if (src.startsWith('data:')) {
+      filteredDataUri++
+      return
+    }
     let resolved = resolveUrl(src, baseUrl)
 
     // Wix: upgrade LQIP placeholders (tiny, blurred) to full resolution
     if (wixSite) resolved = upgradeWixImageUrl(resolved)
+    // Shopify: rewrite ?width=N to ?width=2000 and legacy _400x.jpg suffix to _2000x.jpg
+    if (shopifySite) resolved = upgradeShopifyImageUrl(resolved)
 
     // Deduplicate after URL upgrade (Wix LQIPs with different blur params → same upgraded URL)
-    if (seen.has(resolved)) return
+    if (seen.has(resolved)) {
+      filteredDuplicate++
+      return
+    }
 
     // Skip duplicates, tiny images, icons, tracking pixels
-    if (/favicon|1x1|spacer|pixel|badge|icon/i.test(resolved)) return
-    // Skip very small specified dimensions (but not for Wix — SSR dimensions are fake placeholders)
+    if (/favicon|1x1|spacer|pixel/i.test(resolved)) {
+      filteredPattern++
+      console.log(`[scraper] filtered (favicon/pixel pattern): ${resolved}`)
+      return
+    }
+    // Skip images with small specified dimensions (but not for Wix — SSR
+    // dimensions are fake placeholders). Threshold is 400px on EITHER axis;
+    // anything smaller is almost certainly a logo, thumbnail, icon, or UI
+    // chrome and shouldn't land in a gallery. Images with no explicit
+    // width/height bypass this filter because we can't measure them
+    // (Shopify, for example, sometimes omits dims on lazy-loaded imgs).
     if (!wixSite) {
       const width = parseInt($(el).attr('width') || '0')
       const height = parseInt($(el).attr('height') || '0')
-      if ((width > 0 && width < 50) || (height > 0 && height < 50)) return
+      const MIN_DIM = 400
+      if ((width > 0 && width < MIN_DIM) || (height > 0 && height < MIN_DIM)) {
+        filteredTiny++
+        console.log(
+          `[scraper] filtered (tiny ${width}x${height} < ${MIN_DIM}): ${resolved}`
+        )
+        return
+      }
     }
 
     seen.add(resolved)
     const heroScore = scoreImageForHero(el, $, resolved)
     images.push({ url: resolved, alt: $(el).attr('alt') || '', heroScore })
+    acceptedFromImgTag++
   })
 
+  console.log(
+    `[scraper] <img> pass complete: accepted=${acceptedFromImgTag} rejected={empty:${filteredEmpty}, dataUri:${filteredDataUri}, duplicate:${filteredDuplicate}, pattern:${filteredPattern}, tiny:${filteredTiny}}`
+  )
+
   // Squarespace-specific: data-image attributes on containers
+  let acceptedFromDataImage = 0
   $('[data-image]').each((_, el) => {
     const src = $(el).attr('data-image') || ''
     if (!src) return
-    const resolved = resolveUrl(src, baseUrl)
+    let resolved = resolveUrl(src, baseUrl)
+    if (shopifySite) resolved = upgradeShopifyImageUrl(resolved)
     if (seen.has(resolved)) return
     seen.add(resolved)
     images.push({ url: resolved, alt: '', heroScore: scoreImageForHero(null, $, resolved) })
+    acceptedFromDataImage++
   })
 
   // WordPress/lightbox: <a> tags linking directly to image files (gallery lightboxes)
+  let acceptedFromLightbox = 0
   $('a[href]').each((_, el) => {
     const href = $(el).attr('href') || ''
-    if (!/\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(href)) return
-    const resolved = resolveUrl(href, baseUrl)
+    if (!/\.(jpg|jpeg|png|webp|avif|gif)(\?.*)?$/i.test(href)) return
+    let resolved = resolveUrl(href, baseUrl)
+    if (shopifySite) resolved = upgradeShopifyImageUrl(resolved)
     if (seen.has(resolved)) return
     // Only include if inside a gallery or portfolio container
     const parent = $(el).closest('.gallery, .portfolio, [class*="gallery"], [class*="portfolio"], .wp-block-gallery, main, article')
@@ -280,22 +432,34 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
     seen.add(resolved)
     const alt = $(el).find('img').attr('alt') || ''
     images.push({ url: resolved, alt, heroScore: scoreImageForHero(null, $, resolved) })
+    acceptedFromLightbox++
   })
 
   // Background images in inline styles
+  let acceptedFromBgStyle = 0
   $('[style*="background-image"]').each((_, el) => {
     const style = $(el).attr('style') || ''
     const match = style.match(/url\(['"]?(.*?)['"]?\)/)
     if (match?.[1]) {
-      const resolved = resolveUrl(match[1], baseUrl)
+      let resolved = resolveUrl(match[1], baseUrl)
+      if (shopifySite) resolved = upgradeShopifyImageUrl(resolved)
       if (!seen.has(resolved)) {
         seen.add(resolved)
         images.push({ url: resolved, alt: '', heroScore: scoreImageForHero(null, $, resolved) })
+        acceptedFromBgStyle++
       }
     }
   })
 
-  return images.slice(0, 20) // cap at 20 images
+  console.log(
+    `[scraper] secondary passes: dataImage=${acceptedFromDataImage} lightbox=${acceptedFromLightbox} bgStyle=${acceptedFromBgStyle}`
+  )
+  const MAX_IMAGES = 30
+  console.log(
+    `[scraper] extractImages total accepted: ${images.length} (capped at ${MAX_IMAGES})`
+  )
+
+  return images.slice(0, MAX_IMAGES)
 }
 
 /** Extract a notable quote from marquee blocks, blockquotes, or standalone short paragraphs */
@@ -796,22 +960,61 @@ export async function scrapeProfilePage(url: string): Promise<ScrapedProfile> {
     .trim()
     .slice(0, 5000)
 
-  // For profile pages: first content image = avatar, og:image or next = hero
-  // Skip logo-type images for avatar
+  // For profile pages: pick avatar, hero, and gallery in a heroScore-aware
+  // way so that site logos and chrome never win the hero/avatar slots.
+  //
+  // 1. Drop any image whose URL matches the site-default/logo pattern — those
+  //    never belong in a profile gallery.
+  // 2. Avatar: first JPG/PNG from the filtered list (preserves the old
+  //    "first content image" semantic).
+  // 3. Hero: highest-heroScore image from what remains. This fixes the bug
+  //    where Shopify sites ended up with the 80x80 header logo as hero
+  //    because document order put it first.
+  // 4. Gallery: everything else, preserving original extractImages order.
   let avatarUrl: string | null = null
   let heroImageUrl: string | null = null
   const galleryImages: Array<{ url: string; alt: string }> = []
 
-  for (const img of images) {
-    // Headshot detection: look for portrait-like images (JPG, with person-like filenames)
-    if (!avatarUrl && /\.(jpg|jpeg|png)/i.test(img.url) && !/logo|icon|banner|untitled-111/i.test(img.url)) {
+  const logoLike = (u: string) => /logo|favicon|untitled-111/i.test(u)
+  const contentImages = images.filter((img) => !logoLike(img.url))
+  console.log(
+    `[scraper] scrapeProfilePage: ${images.length} images → ${contentImages.length} content images after logo filter`
+  )
+
+  // 1) Avatar — first JPG/PNG that doesn't look like a banner/icon
+  let avatarIdx = -1
+  for (let i = 0; i < contentImages.length; i++) {
+    const img = contentImages[i]
+    if (/\.(jpg|jpeg|png)/i.test(img.url) && !/icon|banner/i.test(img.url)) {
       avatarUrl = img.url
-    } else if (!heroImageUrl) {
-      heroImageUrl = img.url
-    } else {
-      galleryImages.push({ url: img.url, alt: img.alt })
+      avatarIdx = i
+      break
     }
   }
+
+  // 2) Hero — highest heroScore from the remaining pool (skip the avatar slot)
+  let heroIdx = -1
+  let bestScore = -Infinity
+  for (let i = 0; i < contentImages.length; i++) {
+    if (i === avatarIdx) continue
+    if (contentImages[i].heroScore > bestScore) {
+      bestScore = contentImages[i].heroScore
+      heroIdx = i
+    }
+  }
+  if (heroIdx >= 0) heroImageUrl = contentImages[heroIdx].url
+
+  // 3) Gallery — everything else, original order preserved
+  for (let i = 0; i < contentImages.length; i++) {
+    if (i === avatarIdx || i === heroIdx) continue
+    galleryImages.push({ url: contentImages[i].url, alt: contentImages[i].alt })
+  }
+
+  console.log(
+    `[scraper] scrapeProfilePage picks: avatar=${avatarUrl ? 'yes' : 'no'} hero=${
+      heroImageUrl ? 'yes' : 'no'
+    } gallery=${galleryImages.length}`
+  )
 
   return {
     name,
