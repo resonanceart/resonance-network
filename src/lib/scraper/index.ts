@@ -960,22 +960,61 @@ export async function scrapeProfilePage(url: string): Promise<ScrapedProfile> {
     .trim()
     .slice(0, 5000)
 
-  // For profile pages: first content image = avatar, og:image or next = hero
-  // Skip logo-type images for avatar
+  // For profile pages: pick avatar, hero, and gallery in a heroScore-aware
+  // way so that site logos and chrome never win the hero/avatar slots.
+  //
+  // 1. Drop any image whose URL matches the site-default/logo pattern — those
+  //    never belong in a profile gallery.
+  // 2. Avatar: first JPG/PNG from the filtered list (preserves the old
+  //    "first content image" semantic).
+  // 3. Hero: highest-heroScore image from what remains. This fixes the bug
+  //    where Shopify sites ended up with the 80x80 header logo as hero
+  //    because document order put it first.
+  // 4. Gallery: everything else, preserving original extractImages order.
   let avatarUrl: string | null = null
   let heroImageUrl: string | null = null
   const galleryImages: Array<{ url: string; alt: string }> = []
 
-  for (const img of images) {
-    // Headshot detection: look for portrait-like images (JPG, with person-like filenames)
-    if (!avatarUrl && /\.(jpg|jpeg|png)/i.test(img.url) && !/logo|icon|banner|untitled-111/i.test(img.url)) {
+  const logoLike = (u: string) => /logo|favicon|untitled-111/i.test(u)
+  const contentImages = images.filter((img) => !logoLike(img.url))
+  console.log(
+    `[scraper] scrapeProfilePage: ${images.length} images → ${contentImages.length} content images after logo filter`
+  )
+
+  // 1) Avatar — first JPG/PNG that doesn't look like a banner/icon
+  let avatarIdx = -1
+  for (let i = 0; i < contentImages.length; i++) {
+    const img = contentImages[i]
+    if (/\.(jpg|jpeg|png)/i.test(img.url) && !/icon|banner/i.test(img.url)) {
       avatarUrl = img.url
-    } else if (!heroImageUrl) {
-      heroImageUrl = img.url
-    } else {
-      galleryImages.push({ url: img.url, alt: img.alt })
+      avatarIdx = i
+      break
     }
   }
+
+  // 2) Hero — highest heroScore from the remaining pool (skip the avatar slot)
+  let heroIdx = -1
+  let bestScore = -Infinity
+  for (let i = 0; i < contentImages.length; i++) {
+    if (i === avatarIdx) continue
+    if (contentImages[i].heroScore > bestScore) {
+      bestScore = contentImages[i].heroScore
+      heroIdx = i
+    }
+  }
+  if (heroIdx >= 0) heroImageUrl = contentImages[heroIdx].url
+
+  // 3) Gallery — everything else, original order preserved
+  for (let i = 0; i < contentImages.length; i++) {
+    if (i === avatarIdx || i === heroIdx) continue
+    galleryImages.push({ url: contentImages[i].url, alt: contentImages[i].alt })
+  }
+
+  console.log(
+    `[scraper] scrapeProfilePage picks: avatar=${avatarUrl ? 'yes' : 'no'} hero=${
+      heroImageUrl ? 'yes' : 'no'
+    } gallery=${galleryImages.length}`
+  )
 
   return {
     name,
