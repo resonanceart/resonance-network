@@ -105,6 +105,32 @@ export const importOverwriteModal = {
     'This option is only available to admins — please cancel or choose one of the other actions.',
 }
 
+export const reimportModal = {
+  title: 'Re-import from Website',
+  subtitle:
+    'Run the scraper again to pull fresh data from the artist\'s website. Useful when the first import missed fields.',
+
+  urlLabel: 'Website URL',
+  urlHint: 'Paste the portfolio, bio page, or website to scrape.',
+
+  modeLabel: 'What should we do with existing data?',
+  modeReplaceLabel: 'Replace all — overwrite every field the scraper returns',
+  modeReplaceHint: 'Use this if the current profile is mostly wrong or empty.',
+  modeFillEmptyLabel: 'Fill empty only — keep existing edits, only fill blanks',
+  modeFillEmptyHint: 'Use this to top up a profile you\'ve already refined by hand.',
+
+  cancelButton: 'Cancel',
+  runButton: 'Run Import',
+  runningButton: 'Importing…',
+
+  successMessage: 'Re-import complete. Review the changes and save when ready.',
+  urlRequired: 'Please enter a URL.',
+  invalidUrl: 'That doesn\'t look like a valid URL.',
+  genericError: 'Re-import failed. Please try again.',
+
+  bannerButton: 'Re-import from Website',
+}
+
 export const importAdminBlockBanner = {
   heading: 'You\'re signed in as an admin',
   body:
