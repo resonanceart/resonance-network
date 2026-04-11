@@ -6,10 +6,13 @@ import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, getClientIp } from '@/lib/sanitize'
 import { validateCsrf } from '@/lib/csrf'
 import { scrapeProfilePage, type ScrapedProfile } from '@/lib/scraper'
+import { downloadImages } from '@/lib/scraper/download-images'
 import { validateScrapeUrl } from '@/lib/scraper/url-validator'
 
 export const runtime = 'nodejs'
-export const maxDuration = 30
+// 60s covers the scrape (~5s) + parallel image downloads (~15-30s for 8 imgs)
+// + Supabase uploads + DB writes. Previously 30s which was tight.
+export const maxDuration = 60
 export const dynamic = 'force-dynamic'
 
 type ReimportMode = 'replace' | 'fill_empty'
@@ -154,6 +157,23 @@ export async function POST(request: Request) {
           message: `Scraping failed: ${(err as Error).message || 'unknown error'}`,
         },
         { status: 502 }
+      )
+    }
+
+    // ─── Rehost images on Supabase Storage ───
+    // Without this, raw external URLs (Shopify CDN, Wix media, etc.) get
+    // written straight into profile_extended.media_gallery and disappear
+    // when the source site changes. Same helper /api/scrape uses for the
+    // public import preview flow.
+    try {
+      const meta = await downloadImages(scraped)
+      console.log(
+        `[reimport-profile] image rehost: found=${meta.imagesFound} downloaded=${meta.imagesDownloaded} failed=${meta.imagesFailed} heroSource=${meta.heroSource}`
+      )
+    } catch (err) {
+      console.warn(
+        'reimport-profile: downloadImages threw (non-blocking, raw URLs will be stored):',
+        (err as Error).message
       )
     }
 

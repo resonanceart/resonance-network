@@ -6,7 +6,15 @@ import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, validateEmail, getClientIp } from '@/lib/sanitize'
 import { validateCsrf } from '@/lib/csrf'
 import { scrapeProfilePage } from '@/lib/scraper'
+import { downloadImages } from '@/lib/scraper/download-images'
 import { validateScrapeUrl } from '@/lib/scraper/url-validator'
+
+export const runtime = 'nodejs'
+// 60s covers the scrape (~5s) + parallel image downloads (~15-30s for 8 imgs)
+// + Supabase uploads + DB writes. Default of 10s was too tight once image
+// rehost was added.
+export const maxDuration = 60
+export const dynamic = 'force-dynamic'
 
 // Primary placeholder email domain. Fallback domain is used if Supabase
 // rejects the primary (see A4 in the build spec).
@@ -73,6 +81,22 @@ async function tryPopulateFromScrape(profileId: string, importUrl: string) {
     }
 
     const scraped = await scrapeProfilePage(validation.url)
+
+    // Rehost hero + avatar + gallery images onto Supabase Storage so the
+    // profile doesn't break if the artist's source site changes. Same
+    // helper /api/scrape uses. Non-blocking — if rehost fails, the raw
+    // URLs still land in profile_extended as a best-effort fallback.
+    try {
+      const meta = await downloadImages(scraped)
+      console.log(
+        `[create-claimable-profile] image rehost: found=${meta.imagesFound} downloaded=${meta.imagesDownloaded} failed=${meta.imagesFailed} heroSource=${meta.heroSource}`
+      )
+    } catch (err) {
+      console.warn(
+        'create-claimable-profile: downloadImages threw (non-blocking):',
+        (err as Error).message
+      )
+    }
 
     // profile_extended — bio/philosophy live on user_profiles.bio itself,
     // but cover image and achievements live here.
