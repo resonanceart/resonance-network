@@ -6,6 +6,7 @@ import { useAuth } from '@/components/AuthProvider'
 import Link from 'next/link'
 import type { ScrapedProject, ScrapedProfile } from '@/lib/scraper'
 import { saveImportData } from '@/lib/import-store'
+import { importAdminBlockBanner } from '@/lib/claim-copy'
 
 type ScrapeMode = 'project' | 'profile'
 type Step = 'input' | 'scraping' | 'preview' | 'error'
@@ -31,6 +32,27 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
   const [progress, setProgress] = useState('')
   const [projectData, setProjectData] = useState<ScrapedProject | null>(null)
   const [profileData, setProfileData] = useState<ScrapedProfile | null>(null)
+
+  // Admin block: when an admin is about to import into their own profile we
+  // surface a banner + "Continue anyway" escape hatch instead of the direct
+  // CTA button. Prevents silent overwrites of the admin's own profile row.
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [adminOverrideAck, setAdminOverrideAck] = useState(false)
+  useEffect(() => {
+    let cancelled = false
+    if (!user) {
+      setIsAdmin(false)
+      return
+    }
+    fetch('/api/user/profile', { credentials: 'same-origin' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled) return
+        setIsAdmin(data?.profile?.role === 'admin')
+      })
+      .catch(() => { /* non-fatal — no banner */ })
+    return () => { cancelled = true }
+  }, [user])
 
   function renderSocialIcon(platform: string) {
     switch (platform) {
@@ -398,18 +420,80 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
               Preview for {profileData.name}
             </span>
             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-              <button
-                onClick={handleUseProfileEditor}
-                className="btn btn--sm"
-                style={{ background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, cursor: 'pointer' }}
-              >
-                {user ? 'Open in Editor' : 'Build This Profile'}
-              </button>
+              {isAdmin && !adminOverrideAck ? (
+                <Link href="/admin" className="btn btn--sm btn--primary" style={{ whiteSpace: 'nowrap' }}>
+                  {importAdminBlockBanner.goToAdminButton}
+                </Link>
+              ) : (
+                <button
+                  onClick={handleUseProfileEditor}
+                  className="btn btn--sm"
+                  style={{ background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  {user ? 'Open in Editor' : 'Build This Profile'}
+                </button>
+              )}
               <button onClick={() => { setStep('input'); setProfileData(null) }} className="btn btn--outline btn--sm">
                 New URL
               </button>
             </div>
           </div>
+
+          {/* Admin block banner — prevents silent overwrites of the admin's
+              own profile. Shown above the preview whenever an admin is about
+              to import into their own account. "Continue anyway" unlocks the
+              existing flow; the live-edit page still shows a confirmation
+              modal before any setters run. */}
+          {isAdmin && !adminOverrideAck && (
+            <div
+              role="alert"
+              style={{
+                background: 'rgba(220, 38, 38, 0.06)',
+                border: '1px solid rgba(220, 38, 38, 0.2)',
+                borderRadius: 12,
+                padding: 'var(--space-4)',
+                margin: 'var(--space-4) auto',
+                maxWidth: '800px',
+              }}
+            >
+              <h4 style={{
+                margin: '0 0 var(--space-2) 0',
+                fontSize: 'var(--text-base)',
+                fontWeight: 700,
+                color: '#b91c1c',
+              }}>
+                {importAdminBlockBanner.heading}
+              </h4>
+              <p style={{
+                margin: '0 0 var(--space-2) 0',
+                fontSize: 'var(--text-sm)',
+                color: 'var(--color-text)',
+                lineHeight: 1.6,
+              }}>
+                {importAdminBlockBanner.body}
+              </p>
+              <p style={{
+                margin: '0 0 var(--space-3) 0',
+                fontSize: 'var(--text-sm)',
+                color: 'var(--color-text-muted)',
+                lineHeight: 1.6,
+              }}>
+                {importAdminBlockBanner.continueHint}
+              </p>
+              <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                <Link href="/admin" className="btn btn--primary btn--sm">
+                  {importAdminBlockBanner.goToAdminButton}
+                </Link>
+                <button
+                  type="button"
+                  className="btn btn--outline btn--sm"
+                  onClick={() => setAdminOverrideAck(true)}
+                >
+                  {importAdminBlockBanner.continueButton}
+                </button>
+              </div>
+            </div>
+          )}
 
           <article className="profile-page">
             {/* Banner — use hero image or gradient */}
@@ -585,13 +669,23 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
           {/* Action buttons */}
           <div className="container" style={{ maxWidth: '800px' }}>
             <div style={{ display: 'flex', gap: 'var(--space-3)', paddingTop: 'var(--space-5)', borderTop: '1px solid var(--color-border)', marginTop: 'var(--space-4)' }}>
-              <button
-                onClick={handleUseProfileEditor}
-                className="btn"
-                style={{ flex: 1, background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, textAlign: 'center', cursor: 'pointer' }}
-              >
-                {user ? 'Apply to My Profile' : 'Sign Up & Build Your Profile'}
-              </button>
+              {isAdmin && !adminOverrideAck ? (
+                <Link
+                  href="/admin"
+                  className="btn btn--primary"
+                  style={{ flex: 1, textAlign: 'center', fontWeight: 600 }}
+                >
+                  {importAdminBlockBanner.goToAdminButton}
+                </Link>
+              ) : (
+                <button
+                  onClick={handleUseProfileEditor}
+                  className="btn"
+                  style={{ flex: 1, background: '#8B5CF6', color: '#fff', border: 'none', fontWeight: 600, textAlign: 'center', cursor: 'pointer' }}
+                >
+                  {user ? 'Apply to My Profile' : 'Sign Up & Build Your Profile'}
+                </button>
+              )}
               <button onClick={() => { setStep('input'); setProfileData(null) }} className="btn btn--outline">
                 Try a Different URL
               </button>

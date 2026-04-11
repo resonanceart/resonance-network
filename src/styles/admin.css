@@ -1298,3 +1298,288 @@
   margin: 0;
   max-width: 300px;
 }
+
+/* ============================================================
+   ADMIN MODAL — Build Profile for Artist
+   Matches claim flow / email aesthetic (cream bg, white card, teal)
+   ============================================================ */
+.admin-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: adminModalFadeIn 0.2s ease-out;
+}
+
+@keyframes adminModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes adminModalSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-modal__card {
+  background: #ffffff;
+  border: 1px solid #e5e2dc;
+  border-radius: 12px;
+  padding: 32px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
+              0 8px 24px rgba(0, 0, 0, 0.2);
+  animation: adminModalSlideUp 0.25s ease-out;
+  color: #1a1a1a;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+               Helvetica, Arial, sans-serif;
+}
+
+.admin-modal__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0ede6;
+}
+
+.admin-modal__brand-mark {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #14b8a6;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.admin-modal__brand-mark::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid #14b8a6;
+  opacity: 0.6;
+}
+
+.admin-modal__brand-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #14b8a6;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.admin-modal__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.admin-modal__close:hover {
+  background: #f5f3ee;
+  color: #1a1a1a;
+}
+
+.admin-modal__title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 6px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.admin-modal__subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.admin-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-modal__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.admin-modal__label-required {
+  color: #14b8a6;
+  font-weight: 700;
+}
+
+.admin-modal__input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 16px; /* prevent iOS auto-zoom */
+  font-family: inherit;
+  color: #1a1a1a;
+  background: #ffffff;
+  border: 1px solid #e5e2dc;
+  border-radius: 8px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.admin-modal__input:focus {
+  outline: none;
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.12);
+}
+
+.admin-modal__input::placeholder {
+  color: #aaa;
+}
+
+.admin-modal__help {
+  font-size: 12px;
+  color: #888;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.admin-modal__error {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(220, 38, 38, 0.06);
+  color: #b91c1c;
+  font-size: 13px;
+  border: 1px solid rgba(220, 38, 38, 0.18);
+  line-height: 1.5;
+}
+
+.admin-modal__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid #f0ede6;
+}
+
+.admin-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease,
+              color 0.15s ease, transform 0.1s ease;
+}
+
+.admin-modal__btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.admin-modal__btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.admin-modal__btn--primary {
+  background: #14b8a6;
+  color: #ffffff;
+}
+
+.admin-modal__btn--primary:hover:not(:disabled) {
+  background: #0f9488;
+}
+
+.admin-modal__btn--secondary {
+  background: #ffffff;
+  color: #555;
+  border-color: #e5e2dc;
+}
+
+.admin-modal__btn--secondary:hover:not(:disabled) {
+  background: #f5f3ee;
+  color: #1a1a1a;
+}
+
+.admin-modal--build-profile .admin-modal__card {
+  /* reserved hook if this variant needs overrides later */
+}
+
+/* Mobile — bottom sheet behavior */
+@media (max-width: 600px) {
+  .admin-modal__overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .admin-modal__card {
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: 16px 16px 0 0;
+    padding: 24px 20px 28px;
+    animation: adminModalSlideUpSheet 0.28s ease-out;
+  }
+
+  @keyframes adminModalSlideUpSheet {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .admin-modal__title {
+    font-size: 20px;
+  }
+
+  .admin-modal__actions {
+    flex-direction: column-reverse;
+  }
+
+  .admin-modal__btn {
+    width: 100%;
+    padding: 14px 22px;
+  }
+
+  .admin-modal__close {
+    top: 12px;
+    right: 12px;
+  }
+}

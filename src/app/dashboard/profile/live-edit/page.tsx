@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
 import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabilityBadge'
@@ -12,6 +13,7 @@ import { ShareProfile } from '@/components/profile/ShareProfile'
 import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components/profile/SmartGallery'
 import { loadImportData, clearImportData } from '@/lib/import-store'
 import ImportPromptPopup from '@/components/dashboard/ImportPromptPopup'
+import { claimCopy, claimableBannerCopy, importOverwriteModal, reimportModal } from '@/lib/claim-copy'
 import type { ProfileSkill, ProfileTool, ProfileSocialLink } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -503,8 +505,24 @@ async function uploadFile(file: File, type: string, displayName?: string): Promi
 
 // ─── Main Page Component ──────────────────────────────────────────
 
+// Shape of the data stashed by the scraper flow in IndexedDB / sessionStorage
+// under the key `resonance_profile_import`. Kept loose on purpose — only the
+// fields we know how to map are applied.
+type ImportedProfileData = {
+  name?: string
+  bio?: string
+  titles?: string[]
+  education?: string[]
+  avatarUrl?: string | null
+  heroImageUrl?: string | null
+  galleryImages?: Array<{ url: string; alt: string }>
+  socialLinks?: Array<{ platform: string; url: string }>
+  website?: string
+}
+
 export default function LiveProfileEditor() {
   const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
@@ -515,6 +533,54 @@ export default function LiveProfileEditor() {
   const [importStatus, setImportStatus] = useState<string | null>(null)
   const [activePanel, setActivePanel] = useState<EditSection>(null)
   const [showWelcome, setShowWelcome] = useState(false)
+
+  // ─── Claim flow state ───
+  // adminEditAs: when present, the admin is editing a different user's profile.
+  // Read from ?admin_edit_as=USER_ID on mount. Saves/loads pass this via the
+  // x-admin-edit-as header — backend support will land in a follow-up.
+  const [adminEditAs, setAdminEditAs] = useState<string | null>(null)
+  const [adminEditTargetEmail, setAdminEditTargetEmail] = useState<string | null>(null)
+  const [isCurrentUserAdmin, setIsCurrentUserAdmin] = useState(false)
+  // Claimable profile metadata — populated when the loaded profile row has
+  // is_claimable=true. Drives the claimable banner + send-invite actions.
+  const [claimableMeta, setClaimableMeta] = useState<{
+    isClaimable: boolean
+    targetEmail: string | null
+    sourceUrl: string | null
+    sendCount: number
+  } | null>(null)
+  // Welcome banner shown once after ?welcome=claimed redirect from /claim.
+  const [showWelcomeClaimed, setShowWelcomeClaimed] = useState(false)
+  // Send-claim-invite action state
+  const [claimInviteSending, setClaimInviteSending] = useState(false)
+  const [claimInviteMessage, setClaimInviteMessage] = useState<string | null>(null)
+  // Re-import-from-website modal state (admin-only, claimable profiles only)
+  const [showReimportModal, setShowReimportModal] = useState(false)
+  const [reimportUrl, setReimportUrl] = useState('')
+  const [reimportMode, setReimportMode] = useState<'replace' | 'fill_empty'>('fill_empty')
+  const [reimportRunning, setReimportRunning] = useState(false)
+  const [reimportError, setReimportError] = useState<string | null>(null)
+  // ─── Undo-last-save state ───
+  // Timestamp of the most recent snapshot stored on user_profiles.previous_snapshot_at.
+  // When set and recent (<24h), an "Undo last save" button is shown next to Save.
+  const [previousSnapshotAt, setPreviousSnapshotAt] = useState<string | null>(null)
+  const [undoing, setUndoing] = useState(false)
+  // How many undo steps are currently available from profile_history
+  // (0–5). Drives the "Undo (3)" label on the button. Falls back to
+  // using previousSnapshotAt for legacy profiles that predate the
+  // history table.
+  const [historyCount, setHistoryCount] = useState(0)
+
+  // ─── Import-overwrite confirmation gate ───
+  // When the user lands on /dashboard/profile/live-edit?import=profile and
+  // already has meaningful profile data, we stash the scraped payload here
+  // and render a confirmation modal instead of auto-applying. This prevents
+  // silent overwrites of existing profiles (see fix(import) for context).
+  const [pendingImport, setPendingImport] = useState<{
+    data: ImportedProfileData
+    isAdmin: boolean
+  } | null>(null)
+  const [createNewHint, setCreateNewHint] = useState<string | null>(null)
 
   // ALL profile fields as state — these drive the live preview
   const [displayName, setDisplayName] = useState('')
@@ -580,6 +646,107 @@ export default function LiveProfileEditor() {
     lastChangeTime.current = Date.now()
   }, [])
 
+  // Apply scraped import payload by calling all the relevant setters. Used
+  // both for the "brand new user" auto-apply path and from the confirmation
+  // modal's "Overwrite" button. Setters returned from useState are stable,
+  // so the empty dep array is safe.
+  const applyImportedData = useCallback((imported: ImportedProfileData) => {
+    if (imported.name) {
+      setDisplayName(imported.name)
+      setSlug(
+        imported.name
+          .toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^a-z0-9-]/g, '')
+      )
+    }
+    if (imported.bio) setBio(imported.bio)
+    if (imported.titles && imported.titles.length > 0) {
+      setProfessionalTitle(imported.titles[0])
+    }
+    if (imported.website) setWebsite(imported.website)
+    if (imported.avatarUrl) setAvatarUrl(imported.avatarUrl)
+    if (imported.heroImageUrl) setCoverImageUrl(imported.heroImageUrl)
+    if (imported.galleryImages && imported.galleryImages.length > 0) {
+      setMediaGallery(
+        imported.galleryImages.map((img, i) => ({
+          url: img.url,
+          alt: img.alt || '',
+          type: 'image' as const,
+          order: i,
+          isFeatured: i === 0,
+        }))
+      )
+    }
+    if (imported.socialLinks && imported.socialLinks.length > 0) {
+      setSocialLinks(
+        imported.socialLinks.map((link, i) => ({
+          id: `import-${Date.now()}-${i}`,
+          platform: link.platform as SocialEntry['platform'],
+          url: link.url,
+          display_order: i,
+        }))
+      )
+    }
+    if (imported.education && imported.education.length > 0) {
+      setTimeline(
+        imported.education.map((ed) => ({
+          year: '',
+          title: ed,
+          category: 'education',
+          organization: '',
+          description: '',
+        }))
+      )
+    }
+    setHasChanges(true)
+    lastChangeTime.current = Date.now()
+    setShowWelcome(false)
+  }, [])
+
+  // Clean up the import stash (IndexedDB + sessionStorage) and strip
+  // ?import=profile from the URL. Called from all modal exit paths.
+  const clearImportStashAndStripUrl = useCallback(() => {
+    clearImportData('resonance_profile_import').catch(() => {})
+    try { sessionStorage.removeItem('resonance_profile_import') } catch { /* ignore */ }
+    try {
+      router.replace('/dashboard/profile/live-edit', { scroll: false })
+    } catch { /* ignore */ }
+  }, [router])
+
+  // Confirmation modal — "Overwrite with imported data"
+  const handleConfirmImport = useCallback(() => {
+    if (!pendingImport) return
+    applyImportedData(pendingImport.data)
+    setPendingImport(null)
+    setCreateNewHint(null)
+    clearImportStashAndStripUrl()
+    setImportStatus('Profile imported successfully!')
+    setTimeout(() => setImportStatus(null), 5000)
+  }, [pendingImport, applyImportedData, clearImportStashAndStripUrl])
+
+  // Confirmation modal — "Cancel — keep my profile"
+  const handleCancelImport = useCallback(() => {
+    setPendingImport(null)
+    setCreateNewHint(null)
+    clearImportStashAndStripUrl()
+  }, [clearImportStashAndStripUrl])
+
+  // Confirmation modal — "Create a new profile instead"
+  // Admin → send them to /admin so they can use Build Profile for Artist.
+  // Non-admin → show an inline hint (option is admin-only).
+  const handleCreateNewInstead = useCallback(() => {
+    if (!pendingImport) return
+    if (pendingImport.isAdmin) {
+      setPendingImport(null)
+      setCreateNewHint(null)
+      clearImportStashAndStripUrl()
+      router.push('/admin')
+    } else {
+      setCreateNewHint(importOverwriteModal.createNewNonAdminHint)
+    }
+  }, [pendingImport, clearImportStashAndStripUrl, router])
+
   // Fetch profile on mount (middleware handles auth redirect for unauthenticated users)
   useEffect(() => {
     if (authLoading) return
@@ -587,11 +754,62 @@ export default function LiveProfileEditor() {
     if (profileFetchedRef.current) return
     profileFetchedRef.current = true
 
-    fetch('/api/user/profile', { credentials: 'same-origin' })
+    // Read claim-flow query params before the fetch so we can forward them
+    // to the API and show the right banners after load.
+    let adminEditAsFromUrl: string | null = null
+    let welcomeClaimedFromUrl = false
+    try {
+      const params = new URLSearchParams(window.location.search)
+      adminEditAsFromUrl = params.get('admin_edit_as')
+      welcomeClaimedFromUrl = params.get('welcome') === 'claimed'
+      // Clean the welcome param out of the URL so it doesn't re-trigger on refresh
+      if (welcomeClaimedFromUrl) {
+        params.delete('welcome')
+        const qs = params.toString()
+        const clean = window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash
+        window.history.replaceState({}, '', clean)
+      }
+    } catch { /* non-browser env / ignore */ }
+
+    if (adminEditAsFromUrl) setAdminEditAs(adminEditAsFromUrl)
+    if (welcomeClaimedFromUrl) setShowWelcomeClaimed(true)
+
+    // Build request — forward admin_edit_as as both query param and header.
+    // Backend currently ignores both (pending follow-up); we send them
+    // consistently so that once the API supports it the override just works.
+    const fetchUrl = adminEditAsFromUrl
+      ? `/api/user/profile?admin_edit_as=${encodeURIComponent(adminEditAsFromUrl)}`
+      : '/api/user/profile'
+    const fetchHeaders: Record<string, string> = {}
+    if (adminEditAsFromUrl) fetchHeaders['x-admin-edit-as'] = adminEditAsFromUrl
+
+    fetch(fetchUrl, { credentials: 'same-origin', headers: fetchHeaders })
       .then(r => r.json())
       .then(async data => {
         const p = data.profile
         const ext = data.extendedProfile || {}
+        // ─── Claim flow: derive admin role + claimable metadata ───
+        if (p) {
+          setIsCurrentUserAdmin(p.role === 'admin')
+          if (p.is_claimable) {
+            setClaimableMeta({
+              isClaimable: true,
+              targetEmail: p.target_email || null,
+              sourceUrl: p.original_source_url || null,
+              sendCount: typeof p.claim_send_count === 'number' ? p.claim_send_count : 0,
+            })
+            // Seed the inline re-import URL input from original_source_url
+            // so admins can click "Re-import" without repasting. Only seeds
+            // when the field is still empty to avoid clobbering user input.
+            if (p.original_source_url) {
+              setReimportUrl((prev) => (prev ? prev : p.original_source_url))
+            }
+            // When editing as admin, surface the invitee's email in the banner
+            if (adminEditAsFromUrl) setAdminEditTargetEmail(p.target_email || null)
+          } else {
+            setClaimableMeta(null)
+          }
+        }
         if (p) {
           setDisplayName(p.display_name || '')
           setBio(p.bio || '')
@@ -600,6 +818,21 @@ export default function LiveProfileEditor() {
           setSkills(p.skills || [])
           setAvatarUrl(p.avatar_url || null)
           setProfileVisibility(p.profile_visibility || 'draft')
+          // Track the most recent undo-snapshot timestamp from either table
+          // so the "Undo last save" button only appears when there's actually
+          // something to revert. We pick whichever is newer.
+          const userSnapAt = (p.previous_snapshot_at as string | null) || null
+          const extSnapAt = (ext?.previous_snapshot_at as string | null) || null
+          const newest =
+            userSnapAt && extSnapAt
+              ? (new Date(userSnapAt).getTime() > new Date(extSnapAt).getTime() ? userSnapAt : extSnapAt)
+              : (userSnapAt || extSnapAt)
+          setPreviousSnapshotAt(newest)
+          // historyCount comes from /api/user/profile GET response
+          // (0–5 depending on how many rows profile_history has).
+          if (typeof data.historyCount === 'number') {
+            setHistoryCount(data.historyCount)
+          }
           setSlug(
             (p.display_name || '')
               .toLowerCase()
@@ -677,82 +910,63 @@ export default function LiveProfileEditor() {
         }
 
         // Apply imported profile data from website scraper (IndexedDB first, sessionStorage fallback)
+        //
+        // GATE: Previously this block auto-applied scraped content to the
+        // currently logged-in user's profile, which silently overwrote any
+        // existing data. We now check whether the current profile has
+        // meaningful content and, if so, defer to a confirmation modal
+        // (see pendingImport state + the handlers above). Only brand-new
+        // profiles (no bio, no gallery, not published, no display_name)
+        // get the auto-apply path.
         const params = new URLSearchParams(window.location.search)
         if (params.get('import') === 'profile') {
           try {
-            let imported: {
-              name?: string; bio?: string; titles?: string[]; education?: string[];
-              avatarUrl?: string | null; heroImageUrl?: string | null;
-              galleryImages?: Array<{ url: string; alt: string }>;
-              socialLinks?: Array<{ platform: string; url: string }>; website?: string;
-            } | null = null
+            let imported: ImportedProfileData | null = null
 
             // Try IndexedDB first (used by ImportPromptPopup)
             try {
-              imported = await loadImportData<typeof imported>('resonance_profile_import')
+              imported = await loadImportData<ImportedProfileData>('resonance_profile_import')
             } catch { /* ignore */ }
 
             // Fallback to sessionStorage (used by ImportFromWebsite)
             if (!imported) {
               try {
                 const raw = sessionStorage.getItem('resonance_profile_import')
-                if (raw) imported = JSON.parse(raw)
+                if (raw) imported = JSON.parse(raw) as ImportedProfileData
               } catch { /* ignore */ }
             }
 
             if (imported) {
-              // Apply imported data — overwrite fields with scraped content
-              if (imported.name) setDisplayName(imported.name)
-              if (imported.name) {
-                setSlug(imported.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''))
+              // Does the current user already have profile data worth protecting?
+              const existingGallery =
+                ext && Array.isArray((ext as Record<string, unknown>).media_gallery)
+                  ? ((ext as Record<string, unknown>).media_gallery as unknown[])
+                  : []
+              const hasExistingData = Boolean(
+                (p?.bio && typeof p.bio === 'string' && p.bio.trim().length > 10) ||
+                existingGallery.length > 0 ||
+                p?.profile_visibility === 'published' ||
+                (p?.display_name &&
+                  typeof p.display_name === 'string' &&
+                  p.display_name.trim().length > 0 &&
+                  !p.display_name.toLowerCase().startsWith('placeholder'))
+              )
+
+              if (hasExistingData) {
+                // Defer — render the confirmation modal, do not touch state yet.
+                setPendingImport({
+                  data: imported,
+                  isAdmin: p?.role === 'admin',
+                })
+              } else {
+                // Safe path — brand-new profile, apply immediately and clean up.
+                applyImportedData(imported)
+                await clearImportData('resonance_profile_import').catch(() => {})
+                try { sessionStorage.removeItem('resonance_profile_import') } catch { /* ignore */ }
+                try { router.replace('/dashboard/profile/live-edit', { scroll: false }) } catch { /* ignore */ }
+                setImportStatus('Profile imported successfully!')
+                setTimeout(() => setImportStatus(null), 5000)
               }
-              if (imported.bio) setBio(imported.bio)
-              if (imported.titles && imported.titles.length > 0) {
-                setProfessionalTitle(imported.titles[0])
-              }
-              if (imported.website) setWebsite(imported.website)
-              // Set image URLs (already uploaded to Supabase Storage by scrape API)
-              if (imported.avatarUrl) {
-                setAvatarUrl(imported.avatarUrl)
-                setHasChanges(true)
-                lastChangeTime.current = Date.now()
-              }
-              if (imported.heroImageUrl) {
-                setCoverImageUrl(imported.heroImageUrl)
-                setHasChanges(true)
-                lastChangeTime.current = Date.now()
-              }
-              if (imported.galleryImages && imported.galleryImages.length > 0) {
-                setMediaGallery(imported.galleryImages.map((img, i) => ({
-                  url: img.url, alt: img.alt || '', type: 'image' as const,
-                  order: i, isFeatured: i === 0,
-                })))
-                setHasChanges(true)
-                lastChangeTime.current = Date.now()
-              }
-              if (imported.socialLinks && imported.socialLinks.length > 0) {
-                setSocialLinks(imported.socialLinks.map((link, i) => ({
-                  id: `import-${Date.now()}-${i}`,
-                  platform: link.platform as SocialEntry['platform'],
-                  url: link.url,
-                  display_order: i,
-                })))
-              }
-              if (imported.education && imported.education.length > 0) {
-                setTimeline(imported.education.map((ed) => ({
-                  year: '', title: ed, category: 'education',
-                  organization: '', description: '',
-                })))
-              }
-              setHasChanges(true)
-              lastChangeTime.current = Date.now()
-              // Dismiss welcome overlay — import data is now applied
-              setShowWelcome(false)
-              // Clean up both storage locations
-              clearImportData('resonance_profile_import').catch(() => {})
-              sessionStorage.removeItem('resonance_profile_import')
-              setImportStatus('Profile imported successfully!')
-              setTimeout(() => setImportStatus(null), 5000)
             }
           } catch (e) {
             console.error('Failed to apply imported profile data:', e)
@@ -796,10 +1010,17 @@ export default function LiveProfileEditor() {
 
     const doSave = async () => {
       try {
-        const res = await fetch('/api/user/profile', {
+        // Forward admin_edit_as header so saves go to the target profile when
+        // an admin is editing someone else's profile. Backend support pending.
+        const saveHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (adminEditAs) saveHeaders['x-admin-edit-as'] = adminEditAs
+        const saveUrl = adminEditAs
+          ? `/api/user/profile?admin_edit_as=${encodeURIComponent(adminEditAs)}`
+          : '/api/user/profile'
+        const res = await fetch(saveUrl, {
           method: 'PUT',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: saveHeaders,
           body: JSON.stringify({
             display_name: displayName.trim(),
             bio: bio.trim() || null,
@@ -875,6 +1096,243 @@ export default function LiveProfileEditor() {
     savingPromiseRef.current = doSave()
     await savingPromiseRef.current
   }
+
+  // ─── Undo last save ───
+  // Reverts user_profiles + profile_extended to the most recent entry in
+  // profile_history (up to 5 steps back). Falls back to the legacy
+  // single-level previous_snapshot column for profiles that predate the
+  // profile_history table. Each call walks one step further back.
+  async function undoLastSave() {
+    if (undoing) return
+    const hasHistory = historyCount > 0
+    const hasLegacy = !!previousSnapshotAt
+    if (!hasHistory && !hasLegacy) return
+    const stamp = previousSnapshotAt
+      ? new Date(previousSnapshotAt).toLocaleString()
+      : 'the previous save'
+    const stepsBack = hasHistory ? historyCount : 1
+    const ok = window.confirm(
+      `Revert to the version from ${stamp}? This undoes one save and leaves ${Math.max(
+        0,
+        stepsBack - 1
+      )} undo step(s) available after this one.`
+    )
+    if (!ok) return
+    setUndoing(true)
+    setErrorMessage(null)
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (adminEditAs) headers['x-admin-edit-as'] = adminEditAs
+      const url = adminEditAs
+        ? `/api/user/profile/undo?admin_edit_as=${encodeURIComponent(adminEditAs)}`
+        : '/api/user/profile/undo'
+      const res = await fetch(url, {
+        method: 'POST',
+        credentials: 'include',
+        headers,
+      })
+      if (res.ok) {
+        // Reload so every piece of state is re-fetched fresh from the server.
+        window.location.reload()
+        return
+      }
+      const data = await res.json().catch(() => ({} as { message?: string; error?: string }))
+      if (data?.error === 'nothing_to_undo') {
+        setErrorMessage('No previous snapshot to restore.')
+      } else {
+        setErrorMessage(data?.message || data?.error || 'Failed to undo last save.')
+      }
+    } catch {
+      setErrorMessage('Network error. Please try again.')
+    } finally {
+      setUndoing(false)
+    }
+  }
+
+  // Show undo whenever there is SOMETHING to undo: either history rows
+  // exist (preferred path), or a legacy previous_snapshot was captured
+  // in the last 24h (fallback for profiles that predate profile_history).
+  const canUndo = (() => {
+    if (historyCount > 0) return true
+    if (!previousSnapshotAt) return false
+    const t = new Date(previousSnapshotAt).getTime()
+    if (Number.isNaN(t)) return false
+    return Date.now() - t < 24 * 60 * 60 * 1000
+  })()
+
+  // ─── Claim-flow handlers ───
+  // Send or resend the claim invite email. profile.id == auth user id == the
+  // param we pass to /api/admin/send-claim-invite.
+  const sendClaimInvite = useCallback(async () => {
+    if (!claimableMeta?.isClaimable) return
+    const profileId = adminEditAs || user?.id
+    if (!profileId) return
+    setClaimInviteMessage(null)
+    setClaimInviteSending(true)
+    try {
+      const res = await fetch('/api/admin/send-claim-invite', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile_id: profileId }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data?.success) {
+        const sentTo = data.sent_to || claimableMeta.targetEmail || 'the artist'
+        const newCount = typeof data.send_count === 'number' ? data.send_count : claimableMeta.sendCount + 1
+        setClaimableMeta((prev) => (prev ? { ...prev, sendCount: newCount } : prev))
+        if (data.email_sent === false) {
+          setClaimInviteMessage(`Token generated, but email delivery failed (${data.email_error || 'unknown'}). You may need to send the link manually.`)
+        } else {
+          setClaimInviteMessage(`Invite sent to ${sentTo}.`)
+        }
+      } else if (res.status === 401) {
+        setClaimInviteMessage('Unauthorized — make sure you are logged in as an admin.')
+      } else if (res.status === 404) {
+        setClaimInviteMessage('Claimable profile not found. Refresh and try again.')
+      } else {
+        setClaimInviteMessage(data?.message || 'Failed to send invite. Try again.')
+      }
+    } catch {
+      setClaimInviteMessage('Network error while sending invite.')
+    } finally {
+      setClaimInviteSending(false)
+      setTimeout(() => setClaimInviteMessage(null), 6000)
+    }
+  }, [claimableMeta, adminEditAs, user?.id])
+
+  // Delete a claimable (unclaimed) profile. Uses the existing admin users
+  // DELETE endpoint which also removes the auth user.
+  const deleteClaimableProfile = useCallback(async () => {
+    if (!claimableMeta?.isClaimable) return
+    const profileId = adminEditAs || user?.id
+    if (!profileId) return
+    const confirmed = window.confirm(
+      'Delete this claimable profile? This cannot be undone. The placeholder user will be removed.'
+    )
+    if (!confirmed) return
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-csrf-token': 'resonance',
+        },
+        body: JSON.stringify({ userId: profileId }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data?.success) {
+        window.location.href = '/admin'
+      } else {
+        setClaimInviteMessage(data?.message || 'Failed to delete profile.')
+      }
+    } catch {
+      setClaimInviteMessage('Network error while deleting.')
+    }
+  }, [claimableMeta, adminEditAs, user?.id])
+
+  // Open the re-import modal. Prefills the URL input with the profile's
+  // original_source_url so admins don't have to paste it again.
+  const openReimportModal = useCallback(() => {
+    setReimportUrl(claimableMeta?.sourceUrl || '')
+    setReimportMode('fill_empty')
+    setReimportError(null)
+    setShowReimportModal(true)
+  }, [claimableMeta?.sourceUrl])
+
+  const closeReimportModal = useCallback(() => {
+    if (reimportRunning) return
+    setShowReimportModal(false)
+    setReimportError(null)
+  }, [reimportRunning])
+
+  // Run the re-import. Calls /api/admin/reimport-profile, then hydrates the
+  // editor state via applyImportedData (no page reload), and closes the modal
+  // on success. On failure we keep the modal open and show an inline error.
+  //
+  // Accepts an optional `modeOverride` so the inline re-import path can force
+  // the safe `fill_empty` mode regardless of what the (modal-only) replace
+  // radio is currently set to — avoids stale-closure issues from calling
+  // setReimportMode then handleRunReimport in the same tick.
+  const handleRunReimport = useCallback(async (modeOverride?: 'replace' | 'fill_empty') => {
+    const url = reimportUrl.trim()
+    if (!url) {
+      setReimportError(reimportModal.urlRequired)
+      return
+    }
+    // Lightweight client-side URL sanity check — the server does the real
+    // validation via validateScrapeUrl.
+    try {
+      const withScheme = /^https?:\/\//i.test(url) ? url : `https://${url}`
+      new URL(withScheme)
+    } catch {
+      setReimportError(reimportModal.invalidUrl)
+      return
+    }
+
+    const profileId = adminEditAs || user?.id
+    if (!profileId) {
+      setReimportError('Missing profile id — reload the page and try again.')
+      return
+    }
+
+    const effectiveMode = modeOverride ?? reimportMode
+
+    setReimportRunning(true)
+    setReimportError(null)
+
+    try {
+      const normalizedUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`
+      const res = await fetch('/api/admin/reimport-profile', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profile_id: profileId,
+          import_url: normalizedUrl,
+          mode: effectiveMode,
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok || !data?.success) {
+        setReimportError(data?.message || reimportModal.genericError)
+        setReimportRunning(false)
+        return
+      }
+
+      // Hydrate editor state from the scraped payload so the admin sees the
+      // refreshed data immediately — no page reload needed.
+      if (data.imported) {
+        applyImportedData(data.imported as ImportedProfileData)
+      }
+      // Reflect the new source URL in the banner metadata.
+      setClaimableMeta((prev) =>
+        prev ? { ...prev, sourceUrl: normalizedUrl } : prev
+      )
+      setClaimInviteMessage(reimportModal.successMessage)
+      setTimeout(() => setClaimInviteMessage(null), 6000)
+      setShowReimportModal(false)
+    } catch {
+      setReimportError(reimportModal.genericError)
+    } finally {
+      setReimportRunning(false)
+    }
+  }, [reimportUrl, reimportMode, adminEditAs, user?.id, applyImportedData])
+
+  // Inline re-import: triggered by the banner's "Re-import from Website"
+  // button. Runs in the safe `fill_empty` mode without opening the modal.
+  // The modal remains the escape hatch for destructive `replace` mode via
+  // the "Advanced options" link.
+  const handleInlineReimport = useCallback(() => {
+    if (!reimportUrl.trim()) {
+      setReimportError(reimportModal.urlRequired)
+      return
+    }
+    setReimportMode('fill_empty')
+    handleRunReimport('fill_empty')
+  }, [reimportUrl, handleRunReimport])
 
   function openPanel(section: EditSection) {
     setActivePanel(section)
@@ -1221,6 +1679,33 @@ export default function LiveProfileEditor() {
             {saving && hasChanges && <span className="live-editor__autosave">Auto-saving...</span>}
             {hasChanges && !saving && !errorMessage && <span className="live-editor__unsaved">Unsaved changes</span>}
             {savedMessage && <span className="live-editor__saved">Saved!</span>}
+            {canUndo && (
+              <button
+                onClick={undoLastSave}
+                className="btn btn--outline btn--sm"
+                disabled={undoing || saving}
+                title={
+                  historyCount > 0
+                    ? `${historyCount} undo step${historyCount === 1 ? '' : 's'} available (up to 5)`
+                    : previousSnapshotAt
+                      ? `Revert to version saved ${new Date(previousSnapshotAt).toLocaleString()}`
+                      : 'Revert to previous save'
+                }
+              >
+                {undoing ? (
+                  'Reverting...'
+                ) : (
+                  <>
+                    <span className="hide-mobile">
+                      Undo last save{historyCount > 0 ? ` (${historyCount})` : ''}
+                    </span>
+                    <span className="show-mobile">
+                      Undo{historyCount > 0 ? ` (${historyCount})` : ''}
+                    </span>
+                  </>
+                )}
+              </button>
+            )}
             <button
               onClick={() => saveAll(false)}
               className="btn btn--primary btn--sm"
@@ -1250,10 +1735,15 @@ export default function LiveProfileEditor() {
                   await saveAllRef.current(true)
                   // Set profile_visibility to pending
                   try {
-                    const res = await fetch('/api/user/profile', {
+                    const submitHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
+                    if (adminEditAs) submitHeaders['x-admin-edit-as'] = adminEditAs
+                    const submitUrl = adminEditAs
+                      ? `/api/user/profile?admin_edit_as=${encodeURIComponent(adminEditAs)}`
+                      : '/api/user/profile'
+                    const res = await fetch(submitUrl, {
                       method: 'PUT',
                       credentials: 'include',
-                      headers: { 'Content-Type': 'application/json' },
+                      headers: submitHeaders,
                       body: JSON.stringify({ profile_visibility: 'pending' }),
                     })
                     if (res.ok) {
@@ -1296,6 +1786,176 @@ export default function LiveProfileEditor() {
         <div className="container" style={{ marginTop: 'var(--space-3)' }}>
           <ImportPromptPopup mode="profile" />
         </div>
+
+        {/* ── Claim-flow banners ── */}
+        {(adminEditAs || claimableMeta?.isClaimable || showWelcomeClaimed) && (
+          <div className="container" style={{ marginTop: 'var(--space-3)' }}>
+            {/* Admin edit-as banner */}
+            {adminEditAs && (
+              <div className="admin-edit-banner" role="status">
+                <div className="admin-edit-banner__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                </div>
+                <div className="admin-edit-banner__content">
+                  <p className="admin-edit-banner__heading">
+                    {claimableBannerCopy.adminEditAsBanner(adminEditTargetEmail || claimableMeta?.targetEmail || 'this artist')}
+                  </p>
+                  <p className="admin-edit-banner__subtext">
+                    <Link href="/admin">{claimableBannerCopy.adminEditAsBack}</Link>
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Claimable profile banner */}
+            {claimableMeta?.isClaimable && (
+              <div className="claimable-banner" role="status">
+                <div className="claimable-banner__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </div>
+                <div className="claimable-banner__content">
+                  <h2 className="claimable-banner__heading">
+                    {claimableBannerCopy.heading}
+                    <span className="claimable-banner__pill">Draft</span>
+                  </h2>
+                  <p className="claimable-banner__subtext">
+                    {claimableBannerCopy.subtext(displayName || claimableMeta.targetEmail || 'this artist')}
+                  </p>
+                  <p className="claimable-banner__subtext">{claimableBannerCopy.infoLine}</p>
+
+                  {(claimableMeta.targetEmail || claimableMeta.sourceUrl) && (
+                    <div className="claimable-banner__info">
+                      {claimableMeta.targetEmail && (
+                        <span className="claimable-banner__info-item">
+                          <span className="claimable-banner__info-label">For:</span>
+                          <span className="claimable-banner__info-value">{claimableMeta.targetEmail}</span>
+                        </span>
+                      )}
+                      {claimableMeta.sendCount > 0 && (
+                        <span className="claimable-banner__info-item">
+                          <span className="claimable-banner__info-label">Invites sent:</span>
+                          <span className="claimable-banner__info-value">{claimableMeta.sendCount}</span>
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {claimInviteMessage && (
+                    <p className="claimable-banner__subtext" role="status">{claimInviteMessage}</p>
+                  )}
+
+                  {/* Inline re-import URL row — one-click re-scrape from the
+                      banner. Defaults to the safe `fill_empty` mode; destructive
+                      `replace` mode lives behind the Advanced options modal. */}
+                  <div className="claimable-banner__import-row">
+                    <label
+                      htmlFor="claimable-reimport-url"
+                      className="claimable-banner__import-label"
+                    >
+                      {reimportModal.urlLabel}
+                    </label>
+                    <input
+                      id="claimable-reimport-url"
+                      type="url"
+                      className="claimable-banner__import-input"
+                      value={reimportUrl}
+                      onChange={(e) => { setReimportUrl(e.target.value); setReimportError(null) }}
+                      placeholder="https://artist-website.com"
+                      disabled={reimportRunning || claimInviteSending}
+                      autoComplete="off"
+                    />
+                  </div>
+                  {reimportError && !showReimportModal && (
+                    <p
+                      className="claimable-banner__import-error"
+                      role="alert"
+                    >
+                      {reimportError}
+                    </p>
+                  )}
+
+                  <div className="claimable-banner__actions">
+                    <button
+                      type="button"
+                      className="claimable-banner__btn claimable-banner__btn--primary"
+                      onClick={sendClaimInvite}
+                      disabled={claimInviteSending}
+                    >
+                      {claimInviteSending
+                        ? 'Sending…'
+                        : claimableMeta.sendCount > 0
+                          ? claimableBannerCopy.resendButton(`${claimableMeta.sendCount}×`)
+                          : claimableBannerCopy.sendButton}
+                    </button>
+                    <button
+                      type="button"
+                      className="claimable-banner__btn claimable-banner__btn--secondary"
+                      onClick={handleInlineReimport}
+                      disabled={claimInviteSending || reimportRunning}
+                    >
+                      {reimportRunning ? reimportModal.runningButton : reimportModal.bannerButton}
+                    </button>
+                    <button
+                      type="button"
+                      className="claimable-banner__btn claimable-banner__btn--danger"
+                      onClick={deleteClaimableProfile}
+                      disabled={claimInviteSending}
+                    >
+                      {claimableBannerCopy.deleteButton}
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="claimable-banner__advanced-link"
+                    onClick={openReimportModal}
+                    disabled={claimInviteSending || reimportRunning}
+                  >
+                    Advanced options (replace mode)…
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Welcome-claimed banner (dismissible) */}
+            {showWelcomeClaimed && (
+              <div className="claimable-banner" role="status">
+                <div className="claimable-banner__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                </div>
+                <div className="claimable-banner__content">
+                  <h2 className="claimable-banner__heading">
+                    Welcome to Resonance Network{displayName ? `, ${displayName}` : ''}
+                  </h2>
+                  <p
+                    className="claimable-banner__subtext"
+                    // claim-copy.ts line ~36 has a literal &mdash; entity — replace at consumption.
+                    dangerouslySetInnerHTML={{
+                      __html: claimCopy.welcomeBanner(displayName || 'friend').replace(/&mdash;/g, '—'),
+                    }}
+                  />
+                  <div className="claimable-banner__actions">
+                    <button
+                      type="button"
+                      className="claimable-banner__btn claimable-banner__btn--secondary"
+                      onClick={() => setShowWelcomeClaimed(false)}
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Row 1: Banner */}
         <div ref={setSectionRef('cover')} className={`editable-section${activePanel === 'cover' ? ' editable-section--active' : ''}`} onClick={() => openPanel('cover')}>
@@ -1695,6 +2355,338 @@ export default function LiveProfileEditor() {
             <button className="btn btn--primary" onClick={() => setShowWelcome(false)}>
               Got it, let&apos;s go!
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Import-overwrite confirmation modal — blocks silent overwrites
+          of existing profiles when ?import=profile redirects here with a
+          scraped payload in IndexedDB / sessionStorage. See applyImportedData
+          + pendingImport state for the gating logic. */}
+      {pendingImport && (
+        <div
+          className="admin-modal__overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="import-overwrite-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleCancelImport()
+          }}
+        >
+          <div className="admin-modal__card">
+            <button
+              type="button"
+              className="admin-modal__close"
+              aria-label={importOverwriteModal.cancelButton}
+              onClick={handleCancelImport}
+            >
+              &times;
+            </button>
+            <h2 id="import-overwrite-title" className="admin-modal__title">
+              {importOverwriteModal.title}
+            </h2>
+            <p className="admin-modal__subtitle">
+              {importOverwriteModal.intro}
+            </p>
+            <ul
+              style={{
+                margin: '0 0 16px 20px',
+                padding: 0,
+                color: '#555',
+                fontSize: 14,
+                lineHeight: 1.6,
+              }}
+            >
+              {importOverwriteModal.bulletList.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+            <p
+              className="admin-modal__subtitle"
+              style={{ fontWeight: 600, marginBottom: 16 }}
+            >
+              {importOverwriteModal.confirm}
+            </p>
+            {createNewHint && (
+              <p className="admin-modal__help" role="status" style={{ marginBottom: 12 }}>
+                {createNewHint}
+              </p>
+            )}
+            <div
+              className="admin-modal__actions"
+              style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}
+            >
+              <button
+                type="button"
+                className="admin-modal__btn admin-modal__btn--primary"
+                style={{ background: '#b91c1c' }}
+                onClick={handleConfirmImport}
+              >
+                {importOverwriteModal.overwriteButton}
+              </button>
+              <button
+                type="button"
+                className="admin-modal__btn admin-modal__btn--secondary"
+                onClick={handleCancelImport}
+              >
+                {importOverwriteModal.cancelButton}
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateNewInstead}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#0f9488',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  textDecoration: 'underline',
+                  padding: '10px',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                {importOverwriteModal.createNewButton}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Re-import from website modal — admin-only, claimable profiles only.
+          Runs the scraper against a URL and hydrates editor state without a
+          page reload. The server enforces admin + claimable + created_by_admin. */}
+      {showReimportModal && (
+        <div
+          className="admin-modal__overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reimport-modal-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeReimportModal()
+          }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(10, 10, 20, 0.72)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 16,
+            zIndex: 1000,
+          }}
+        >
+          <div
+            className="admin-modal__card"
+            style={{
+              background: '#fff',
+              borderRadius: 12,
+              padding: 24,
+              maxWidth: 520,
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+              position: 'relative',
+            }}
+          >
+            <button
+              type="button"
+              className="admin-modal__close"
+              aria-label={reimportModal.cancelButton}
+              onClick={closeReimportModal}
+              disabled={reimportRunning}
+              style={{
+                position: 'absolute',
+                top: 12,
+                right: 12,
+                background: 'none',
+                border: 'none',
+                fontSize: 24,
+                cursor: reimportRunning ? 'not-allowed' : 'pointer',
+                color: '#666',
+                padding: 4,
+                lineHeight: 1,
+              }}
+            >
+              &times;
+            </button>
+            <h2
+              id="reimport-modal-title"
+              className="admin-modal__title"
+              style={{ margin: '0 0 8px 0', fontSize: 20, color: '#111', paddingRight: 32 }}
+            >
+              {reimportModal.title}
+            </h2>
+            <p
+              className="admin-modal__subtitle"
+              style={{ margin: '0 0 20px 0', fontSize: 14, color: '#555', lineHeight: 1.5 }}
+            >
+              {reimportModal.subtitle}
+            </p>
+
+            <div className="admin-modal__field" style={{ marginBottom: 20 }}>
+              <label
+                htmlFor="reimport-url-input"
+                className="admin-modal__label"
+                style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#333', marginBottom: 6 }}
+              >
+                {reimportModal.urlLabel}
+              </label>
+              <input
+                id="reimport-url-input"
+                type="url"
+                className="admin-modal__input"
+                value={reimportUrl}
+                onChange={(e) => { setReimportUrl(e.target.value); setReimportError(null) }}
+                placeholder="https://artist-website.com"
+                disabled={reimportRunning}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  fontSize: 14,
+                  border: '1px solid #ddd',
+                  borderRadius: 8,
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+              />
+              <p
+                className="admin-modal__help"
+                style={{ margin: '6px 0 0 0', fontSize: 12, color: '#777' }}
+              >
+                {reimportModal.urlHint}
+              </p>
+            </div>
+
+            <fieldset style={{ border: 'none', padding: 0, margin: '0 0 20px 0' }}>
+              <legend
+                className="admin-modal__label"
+                style={{ fontSize: 13, fontWeight: 600, color: '#333', marginBottom: 10, padding: 0 }}
+              >
+                {reimportModal.modeLabel}
+              </legend>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  padding: 12,
+                  border: `1px solid ${reimportMode === 'fill_empty' ? '#0f9488' : '#e5e5e5'}`,
+                  background: reimportMode === 'fill_empty' ? 'rgba(15, 148, 136, 0.06)' : 'transparent',
+                  borderRadius: 8,
+                  cursor: reimportRunning ? 'not-allowed' : 'pointer',
+                  marginBottom: 8,
+                }}
+              >
+                <input
+                  type="radio"
+                  name="reimport-mode"
+                  value="fill_empty"
+                  checked={reimportMode === 'fill_empty'}
+                  onChange={() => setReimportMode('fill_empty')}
+                  disabled={reimportRunning}
+                  style={{ marginTop: 3, flexShrink: 0 }}
+                />
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: '#111' }}>
+                    {reimportModal.modeFillEmptyLabel}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#777', marginTop: 2 }}>
+                    {reimportModal.modeFillEmptyHint}
+                  </div>
+                </div>
+              </label>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  padding: 12,
+                  border: `1px solid ${reimportMode === 'replace' ? '#b91c1c' : '#e5e5e5'}`,
+                  background: reimportMode === 'replace' ? 'rgba(185, 28, 28, 0.06)' : 'transparent',
+                  borderRadius: 8,
+                  cursor: reimportRunning ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <input
+                  type="radio"
+                  name="reimport-mode"
+                  value="replace"
+                  checked={reimportMode === 'replace'}
+                  onChange={() => setReimportMode('replace')}
+                  disabled={reimportRunning}
+                  style={{ marginTop: 3, flexShrink: 0 }}
+                />
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: '#111' }}>
+                    {reimportModal.modeReplaceLabel}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#777', marginTop: 2 }}>
+                    {reimportModal.modeReplaceHint}
+                  </div>
+                </div>
+              </label>
+            </fieldset>
+
+            {reimportError && (
+              <p
+                role="alert"
+                style={{
+                  margin: '0 0 16px 0',
+                  padding: '10px 12px',
+                  background: 'rgba(185, 28, 28, 0.08)',
+                  border: '1px solid rgba(185, 28, 28, 0.3)',
+                  borderRadius: 8,
+                  fontSize: 13,
+                  color: '#b91c1c',
+                }}
+              >
+                {reimportError}
+              </p>
+            )}
+
+            <div
+              className="admin-modal__actions"
+              style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' }}
+            >
+              <button
+                type="button"
+                className="admin-modal__btn admin-modal__btn--secondary"
+                onClick={closeReimportModal}
+                disabled={reimportRunning}
+                style={{
+                  padding: '10px 18px',
+                  border: '1px solid #ddd',
+                  background: '#fff',
+                  color: '#333',
+                  borderRadius: 8,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  cursor: reimportRunning ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {reimportModal.cancelButton}
+              </button>
+              <button
+                type="button"
+                className="admin-modal__btn admin-modal__btn--primary"
+                onClick={() => handleRunReimport()}
+                disabled={reimportRunning || !reimportUrl.trim()}
+                style={{
+                  padding: '10px 18px',
+                  border: 'none',
+                  background: reimportRunning || !reimportUrl.trim() ? '#9ca3af' : '#0f9488',
+                  color: '#fff',
+                  borderRadius: 8,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: reimportRunning || !reimportUrl.trim() ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {reimportRunning ? reimportModal.runningButton : reimportModal.runButton}
+              </button>
+            </div>
           </div>
         </div>
       )}

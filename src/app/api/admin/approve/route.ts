@@ -71,7 +71,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Invalid type.' }, { status: 400 })
     }
 
-    if (!['approve', 'reject'].includes(action)) {
+    if (!['approve', 'reject', 'unpublish'].includes(action)) {
       return NextResponse.json({ success: false, message: 'Invalid action.' }, { status: 400 })
     }
 
@@ -111,7 +111,10 @@ export async function POST(request: Request) {
     }
 
     const table = type === 'project' ? 'project_submissions' : 'collaborator_profiles'
-    const newStatus = action === 'approve' ? 'approved' : 'rejected'
+    let newStatus: string
+    if (action === 'approve') newStatus = 'approved'
+    else if (action === 'unpublish') newStatus = 'draft'
+    else newStatus = 'rejected'
 
     const { error } = await supabaseAdmin
       .from(table)
@@ -144,23 +147,30 @@ export async function POST(request: Request) {
           .single()
 
         if (submitterProfile) {
-          const isApproved = action === 'approve'
+          let subject: string
+          let bodyText: string
+          if (action === 'approve') {
+            subject = `Your ${type} "${submissionTitle}" has been approved!`
+            bodyText = `Great news! Your ${type} "${submissionTitle}" has been approved and is now live on Resonance Network. Visit the site to see it in action.`
+          } else if (action === 'unpublish') {
+            subject = `Your ${type} "${submissionTitle}" has been unpublished`
+            bodyText = `Your ${type} "${submissionTitle}" has been moved back to draft and is no longer publicly visible. You can edit and resubmit it from your dashboard at any time.`
+          } else {
+            subject = `Update on your ${type} submission "${submissionTitle}"`
+            bodyText = `Your ${type} submission "${submissionTitle}" has been reviewed. Unfortunately, it wasn't selected at this time. Feel free to revise and resubmit.`
+          }
           await supabaseAdmin.from('user_messages').insert({
             recipient_id: submitterProfile.id,
             sender_name: 'Resonance Network',
-            subject: isApproved
-              ? `Your ${type} "${submissionTitle}" has been approved!`
-              : `Update on your ${type} submission "${submissionTitle}"`,
-            body: isApproved
-              ? `Great news! Your ${type} "${submissionTitle}" has been approved and is now live on Resonance Network. Visit the site to see it in action.`
-              : `Your ${type} submission "${submissionTitle}" has been reviewed. Unfortunately, it wasn't selected at this time. Feel free to revise and resubmit.`,
+            subject,
+            body: bodyText,
             message_type: 'submission_status',
             related_project: type === 'project' ? submissionTitle : null,
           })
         }
 
-        // Send email notification
-        if (submitterEmail) {
+        // Send email notification (skip on unpublish — no need to email about a revert to draft)
+        if (submitterEmail && action !== 'unpublish') {
           const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonancenetwork.org'
           const recipientName = type === 'project' ? (row.artist_name || row.artist_email?.split('@')[0]) : row.name
           try {
@@ -184,7 +194,10 @@ export async function POST(request: Request) {
     revalidatePath('/profiles')
     revalidatePath('/collaborate')
 
-    return NextResponse.json({ success: true, message: `Submission ${newStatus}.` })
+    const successMessage = action === 'unpublish'
+      ? 'Submission unpublished.'
+      : `Submission ${newStatus}.`
+    return NextResponse.json({ success: true, message: successMessage })
   } catch (err) {
     console.error('Admin approve error:', err)
     return NextResponse.json({ success: false, message: 'Server error.' }, { status: 500 })

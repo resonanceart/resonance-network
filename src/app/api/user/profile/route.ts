@@ -5,11 +5,68 @@ import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, getClientIp } from '@/lib/sanitize'
 import { sendNotification } from '@/lib/notify'
 import { validateCsrf } from '@/lib/csrf'
+import { appendProfileHistory, type SaveReason } from '@/lib/profile-history'
 
 // Increase body size limit to 10MB for base64 image uploads
 export const runtime = 'nodejs'
 export const maxDuration = 30
 export const dynamic = 'force-dynamic'
+
+// Resolve whether the caller is acting on their own profile or, as an admin,
+// editing another user's profile via the `x-admin-edit-as` header OR the
+// `?admin_edit_as=<id>` query param. The frontend claim flow sends both.
+// Returns the target id plus a flag; on auth failure returns an error response.
+async function resolveTargetUserId(
+  request: Request,
+  authUserId: string
+): Promise<{ targetId: string; isAdminOverride: boolean; error?: NextResponse }> {
+  const url = new URL(request.url)
+  const headerOverride = request.headers.get('x-admin-edit-as')
+  const queryOverride = url.searchParams.get('admin_edit_as')
+  const override = headerOverride || queryOverride
+
+  if (!override || override === authUserId) {
+    return { targetId: authUserId, isAdminOverride: false }
+  }
+
+  // Override present — caller MUST be an admin on user_profiles.
+  const { data: callerProfile } = await supabaseAdmin
+    .from('user_profiles')
+    .select('role')
+    .eq('id', authUserId)
+    .maybeSingle()
+
+  if (!callerProfile || callerProfile.role !== 'admin') {
+    return {
+      targetId: authUserId,
+      isAdminOverride: false,
+      error: NextResponse.json(
+        { error: 'Forbidden: admin role required for admin_edit_as.' },
+        { status: 403 }
+      ),
+    }
+  }
+
+  // Verify the target user exists.
+  const { data: targetProfile } = await supabaseAdmin
+    .from('user_profiles')
+    .select('id')
+    .eq('id', override)
+    .maybeSingle()
+
+  if (!targetProfile) {
+    return {
+      targetId: authUserId,
+      isAdminOverride: false,
+      error: NextResponse.json(
+        { error: 'admin_edit_as target user not found.' },
+        { status: 404 }
+      ),
+    }
+  }
+
+  return { targetId: override, isAdminOverride: true }
+}
 
 export async function GET(request: Request) {
   try {
@@ -28,14 +85,22 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const resolved = await resolveTargetUserId(request, user.id)
+    if (resolved.error) return resolved.error
+    const { targetId, isAdminOverride } = resolved
+
     const { data: profile, error } = await supabaseAdmin
       .from('user_profiles')
       .select('*')
-      .eq('id', user.id)
+      .eq('id', targetId)
       .single()
 
     if (error) {
-      console.error('Profile fetch error:', error.message)
+      console.error('Profile fetch error:', error.message, {
+        isAdminOverride,
+        adminId: isAdminOverride ? user.id : undefined,
+        targetId,
+      })
       return NextResponse.json(
         { error: 'Failed to fetch profile.' },
         { status: 500 }
@@ -46,7 +111,7 @@ export async function GET(request: Request) {
     const { data: extendedProfile } = await supabaseAdmin
       .from('profile_extended')
       .select('*')
-      .eq('id', user.id)
+      .eq('id', targetId)
       .single()
 
     // Fetch related profile data in parallel
@@ -59,19 +124,19 @@ export async function GET(request: Request) {
       profResult,
       interestResult,
     ] = await Promise.all([
-      supabaseAdmin.from('work_experience').select('*').eq('profile_id', user.id).order('display_order'),
-      supabaseAdmin.from('profile_skills').select('*').eq('profile_id', user.id).order('display_order'),
-      supabaseAdmin.from('profile_tools').select('*').eq('profile_id', user.id).order('display_order'),
-      supabaseAdmin.from('profile_social_links').select('*').eq('profile_id', user.id).order('display_order'),
+      supabaseAdmin.from('work_experience').select('*').eq('profile_id', targetId).order('display_order'),
+      supabaseAdmin.from('profile_skills').select('*').eq('profile_id', targetId).order('display_order'),
+      supabaseAdmin.from('profile_tools').select('*').eq('profile_id', targetId).order('display_order'),
+      supabaseAdmin.from('profile_social_links').select('*').eq('profile_id', targetId).order('display_order'),
       supabaseAdmin.from('project_submissions')
         .select('id, project_title, status, created_at')
-        .or(`user_id.eq.${user.id},artist_email.eq.${profile.email}`),
+        .or(`user_id.eq.${targetId},artist_email.eq.${profile.email}`),
       supabaseAdmin.from('collaborator_profiles')
         .select('id, name, status, created_at')
         .eq('email', profile.email),
       supabaseAdmin.from('collaboration_interest')
         .select('id, task_title, project_title, status, created_at')
-        .or(`user_id.eq.${user.id},email.eq.${profile.email}`),
+        .or(`user_id.eq.${targetId},email.eq.${profile.email}`),
     ])
 
     const submissions: { id: string; title: string; type: string; status: string; created_at: string }[] = []
@@ -114,6 +179,18 @@ export async function GET(request: Request) {
       }
     }
 
+    // Count available undo steps for the UI (0–5, limited by prune trigger).
+    let historyCount = 0
+    try {
+      const { count } = await supabaseAdmin
+        .from('profile_history')
+        .select('id', { count: 'exact', head: true })
+        .eq('profile_id', targetId)
+      historyCount = count || 0
+    } catch {
+      historyCount = 0
+    }
+
     return NextResponse.json({
       profile,
       extendedProfile: extendedProfile || null,
@@ -122,6 +199,7 @@ export async function GET(request: Request) {
       profileSkills: skillsResult.data || [],
       profileTools: toolsResult.data || [],
       socialLinks: socialLinksResult.data || [],
+      historyCount,
     })
   } catch {
     return NextResponse.json(
@@ -152,14 +230,22 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const resolved = await resolveTargetUserId(request, user.id)
+    if (resolved.error) return resolved.error
+    const { targetId, isAdminOverride } = resolved
+
     // Delete user profile row
     const { error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .delete()
-      .eq('id', user.id)
+      .eq('id', targetId)
 
     if (profileError) {
-      console.error('Profile delete error:', profileError.message)
+      console.error('Profile delete error:', profileError.message, {
+        isAdminOverride,
+        adminId: isAdminOverride ? user.id : undefined,
+        targetId,
+      })
       return NextResponse.json(
         { error: 'Failed to delete account.' },
         { status: 500 }
@@ -167,25 +253,32 @@ export async function DELETE(request: Request) {
     }
 
     // Delete extended profile data
-    await supabaseAdmin.from('profile_extended').delete().eq('id', user.id)
-    await supabaseAdmin.from('profile_skills').delete().eq('profile_id', user.id)
-    await supabaseAdmin.from('profile_tools').delete().eq('profile_id', user.id)
-    await supabaseAdmin.from('profile_social_links').delete().eq('profile_id', user.id)
-    await supabaseAdmin.from('work_experience').delete().eq('profile_id', user.id)
+    await supabaseAdmin.from('profile_extended').delete().eq('id', targetId)
+    await supabaseAdmin.from('profile_skills').delete().eq('profile_id', targetId)
+    await supabaseAdmin.from('profile_tools').delete().eq('profile_id', targetId)
+    await supabaseAdmin.from('profile_social_links').delete().eq('profile_id', targetId)
+    await supabaseAdmin.from('work_experience').delete().eq('profile_id', targetId)
 
     // Delete the auth user
-    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user.id)
+    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(targetId)
 
     if (deleteError) {
-      console.error('Auth user delete error:', deleteError.message)
+      console.error('Auth user delete error:', deleteError.message, {
+        isAdminOverride,
+        adminId: isAdminOverride ? user.id : undefined,
+        targetId,
+      })
       return NextResponse.json(
         { error: 'Failed to delete account.' },
         { status: 500 }
       )
     }
 
-    // Sign out the server-side session
-    await supabase.auth.signOut()
+    // Only sign out the caller's own session if they deleted themselves.
+    // An admin deleting another user must keep their own session alive.
+    if (!isAdminOverride) {
+      await supabase.auth.signOut()
+    }
 
     return NextResponse.json({ success: true })
   } catch {
@@ -216,6 +309,10 @@ export async function PUT(request: Request) {
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const resolved = await resolveTargetUserId(request, user.id)
+    if (resolved.error) return resolved.error
+    const { targetId, isAdminOverride } = resolved
 
     const body = await request.json()
 
@@ -404,17 +501,89 @@ export async function PUT(request: Request) {
       )
     }
 
+    // Append a history row capturing the CURRENT state of both
+    // user_profiles and profile_extended before any writes. The table has
+    // a prune trigger that keeps only the 5 most recent rows per profile.
+    // Best-effort — failures are logged inside appendProfileHistory and
+    // do not block the save. The legacy previous_snapshot column writes
+    // below remain in place as a belt-and-suspenders fallback for the
+    // undo endpoint.
+    try {
+      const [{ data: userRowForHistory }, { data: extRowForHistory }] = await Promise.all([
+        supabaseAdmin.from('user_profiles').select('*').eq('id', targetId).maybeSingle(),
+        supabaseAdmin.from('profile_extended').select('*').eq('id', targetId).maybeSingle(),
+      ])
+
+      // Choose save reason from body.save_reason if the client declared
+      // one, otherwise infer from context. Frontend autosave can pass
+      // 'autosave', manual Save All button can pass 'manual_save'.
+      const declaredReason = typeof body.save_reason === 'string' ? body.save_reason : null
+      const allowedReasons: SaveReason[] = [
+        'manual_save',
+        'autosave',
+        'import',
+        'admin_edit',
+        'reimport',
+        'claim_finalize',
+      ]
+      const saveReason: SaveReason =
+        declaredReason && (allowedReasons as string[]).includes(declaredReason)
+          ? (declaredReason as SaveReason)
+          : isAdminOverride
+            ? 'admin_edit'
+            : 'autosave'
+
+      await appendProfileHistory({
+        profileId: targetId,
+        userProfileRow: userRowForHistory as Record<string, unknown> | null,
+        profileExtendedRow: extRowForHistory as Record<string, unknown> | null,
+        saveReason,
+        savedByUserId: user.id,
+      })
+    } catch (historyErr) {
+      console.warn(
+        '[profile PUT] history append threw (non-blocking):',
+        (historyErr as Error).message
+      )
+    }
+
     let profile = null
     if (Object.keys(updates).length > 0) {
+      // Capture a single-level "undo" snapshot of the current row BEFORE
+      // overwriting it. Exclude the snapshot fields themselves to avoid
+      // recursive nesting across successive saves.
+      const { data: currentRow } = await supabaseAdmin
+        .from('user_profiles')
+        .select('*')
+        .eq('id', targetId)
+        .maybeSingle()
+
+      const updatePayload: Record<string, unknown> = { ...updates }
+      if (currentRow) {
+        const {
+          previous_snapshot: _ps,
+          previous_snapshot_at: _psa,
+          ...snapshot
+        } = currentRow as Record<string, unknown>
+        void _ps
+        void _psa
+        updatePayload.previous_snapshot = snapshot
+        updatePayload.previous_snapshot_at = new Date().toISOString()
+      }
+
       const { data, error } = await supabaseAdmin
         .from('user_profiles')
-        .update(updates)
-        .eq('id', user.id)
+        .update(updatePayload)
+        .eq('id', targetId)
         .select()
         .single()
 
       if (error) {
-        console.error('Profile update error:', error.message)
+        console.error('Profile update error:', error.message, {
+          isAdminOverride,
+          adminId: isAdminOverride ? user.id : undefined,
+          targetId,
+        })
         return NextResponse.json(
           { error: 'Failed to update profile.' },
           { status: 500 }
@@ -426,7 +595,7 @@ export async function PUT(request: Request) {
       const { data } = await supabaseAdmin
         .from('user_profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', targetId)
         .single()
       profile = data
     }
@@ -437,7 +606,7 @@ export async function PUT(request: Request) {
       const { data: currentProfile } = await supabaseAdmin
         .from('user_profiles')
         .select('profile_visibility')
-        .eq('id', user.id)
+        .eq('id', targetId)
         .single()
       const wasAlreadyPending = currentProfile?.profile_visibility === 'pending'
 
@@ -446,10 +615,13 @@ export async function PUT(request: Request) {
         const userEmail = String(profile.email || '')
         try {
           // Notify admin
+          const adminNoteSuffix = isAdminOverride
+            ? `\n\nSubmitted via admin override by admin id: ${user.id}.`
+            : ''
           await sendNotification({
             to: ['resonanceartcollective@gmail.com'],
             subject: `New Profile Submitted for Review: ${displayName}`,
-            body: `${displayName} has submitted their profile for review.\n\nEmail: ${userEmail}\nUser ID: ${user.id}\n\nReview profiles in the admin dashboard.`,
+            body: `${displayName} has submitted their profile for review.\n\nEmail: ${userEmail}\nUser ID: ${targetId}${adminNoteSuffix}\n\nReview profiles in the admin dashboard.`,
           })
           // Confirm to user
           if (userEmail) {
@@ -468,14 +640,39 @@ export async function PUT(request: Request) {
 
     let extendedProfile = null
     if (Object.keys(extendedFields).length > 0) {
+      // Capture single-level undo snapshot for profile_extended. If the
+      // row doesn't exist yet (first save) we simply don't set a snapshot.
+      const { data: currentExtRow } = await supabaseAdmin
+        .from('profile_extended')
+        .select('*')
+        .eq('id', targetId)
+        .maybeSingle()
+
+      const extendedPayload: Record<string, unknown> = { ...extendedFields }
+      if (currentExtRow) {
+        const {
+          previous_snapshot: _eps,
+          previous_snapshot_at: _epsa,
+          ...extSnapshot
+        } = currentExtRow as Record<string, unknown>
+        void _eps
+        void _epsa
+        extendedPayload.previous_snapshot = extSnapshot
+        extendedPayload.previous_snapshot_at = new Date().toISOString()
+      }
+
       const { data, error: extError } = await supabaseAdmin
         .from('profile_extended')
-        .upsert({ id: user.id, ...extendedFields }, { onConflict: 'id' })
+        .upsert({ id: targetId, ...extendedPayload }, { onConflict: 'id' })
         .select()
         .single()
 
       if (extError) {
-        console.error('Extended profile upsert error:', extError.message)
+        console.error('Extended profile upsert error:', extError.message, {
+          isAdminOverride,
+          adminId: isAdminOverride ? user.id : undefined,
+          targetId,
+        })
         // Retry with only base-migration columns (guaranteed to exist)
         // Enhancement columns (accent_color, cover_position, section_order, gallery_order,
         // gallery_layout, gallery_columns, etc.) may not exist if migrations haven't been applied
@@ -488,14 +685,24 @@ export async function PUT(request: Request) {
         for (const key of coreColumns) {
           if (key in extendedFields) coreFields[key] = extendedFields[key]
         }
+        // Preserve the previously-captured snapshot on the retry path so
+        // undo still works even when enhancement columns are unavailable.
+        if (extendedPayload.previous_snapshot !== undefined) {
+          coreFields.previous_snapshot = extendedPayload.previous_snapshot
+          coreFields.previous_snapshot_at = extendedPayload.previous_snapshot_at
+        }
         if (Object.keys(coreFields).length > 0) {
           const { data: retryData, error: retryError } = await supabaseAdmin
             .from('profile_extended')
-            .upsert({ id: user.id, ...coreFields }, { onConflict: 'id' })
+            .upsert({ id: targetId, ...coreFields }, { onConflict: 'id' })
             .select()
             .single()
           if (retryError) {
-            console.error('Extended profile retry error:', retryError.message)
+            console.error('Extended profile retry error:', retryError.message, {
+              isAdminOverride,
+              adminId: isAdminOverride ? user.id : undefined,
+              targetId,
+            })
             // Return the error to the client so they know the save failed
             return NextResponse.json(
               { error: `Profile media save failed: ${retryError.message}`, profile },
@@ -515,11 +722,11 @@ export async function PUT(request: Request) {
     const relatedResults: Record<string, unknown> = {}
 
     if (body.profile_skills !== undefined && Array.isArray(body.profile_skills)) {
-      await supabaseAdmin.from('profile_skills').delete().eq('profile_id', user.id)
+      await supabaseAdmin.from('profile_skills').delete().eq('profile_id', targetId)
       const skills = body.profile_skills
         .slice(0, 50)
         .map((s: Record<string, unknown>, i: number) => ({
-          profile_id: user.id,
+          profile_id: targetId,
           skill_name: sanitizeText(s.skill_name, 100),
           category: sanitizeText(s.category, 50) || 'design',
           display_order: i,
@@ -528,16 +735,16 @@ export async function PUT(request: Request) {
       if (skills.length > 0) {
         await supabaseAdmin.from('profile_skills').insert(skills)
       }
-      const { data } = await supabaseAdmin.from('profile_skills').select('*').eq('profile_id', user.id).order('display_order')
+      const { data } = await supabaseAdmin.from('profile_skills').select('*').eq('profile_id', targetId).order('display_order')
       relatedResults.profileSkills = data || []
     }
 
     if (body.profile_tools !== undefined && Array.isArray(body.profile_tools)) {
-      await supabaseAdmin.from('profile_tools').delete().eq('profile_id', user.id)
+      await supabaseAdmin.from('profile_tools').delete().eq('profile_id', targetId)
       const tools = body.profile_tools
         .slice(0, 50)
         .map((t: Record<string, unknown>, i: number) => ({
-          profile_id: user.id,
+          profile_id: targetId,
           tool_name: sanitizeText(t.tool_name, 100),
           category: sanitizeText(t.category, 50) || 'software',
           icon_url: t.icon_url ? sanitizeText(t.icon_url, 500) : null,
@@ -547,12 +754,12 @@ export async function PUT(request: Request) {
       if (tools.length > 0) {
         await supabaseAdmin.from('profile_tools').insert(tools)
       }
-      const { data } = await supabaseAdmin.from('profile_tools').select('*').eq('profile_id', user.id).order('display_order')
+      const { data } = await supabaseAdmin.from('profile_tools').select('*').eq('profile_id', targetId).order('display_order')
       relatedResults.profileTools = data || []
     }
 
     if (body.social_links !== undefined && Array.isArray(body.social_links)) {
-      await supabaseAdmin.from('profile_social_links').delete().eq('profile_id', user.id)
+      await supabaseAdmin.from('profile_social_links').delete().eq('profile_id', targetId)
       const validPlatforms = [
         'instagram', 'linkedin', 'behance', 'artstation', 'dribbble', 'github',
         'vimeo', 'soundcloud', 'spotify', 'youtube', 'x', 'tiktok', 'facebook', 'linktree', 'custom',
@@ -562,7 +769,7 @@ export async function PUT(request: Request) {
         .map((l: Record<string, unknown>, i: number) => {
           const platform = String(l.platform || 'custom')
           return {
-            profile_id: user.id,
+            profile_id: targetId,
             platform: validPlatforms.includes(platform) ? platform : 'custom',
             url: sanitizeText(l.url, 500),
             display_order: i,
@@ -572,12 +779,12 @@ export async function PUT(request: Request) {
       if (links.length > 0) {
         await supabaseAdmin.from('profile_social_links').insert(links)
       }
-      const { data } = await supabaseAdmin.from('profile_social_links').select('*').eq('profile_id', user.id).order('display_order')
+      const { data } = await supabaseAdmin.from('profile_social_links').select('*').eq('profile_id', targetId).order('display_order')
       relatedResults.socialLinks = data || []
     }
 
     if (body.work_experience !== undefined && Array.isArray(body.work_experience)) {
-      await supabaseAdmin.from('work_experience').delete().eq('profile_id', user.id)
+      await supabaseAdmin.from('work_experience').delete().eq('profile_id', targetId)
       const validTypes = ['employment', 'education', 'freelance']
       const entries = body.work_experience
         .slice(0, 50)
@@ -586,7 +793,7 @@ export async function PUT(request: Request) {
           const title = sanitizeText(e.title, 200)
           if (!title) return null
           return {
-            profile_id: user.id,
+            profile_id: targetId,
             type: validTypes.includes(type) ? type : 'employment',
             title,
             organization: e.organization ? sanitizeText(e.organization, 200) : null,
@@ -602,7 +809,7 @@ export async function PUT(request: Request) {
       if (entries.length > 0) {
         await supabaseAdmin.from('work_experience').insert(entries)
       }
-      const { data } = await supabaseAdmin.from('work_experience').select('*').eq('profile_id', user.id).order('display_order')
+      const { data } = await supabaseAdmin.from('work_experience').select('*').eq('profile_id', targetId).order('display_order')
       relatedResults.workExperience = data || []
     }
 

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
+import { useAuth } from '@/components/AuthProvider'
 import { saveImportData } from '@/lib/import-store'
 
 type ImportMode = 'project' | 'profile' | 'both'
@@ -11,6 +12,7 @@ interface ImportPromptPopupProps {
 }
 
 export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
+  const { user } = useAuth()
   const [dismissed, setDismissed] = useState(() => {
     if (typeof window === 'undefined') return false
     return localStorage.getItem(`resonance_import_prompt_dismissed_${mode}`) === '1'
@@ -22,7 +24,39 @@ export default function ImportPromptPopup({ mode }: ImportPromptPopupProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // Hide the import prompt entirely for admins. Rationale: importing
+  // redirects into /dashboard/profile/live-edit?import=profile, which
+  // would otherwise overwrite the admin's own profile. Admins should
+  // use "Build Profile for Artist" in /admin instead. We fetch the role
+  // from /api/user/profile once the auth user is available.
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [roleLoaded, setRoleLoaded] = useState(false)
+  useEffect(() => {
+    let cancelled = false
+    if (!user) {
+      setIsAdmin(false)
+      setRoleLoaded(true)
+      return
+    }
+    fetch('/api/user/profile', { credentials: 'same-origin' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled) return
+        setIsAdmin(data?.profile?.role === 'admin')
+        setRoleLoaded(true)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setRoleLoaded(true)
+      })
+    return () => { cancelled = true }
+  }, [user])
+
   if (dismissed) return null
+  // Don't render anything until we know the role, so admins never see
+  // a flash of the import prompt on first paint.
+  if (!roleLoaded) return null
+  if (isAdmin) return null
 
   function dismiss() {
     localStorage.setItem(`resonance_import_prompt_dismissed_${mode}`, '1')
