@@ -45,6 +45,11 @@ interface UserProfileEntry {
   avatar_url: string | null
   skills: string[] | null
   profile_visibility: string
+  is_claimable?: boolean | null
+  target_email?: string | null
+  original_source_url?: string | null
+  updated_at?: string | null
+  role?: string | null
 }
 
 interface InterestEntry {
@@ -213,7 +218,7 @@ export default function AdminPage() {
       supabase.from('project_submissions').select('id, created_at, project_title, artist_name, artist_email, status').order('created_at', { ascending: false }),
       supabase.from('collaborator_profiles').select('id, created_at, name, email, skills, status').order('created_at', { ascending: false }),
       supabase.from('collaboration_interest').select('id, created_at, name, email, task_title, project_title, experience, status').order('created_at', { ascending: false }),
-      supabase.from('user_profiles').select('id, created_at, display_name, email, bio, avatar_url, skills, profile_visibility').order('created_at', { ascending: false }),
+      supabase.from('user_profiles').select('id, created_at, display_name, email, bio, avatar_url, skills, profile_visibility, is_claimable, target_email, original_source_url, updated_at').order('created_at', { ascending: false }),
     ])
     setProjects((projRes.data || []) as ProjectSubmission[])
     setProfiles((profRes.data || []) as ProfileSubmission[])
@@ -366,8 +371,19 @@ export default function AdminPage() {
   }), [users, q])
 
   const filteredUserProfiles = useMemo(() => userProfiles.filter(up => {
-    const matchSearch = !q || up.display_name.toLowerCase().includes(q) || up.email.toLowerCase().includes(q)
-    const matchStatus = statusFilter === 'all' || up.profile_visibility === statusFilter
+    const matchSearch = !q
+      || up.display_name.toLowerCase().includes(q)
+      || (up.email || '').toLowerCase().includes(q)
+      || (up.target_email || '').toLowerCase().includes(q)
+    // "claimable" is a virtual status — it filters on is_claimable instead of
+    // profile_visibility so placeholder profiles surface even when they also
+    // carry a draft visibility.
+    const matchStatus =
+      statusFilter === 'all'
+        ? true
+        : statusFilter === 'claimable'
+          ? up.is_claimable === true
+          : up.profile_visibility === statusFilter
     return matchSearch && matchStatus
   }), [userProfiles, q, statusFilter])
 
@@ -534,6 +550,76 @@ export default function AdminPage() {
                     <a href="/dashboard/projects/live-edit" target="_blank" rel="noopener noreferrer" className="admin-btn admin-btn--outline">Project Builder</a>
                   </div>
 
+                  {/* Artist Profiles In Progress — claimable profiles the admin is building */}
+                  {(() => {
+                    const inProgress = userProfiles
+                      .filter(up => up.is_claimable === true)
+                      .sort((a, b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime())
+                      .slice(0, 5)
+                    return (
+                      <div className="admin-section">
+                        <div className="admin-section__title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                          <span>Artist Profiles In Progress</span>
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn--outline admin-btn--sm"
+                            onClick={() => { resetClaimableForm(); setShowClaimableModal(true); setActiveView('user_profiles') }}
+                          >
+                            + Build Profile for Artist
+                          </button>
+                        </div>
+                        {inProgress.length === 0 ? (
+                          <div style={{ padding: '20px 4px', color: 'var(--color-text-muted)', fontSize: 14 }}>
+                            No claimable profiles yet.{' '}
+                            <button
+                              type="button"
+                              onClick={() => { resetClaimableForm(); setShowClaimableModal(true); setActiveView('user_profiles') }}
+                              style={{ background: 'none', border: 'none', padding: 0, color: 'var(--color-primary, #14b8a6)', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}
+                            >
+                              Click Build Profile for Artist
+                            </button>{' '}
+                            to create one.
+                          </div>
+                        ) : (
+                          <div className="admin-feed">
+                            {inProgress.map(up => (
+                              <div
+                                key={up.id}
+                                className="admin-feed__item"
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => router.push(`/dashboard/profile/live-edit?admin_edit_as=${up.id}`)}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/dashboard/profile/live-edit?admin_edit_as=${up.id}`) } }}
+                                style={{ cursor: 'pointer', alignItems: 'center', gap: 12 }}
+                              >
+                                {up.avatar_url ? (
+                                  <img src={up.avatar_url} className="admin-avatar" alt="" />
+                                ) : (
+                                  <div className="admin-avatar admin-avatar-placeholder" aria-hidden="true">
+                                    {(up.display_name || '?').charAt(0).toUpperCase()}
+                                  </div>
+                                )}
+                                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                  <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {up.display_name || 'Untitled'}
+                                  </div>
+                                  {up.target_email && (
+                                    <div style={{ fontSize: 12, color: 'var(--color-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                      {up.target_email}
+                                    </div>
+                                  )}
+                                </div>
+                                <span className="admin-feed__time" style={{ whiteSpace: 'nowrap' }}>
+                                  Last edited {timeAgo(up.updated_at || up.created_at)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })()}
+
                   {/* Recent activity mini-feed */}
                   <div className="admin-section">
                     <div className="admin-section__title">Recent Activity</div>
@@ -620,6 +706,7 @@ export default function AdminPage() {
                       <option value="draft">Draft</option>
                       <option value="pending">Pending</option>
                       <option value="published">Published</option>
+                      <option value="claimable">Claimable</option>
                     </select>
                     <button
                       type="button"
@@ -634,34 +721,67 @@ export default function AdminPage() {
                   <table className="admin-table">
                     <thead><tr><th>User</th><th>Email</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
                     <tbody>
-                      {filteredUserProfiles.map(up => (
-                        <tr key={up.id}>
-                          <td>
-                            <div style={{display:'flex',alignItems:'center',gap:8}}>
-                              {up.avatar_url ? <img src={up.avatar_url} className="admin-avatar" alt="" /> : <div className="admin-avatar-placeholder">{up.display_name?.[0]?.toUpperCase()}</div>}
-                              <span className="admin-table__name">{up.display_name}</span>
-                            </div>
-                          </td>
-                          <td className="admin-table__email">{up.email}</td>
-                          <td><span className={`admin-badge admin-badge--${up.profile_visibility}`}>{up.profile_visibility}</span></td>
-                          <td className="admin-table__date">{new Date(up.created_at).toLocaleDateString()}</td>
-                          <td>
-                            <div style={{display:'flex',gap:6}}>
-                              <a href={`/profiles/${up.display_name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}?preview=1`} target="_blank" rel="noopener noreferrer" className="admin-btn admin-btn--outline admin-btn--sm">View</a>
-                              {up.profile_visibility === 'pending' && (
-                                <>
-                                  <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={() => handleUserProfileAction(up.id, 'approve')}>Publish</button>
-                                  <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleUserProfileAction(up.id, 'reject')}>Reject</button>
-                                </>
-                              )}
-                              {up.profile_visibility === 'published' && (
-                                <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleUserProfileAction(up.id, 'reject')}>Unpublish</button>
-                              )}
-                              <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleDeleteUser(up.id, up.display_name)}>Delete</button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                      {filteredUserProfiles.map(up => {
+                        const isClaimable = up.is_claimable === true
+                        // Placeholder profiles use placeholder+<uuid>@resonanceart.org
+                        // as their login email — show the target_email the admin
+                        // entered instead so the row is identifiable.
+                        const emailDisplay = isClaimable ? (up.target_email || up.email) : up.email
+                        return (
+                          <tr key={up.id}>
+                            <td>
+                              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                                {up.avatar_url ? <img src={up.avatar_url} className="admin-avatar" alt="" /> : <div className="admin-avatar-placeholder">{up.display_name?.[0]?.toUpperCase()}</div>}
+                                <span className="admin-table__name">{up.display_name}</span>
+                              </div>
+                            </td>
+                            <td className="admin-table__email">{emailDisplay}</td>
+                            <td>
+                              <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                                <span className={`admin-badge admin-badge--${up.profile_visibility}`}>{up.profile_visibility}</span>
+                                {isClaimable && (
+                                  <span
+                                    className="admin-badge"
+                                    style={{
+                                      background: 'rgba(245, 158, 11, 0.15)',
+                                      color: '#b45309',
+                                      border: '1px solid rgba(245, 158, 11, 0.4)',
+                                    }}
+                                  >
+                                    Claimable
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="admin-table__date">{new Date(up.created_at).toLocaleDateString()}</td>
+                            <td>
+                              <div style={{display:'flex',gap:6}}>
+                                {isClaimable ? (
+                                  <button
+                                    type="button"
+                                    className="admin-btn admin-btn--primary admin-btn--sm"
+                                    onClick={() => router.push(`/dashboard/profile/live-edit?admin_edit_as=${up.id}`)}
+                                  >
+                                    Edit as Admin
+                                  </button>
+                                ) : (
+                                  <a href={`/profiles/${up.display_name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}?preview=1`} target="_blank" rel="noopener noreferrer" className="admin-btn admin-btn--outline admin-btn--sm">View</a>
+                                )}
+                                {up.profile_visibility === 'pending' && (
+                                  <>
+                                    <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={() => handleUserProfileAction(up.id, 'approve')}>Publish</button>
+                                    <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleUserProfileAction(up.id, 'reject')}>Reject</button>
+                                  </>
+                                )}
+                                {up.profile_visibility === 'published' && (
+                                  <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleUserProfileAction(up.id, 'reject')}>Unpublish</button>
+                                )}
+                                <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => handleDeleteUser(up.id, up.display_name)}>Delete</button>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })}
                     </tbody>
                   </table>
                 </>
