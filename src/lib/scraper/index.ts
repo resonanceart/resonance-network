@@ -312,19 +312,42 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
 
   // Get all img tags — prefer lazy-load attributes over src (which may be a placeholder)
   allImgs.each((_, el) => {
-    // Prefer real-image lazy-load attributes over src (which may be a data: URI placeholder)
-    let src = $(el).attr('data-lazy-src')
-      || $(el).attr('data-src')
-      || $(el).attr('data-original')
-      || $(el).attr('src')
-      || ''
+    const rawSrc = ($(el).attr('src') || '').trim()
+    // Detect placeholder src values: data: URIs (inline SVG/png spinners) or
+    // known placeholder paths. When the real src looks like a placeholder,
+    // we skip it and fall through to a lazy-load attribute.
+    const srcLooksLikePlaceholder =
+      !rawSrc ||
+      rawSrc.startsWith('data:') ||
+      /placeholder|lazy|blank|transparent|1x1|spacer|pixel\.(gif|png)/i.test(rawSrc)
 
-    // Also check both srcset AND data-srcset (common on Shopify lazy-loaded themes)
-    const srcset = $(el).attr('srcset') || $(el).attr('data-srcset') || ''
+    // Prefer real-image lazy-load attributes over src
+    let src =
+      $(el).attr('data-lazy-src') ||
+      $(el).attr('data-src') ||
+      $(el).attr('data-original') ||
+      $(el).attr('data-hi-res-src') ||
+      $(el).attr('data-full') ||
+      ''
+    if (!src && !srcLooksLikePlaceholder) src = rawSrc
+
+    // Srcset variants — prefer the lazy-load ones when the visible src is a
+    // placeholder. Accepted attrs: srcset, data-srcset, data-lazy-srcset,
+    // data-original-set.
+    const srcset =
+      $(el).attr('data-srcset') ||
+      $(el).attr('data-lazy-srcset') ||
+      $(el).attr('data-original-set') ||
+      $(el).attr('srcset') ||
+      ''
     if (srcset) {
       const largest = pickLargestFromSrcset(srcset)
       if (largest) src = largest
     }
+
+    // Last-resort fall back to raw src (even if it looked like a placeholder,
+    // something is better than nothing when no lazy attrs were present).
+    if (!src) src = rawSrc
 
     if (!src) {
       filteredEmpty++
@@ -353,12 +376,21 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
       console.log(`[scraper] filtered (favicon/pixel pattern): ${resolved}`)
       return
     }
-    // Skip very small specified dimensions (but not for Wix — SSR dimensions are fake placeholders)
+    // Skip images with small specified dimensions (but not for Wix — SSR
+    // dimensions are fake placeholders). Threshold is 400px on EITHER axis;
+    // anything smaller is almost certainly a logo, thumbnail, icon, or UI
+    // chrome and shouldn't land in a gallery. Images with no explicit
+    // width/height bypass this filter because we can't measure them
+    // (Shopify, for example, sometimes omits dims on lazy-loaded imgs).
     if (!wixSite) {
       const width = parseInt($(el).attr('width') || '0')
       const height = parseInt($(el).attr('height') || '0')
-      if ((width > 0 && width < 50) || (height > 0 && height < 50)) {
+      const MIN_DIM = 400
+      if ((width > 0 && width < MIN_DIM) || (height > 0 && height < MIN_DIM)) {
         filteredTiny++
+        console.log(
+          `[scraper] filtered (tiny ${width}x${height} < ${MIN_DIM}): ${resolved}`
+        )
         return
       }
     }
@@ -422,9 +454,12 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
   console.log(
     `[scraper] secondary passes: dataImage=${acceptedFromDataImage} lightbox=${acceptedFromLightbox} bgStyle=${acceptedFromBgStyle}`
   )
-  console.log(`[scraper] extractImages total accepted: ${images.length} (capped at 20)`)
+  const MAX_IMAGES = 30
+  console.log(
+    `[scraper] extractImages total accepted: ${images.length} (capped at ${MAX_IMAGES})`
+  )
 
-  return images.slice(0, 20) // cap at 20 images
+  return images.slice(0, MAX_IMAGES)
 }
 
 /** Extract a notable quote from marquee blocks, blockquotes, or standalone short paragraphs */
