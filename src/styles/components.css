@@ -16654,6 +16654,84 @@ main {
   cursor: not-allowed;
 }
 
+/* Inline re-import URL row — sits above the action buttons so admins can
+   paste a URL and one-click re-scrape without opening the modal. Destructive
+   replace mode still lives behind the Advanced options link → modal. */
+.claimable-banner__import-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.claimable-banner__import-label {
+  flex: 0 0 auto;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.02em;
+}
+
+.claimable-banner__import-input {
+  flex: 1 1 240px;
+  min-width: 0;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.claimable-banner__import-input::placeholder {
+  color: var(--color-text-faint);
+}
+
+.claimable-banner__import-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.claimable-banner__import-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.claimable-banner__import-error {
+  font-size: var(--text-xs);
+  color: #b91c1c;
+  margin: 4px 0 0;
+  line-height: 1.4;
+}
+
+.claimable-banner__advanced-link {
+  align-self: flex-start;
+  margin-top: var(--space-2);
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.claimable-banner__advanced-link:hover:not(:disabled) {
+  color: var(--color-text-secondary);
+}
+
+.claimable-banner__advanced-link:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 /* Admin override edit banner (amber accent) — shown when admin edits
    a profile that has already been claimed by its owner. */
 .admin-edit-banner {
@@ -16751,5 +16829,18 @@ main {
   .claimable-banner__heading {
     flex-wrap: wrap;
     font-size: var(--text-base);
+  }
+
+  /* Stack the inline import row on narrow viewports so the input gets the
+     full width instead of crushing next to the label. */
+  .claimable-banner__import-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .claimable-banner__import-input {
+    width: 100%;
+    flex-basis: auto;
   }
 }

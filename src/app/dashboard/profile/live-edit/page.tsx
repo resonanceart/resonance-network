@@ -793,6 +793,12 @@ export default function LiveProfileEditor() {
               sourceUrl: p.original_source_url || null,
               sendCount: typeof p.claim_send_count === 'number' ? p.claim_send_count : 0,
             })
+            // Seed the inline re-import URL input from original_source_url
+            // so admins can click "Re-import" without repasting. Only seeds
+            // when the field is still empty to avoid clobbering user input.
+            if (p.original_source_url) {
+              setReimportUrl((prev) => (prev ? prev : p.original_source_url))
+            }
             // When editing as admin, surface the invitee's email in the banner
             if (adminEditAsFromUrl) setAdminEditTargetEmail(p.target_email || null)
           } else {
@@ -1221,7 +1227,12 @@ export default function LiveProfileEditor() {
   // Run the re-import. Calls /api/admin/reimport-profile, then hydrates the
   // editor state via applyImportedData (no page reload), and closes the modal
   // on success. On failure we keep the modal open and show an inline error.
-  const handleRunReimport = useCallback(async () => {
+  //
+  // Accepts an optional `modeOverride` so the inline re-import path can force
+  // the safe `fill_empty` mode regardless of what the (modal-only) replace
+  // radio is currently set to — avoids stale-closure issues from calling
+  // setReimportMode then handleRunReimport in the same tick.
+  const handleRunReimport = useCallback(async (modeOverride?: 'replace' | 'fill_empty') => {
     const url = reimportUrl.trim()
     if (!url) {
       setReimportError(reimportModal.urlRequired)
@@ -1243,6 +1254,8 @@ export default function LiveProfileEditor() {
       return
     }
 
+    const effectiveMode = modeOverride ?? reimportMode
+
     setReimportRunning(true)
     setReimportError(null)
 
@@ -1255,7 +1268,7 @@ export default function LiveProfileEditor() {
         body: JSON.stringify({
           profile_id: profileId,
           import_url: normalizedUrl,
-          mode: reimportMode,
+          mode: effectiveMode,
         }),
       })
       const data = await res.json().catch(() => ({}))
@@ -1284,6 +1297,19 @@ export default function LiveProfileEditor() {
       setReimportRunning(false)
     }
   }, [reimportUrl, reimportMode, adminEditAs, user?.id, applyImportedData])
+
+  // Inline re-import: triggered by the banner's "Re-import from Website"
+  // button. Runs in the safe `fill_empty` mode without opening the modal.
+  // The modal remains the escape hatch for destructive `replace` mode via
+  // the "Advanced options" link.
+  const handleInlineReimport = useCallback(() => {
+    if (!reimportUrl.trim()) {
+      setReimportError(reimportModal.urlRequired)
+      return
+    }
+    setReimportMode('fill_empty')
+    handleRunReimport('fill_empty')
+  }, [reimportUrl, handleRunReimport])
 
   function openPanel(section: EditSection) {
     setActivePanel(section)
@@ -1786,6 +1812,36 @@ export default function LiveProfileEditor() {
                     <p className="claimable-banner__subtext" role="status">{claimInviteMessage}</p>
                   )}
 
+                  {/* Inline re-import URL row — one-click re-scrape from the
+                      banner. Defaults to the safe `fill_empty` mode; destructive
+                      `replace` mode lives behind the Advanced options modal. */}
+                  <div className="claimable-banner__import-row">
+                    <label
+                      htmlFor="claimable-reimport-url"
+                      className="claimable-banner__import-label"
+                    >
+                      {reimportModal.urlLabel}
+                    </label>
+                    <input
+                      id="claimable-reimport-url"
+                      type="url"
+                      className="claimable-banner__import-input"
+                      value={reimportUrl}
+                      onChange={(e) => { setReimportUrl(e.target.value); setReimportError(null) }}
+                      placeholder="https://artist-website.com"
+                      disabled={reimportRunning || claimInviteSending}
+                      autoComplete="off"
+                    />
+                  </div>
+                  {reimportError && !showReimportModal && (
+                    <p
+                      className="claimable-banner__import-error"
+                      role="alert"
+                    >
+                      {reimportError}
+                    </p>
+                  )}
+
                   <div className="claimable-banner__actions">
                     <button
                       type="button"
@@ -1802,10 +1858,10 @@ export default function LiveProfileEditor() {
                     <button
                       type="button"
                       className="claimable-banner__btn claimable-banner__btn--secondary"
-                      onClick={openReimportModal}
+                      onClick={handleInlineReimport}
                       disabled={claimInviteSending || reimportRunning}
                     >
-                      {reimportModal.bannerButton}
+                      {reimportRunning ? reimportModal.runningButton : reimportModal.bannerButton}
                     </button>
                     <button
                       type="button"
@@ -1816,6 +1872,15 @@ export default function LiveProfileEditor() {
                       {claimableBannerCopy.deleteButton}
                     </button>
                   </div>
+
+                  <button
+                    type="button"
+                    className="claimable-banner__advanced-link"
+                    onClick={openReimportModal}
+                    disabled={claimInviteSending || reimportRunning}
+                  >
+                    Advanced options (replace mode)…
+                  </button>
                 </div>
               </div>
             )}
@@ -2568,7 +2633,7 @@ export default function LiveProfileEditor() {
               <button
                 type="button"
                 className="admin-modal__btn admin-modal__btn--primary"
-                onClick={handleRunReimport}
+                onClick={() => handleRunReimport()}
                 disabled={reimportRunning || !reimportUrl.trim()}
                 style={{
                   padding: '10px 18px',
