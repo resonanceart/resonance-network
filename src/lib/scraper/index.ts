@@ -114,6 +114,81 @@ function upgradeWixImageUrl(url: string): string {
   )
 }
 
+/** Detect if page is built on Shopify */
+function isShopify($: cheerio.CheerioAPI): boolean {
+  const html = $.html()
+  return (
+    html.includes('cdn.shopify.com') ||
+    html.includes('shopifycdn.com') ||
+    html.includes('Shopify.theme') ||
+    html.includes('shopify-section') ||
+    /<meta[^>]+shopify/i.test(html)
+  )
+}
+
+/**
+ * Upgrade Shopify CDN image URLs to the largest available resolution.
+ * Shopify CDN URLs commonly include ?width=N or ?v=N&width=N query params.
+ * Strategy: if width param is present, rewrite to width=2000; otherwise leave as-is.
+ * Also handles the legacy _400x.jpg / _800x1000.jpg filename suffix (_{W}x{H}.ext).
+ */
+function upgradeShopifyImageUrl(url: string): string {
+  if (!/cdn\.shopify\.com|shopifycdn\.com/i.test(url)) return url
+  let upgraded = url
+
+  // Rewrite ?width=N or &width=N query param to width=2000
+  upgraded = upgraded.replace(/([?&])width=\d+/gi, '$1width=2000')
+
+  // Rewrite legacy _{W}x.ext or _{W}x{H}.ext suffix (e.g. _400x.jpg, _600x600.jpg)
+  // to _2000x.ext for the largest variant
+  upgraded = upgraded.replace(
+    /_(\d+)x(\d*)(\.(?:jpe?g|png|webp|gif|avif))(\?|$)/i,
+    '_2000x$3$4'
+  )
+
+  return upgraded
+}
+
+/**
+ * Parse a srcset attribute and return the URL of the largest candidate.
+ * Handles width descriptors (e.g. "url 400w, url 800w") and density descriptors
+ * (e.g. "url 1x, url 2x"). Falls back to the last entry if parsing fails.
+ */
+function pickLargestFromSrcset(srcset: string): string | null {
+  if (!srcset) return null
+  const parts = srcset
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  if (parts.length === 0) return null
+
+  let bestUrl: string | null = null
+  let bestScore = -1
+  for (const part of parts) {
+    const tokens = part.split(/\s+/)
+    const candidateUrl = tokens[0]
+    if (!candidateUrl) continue
+    const descriptor = tokens[1] || ''
+    let score = 0
+    const widthMatch = descriptor.match(/^(\d+(?:\.\d+)?)w$/i)
+    const densityMatch = descriptor.match(/^(\d+(?:\.\d+)?)x$/i)
+    if (widthMatch) {
+      score = parseFloat(widthMatch[1])
+    } else if (densityMatch) {
+      // Density (2x, 3x) — treat each x as 1000 so density wins over tiny widths
+      score = parseFloat(densityMatch[1]) * 1000
+    } else {
+      // No descriptor — fall back to string length as a weak tiebreaker
+      score = candidateUrl.length
+    }
+    if (score > bestScore) {
+      bestScore = score
+      bestUrl = candidateUrl
+    }
+  }
+  return bestUrl
+}
+
 function extractSocialLinks($: cheerio.CheerioAPI, baseUrl: string): Array<{ platform: string; url: string }> {
   const links: Array<{ platform: string; url: string }> = []
   const seen = new Set<string>()
@@ -204,19 +279,39 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
   const images: Array<{ url: string; alt: string; heroScore: number }> = []
   const seen = new Set<string>()
   const wixSite = isWix($)
+  const shopifySite = isShopify($)
+
+  const allImgs = $('img')
+  const totalImgElements = allImgs.length
+  let filteredEmpty = 0
+  let filteredDataUri = 0
+  let filteredDuplicate = 0
+  let filteredPattern = 0
+  let filteredTiny = 0
+  let acceptedFromImgTag = 0
+
+  console.log(
+    `[scraper] extractImages: site=${baseUrl} totalImgElements=${totalImgElements} platform=${
+      shopifySite ? 'shopify' : wixSite ? 'wix' : 'generic'
+    }`
+  )
 
   // Get og:image — but only add it if it does NOT look like a site-wide default
   const ogImage = $('meta[property="og:image"]').attr('content')
   if (ogImage && !isLikelySiteDefault(ogImage)) {
     let resolved = resolveUrl(ogImage, baseUrl)
     if (wixSite) resolved = upgradeWixImageUrl(resolved)
+    if (shopifySite) resolved = upgradeShopifyImageUrl(resolved)
     seen.add(resolved)
     // og:image gets a moderate baseline score — real content images from main area can beat it
     images.push({ url: resolved, alt: 'Hero image', heroScore: 10 })
+    console.log(`[scraper] accepted og:image: ${resolved}`)
+  } else if (ogImage) {
+    console.log(`[scraper] rejected og:image (site default pattern): ${ogImage}`)
   }
 
   // Get all img tags — prefer lazy-load attributes over src (which may be a placeholder)
-  $('img').each((_, el) => {
+  allImgs.each((_, el) => {
     // Prefer real-image lazy-load attributes over src (which may be a data: URI placeholder)
     let src = $(el).attr('data-lazy-src')
       || $(el).attr('data-src')
@@ -224,55 +319,80 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
       || $(el).attr('src')
       || ''
 
-    // For Squarespace, also check srcset for highest-res version
-    const srcset = $(el).attr('srcset')
+    // Also check both srcset AND data-srcset (common on Shopify lazy-loaded themes)
+    const srcset = $(el).attr('srcset') || $(el).attr('data-srcset') || ''
     if (srcset) {
-      const candidates = srcset.split(',').map(s => s.trim())
-      const last = candidates[candidates.length - 1]
-      if (last) {
-        const srcsetUrl = last.split(/\s+/)[0]
-        if (srcsetUrl) src = srcsetUrl
-      }
+      const largest = pickLargestFromSrcset(srcset)
+      if (largest) src = largest
     }
 
-    if (!src || src.startsWith('data:')) return
+    if (!src) {
+      filteredEmpty++
+      return
+    }
+    if (src.startsWith('data:')) {
+      filteredDataUri++
+      return
+    }
     let resolved = resolveUrl(src, baseUrl)
 
     // Wix: upgrade LQIP placeholders (tiny, blurred) to full resolution
     if (wixSite) resolved = upgradeWixImageUrl(resolved)
+    // Shopify: rewrite ?width=N to ?width=2000 and legacy _400x.jpg suffix to _2000x.jpg
+    if (shopifySite) resolved = upgradeShopifyImageUrl(resolved)
 
     // Deduplicate after URL upgrade (Wix LQIPs with different blur params → same upgraded URL)
-    if (seen.has(resolved)) return
+    if (seen.has(resolved)) {
+      filteredDuplicate++
+      return
+    }
 
     // Skip duplicates, tiny images, icons, tracking pixels
-    if (/favicon|1x1|spacer|pixel|badge|icon/i.test(resolved)) return
+    if (/favicon|1x1|spacer|pixel/i.test(resolved)) {
+      filteredPattern++
+      console.log(`[scraper] filtered (favicon/pixel pattern): ${resolved}`)
+      return
+    }
     // Skip very small specified dimensions (but not for Wix — SSR dimensions are fake placeholders)
     if (!wixSite) {
       const width = parseInt($(el).attr('width') || '0')
       const height = parseInt($(el).attr('height') || '0')
-      if ((width > 0 && width < 50) || (height > 0 && height < 50)) return
+      if ((width > 0 && width < 50) || (height > 0 && height < 50)) {
+        filteredTiny++
+        return
+      }
     }
 
     seen.add(resolved)
     const heroScore = scoreImageForHero(el, $, resolved)
     images.push({ url: resolved, alt: $(el).attr('alt') || '', heroScore })
+    acceptedFromImgTag++
   })
 
+  console.log(
+    `[scraper] <img> pass complete: accepted=${acceptedFromImgTag} rejected={empty:${filteredEmpty}, dataUri:${filteredDataUri}, duplicate:${filteredDuplicate}, pattern:${filteredPattern}, tiny:${filteredTiny}}`
+  )
+
   // Squarespace-specific: data-image attributes on containers
+  let acceptedFromDataImage = 0
   $('[data-image]').each((_, el) => {
     const src = $(el).attr('data-image') || ''
     if (!src) return
-    const resolved = resolveUrl(src, baseUrl)
+    let resolved = resolveUrl(src, baseUrl)
+    if (shopifySite) resolved = upgradeShopifyImageUrl(resolved)
     if (seen.has(resolved)) return
     seen.add(resolved)
     images.push({ url: resolved, alt: '', heroScore: scoreImageForHero(null, $, resolved) })
+    acceptedFromDataImage++
   })
 
   // WordPress/lightbox: <a> tags linking directly to image files (gallery lightboxes)
+  let acceptedFromLightbox = 0
   $('a[href]').each((_, el) => {
     const href = $(el).attr('href') || ''
-    if (!/\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(href)) return
-    const resolved = resolveUrl(href, baseUrl)
+    if (!/\.(jpg|jpeg|png|webp|avif|gif)(\?.*)?$/i.test(href)) return
+    let resolved = resolveUrl(href, baseUrl)
+    if (shopifySite) resolved = upgradeShopifyImageUrl(resolved)
     if (seen.has(resolved)) return
     // Only include if inside a gallery or portfolio container
     const parent = $(el).closest('.gallery, .portfolio, [class*="gallery"], [class*="portfolio"], .wp-block-gallery, main, article')
@@ -280,20 +400,29 @@ function extractImages($: cheerio.CheerioAPI, baseUrl: string): Array<{ url: str
     seen.add(resolved)
     const alt = $(el).find('img').attr('alt') || ''
     images.push({ url: resolved, alt, heroScore: scoreImageForHero(null, $, resolved) })
+    acceptedFromLightbox++
   })
 
   // Background images in inline styles
+  let acceptedFromBgStyle = 0
   $('[style*="background-image"]').each((_, el) => {
     const style = $(el).attr('style') || ''
     const match = style.match(/url\(['"]?(.*?)['"]?\)/)
     if (match?.[1]) {
-      const resolved = resolveUrl(match[1], baseUrl)
+      let resolved = resolveUrl(match[1], baseUrl)
+      if (shopifySite) resolved = upgradeShopifyImageUrl(resolved)
       if (!seen.has(resolved)) {
         seen.add(resolved)
         images.push({ url: resolved, alt: '', heroScore: scoreImageForHero(null, $, resolved) })
+        acceptedFromBgStyle++
       }
     }
   })
+
+  console.log(
+    `[scraper] secondary passes: dataImage=${acceptedFromDataImage} lightbox=${acceptedFromLightbox} bgStyle=${acceptedFromBgStyle}`
+  )
+  console.log(`[scraper] extractImages total accepted: ${images.length} (capped at 20)`)
 
   return images.slice(0, 20) // cap at 20 images
 }
