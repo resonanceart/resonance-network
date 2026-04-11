@@ -565,6 +565,11 @@ export default function LiveProfileEditor() {
   // When set and recent (<24h), an "Undo last save" button is shown next to Save.
   const [previousSnapshotAt, setPreviousSnapshotAt] = useState<string | null>(null)
   const [undoing, setUndoing] = useState(false)
+  // How many undo steps are currently available from profile_history
+  // (0–5). Drives the "Undo (3)" label on the button. Falls back to
+  // using previousSnapshotAt for legacy profiles that predate the
+  // history table.
+  const [historyCount, setHistoryCount] = useState(0)
 
   // ─── Import-overwrite confirmation gate ───
   // When the user lands on /dashboard/profile/live-edit?import=profile and
@@ -823,6 +828,11 @@ export default function LiveProfileEditor() {
               ? (new Date(userSnapAt).getTime() > new Date(extSnapAt).getTime() ? userSnapAt : extSnapAt)
               : (userSnapAt || extSnapAt)
           setPreviousSnapshotAt(newest)
+          // historyCount comes from /api/user/profile GET response
+          // (0–5 depending on how many rows profile_history has).
+          if (typeof data.historyCount === 'number') {
+            setHistoryCount(data.historyCount)
+          }
           setSlug(
             (p.display_name || '')
               .toLowerCase()
@@ -1088,14 +1098,24 @@ export default function LiveProfileEditor() {
   }
 
   // ─── Undo last save ───
-  // Reverts user_profiles + profile_extended to the previous_snapshot that
-  // the PUT handler stashed before the most recent save. This is a ONE-LEVEL
-  // undo; calling it again swaps back to the previously-current state (redo).
+  // Reverts user_profiles + profile_extended to the most recent entry in
+  // profile_history (up to 5 steps back). Falls back to the legacy
+  // single-level previous_snapshot column for profiles that predate the
+  // profile_history table. Each call walks one step further back.
   async function undoLastSave() {
-    if (!previousSnapshotAt || undoing) return
-    const stamp = new Date(previousSnapshotAt).toLocaleString()
+    if (undoing) return
+    const hasHistory = historyCount > 0
+    const hasLegacy = !!previousSnapshotAt
+    if (!hasHistory && !hasLegacy) return
+    const stamp = previousSnapshotAt
+      ? new Date(previousSnapshotAt).toLocaleString()
+      : 'the previous save'
+    const stepsBack = hasHistory ? historyCount : 1
     const ok = window.confirm(
-      `Revert to the version saved at ${stamp}? Your current unsaved changes will be lost and swapped with the previous snapshot.`
+      `Revert to the version from ${stamp}? This undoes one save and leaves ${Math.max(
+        0,
+        stepsBack - 1
+      )} undo step(s) available after this one.`
     )
     if (!ok) return
     setUndoing(true)
@@ -1129,8 +1149,11 @@ export default function LiveProfileEditor() {
     }
   }
 
-  // Only show undo when a snapshot exists AND it was captured in the last 24h.
+  // Show undo whenever there is SOMETHING to undo: either history rows
+  // exist (preferred path), or a legacy previous_snapshot was captured
+  // in the last 24h (fallback for profiles that predate profile_history).
   const canUndo = (() => {
+    if (historyCount > 0) return true
     if (!previousSnapshotAt) return false
     const t = new Date(previousSnapshotAt).getTime()
     if (Number.isNaN(t)) return false
@@ -1661,11 +1684,26 @@ export default function LiveProfileEditor() {
                 onClick={undoLastSave}
                 className="btn btn--outline btn--sm"
                 disabled={undoing || saving}
-                title={previousSnapshotAt ? `Revert to version saved ${new Date(previousSnapshotAt).toLocaleString()}` : 'Revert to previous save'}
+                title={
+                  historyCount > 0
+                    ? `${historyCount} undo step${historyCount === 1 ? '' : 's'} available (up to 5)`
+                    : previousSnapshotAt
+                      ? `Revert to version saved ${new Date(previousSnapshotAt).toLocaleString()}`
+                      : 'Revert to previous save'
+                }
               >
-                {undoing
-                  ? 'Reverting...'
-                  : <><span className="hide-mobile">Undo last save</span><span className="show-mobile">Undo</span></>}
+                {undoing ? (
+                  'Reverting...'
+                ) : (
+                  <>
+                    <span className="hide-mobile">
+                      Undo last save{historyCount > 0 ? ` (${historyCount})` : ''}
+                    </span>
+                    <span className="show-mobile">
+                      Undo{historyCount > 0 ? ` (${historyCount})` : ''}
+                    </span>
+                  </>
+                )}
               </button>
             )}
             <button

@@ -103,14 +103,43 @@ export async function POST(request: Request) {
         .maybeSingle(),
     ])
 
-    const userSnapshot = (currentUserRow as Record<string, unknown> | null)?.previous_snapshot as
-      | Record<string, unknown>
-      | null
-      | undefined
-    const extSnapshot = (currentExtRow as Record<string, unknown> | null)?.previous_snapshot as
-      | Record<string, unknown>
-      | null
-      | undefined
+    // ─── Primary source: profile_history table (up to 5 rows) ───
+    // Pull the newest row for this profile; if present, use it as the
+    // source of truth for the restore. After restoring we DELETE that
+    // row so the next undo walks one step further back. This gives a
+    // true multi-level undo instead of the single-level column swap.
+    const { data: historyRow } = await supabaseAdmin
+      .from('profile_history')
+      .select('id, user_profile_snapshot, profile_extended_snapshot, created_at')
+      .eq('profile_id', targetId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    let userSnapshot: Record<string, unknown> | null | undefined
+    let extSnapshot: Record<string, unknown> | null | undefined
+    let historyRowIdToConsume: string | null = null
+    let historySnapshotAt: string | null = null
+
+    if (historyRow) {
+      userSnapshot = historyRow.user_profile_snapshot as Record<string, unknown> | null
+      extSnapshot = historyRow.profile_extended_snapshot as Record<string, unknown> | null
+      historyRowIdToConsume = String(historyRow.id)
+      historySnapshotAt = (historyRow.created_at as string) || null
+    } else {
+      // ─── Fallback: legacy single-level previous_snapshot columns ───
+      // Used for profiles that predate the history table and for any
+      // save that failed to append a history row. Behavior matches the
+      // old undo code path.
+      userSnapshot = (currentUserRow as Record<string, unknown> | null)?.previous_snapshot as
+        | Record<string, unknown>
+        | null
+        | undefined
+      extSnapshot = (currentExtRow as Record<string, unknown> | null)?.previous_snapshot as
+        | Record<string, unknown>
+        | null
+        | undefined
+    }
 
     const hasUserSnapshot = userSnapshot && typeof userSnapshot === 'object'
     const hasExtSnapshot = extSnapshot && typeof extSnapshot === 'object'
@@ -217,13 +246,53 @@ export async function POST(request: Request) {
       }
     }
 
+    // If the restore came from profile_history and at least one side was
+    // successfully reverted, consume (delete) that history row so the
+    // next undo walks further back. If the restore came from the legacy
+    // column fallback, there is nothing to consume — the column swap
+    // already handled redo state.
+    if (historyRowIdToConsume && (userReverted || extReverted)) {
+      const { error: consumeErr } = await supabaseAdmin
+        .from('profile_history')
+        .delete()
+        .eq('id', historyRowIdToConsume)
+      if (consumeErr) {
+        console.warn(
+          '[profile/undo] failed to delete consumed history row (non-blocking):',
+          consumeErr.message,
+          { historyRowIdToConsume }
+        )
+      }
+    }
+
+    // Prefer the history row's created_at as the "reverted from" timestamp
+    // when the restore came from the table — it is more accurate than the
+    // swapped previous_snapshot_at that gets written during the restore.
+    if (historySnapshotAt) revertedAt = historySnapshotAt
+
+    // Count remaining history rows so the client can show "N undos left".
+    let remainingHistoryCount = 0
+    try {
+      const { count } = await supabaseAdmin
+        .from('profile_history')
+        .select('id', { count: 'exact', head: true })
+        .eq('profile_id', targetId)
+      remainingHistoryCount = count || 0
+    } catch {
+      remainingHistoryCount = 0
+    }
+
     console.log(
       'profile/undo: user',
       targetId,
       'reverted by',
       user.id,
       'admin_override=',
-      isAdminOverride
+      isAdminOverride,
+      'source=',
+      historyRowIdToConsume ? 'history' : 'legacy_column',
+      'remaining=',
+      remainingHistoryCount
     )
 
     if (!userReverted && !extReverted) {
@@ -245,6 +314,8 @@ export async function POST(request: Request) {
       user_profile_reverted: userReverted,
       profile_extended_reverted: extReverted,
       reverted_at: revertedAt,
+      remaining_history: remainingHistoryCount,
+      source: historyRowIdToConsume ? 'history' : 'legacy_column',
       message: partial
         ? 'Profile partially reverted to previous snapshot'
         : 'Profile reverted to previous snapshot',

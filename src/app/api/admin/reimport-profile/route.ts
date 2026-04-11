@@ -8,6 +8,7 @@ import { validateCsrf } from '@/lib/csrf'
 import { scrapeProfilePage, type ScrapedProfile } from '@/lib/scraper'
 import { downloadImages } from '@/lib/scraper/download-images'
 import { validateScrapeUrl } from '@/lib/scraper/url-validator'
+import { appendProfileHistory } from '@/lib/profile-history'
 
 export const runtime = 'nodejs'
 // 60s covers the scrape (~5s) + parallel image downloads (~15-30s for 8 imgs)
@@ -177,7 +178,29 @@ export async function POST(request: Request) {
       )
     }
 
-    // ─── Snapshot current user_profiles row for undo ───
+    // ─── Append a profile_history row for the multi-level undo ───
+    // Belt-and-suspenders: we also keep writing the legacy
+    // previous_snapshot column below for profiles that predate the
+    // history table. The history row is what /api/user/profile/undo
+    // prefers when it exists.
+    const { data: currentExtForHistory } = await supabaseAdmin
+      .from('profile_extended')
+      .select('*')
+      .eq('id', profileId)
+      .maybeSingle()
+
+    await appendProfileHistory({
+      profileId,
+      userProfileRow: currentProfile as Record<string, unknown>,
+      profileExtendedRow: currentExtForHistory as Record<string, unknown> | null,
+      saveReason: 'reimport',
+      // Reimport is always admin-invoked; the admin may have passed a
+      // password-only auth, so user.id may not be available here. Null
+      // is acceptable for saved_by_user_id.
+      savedByUserId: null,
+    })
+
+    // ─── Snapshot current user_profiles row for undo (legacy column) ───
     const {
       previous_snapshot: _ps,
       previous_snapshot_at: _psa,

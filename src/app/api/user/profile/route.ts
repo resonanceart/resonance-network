@@ -5,6 +5,7 @@ import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText, getClientIp } from '@/lib/sanitize'
 import { sendNotification } from '@/lib/notify'
 import { validateCsrf } from '@/lib/csrf'
+import { appendProfileHistory, type SaveReason } from '@/lib/profile-history'
 
 // Increase body size limit to 10MB for base64 image uploads
 export const runtime = 'nodejs'
@@ -178,6 +179,18 @@ export async function GET(request: Request) {
       }
     }
 
+    // Count available undo steps for the UI (0–5, limited by prune trigger).
+    let historyCount = 0
+    try {
+      const { count } = await supabaseAdmin
+        .from('profile_history')
+        .select('id', { count: 'exact', head: true })
+        .eq('profile_id', targetId)
+      historyCount = count || 0
+    } catch {
+      historyCount = 0
+    }
+
     return NextResponse.json({
       profile,
       extendedProfile: extendedProfile || null,
@@ -186,6 +199,7 @@ export async function GET(request: Request) {
       profileSkills: skillsResult.data || [],
       profileTools: toolsResult.data || [],
       socialLinks: socialLinksResult.data || [],
+      historyCount,
     })
   } catch {
     return NextResponse.json(
@@ -484,6 +498,52 @@ export async function PUT(request: Request) {
       return NextResponse.json(
         { error: 'No valid fields to update.' },
         { status: 400 }
+      )
+    }
+
+    // Append a history row capturing the CURRENT state of both
+    // user_profiles and profile_extended before any writes. The table has
+    // a prune trigger that keeps only the 5 most recent rows per profile.
+    // Best-effort — failures are logged inside appendProfileHistory and
+    // do not block the save. The legacy previous_snapshot column writes
+    // below remain in place as a belt-and-suspenders fallback for the
+    // undo endpoint.
+    try {
+      const [{ data: userRowForHistory }, { data: extRowForHistory }] = await Promise.all([
+        supabaseAdmin.from('user_profiles').select('*').eq('id', targetId).maybeSingle(),
+        supabaseAdmin.from('profile_extended').select('*').eq('id', targetId).maybeSingle(),
+      ])
+
+      // Choose save reason from body.save_reason if the client declared
+      // one, otherwise infer from context. Frontend autosave can pass
+      // 'autosave', manual Save All button can pass 'manual_save'.
+      const declaredReason = typeof body.save_reason === 'string' ? body.save_reason : null
+      const allowedReasons: SaveReason[] = [
+        'manual_save',
+        'autosave',
+        'import',
+        'admin_edit',
+        'reimport',
+        'claim_finalize',
+      ]
+      const saveReason: SaveReason =
+        declaredReason && (allowedReasons as string[]).includes(declaredReason)
+          ? (declaredReason as SaveReason)
+          : isAdminOverride
+            ? 'admin_edit'
+            : 'autosave'
+
+      await appendProfileHistory({
+        profileId: targetId,
+        userProfileRow: userRowForHistory as Record<string, unknown> | null,
+        profileExtendedRow: extRowForHistory as Record<string, unknown> | null,
+        saveReason,
+        savedByUserId: user.id,
+      })
+    } catch (historyErr) {
+      console.warn(
+        '[profile PUT] history append threw (non-blocking):',
+        (historyErr as Error).message
       )
     }
 
