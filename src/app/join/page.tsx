@@ -44,9 +44,8 @@ export default function JoinPage() {
       if (user) {
         router.push('/dashboard/projects/live-edit?new=true&import=true')
       } else {
-        // Logged out: signup with redirect back to the editor
-        // The editor will pick up the saved import data after auth
-        window.location.href = '/login?tab=signup&redirect=' + encodeURIComponent('/dashboard/projects/live-edit?new=true&import=true')
+        // Show the full project preview on /import before asking to sign up
+        router.push('/import?preview=project')
       }
     } catch (err) {
       setProjectError(err instanceof Error ? err.message : 'Something went wrong')

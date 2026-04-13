@@ -33,6 +33,25 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
   const [projectData, setProjectData] = useState<ScrapedProject | null>(null)
   const [profileData, setProfileData] = useState<ScrapedProfile | null>(null)
 
+  // If ?preview=project, load saved project data and jump to preview
+  useEffect(() => {
+    const previewParam = searchParams.get('preview')
+    if (previewParam !== 'project') return
+    setMode('project')
+    async function loadSaved() {
+      try {
+        const { loadImportData } = await import('@/lib/import-store')
+        const saved = await loadImportData<ScrapedProject>('resonance_import_data')
+        if (saved) { setProjectData(saved); setStep('preview'); return }
+      } catch { /* ignore */ }
+      try {
+        const raw = sessionStorage.getItem('resonance_import_data')
+        if (raw) { setProjectData(JSON.parse(raw)); setStep('preview'); return }
+      } catch { /* ignore */ }
+    }
+    loadSaved()
+  }, [searchParams])
+
   // Admin block: when an admin is about to import into their own profile we
   // surface a banner + "Continue anyway" escape hatch instead of the direct
   // CTA button. Prevents silent overwrites of the admin's own profile row.
