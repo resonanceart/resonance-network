@@ -20,12 +20,12 @@ export default function JoinPage() {
     <>
       <section className="join-hero">
         <div className="container">
-          <p className="section-label">Get Involved</p>
+          <p className="section-label">Join the Network</p>
           <h1>{user ? 'Your Network' : 'Join Resonance Network'}</h1>
           <p className="join-hero__sub">
             {user
               ? 'You\u2019re part of the network. Here\u2019s what you can do next.'
-              : 'Artists, curators, and collaborators building at the intersection of art, architecture, and ecology.'}
+              : 'Whether you\u2019re sharing a visionary project or lending your expertise \u2014 import from your existing website in seconds, or start fresh.'}
           </p>
         </div>
       </section>
@@ -33,46 +33,79 @@ export default function JoinPage() {
       <section className="join-paths">
         <div className="container">
           <div className="join-cards join-cards--two-up">
-            {/* Card 1: Artist */}
-            <div className="join-card join-card--featured">
-              <div className="join-card__header">
-                <span className="join-card__emoji">🎨</span>
-                <h2>Share a Project</h2>
+
+            {/* Card 1: Share a Project (Teal) */}
+            <div className="join-card join-card--teal">
+              <div className="join-card__icon join-card__icon--teal">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
               </div>
+              <span className="join-card__label join-card__label--teal">I have a project</span>
+              <h2>Share Your Project</h2>
+              <p className="join-card__desc">
+                Import your project from any website &mdash; we&apos;ll build your curated page automatically. Everything is editable before publishing.
+              </p>
               <ul className="join-card__perks">
                 <li>Curated project page with gallery</li>
                 <li>Find engineers, fabricators, and producers</li>
                 <li>Visibility to funders and curators</li>
               </ul>
-              <Link
-                href={user ? '/dashboard/projects/new' : '/login?tab=signup&redirect=/dashboard/welcome'}
-                className="btn btn--primary btn--xl join-card__cta"
-              >
-                {user ? 'Share a Project' : 'Get Started for Free'}
-              </Link>
+              <div className="join-card__cta-area">
+                <Link
+                  href={user ? '/dashboard/projects/new' : '/import'}
+                  className="btn btn--teal btn--xl join-card__cta"
+                >
+                  {user ? 'Share a Project' : 'Import Your Project'}
+                </Link>
+                {!user && (
+                  <span className="join-card__secondary">
+                    Or <Link href="/login?tab=signup&redirect=/dashboard/welcome">build from scratch</Link>
+                  </span>
+                )}
+              </div>
             </div>
 
-            {/* Card 2: Collaborator */}
-            <div className="join-card join-card--featured">
-              <div className="join-card__header">
-                <span className="join-card__emoji">🛠</span>
-                <h2>Join as Collaborator</h2>
+            {/* Card 2: Join as Collaborator (Gold) */}
+            <div className="join-card join-card--gold">
+              <div className="join-card__icon join-card__icon--gold">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
               </div>
+              <span className="join-card__label join-card__label--gold">I want to collaborate</span>
+              <h2>Join as Collaborator</h2>
+              <p className="join-card__desc">
+                Import your portfolio and join a curated community of architects, engineers, fabricators, and producers seeking meaningful creative work.
+              </p>
               <ul className="join-card__perks">
                 <li>Browse curated projects seeking your expertise</li>
                 <li>Credited roles linked to your profile</li>
                 <li>Meaningful work, not commercial gigs</li>
               </ul>
-              <Link
-                href={user ? '/dashboard/profile' : '/login?tab=signup&redirect=/dashboard/welcome'}
-                className="btn btn--primary btn--xl join-card__cta"
-              >
-                {user ? 'Edit Your Profile' : 'Get Started for Free'}
-              </Link>
+              <div className="join-card__cta-area">
+                <Link
+                  href={user ? '/dashboard/profile/live-edit' : '/import?mode=profile'}
+                  className="btn btn--gold btn--xl join-card__cta"
+                >
+                  {user ? 'Edit Your Profile' : 'Import Your Portfolio'}
+                </Link>
+                {!user && (
+                  <span className="join-card__secondary">
+                    Or <Link href="/login?tab=signup&redirect=/dashboard/welcome">create a profile manually</Link>
+                  </span>
+                )}
+              </div>
             </div>
+
           </div>
 
-          {/* Curator — secondary, smaller */}
+          {/* Curator — secondary row */}
           <div className="join-curator-row">
             <div className="join-curator-card">
               <span className="join-card__emoji">📖</span>
@@ -131,36 +164,6 @@ export default function JoinPage() {
         </div>
       </section>
 
-      {/* Submission Info — visible to everyone */}
-      <section className="submit-section">
-        <div className="container">
-          <h2>Before You Share a Project</h2>
-          <p className="submit-section__intro">Gather these materials so your project can shine</p>
-          <ul className="prepare-list">
-            <li>
-              <strong>Lead artist information</strong>
-              <span>Name, bio, portfolio or website link</span>
-            </li>
-            <li>
-              <strong>Project details</strong>
-              <span>Title, short description (2&ndash;3 sentences), and full project story/narrative</span>
-            </li>
-            <li>
-              <strong>Classification</strong>
-              <span>Project domains (what it is), pathways (how it may be realized), and current stage</span>
-            </li>
-            <li>
-              <strong>Images and renders</strong>
-              <span>Hero image plus 3&ndash;5 gallery images showing the project concept, materials, or models</span>
-            </li>
-            <li>
-              <strong>Collaboration needs</strong>
-              <span>Specific roles or expertise your project is seeking</span>
-            </li>
-          </ul>
-        </div>
-      </section>
-
       <section className="submit-section" id="faq">
         <div className="container">
           <h2>Frequently Asked Questions</h2>
@@ -182,61 +185,6 @@ export default function JoinPage() {
               <p>We&apos;ll build your project page, a curated visual home for your work, and list your collaboration needs on the network.</p>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Who Can Submit */}
-      <section className="submit-section">
-        <div className="container">
-          <h2>Who Can Submit</h2>
-          <p>Resonance Network is for creators working on concept-ready spatial projects like immersive installations, regenerative architecture, public works, and experiential environments. We evaluate on scope and stewardship, not size. You are a good fit if</p>
-          <ul className="prepare-list">
-            <li>
-              <strong>Concept-ready spatial project</strong>
-              <span>Your work is an installation, pavilion, environment, or public work with a clear vision and direction</span>
-            </li>
-            <li>
-              <strong>Immersive or regenerative</strong>
-              <span>Your project engages with ecological systems, material innovation, or experiential design</span>
-            </li>
-            <li>
-              <strong>Collaboration-ready</strong>
-              <span>You need aligned collaborators, technical expertise, or funding pathways to move forward</span>
-            </li>
-            <li>
-              <strong>Open to curation</strong>
-              <span>You welcome honest feedback and a curatorial process where &quot;not yet&quot; isn&apos;t a no</span>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      {/* What Happens Next */}
-      <section className="submit-section">
-        <div className="container">
-          <h2>What Happens Next</h2>
-          <ol className="prepare-list">
-            <li>
-              <strong>Create your profile</strong>
-              <span>Name, photo, bio, skills</span>
-            </li>
-            <li>
-              <strong>Share your project</strong>
-              <span>Vision, images, collaboration needs</span>
-            </li>
-            <li>
-              <strong>Our team reviews</strong>
-              <span>Every project is reviewed personally soon after receiving your submission</span>
-            </li>
-            <li>
-              <strong>Accepted projects</strong>
-              <span>Get a public page, collaboration board listing, and visibility to the network</span>
-            </li>
-            <li>
-              <strong>Even if redirected</strong>
-              <span>You receive constructive feedback and an open invitation to resubmit</span>
-            </li>
-          </ol>
         </div>
       </section>
     </>
