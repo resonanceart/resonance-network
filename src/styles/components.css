@@ -4997,6 +4997,102 @@ main {
   background: #b45309;
 }
 
+/* Compact hero variant */
+.join-hero--compact {
+  padding: var(--space-10) 0 var(--space-4);
+}
+.join-hero--compact h1 {
+  font-size: var(--text-3xl);
+}
+
+/* Compact paths section */
+.join-paths--compact {
+  padding: var(--space-2) 0 var(--space-10);
+}
+
+/* Compact card variant */
+.join-card--compact {
+  padding: var(--space-5) var(--space-5);
+  text-align: left;
+  align-items: stretch;
+}
+.join-card--compact h2 {
+  font-size: var(--text-xl);
+  margin-bottom: var(--space-2);
+}
+.join-card--compact .join-card__desc {
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+}
+
+/* Inline import tool inside cards */
+.join-card__import {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.join-card__import-row {
+  display: flex;
+  gap: var(--space-2);
+}
+.join-card__import-input {
+  flex: 1;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  transition: border-color 0.15s ease;
+  min-width: 0;
+}
+.join-card__import-input:focus {
+  outline: none;
+}
+.join-card__import-input--teal:focus {
+  border-color: #14b8a6;
+}
+[data-theme="light"] .join-card__import-input--teal:focus,
+:root:not([data-theme="dark"]) .join-card__import-input--teal:focus {
+  border-color: #1A6B6A;
+}
+.join-card__import-input--gold:focus {
+  border-color: #eab308;
+}
+[data-theme="light"] .join-card__import-input--gold:focus,
+:root:not([data-theme="dark"]) .join-card__import-input--gold:focus {
+  border-color: #d97706;
+}
+
+/* Import button — compact */
+.btn--import {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  min-height: 42px;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+}
+
+/* Error message inside card */
+.join-card__import-error {
+  font-size: var(--text-xs);
+  color: #ef4444;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Loading state inside card */
+.join-card__import-loading {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
 /* =========================
    PREFERS REDUCED MOTION
    ========================= */

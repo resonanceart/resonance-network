@@ -1,14 +1,84 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
+import { saveImportData } from '@/lib/import-store'
+
+type CardStep = 'idle' | 'scraping' | 'error'
 
 export default function JoinPage() {
   const { user, loading } = useAuth()
+  const router = useRouter()
+
+  // Project card state
+  const [projectUrl, setProjectUrl] = useState('')
+  const [projectStep, setProjectStep] = useState<CardStep>('idle')
+  const [projectError, setProjectError] = useState('')
+  const [projectProgress, setProjectProgress] = useState('')
+
+  // Profile card state
+  const [profileUrl, setProfileUrl] = useState('')
+  const [profileStep, setProfileStep] = useState<CardStep>('idle')
+  const [profileError, setProfileError] = useState('')
+  const [profileProgress, setProfileProgress] = useState('')
+
+  async function handleProjectScrape() {
+    if (!projectUrl.trim()) return
+    setProjectStep('scraping')
+    setProjectError('')
+    setProjectProgress('Analyzing your project...')
+    try {
+      const res = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ url: projectUrl.trim(), type: 'project' }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Could not read that page.')
+      // Save data and redirect to editor/signup
+      try { await saveImportData('resonance_import_data', json.data) } catch { /* IndexedDB failed */ }
+      try { sessionStorage.setItem('resonance_import_data', JSON.stringify(json.data)) } catch { /* too large */ }
+      if (user) {
+        router.push('/dashboard/projects/live-edit?new=true&import=true')
+      } else {
+        window.location.href = '/login?tab=signup&redirect=' + encodeURIComponent('/dashboard/projects/live-edit?new=true&import=true')
+      }
+    } catch (err) {
+      setProjectError(err instanceof Error ? err.message : 'Something went wrong')
+      setProjectStep('error')
+    }
+  }
+
+  async function handleProfileScrape() {
+    if (!profileUrl.trim()) return
+    setProfileStep('scraping')
+    setProfileError('')
+    setProfileProgress('Building your profile...')
+    try {
+      const res = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ url: profileUrl.trim(), type: 'profile' }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Could not read that page.')
+      // Save and redirect to profile preview
+      try { await saveImportData('resonance_profile_import', json.data) } catch { /* IndexedDB failed */ }
+      try { sessionStorage.setItem('resonance_profile_import', JSON.stringify(json.data)) } catch { /* too large */ }
+      router.push('/import/profile-builder')
+    } catch (err) {
+      setProfileError(err instanceof Error ? err.message : 'Something went wrong')
+      setProfileStep('error')
+    }
+  }
 
   if (loading) {
     return (
-      <section className="join-hero">
+      <section className="join-hero join-hero--compact">
         <div className="container" style={{ textAlign: 'center', padding: 'var(--space-16) 0' }}>
           <div className="dashboard-spinner" aria-label="Loading" />
         </div>
@@ -18,94 +88,111 @@ export default function JoinPage() {
 
   return (
     <>
-      <section className="join-hero">
+      <section className="join-hero join-hero--compact">
         <div className="container">
           <p className="section-label">Join the Network</p>
           <h1>{user ? 'Your Network' : 'Join Resonance Network'}</h1>
           <p className="join-hero__sub">
             {user
               ? 'You\u2019re part of the network. Here\u2019s what you can do next.'
-              : 'Whether you\u2019re sharing a visionary project or lending your expertise \u2014 import from your existing website in seconds, or start fresh.'}
+              : 'Paste a link to your website and we\u2019ll build your page automatically.'}
           </p>
         </div>
       </section>
 
-      <section className="join-paths">
+      <section className="join-paths join-paths--compact">
         <div className="container">
           <div className="join-cards join-cards--two-up">
 
             {/* Card 1: Share a Project (Teal) */}
-            <div className="join-card join-card--teal">
-              <div className="join-card__icon join-card__icon--teal">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                  <circle cx="8.5" cy="8.5" r="1.5"/>
-                  <polyline points="21 15 16 10 5 21"/>
-                </svg>
-              </div>
+            <div className="join-card join-card--teal join-card--compact">
               <span className="join-card__label join-card__label--teal">I have a project</span>
               <h2>Share Your Project</h2>
               <p className="join-card__desc">
-                Import your project from any website &mdash; we&apos;ll build your curated page automatically. Everything is editable before publishing.
+                Import your project from any website &mdash; gallery, details, and images pulled automatically.
               </p>
-              <ul className="join-card__perks">
-                <li>Curated project page with gallery</li>
-                <li>Find engineers, fabricators, and producers</li>
-                <li>Visibility to funders and curators</li>
-              </ul>
-              <div className="join-card__cta-area">
-                <Link
-                  href={user ? '/dashboard/projects/new' : '/import'}
-                  className="btn btn--teal btn--xl join-card__cta"
-                >
-                  {user ? 'Share a Project' : 'Import Your Project'}
-                </Link>
-                {!user && (
+
+              {/* Inline import tool */}
+              {projectStep === 'idle' || projectStep === 'error' ? (
+                <div className="join-card__import">
+                  <div className="join-card__import-row">
+                    <input
+                      type="url"
+                      value={projectUrl}
+                      onChange={(e) => setProjectUrl(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleProjectScrape()}
+                      placeholder="https://yourproject.com"
+                      className="join-card__import-input join-card__import-input--teal"
+                    />
+                    <button
+                      onClick={handleProjectScrape}
+                      disabled={!projectUrl.trim()}
+                      className="btn btn--teal btn--import"
+                    >
+                      Import
+                    </button>
+                  </div>
+                  {projectStep === 'error' && (
+                    <p className="join-card__import-error">{projectError}</p>
+                  )}
                   <span className="join-card__secondary">
-                    Or <Link href="/login?tab=signup&redirect=/dashboard/welcome">build from scratch</Link>
+                    Or <Link href={user ? '/dashboard/projects/new' : '/login?tab=signup&redirect=/dashboard/welcome'}>build from scratch</Link>
                   </span>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="join-card__import-loading">
+                  <div className="dashboard-spinner" style={{ width: 24, height: 24 }} />
+                  <span>{projectProgress}</span>
+                </div>
+              )}
             </div>
 
             {/* Card 2: Join as Collaborator (Gold) */}
-            <div className="join-card join-card--gold">
-              <div className="join-card__icon join-card__icon--gold">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-              </div>
+            <div className="join-card join-card--gold join-card--compact">
               <span className="join-card__label join-card__label--gold">I want to collaborate</span>
               <h2>Join as Collaborator</h2>
               <p className="join-card__desc">
-                Import your portfolio and join a curated community of architects, engineers, fabricators, and producers seeking meaningful creative work.
+                Import your portfolio or about page &mdash; we&apos;ll build your profile from it.
               </p>
-              <ul className="join-card__perks">
-                <li>Browse curated projects seeking your expertise</li>
-                <li>Credited roles linked to your profile</li>
-                <li>Meaningful work, not commercial gigs</li>
-              </ul>
-              <div className="join-card__cta-area">
-                <Link
-                  href={user ? '/dashboard/profile/live-edit' : '/import?mode=profile'}
-                  className="btn btn--gold btn--xl join-card__cta"
-                >
-                  {user ? 'Edit Your Profile' : 'Import Your Portfolio'}
-                </Link>
-                {!user && (
+
+              {/* Inline import tool */}
+              {profileStep === 'idle' || profileStep === 'error' ? (
+                <div className="join-card__import">
+                  <div className="join-card__import-row">
+                    <input
+                      type="url"
+                      value={profileUrl}
+                      onChange={(e) => setProfileUrl(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleProfileScrape()}
+                      placeholder="https://yourwebsite.com/about"
+                      className="join-card__import-input join-card__import-input--gold"
+                    />
+                    <button
+                      onClick={handleProfileScrape}
+                      disabled={!profileUrl.trim()}
+                      className="btn btn--gold btn--import"
+                    >
+                      Import
+                    </button>
+                  </div>
+                  {profileStep === 'error' && (
+                    <p className="join-card__import-error">{profileError}</p>
+                  )}
                   <span className="join-card__secondary">
-                    Or <Link href="/login?tab=signup&redirect=/dashboard/welcome">create a profile manually</Link>
+                    Or <Link href={user ? '/dashboard/profile/live-edit' : '/login?tab=signup&redirect=/dashboard/welcome'}>create a profile manually</Link>
                   </span>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="join-card__import-loading">
+                  <div className="dashboard-spinner" style={{ width: 24, height: 24 }} />
+                  <span>{profileProgress}</span>
+                </div>
+              )}
             </div>
 
           </div>
 
-          {/* Curator — secondary row */}
+          {/* Curator — compact row */}
           <div className="join-curator-row">
             <div className="join-curator-card">
               <span className="join-card__emoji">📖</span>
@@ -117,7 +204,7 @@ export default function JoinPage() {
                 href={user ? '/dashboard' : '/login?tab=signup&redirect=/dashboard/welcome'}
                 className="btn btn--outline btn--large"
               >
-                {user ? 'Go to Dashboard' : 'Get Started'}
+                {user ? 'Dashboard' : 'Get Started'}
               </Link>
             </div>
           </div>
@@ -138,27 +225,27 @@ export default function JoinPage() {
           <div className="join-benefits__grid">
             <div className="join-benefit-card">
               <h3>Curated Project Page</h3>
-              <p>A professional, visual home for your work (gallery, team, collaboration board) that you can share with funders, venues, and partners.</p>
+              <p>A professional, visual home for your work that you can share with funders, venues, and partners.</p>
             </div>
             <div className="join-benefit-card">
               <h3>Collaboration Matching</h3>
-              <p>Your project is visible to a curated community of engineers, fabricators, producers, and specialists actively seeking meaningful work.</p>
+              <p>Your project is visible to a curated community of engineers, fabricators, producers, and specialists.</p>
             </div>
             <div className="join-benefit-card">
               <h3>Curator Feedback</h3>
-              <p>Every project receives a personal review from practicing artists and makers. Honest, specific, and designed to help your work succeed.</p>
+              <p>Every project receives a personal review from practicing artists and makers.</p>
             </div>
             <div className="join-benefit-card">
               <h3>Community &amp; Resources</h3>
-              <p>Access a growing network of creators, experts, and cultural builders working at the intersection of art, architecture, and ecology.</p>
+              <p>Access a growing network of creators, experts, and cultural builders.</p>
             </div>
             <div className="join-benefit-card">
               <h3>Credibility Signal</h3>
-              <p>Being on Resonance Network tells funders and venues that your project has been reviewed and meets a standard of rigor and values alignment.</p>
+              <p>Being on Resonance Network tells funders and venues your project meets a standard of rigor.</p>
             </div>
             <div className="join-benefit-card">
               <h3>No Algorithms</h3>
-              <p>No feeds, no follower counts, no engagement metrics. This is a working space where projects are discovered on merit, not popularity.</p>
+              <p>No feeds, no follower counts. Projects are discovered on merit, not popularity.</p>
             </div>
           </div>
         </div>
@@ -170,7 +257,7 @@ export default function JoinPage() {
           <div className="faq-list">
             <div className="faq-item">
               <h3>What happens after I share my project?</h3>
-              <p>Our curation team reviews every project personally and will respond soon after receiving your submission. You&apos;ll hear from us either way.</p>
+              <p>Our curation team reviews every project personally and will respond soon after receiving your submission.</p>
             </div>
             <div className="faq-item">
               <h3>What if my project gets rejected?</h3>
@@ -182,7 +269,7 @@ export default function JoinPage() {
             </div>
             <div className="faq-item">
               <h3>What happens after approval?</h3>
-              <p>We&apos;ll build your project page, a curated visual home for your work, and list your collaboration needs on the network.</p>
+              <p>We&apos;ll build your project page and list your collaboration needs on the network.</p>
             </div>
           </div>
         </div>
