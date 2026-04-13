@@ -38,12 +38,14 @@ export default function JoinPage() {
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Could not read that page.')
-      // Save data and redirect to editor/signup
+      // Save data and redirect
       try { await saveImportData('resonance_import_data', json.data) } catch { /* IndexedDB failed */ }
       try { sessionStorage.setItem('resonance_import_data', JSON.stringify(json.data)) } catch { /* too large */ }
       if (user) {
         router.push('/dashboard/projects/live-edit?new=true&import=true')
       } else {
+        // Logged out: signup with redirect back to the editor
+        // The editor will pick up the saved import data after auth
         window.location.href = '/login?tab=signup&redirect=' + encodeURIComponent('/dashboard/projects/live-edit?new=true&import=true')
       }
     } catch (err) {
