@@ -108,13 +108,10 @@ export default function JoinPage() {
             <div className="join-card join-card--teal join-card--compact">
               <span className="join-card__label join-card__label--teal">I have a project</span>
               <h2>Share Your Project</h2>
-              <p className="join-card__desc">
-                Import your project from any website &mdash; gallery, details, and images pulled automatically.
-              </p>
 
-              {/* Inline import tool */}
               {projectStep === 'idle' || projectStep === 'error' ? (
                 <div className="join-card__import">
+                  <p className="join-card__import-hint">Paste your project URL and we&apos;ll build your page</p>
                   <div className="join-card__import-row">
                     <input
                       type="url"
@@ -136,7 +133,7 @@ export default function JoinPage() {
                     <p className="join-card__import-error">{projectError}</p>
                   )}
                   <span className="join-card__secondary">
-                    Or <Link href={user ? '/dashboard/projects/new' : '/login?tab=signup&redirect=/dashboard/welcome'}>build from scratch</Link>
+                    Don&apos;t have a website? <Link href={user ? '/dashboard/projects/new' : '/login?tab=signup&redirect=/dashboard/welcome'}>Build from scratch</Link>
                   </span>
                 </div>
               ) : (
@@ -151,13 +148,10 @@ export default function JoinPage() {
             <div className="join-card join-card--gold join-card--compact">
               <span className="join-card__label join-card__label--gold">I want to collaborate</span>
               <h2>Join as Collaborator</h2>
-              <p className="join-card__desc">
-                Import your portfolio or about page &mdash; we&apos;ll build your profile from it.
-              </p>
 
-              {/* Inline import tool */}
               {profileStep === 'idle' || profileStep === 'error' ? (
                 <div className="join-card__import">
+                  <p className="join-card__import-hint">Paste your portfolio URL and we&apos;ll build your profile</p>
                   <div className="join-card__import-row">
                     <input
                       type="url"
@@ -179,7 +173,7 @@ export default function JoinPage() {
                     <p className="join-card__import-error">{profileError}</p>
                   )}
                   <span className="join-card__secondary">
-                    Or <Link href={user ? '/dashboard/profile/live-edit' : '/login?tab=signup&redirect=/dashboard/welcome'}>create a profile manually</Link>
+                    Don&apos;t have a website? <Link href={user ? '/dashboard/profile/live-edit' : '/login?tab=signup&redirect=/dashboard/welcome'}>Create a profile manually</Link>
                   </span>
                 </div>
               ) : (

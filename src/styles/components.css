@@ -5018,10 +5018,6 @@ main {
 }
 .join-card--compact h2 {
   font-size: var(--text-xl);
-  margin-bottom: var(--space-2);
-}
-.join-card--compact .join-card__desc {
-  font-size: var(--text-sm);
   margin-bottom: var(--space-4);
 }
 
@@ -5072,6 +5068,14 @@ main {
   min-height: 42px;
   border-radius: var(--radius-md);
   white-space: nowrap;
+}
+
+/* Import hint text */
+.join-card__import-hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-3);
+  line-height: 1.4;
 }
 
 /* Error message inside card */
