@@ -251,7 +251,7 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
 
       {/* STEP: Preview — Project */}
       {step === 'preview' && mode === 'project' && projectData && (
-        <div className="import-preview container" style={{ maxWidth: '800px' }}>
+        <div className="import-preview container" style={{ maxWidth: '800px', overflowX: 'hidden' }}>
           {/* Hero preview */}
           {projectData.heroImageUrl && (
             <div style={{ borderRadius: '16px', overflow: 'hidden', marginBottom: 'var(--space-5)', aspectRatio: '16/9', position: 'relative' }}>
@@ -409,11 +409,11 @@ export default function ImportFromWebsite({ backLink }: ImportFromWebsiteProps) 
           )}
 
           {/* Action buttons */}
-          <div style={{ display: 'flex', gap: 'var(--space-3)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
-            <button onClick={handleUseInEditor} className="btn btn--primary" style={{ flex: 1 }}>
+          <div style={{ display: 'flex', gap: 'var(--space-3)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)', flexWrap: 'wrap' }}>
+            <button onClick={handleUseInEditor} className="btn btn--primary" style={{ flex: 1, minWidth: '200px' }}>
               {user ? 'Use in Page Builder' : 'Sign Up & Build Your Page'}
             </button>
-            <button onClick={() => { setStep('input'); setProjectData(null) }} className="btn btn--outline">
+            <button onClick={() => { setStep('input'); setProjectData(null) }} className="btn btn--outline" style={{ flex: 1, minWidth: '140px' }}>
               Try a Different URL
             </button>
           </div>

@@ -91,13 +91,7 @@ export default function JoinPage() {
     <>
       <section className="join-hero join-hero--compact">
         <div className="container">
-          <p className="section-label">Join the Network</p>
           <h1>{user ? 'Your Network' : 'Join Resonance Network'}</h1>
-          <p className="join-hero__sub">
-            {user
-              ? 'You\u2019re part of the network. Here\u2019s what you can do next.'
-              : 'Paste a link to your website and we\u2019ll build your page automatically.'}
-          </p>
         </div>
       </section>
 
