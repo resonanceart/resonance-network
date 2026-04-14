@@ -96,7 +96,7 @@ export default function AdminPage() {
     const displayName = claimableDisplayName.trim()
     const importUrl = claimableImportUrl.trim()
 
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setClaimableError('Please enter a valid email address.')
       return
     }
@@ -1100,7 +1100,6 @@ export default function AdminPage() {
               <div className="admin-modal__field">
                 <label htmlFor="claimable-email" className="admin-modal__label">
                   {adminClaimCopy.emailLabel}
-                  <span className="admin-modal__label-required" aria-hidden="true">*</span>
                 </label>
                 <input
                   id="claimable-email"
@@ -1109,14 +1108,11 @@ export default function AdminPage() {
                   value={claimableEmail}
                   onChange={(e) => setClaimableEmail(e.target.value)}
                   placeholder="artist@example.com"
-                  required
                   autoFocus
                   disabled={claimableSubmitting}
                 />
-                {/* Note: adminClaimCopy.emailHint says "(optional)" but backend
-                    requires this field — override with our own required copy. */}
                 <p className="admin-modal__help">
-                  Where we&rsquo;ll send the claim invite. Required.
+                  Optional. Leave blank if you&rsquo;ll share the claim link via DM instead.
                 </p>
               </div>
 
