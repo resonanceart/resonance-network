@@ -136,7 +136,7 @@ export async function POST(request: Request) {
       materials: project.materials || null,
       hero_image_data: project.heroImageUrl || null,
       gallery_images_data: galleryImagesData,
-      status: 'approved',
+      status: 'draft',
     }
 
     const { data: inserted, error: insertErr } = await supabaseAdmin
