@@ -560,6 +560,10 @@ export default function LiveProfileEditor() {
   const [reimportMode, setReimportMode] = useState<'replace' | 'fill_empty'>('fill_empty')
   const [reimportRunning, setReimportRunning] = useState(false)
   const [reimportError, setReimportError] = useState<string | null>(null)
+  // Add project for claimable profile
+  const [addProjectUrl, setAddProjectUrl] = useState('')
+  const [addProjectRunning, setAddProjectRunning] = useState(false)
+  const [addProjectMessage, setAddProjectMessage] = useState<string | null>(null)
   // ─── Undo-last-save state ───
   // Timestamp of the most recent snapshot stored on user_profiles.previous_snapshot_at.
   // When set and recent (<24h), an "Undo last save" button is shown next to Save.
@@ -1200,6 +1204,34 @@ export default function LiveProfileEditor() {
       setTimeout(() => setClaimInviteMessage(null), 6000)
     }
   }, [claimableMeta, adminEditAs, user?.id])
+
+  const addProjectForProfile = useCallback(async () => {
+    if (!addProjectUrl.trim() || !claimableMeta?.isClaimable) return
+    const profileId = adminEditAs || user?.id
+    if (!profileId) return
+    setAddProjectRunning(true)
+    setAddProjectMessage(null)
+    try {
+      const res = await fetch('/api/admin/create-project-for-profile', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile_id: profileId, url: addProjectUrl.trim() }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data?.success) {
+        setAddProjectMessage(`Project "${data.project_title}" created and linked!`)
+        setAddProjectUrl('')
+      } else {
+        setAddProjectMessage(data?.message || 'Failed to create project.')
+      }
+    } catch {
+      setAddProjectMessage('Network error.')
+    } finally {
+      setAddProjectRunning(false)
+      setTimeout(() => setAddProjectMessage(null), 8000)
+    }
+  }, [addProjectUrl, claimableMeta, adminEditAs, user?.id])
 
   const copyClaimLink = useCallback(async () => {
     if (!claimableMeta?.isClaimable) return
@@ -1946,6 +1978,41 @@ export default function LiveProfileEditor() {
                       {claimableBannerCopy.deleteButton}
                     </button>
                   </div>
+
+                  {/* Add project for this profile */}
+                  <div className="claimable-banner__import-row" style={{ marginTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
+                    <label
+                      htmlFor="claimable-add-project-url"
+                      className="claimable-banner__import-label"
+                      style={{ fontWeight: 600 }}
+                    >
+                      Add a Project
+                    </label>
+                    <div style={{ display: 'flex', gap: 'var(--space-2)', width: '100%' }}>
+                      <input
+                        id="claimable-add-project-url"
+                        type="url"
+                        className="claimable-banner__import-input"
+                        value={addProjectUrl}
+                        onChange={(e) => { setAddProjectUrl(e.target.value); setAddProjectMessage(null) }}
+                        placeholder="https://artist-website.com/project"
+                        disabled={addProjectRunning}
+                        autoComplete="off"
+                      />
+                      <button
+                        type="button"
+                        className="claimable-banner__btn claimable-banner__btn--primary"
+                        onClick={addProjectForProfile}
+                        disabled={addProjectRunning || !addProjectUrl.trim()}
+                        style={{ whiteSpace: 'nowrap' }}
+                      >
+                        {addProjectRunning ? 'Building…' : 'Import Project'}
+                      </button>
+                    </div>
+                  </div>
+                  {addProjectMessage && (
+                    <p className="claimable-banner__subtext" role="status" style={{ marginTop: 'var(--space-2)' }}>{addProjectMessage}</p>
+                  )}
 
                   <button
                     type="button"
