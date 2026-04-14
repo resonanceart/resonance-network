@@ -77,7 +77,8 @@ export function MobileNav({ isOpen, onClose }: Props) {
       <div className="nav-mobile__links">
         <Link href="/" onClick={onClose}>Home</Link>
         <Link href="/#projects" onClick={onClose}>Projects</Link>
-        <Link href="/collaborate" onClick={onClose}>Community</Link>
+        <Link href="/profiles" onClick={onClose}>Community</Link>
+        <Link href="/collaborate" onClick={onClose}>Collaboration Board</Link>
         <Link href="/about" onClick={onClose}>About</Link>
         <Link href="/resources" onClick={onClose}>Resources</Link>
         {!authLoading && (

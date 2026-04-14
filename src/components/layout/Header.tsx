@@ -8,7 +8,8 @@ import { MobileNav } from './MobileNav'
 
 const navLinks = [
   { href: '/#projects', label: 'Projects' },
-  { href: '/collaborate', label: 'Community' },
+  { href: '/profiles', label: 'Community' },
+  { href: '/collaborate', label: 'Collaboration Board' },
   { href: '/about', label: 'About' },
   { href: '/resources', label: 'Resources' },
 ]
