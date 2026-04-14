@@ -39,12 +39,18 @@ export async function GET(request: Request) {
   // Determine current user (if any)
   let currentUser: { id: string; email?: string } | null = null
   let isAdminAuth = false
+
+  // Try session auth
   try {
     const supabase = await createSupabaseServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (user) currentUser = { id: user.id, email: user.email }
   } catch {
-    // Not authenticated via session, check admin password header
+    // Session auth failed — continue to password check
+  }
+
+  // Also check admin password header (can work alongside session)
+  if (!currentUser) {
     const adminPwd = request.headers.get('x-admin-password')
     if (adminPwd && process.env.ADMIN_PASSWORD) {
       const { timingSafeEqual } = await import('crypto')
