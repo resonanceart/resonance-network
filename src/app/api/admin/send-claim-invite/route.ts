@@ -171,7 +171,7 @@ export async function POST(request: Request) {
       const createdBy = adminUserId || profile.id
       const { error: insertErr } = await supabaseAdmin.from('claim_tokens').insert({
         token,
-        target_email: profile.target_email,
+        target_email: profile.target_email || '',
         prebuilt_profile_id: profile.id,
         created_by: createdBy,
         expires_at: expiresAt.toISOString(),

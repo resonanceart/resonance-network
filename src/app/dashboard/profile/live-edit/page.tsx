@@ -1248,16 +1248,20 @@ export default function LiveProfileEditor() {
       })
       const data = await res.json().catch(() => ({}))
       if (res.ok && data?.success && data.claim_url) {
-        await navigator.clipboard.writeText(data.claim_url)
-        setClaimInviteMessage('Claim link copied to clipboard!')
+        try {
+          await navigator.clipboard.writeText(data.claim_url)
+          setClaimInviteMessage('Claim link copied to clipboard!')
+        } catch {
+          // Clipboard failed — show the link so admin can copy manually
+          setClaimInviteMessage(`Link: ${data.claim_url}`)
+        }
       } else {
-        setClaimInviteMessage(data?.message || 'Failed to generate link.')
+        setClaimInviteMessage(data?.message || `Failed: ${res.status} ${res.statusText}`)
       }
-    } catch {
-      setClaimInviteMessage('Network error.')
+    } catch (err) {
+      setClaimInviteMessage(`Error: ${(err as Error).message || 'Network error'}`)
     } finally {
       setClaimInviteSending(false)
-      setTimeout(() => setClaimInviteMessage(null), 6000)
     }
   }, [claimableMeta, adminEditAs, user?.id])
 

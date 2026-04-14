@@ -804,13 +804,17 @@ export default function AdminPage() {
                                             body: JSON.stringify({ profile_id: up.id, link_only: true, adminPassword: localStorage.getItem('admin_password') }),
                                           })
                                           const data = await res.json()
-                                          if (data.success) {
-                                            await navigator.clipboard.writeText(data.claim_url)
-                                            alert('Claim link copied to clipboard!')
+                                          if (data.success && data.claim_url) {
+                                            try {
+                                              await navigator.clipboard.writeText(data.claim_url)
+                                              alert('Claim link copied to clipboard!')
+                                            } catch {
+                                              prompt('Copy this claim link:', data.claim_url)
+                                            }
                                           } else {
-                                            alert(data.message || 'Failed to generate link')
+                                            alert(data.message || `Failed: ${res.status}`)
                                           }
-                                        } catch { alert('Network error') }
+                                        } catch (err) { alert(`Error: ${(err as Error).message}`) }
                                       }}
                                     >
                                       Copy Link
