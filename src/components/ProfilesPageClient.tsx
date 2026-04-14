@@ -164,24 +164,6 @@ export function ProfilesPageClient({ profiles }: { profiles: Profile[] }) {
         </div>
       </section>
 
-      {/* Dual CTA */}
-      <section className="profiles-dual-cta">
-        <div className="container">
-          <div className="profiles-dual-cta__grid">
-            <Link href="/join" className="profiles-dual-cta__card">
-              <h3>Share a Project</h3>
-              <p>Have an ambitious project? Share it with the network and find the right people.</p>
-              <span className="btn btn--primary">Get Started</span>
-            </Link>
-            <Link href="/join" className="profiles-dual-cta__card">
-              <h3>Join as Collaborator</h3>
-              <p>Engineer, fabricator, or specialist? Find projects that need what you do.</p>
-              <span className="btn btn--outline">Explore Roles</span>
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* CTA */}
       <section className="profiles-cta">
         <div className="container" style={{ textAlign: 'center', padding: 'var(--space-12) 0' }}>

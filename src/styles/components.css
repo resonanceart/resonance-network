@@ -3738,8 +3738,6 @@ main {
   gap: 4px;
   justify-content: center;
   margin-top: 2px;
-  max-height: 2rem;
-  overflow: hidden;
 }
 
 .profile-card__specialties .badge {
