@@ -22,45 +22,40 @@ export const metadata: Metadata = {
 export default function ResourcesPage() {
   return (
     <>
-      <section className="section" style={{ padding: 'var(--space-10) 0' }}>
+      <section className="section" style={{ padding: 'var(--space-8) 0 var(--space-6)' }}>
         <div className="container">
-          <h1>Tools and Guides</h1>
+          <h1 style={{ marginBottom: 'var(--space-4)' }}>Tools and Guides</h1>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: 'var(--space-5)' }}>
-            <div style={{ padding: 'var(--space-5)', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--color-primary)' }}>
-              <h3 style={{ fontFamily: 'var(--font-display)', marginBottom: 'var(--space-2)' }}>Fundraising & Fiscal Sponsorship</h3>
-              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>Navigate grant applications, fiscal sponsorship pathways (including Fractured Atlas at 8% admin fee), and crowdfunding strategies for creative projects.</p>
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Coming soon</span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-3)' }}>
+            <div style={{ padding: 'var(--space-4)', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--color-primary)' }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-base)', marginBottom: 'var(--space-2)' }}>Fundraising & Fiscal Sponsorship</h3>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.5, margin: 0 }}>Navigate grant applications, fiscal sponsorship pathways, and crowdfunding strategies for creative projects.</p>
             </div>
 
-            <div style={{ padding: 'var(--space-5)', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--color-primary)' }}>
-              <h3 style={{ fontFamily: 'var(--font-display)', marginBottom: 'var(--space-2)' }}>Permitting & Public Art Processes</h3>
-              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>Guides on navigating permitting processes by region, public art RFPs, site agreements, and working with municipalities.</p>
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Coming soon</span>
+            <div style={{ padding: 'var(--space-4)', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--color-primary)' }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-base)', marginBottom: 'var(--space-2)' }}>Permitting & Public Art Processes</h3>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.5, margin: 0 }}>Guides on navigating permitting processes by region, public art RFPs, site agreements, and working with municipalities.</p>
             </div>
 
-            <div style={{ padding: 'var(--space-5)', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--color-primary)' }}>
-              <h3 style={{ fontFamily: 'var(--font-display)', marginBottom: 'var(--space-2)' }}>Production & Materials</h3>
-              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>Material sourcing guides, fabrication best practices, sustainable building methods, and production planning templates.</p>
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Coming soon</span>
+            <div style={{ padding: 'var(--space-4)', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--color-primary)' }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-base)', marginBottom: 'var(--space-2)' }}>Production & Materials</h3>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.5, margin: 0 }}>Material sourcing guides, fabrication best practices, sustainable building methods, and production planning templates.</p>
             </div>
 
-            <div style={{ padding: 'var(--space-5)', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--color-primary)' }}>
-              <h3 style={{ fontFamily: 'var(--font-display)', marginBottom: 'var(--space-2)' }}>Budgeting & Project Planning</h3>
-              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>Budget templates, cost estimation frameworks, timeline planning tools, and financial management guides for creative projects.</p>
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Coming soon</span>
+            <div style={{ padding: 'var(--space-4)', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--color-primary)' }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-base)', marginBottom: 'var(--space-2)' }}>Budgeting & Project Planning</h3>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.5, margin: 0 }}>Budget templates, cost estimation, timeline planning tools, and financial management guides for creative projects.</p>
             </div>
 
-            <div style={{ padding: 'var(--space-5)', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--color-primary)' }}>
-              <h3 style={{ fontFamily: 'var(--font-display)', marginBottom: 'var(--space-2)' }}>Venue & Site Partnerships</h3>
-              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>How to approach venues, negotiate partnerships, write site proposals, and build relationships with institutions and land stewards.</p>
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Coming soon</span>
+            <div style={{ padding: 'var(--space-4)', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--color-primary)' }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-base)', marginBottom: 'var(--space-2)' }}>Venue & Site Partnerships</h3>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.5, margin: 0 }}>How to approach venues, negotiate partnerships, write site proposals, and build relationships with institutions.</p>
             </div>
 
-            <div style={{ padding: 'var(--space-5)', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--color-primary)' }}>
-              <h3 style={{ fontFamily: 'var(--font-display)', marginBottom: 'var(--space-2)' }}>Evaluation Framework</h3>
-              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>Understand how projects are evaluated across 8 value domains. Download the full framework to prepare your submission.</p>
-              <a href="/assets/resonance-evaluation-framework.pdf" target="_blank" rel="noopener noreferrer" style={{ fontSize: 'var(--text-sm)', color: 'var(--color-primary)', fontWeight: 600 }}>Download PDF &rarr;</a>
+            <div style={{ padding: 'var(--space-4)', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--color-primary)' }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-base)', marginBottom: 'var(--space-2)' }}>Evaluation Framework</h3>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.5, marginBottom: 'var(--space-1)' }}>Understand how projects are evaluated across 8 value domains.</p>
+              <a href="/assets/resonance-evaluation-framework.pdf" target="_blank" rel="noopener noreferrer" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', fontWeight: 600 }}>Download PDF &rarr;</a>
             </div>
           </div>
 
