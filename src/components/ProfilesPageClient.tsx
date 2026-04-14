@@ -42,27 +42,9 @@ export function ProfilesPageClient({ profiles }: { profiles: Profile[] }) {
           <p className="lead">
             Artists, architects, engineers, and makers building extraordinary things, together.
           </p>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-3)' }}>
+          <p style={{ fontSize: 'var(--text-base)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-3)' }}>
             Resonance Network is a growing community. The people you see here are the first. More profiles are added as new creators and collaborators join.
           </p>
-        </div>
-      </section>
-
-      {/* Dual CTA */}
-      <section className="profiles-dual-cta">
-        <div className="container">
-          <div className="profiles-dual-cta__grid">
-            <Link href="/join" className="profiles-dual-cta__card">
-              <h3>Share a Project</h3>
-              <p>Have an ambitious project? Share it with the network and find the right people.</p>
-              <span className="btn btn--primary">Get Started</span>
-            </Link>
-            <Link href="/join" className="profiles-dual-cta__card">
-              <h3>Join as Collaborator</h3>
-              <p>Engineer, fabricator, or specialist? Find projects that need what you do.</p>
-              <span className="btn btn--outline">Explore Roles</span>
-            </Link>
-          </div>
         </div>
       </section>
 
@@ -178,6 +160,24 @@ export function ProfilesPageClient({ profiles }: { profiles: Profile[] }) {
                 No profiles match your search.
               </p>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* Dual CTA */}
+      <section className="profiles-dual-cta">
+        <div className="container">
+          <div className="profiles-dual-cta__grid">
+            <Link href="/join" className="profiles-dual-cta__card">
+              <h3>Share a Project</h3>
+              <p>Have an ambitious project? Share it with the network and find the right people.</p>
+              <span className="btn btn--primary">Get Started</span>
+            </Link>
+            <Link href="/join" className="profiles-dual-cta__card">
+              <h3>Join as Collaborator</h3>
+              <p>Engineer, fabricator, or specialist? Find projects that need what you do.</p>
+              <span className="btn btn--outline">Explore Roles</span>
+            </Link>
           </div>
         </div>
       </section>
