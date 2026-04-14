@@ -30,7 +30,7 @@ export function JoinModal() {
   useEffect(() => {
     if (authLoading) return
     if (user) return
-    if (pathname?.startsWith('/import') || pathname?.startsWith('/join') || pathname?.startsWith('/login') || pathname?.startsWith('/dashboard')) return
+    if (pathname?.startsWith('/import') || pathname?.startsWith('/join') || pathname?.startsWith('/login') || pathname?.startsWith('/dashboard') || pathname?.startsWith('/claim')) return
 
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
