@@ -757,13 +757,65 @@ export default function AdminPage() {
                             <td>
                               <div style={{display:'flex',gap:6}}>
                                 {isClaimable ? (
-                                  <button
-                                    type="button"
-                                    className="admin-btn admin-btn--primary admin-btn--sm"
-                                    onClick={() => router.push(`/dashboard/profile/live-edit?admin_edit_as=${up.id}`)}
-                                  >
-                                    Edit as Admin
-                                  </button>
+                                  <>
+                                    <button
+                                      type="button"
+                                      className="admin-btn admin-btn--primary admin-btn--sm"
+                                      onClick={() => router.push(`/dashboard/profile/live-edit?admin_edit_as=${up.id}`)}
+                                    >
+                                      Edit
+                                    </button>
+                                    {up.target_email && (
+                                      <button
+                                        type="button"
+                                        className="admin-btn admin-btn--outline admin-btn--sm"
+                                        onClick={async () => {
+                                          try {
+                                            const res = await fetch('/api/admin/send-claim-invite', {
+                                              method: 'POST',
+                                              headers: { 'Content-Type': 'application/json' },
+                                              credentials: 'include',
+                                              body: JSON.stringify({ profile_id: up.id, adminPassword: localStorage.getItem('admin_password') }),
+                                            })
+                                            const data = await res.json()
+                                            if (data.success && data.email_sent) {
+                                              alert(`Invite sent to ${up.target_email}`)
+                                            } else if (data.success) {
+                                              await navigator.clipboard.writeText(data.claim_url)
+                                              alert(`Email failed but link copied: ${data.claim_url}`)
+                                            } else {
+                                              alert(data.message || 'Failed to send invite')
+                                            }
+                                          } catch { alert('Network error') }
+                                        }}
+                                      >
+                                        Send Invite
+                                      </button>
+                                    )}
+                                    <button
+                                      type="button"
+                                      className="admin-btn admin-btn--outline admin-btn--sm"
+                                      onClick={async () => {
+                                        try {
+                                          const res = await fetch('/api/admin/send-claim-invite', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            credentials: 'include',
+                                            body: JSON.stringify({ profile_id: up.id, link_only: true, adminPassword: localStorage.getItem('admin_password') }),
+                                          })
+                                          const data = await res.json()
+                                          if (data.success) {
+                                            await navigator.clipboard.writeText(data.claim_url)
+                                            alert('Claim link copied to clipboard!')
+                                          } else {
+                                            alert(data.message || 'Failed to generate link')
+                                          }
+                                        } catch { alert('Network error') }
+                                      }}
+                                    >
+                                      Copy Link
+                                    </button>
+                                  </>
                                 ) : (
                                   <a href={`/profiles/${up.display_name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}?preview=1`} target="_blank" rel="noopener noreferrer" className="admin-btn admin-btn--outline admin-btn--sm">View</a>
                                 )}

@@ -108,12 +108,15 @@ export async function POST(request: Request) {
       )
     }
 
-    if (!profile || !profile.is_claimable || !profile.target_email) {
+    if (!profile || !profile.is_claimable) {
       return NextResponse.json(
         { success: false, error: 'profile_not_found', message: 'Claimable profile not found.' },
         { status: 404 }
       )
     }
+
+    // Allow generating a token without an email (for copy-link flow)
+    const skipEmail = !profile.target_email || (body as Record<string, unknown>).link_only === true
 
     // Generate a fresh token + compute new expiry (30 days from now)
     const token = generateClaimToken()
@@ -143,7 +146,7 @@ export async function POST(request: Request) {
         .from('claim_tokens')
         .update({
           token,
-          target_email: profile.target_email,
+          target_email: profile.target_email || '',
           expires_at: expiresAt.toISOString(),
           last_sent_at: now.toISOString(),
           send_count: sendCount,
@@ -185,43 +188,46 @@ export async function POST(request: Request) {
       }
     }
 
-    // Build the claim URL + email body
+    // Build the claim URL
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://resonancenetwork.org'
     const claimUrl = `${siteUrl}/claim?token=${token}`
-    const email = claimInvite(
-      profile.display_name || '',
-      claimUrl,
-      profile.original_source_url || ''
-    )
 
-    // Send the email. If it fails, still return success with the token so the
-    // admin can copy/send manually. Log loudly.
-    let emailSent = true
+    // Send the email (unless skipping)
+    let emailSent = false
     let emailError: string | null = null
-    try {
-      await sendEmail({
-        to: profile.target_email,
-        subject: email.subject,
-        html: email.html,
-      })
-    } catch (err) {
-      emailSent = false
-      emailError = (err as Error).message
-      console.error(
-        'send-claim-invite: sendEmail failed (token still generated):',
-        emailError,
-        'profile_id=',
-        profile.id
+
+    if (!skipEmail && profile.target_email) {
+      const email = claimInvite(
+        profile.display_name || '',
+        claimUrl,
+        profile.original_source_url || ''
       )
+      try {
+        await sendEmail({
+          to: profile.target_email,
+          subject: email.subject,
+          html: email.html,
+        })
+        emailSent = true
+      } catch (err) {
+        emailError = (err as Error).message
+        console.error(
+          'send-claim-invite: sendEmail failed (token still generated):',
+          emailError,
+          'profile_id=',
+          profile.id
+        )
+      }
     }
 
     return NextResponse.json({
       success: true,
       token,
       claim_url: claimUrl,
-      sent_to: profile.target_email,
+      sent_to: profile.target_email || null,
       send_count: sendCount,
       email_sent: emailSent,
+      email_skipped: skipEmail,
       email_error: emailError,
     })
   } catch (err) {
