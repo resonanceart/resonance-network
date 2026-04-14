@@ -1201,6 +1201,34 @@ export default function LiveProfileEditor() {
     }
   }, [claimableMeta, adminEditAs, user?.id])
 
+  const copyClaimLink = useCallback(async () => {
+    if (!claimableMeta?.isClaimable) return
+    const profileId = adminEditAs || user?.id
+    if (!profileId) return
+    setClaimInviteMessage(null)
+    setClaimInviteSending(true)
+    try {
+      const res = await fetch('/api/admin/send-claim-invite', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile_id: profileId, link_only: true }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data?.success && data.claim_url) {
+        await navigator.clipboard.writeText(data.claim_url)
+        setClaimInviteMessage('Claim link copied to clipboard!')
+      } else {
+        setClaimInviteMessage(data?.message || 'Failed to generate link.')
+      }
+    } catch {
+      setClaimInviteMessage('Network error.')
+    } finally {
+      setClaimInviteSending(false)
+      setTimeout(() => setClaimInviteMessage(null), 6000)
+    }
+  }, [claimableMeta, adminEditAs, user?.id])
+
   // Delete a claimable (unclaimed) profile. Uses the existing admin users
   // DELETE endpoint which also removes the auth user.
   const deleteClaimableProfile = useCallback(async () => {
@@ -1892,6 +1920,14 @@ export default function LiveProfileEditor() {
                         : claimableMeta.sendCount > 0
                           ? claimableBannerCopy.resendButton(`${claimableMeta.sendCount}×`)
                           : claimableBannerCopy.sendButton}
+                    </button>
+                    <button
+                      type="button"
+                      className="claimable-banner__btn claimable-banner__btn--secondary"
+                      onClick={copyClaimLink}
+                      disabled={claimInviteSending}
+                    >
+                      Copy Claim Link
                     </button>
                     <button
                       type="button"
