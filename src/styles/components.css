@@ -15184,17 +15184,28 @@ main {
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(20, 184, 166, 0.25);
+  border-left: 3px solid rgba(20, 184, 166, 0.6);
   border-radius: var(--radius-lg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+.mission-vision-block + .mission-vision-block {
+  border-color: rgba(234, 179, 8, 0.25);
+  border-left-color: rgba(234, 179, 8, 0.6);
 }
 [data-theme="light"] .mission-vision-block,
 :root:not([data-theme="dark"]) .mission-vision-block {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-color: rgba(0, 0, 0, 0.08);
+  border-color: rgba(26, 107, 106, 0.2);
+  border-left-color: rgba(26, 107, 106, 0.5);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+[data-theme="light"] .mission-vision-block + .mission-vision-block,
+:root:not([data-theme="dark"]) .mission-vision-block + .mission-vision-block {
+  border-color: rgba(217, 119, 6, 0.2);
+  border-left-color: rgba(217, 119, 6, 0.5);
 }
 
 /* Bold labels */
