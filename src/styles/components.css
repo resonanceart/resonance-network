@@ -16490,6 +16490,88 @@ main {
   text-decoration: underline;
 }
 
+/* Inline import inside modal cards */
+.join-modal__import {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: auto;
+}
+.join-modal__import-input {
+  width: 100%;
+  padding: var(--space-3);
+  border-radius: 10px;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  transition: border-color 0.15s ease;
+}
+[data-theme="light"] .join-modal__import-input,
+:root:not([data-theme="dark"]) .join-modal__import-input {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+}
+.join-modal__import-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.join-modal__import-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+[data-theme="light"] .join-modal__import-input::placeholder,
+:root:not([data-theme="dark"]) .join-modal__import-input::placeholder {
+  color: var(--color-text-muted);
+}
+.join-modal__import-btn {
+  width: 100%;
+  padding: var(--space-3);
+  border-radius: 10px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  min-height: 42px;
+  transition: all 0.2s;
+}
+.join-modal__import-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.join-modal__import-btn--teal {
+  background: rgba(20, 184, 166, 0.9);
+  color: #fff;
+}
+.join-modal__import-btn--teal:hover:not(:disabled) {
+  background: rgba(20, 184, 166, 1);
+}
+.join-modal__import-btn--gold {
+  background: rgba(234, 179, 8, 0.9);
+  color: #111;
+}
+.join-modal__import-btn--gold:hover:not(:disabled) {
+  background: rgba(234, 179, 8, 1);
+}
+.join-modal__import-error {
+  font-size: var(--text-xs);
+  color: #ef4444;
+  margin: 0;
+  line-height: 1.4;
+}
+.join-modal__import-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding: var(--space-3) 0;
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.6);
+}
+[data-theme="light"] .join-modal__import-loading,
+:root:not([data-theme="dark"]) .join-modal__import-loading {
+  color: var(--color-text-secondary);
+}
+
 /* Mobile */
 @media (max-width: 520px) {
   .join-modal__overlay {
