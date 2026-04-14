@@ -83,6 +83,16 @@ export async function GET(request: Request) {
     }
 
     if (currentUser) {
+      // Check if the user is an admin
+      const { data: userProfile } = await supabaseAdmin
+        .from('user_profiles')
+        .select('role')
+        .eq('id', currentUser.id)
+        .single()
+      if (userProfile?.role === 'admin') {
+        return NextResponse.json({ data })
+      }
+
       const isOwner =
         row.user_id === currentUser.id ||
         (currentUser.email && (row.artist_email === currentUser.email || row.email === currentUser.email))
