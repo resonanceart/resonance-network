@@ -39,26 +39,21 @@ export default function AboutPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
-      {/* Hero — clean, no breadcrumb, no sub-text */}
+      {/* Hero — headline + mission/vision all above the fold */}
       <section className="about-hero about-hero--immersive">
         <div className="container">
-          <h1 className="about-hero__headline">Built by artists. For artists.</h1>
-        </div>
-      </section>
+          <h1 className="about-hero__headline about-hero__headline--full">Built by artists. For artists.</h1>
 
-      {/* Mission & Vision — bigger, more impactful */}
-      <section className="about-section about-section--alt">
-        <div className="container">
-          <div className="mission-vision-grid mission-vision-grid--large">
-            <div>
-              <p className="mission-vision__label">Mission</p>
-              <p className="mission-vision__text">
+          <div className="mission-vision-grid mission-vision-grid--hero">
+            <div className="mission-vision-block">
+              <h2 className="mission-vision__label mission-vision__label--bold">Mission</h2>
+              <p className="mission-vision__text mission-vision__text--hero">
                 Resonance Network connects artists, technologists, and cultural builders exploring how immersive architecture and regenerative design can transform collective awareness. We cultivate collaboration across disciplines to develop works that deepen our relationship to nature, community, and the living systems we inhabit.
               </p>
             </div>
-            <div>
-              <p className="mission-vision__label">Vision</p>
-              <p className="mission-vision__text">
+            <div className="mission-vision-block">
+              <h2 className="mission-vision__label mission-vision__label--bold">Vision</h2>
+              <p className="mission-vision__text mission-vision__text--hero">
                 We envision a world where immersive public art and regenerative design form the cultural infrastructure of the future, fostering shared ritual, ecological stewardship, and creative solidarity across borders.
               </p>
             </div>
@@ -183,35 +178,21 @@ export default function AboutPage() {
         <div className="container">
           <p className="section-label">Process</p>
           <h2>How Curation Works</h2>
-          <div className="curation-timeline">
-            <div className="curation-timeline__step">
-              <div className="curation-timeline__marker">
-                <span className="step-number">1</span>
-                <span className="curation-timeline__line" />
-              </div>
-              <div className="step-content">
-                <h3>Submission</h3>
-                <p>Creators submit their project through our intake form, including images, descriptions, classification, and collaboration needs.</p>
-              </div>
+          <div className="curation-cards">
+            <div className="curation-card">
+              <span className="curation-card__number">1</span>
+              <h3>Submission</h3>
+              <p>Creators submit their project through our intake form, including images, descriptions, classification, and collaboration needs.</p>
             </div>
-            <div className="curation-timeline__step">
-              <div className="curation-timeline__marker">
-                <span className="step-number">2</span>
-                <span className="curation-timeline__line" />
-              </div>
-              <div className="step-content">
-                <h3>Review</h3>
-                <p>A curation team of practicing artists and makers reviews every project for values alignment and readiness. Human approval is always required.</p>
-              </div>
+            <div className="curation-card">
+              <span className="curation-card__number">2</span>
+              <h3>Review</h3>
+              <p>A curation team of practicing artists and makers reviews every project for values alignment and readiness. Human approval is always required.</p>
             </div>
-            <div className="curation-timeline__step">
-              <div className="curation-timeline__marker">
-                <span className="step-number">3</span>
-              </div>
-              <div className="step-content">
-                <h3>Publish or Guide</h3>
-                <p>Approved projects are published to the network. Projects not yet ready receive clear, actionable feedback with an invitation to resubmit.</p>
-              </div>
+            <div className="curation-card">
+              <span className="curation-card__number">3</span>
+              <h3>Publish or Guide</h3>
+              <p>Approved projects are published to the network. Projects not yet ready receive clear, actionable feedback with an invitation to resubmit.</p>
             </div>
           </div>
         </div>

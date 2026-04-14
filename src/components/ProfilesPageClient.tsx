@@ -42,27 +42,9 @@ export function ProfilesPageClient({ profiles }: { profiles: Profile[] }) {
           <p className="lead">
             Artists, architects, engineers, and makers building extraordinary things, together.
           </p>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-3)' }}>
+          <p style={{ fontSize: 'var(--text-base)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-3)' }}>
             Resonance Network is a growing community. The people you see here are the first. More profiles are added as new creators and collaborators join.
           </p>
-        </div>
-      </section>
-
-      {/* Dual CTA */}
-      <section className="profiles-dual-cta">
-        <div className="container">
-          <div className="profiles-dual-cta__grid">
-            <Link href="/join" className="profiles-dual-cta__card">
-              <h3>Share a Project</h3>
-              <p>Have an ambitious project? Share it with the network and find the right people.</p>
-              <span className="btn btn--primary">Get Started</span>
-            </Link>
-            <Link href="/join" className="profiles-dual-cta__card">
-              <h3>Join as Collaborator</h3>
-              <p>Engineer, fabricator, or specialist? Find projects that need what you do.</p>
-              <span className="btn btn--outline">Explore Roles</span>
-            </Link>
-          </div>
         </div>
       </section>
 
@@ -118,11 +100,7 @@ export function ProfilesPageClient({ profiles }: { profiles: Profile[] }) {
             {filtered.map(profile => {
               const projectCount = getProjectCount(profile)
               return (
-                <Link
-                  key={profile.id}
-                  href={`/profiles/${profile.slug}`}
-                  className="profile-card"
-                >
+                <div key={profile.id} className="profile-card">
                   <div className="profile-card__avatar">
                     <Image
                       src={profile.photo}
@@ -166,7 +144,15 @@ export function ProfilesPageClient({ profiles }: { profiles: Profile[] }) {
                       {projectCount} project{projectCount !== 1 ? 's' : ''} on Resonance
                     </p>
                   )}
-                </Link>
+                  <div className="profile-card__actions">
+                    <Link href={`/profiles/${profile.slug}`} className="btn btn--outline btn--sm">View Profile</Link>
+                    {profile.email ? (
+                      <a href={`mailto:${profile.email}?subject=Collaboration%20Inquiry%20via%20Resonance%20Network`} className="btn btn--primary btn--sm">Connect</a>
+                    ) : (
+                      <Link href={`/profiles/${profile.slug}`} className="btn btn--primary btn--sm">Connect</Link>
+                    )}
+                  </div>
+                </div>
               )
             })}
             {filtered.length === 0 && (

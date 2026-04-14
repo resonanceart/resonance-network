@@ -39,12 +39,18 @@ export async function GET(request: Request) {
   // Determine current user (if any)
   let currentUser: { id: string; email?: string } | null = null
   let isAdminAuth = false
+
+  // Try session auth
   try {
     const supabase = await createSupabaseServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (user) currentUser = { id: user.id, email: user.email }
   } catch {
-    // Not authenticated via session, check admin password header
+    // Session auth failed — continue to password check
+  }
+
+  // Also check admin password header (can work alongside session)
+  if (!currentUser) {
     const adminPwd = request.headers.get('x-admin-password')
     if (adminPwd && process.env.ADMIN_PASSWORD) {
       const { timingSafeEqual } = await import('crypto')
@@ -83,6 +89,16 @@ export async function GET(request: Request) {
     }
 
     if (currentUser) {
+      // Check if the user is an admin
+      const { data: userProfile } = await supabaseAdmin
+        .from('user_profiles')
+        .select('role')
+        .eq('id', currentUser.id)
+        .single()
+      if (userProfile?.role === 'admin') {
+        return NextResponse.json({ data })
+      }
+
       const isOwner =
         row.user_id === currentUser.id ||
         (currentUser.email && (row.artist_email === currentUser.email || row.email === currentUser.email))

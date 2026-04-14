@@ -96,7 +96,7 @@ export default function AdminPage() {
     const displayName = claimableDisplayName.trim()
     const importUrl = claimableImportUrl.trim()
 
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setClaimableError('Please enter a valid email address.')
       return
     }
@@ -757,13 +757,69 @@ export default function AdminPage() {
                             <td>
                               <div style={{display:'flex',gap:6}}>
                                 {isClaimable ? (
-                                  <button
-                                    type="button"
-                                    className="admin-btn admin-btn--primary admin-btn--sm"
-                                    onClick={() => router.push(`/dashboard/profile/live-edit?admin_edit_as=${up.id}`)}
-                                  >
-                                    Edit as Admin
-                                  </button>
+                                  <>
+                                    <button
+                                      type="button"
+                                      className="admin-btn admin-btn--primary admin-btn--sm"
+                                      onClick={() => router.push(`/dashboard/profile/live-edit?admin_edit_as=${up.id}`)}
+                                    >
+                                      Edit
+                                    </button>
+                                    {up.target_email && (
+                                      <button
+                                        type="button"
+                                        className="admin-btn admin-btn--outline admin-btn--sm"
+                                        onClick={async () => {
+                                          try {
+                                            const res = await fetch('/api/admin/send-claim-invite', {
+                                              method: 'POST',
+                                              headers: { 'Content-Type': 'application/json' },
+                                              credentials: 'include',
+                                              body: JSON.stringify({ profile_id: up.id, adminPassword: localStorage.getItem('admin_password') }),
+                                            })
+                                            const data = await res.json()
+                                            if (data.success && data.email_sent) {
+                                              alert(`Invite sent to ${up.target_email}`)
+                                            } else if (data.success) {
+                                              await navigator.clipboard.writeText(data.claim_url)
+                                              alert(`Email failed but link copied: ${data.claim_url}`)
+                                            } else {
+                                              alert(data.message || 'Failed to send invite')
+                                            }
+                                          } catch { alert('Network error') }
+                                        }}
+                                      >
+                                        Send Invite
+                                      </button>
+                                    )}
+                                    <button
+                                      type="button"
+                                      className="admin-btn admin-btn--outline admin-btn--sm"
+                                      onClick={async () => {
+                                        try {
+                                          const res = await fetch('/api/admin/send-claim-invite', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            credentials: 'include',
+                                            body: JSON.stringify({ profile_id: up.id, link_only: true, adminPassword: localStorage.getItem('admin_password') }),
+                                          })
+                                          const data = await res.json()
+                                          if (data.success && data.claim_url) {
+                                            try {
+                                              await navigator.clipboard.writeText(data.claim_url)
+                                              alert('Claim link copied to clipboard!')
+                                            } catch {
+                                              prompt('Copy this claim link:', data.claim_url)
+                                            }
+                                          } else {
+                                            alert(data.message || `Failed: ${res.status}`)
+                                          }
+                                        } catch (err) { alert(`Error: ${(err as Error).message}`) }
+                                      }}
+                                    >
+                                      Copy Link
+                                    </button>
+                                  </>
                                 ) : (
                                   <a href={`/profiles/${up.display_name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}?preview=1`} target="_blank" rel="noopener noreferrer" className="admin-btn admin-btn--outline admin-btn--sm">View</a>
                                 )}
@@ -1044,7 +1100,6 @@ export default function AdminPage() {
               <div className="admin-modal__field">
                 <label htmlFor="claimable-email" className="admin-modal__label">
                   {adminClaimCopy.emailLabel}
-                  <span className="admin-modal__label-required" aria-hidden="true">*</span>
                 </label>
                 <input
                   id="claimable-email"
@@ -1053,14 +1108,11 @@ export default function AdminPage() {
                   value={claimableEmail}
                   onChange={(e) => setClaimableEmail(e.target.value)}
                   placeholder="artist@example.com"
-                  required
                   autoFocus
                   disabled={claimableSubmitting}
                 />
-                {/* Note: adminClaimCopy.emailHint says "(optional)" but backend
-                    requires this field — override with our own required copy. */}
                 <p className="admin-modal__help">
-                  Where we&rsquo;ll send the claim invite. Required.
+                  Optional. Leave blank if you&rsquo;ll share the claim link via DM instead.
                 </p>
               </div>
 

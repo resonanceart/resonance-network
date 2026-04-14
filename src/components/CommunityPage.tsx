@@ -81,134 +81,12 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
 
   return (
     <>
-      {/* Compact Header + Tabs — get to content fast */}
+      {/* Header */}
       <section className="collab-header-section">
         <div className="container">
-          <h1 className="collab-header__title">Community Connections Board</h1>
-
-
-          <div className="collab-tabs collab-tabs--prominent" role="tablist" aria-label="Community view">
-            <button
-              role="tab"
-              aria-selected={activeTab === 'roles'}
-              className={`collab-tab collab-tab--roles${activeTab === 'roles' ? ' collab-tab--active' : ''}`}
-              onClick={() => switchTab('roles')}
-            >
-              Open Roles <span className="collab-tab__count">{tasks.filter(t => t.source === 'supabase').length}</span>
-            </button>
-            <button
-              role="tab"
-              aria-selected={activeTab === 'people'}
-              className={`collab-tab collab-tab--people${activeTab === 'people' ? ' collab-tab--active' : ''}`}
-              onClick={() => switchTab('people')}
-            >
-              People <span className="collab-tab__count">{profiles.length}</span>
-            </button>
-          </div>
+          <h1 className="collab-header__title">Collaboration Board</h1>
         </div>
       </section>
-
-      {/* People Tab */}
-      {activeTab === 'people' && (
-        <>
-          <section className="profiles-filter-section">
-            <div className="container">
-              <div className="profiles-filter-bar">
-                <div className="profiles-type-tabs" role="tablist" aria-label="Filter by type">
-                  {[
-                    { value: 'artist', label: 'Artists' },
-                    { value: 'collaborator', label: 'Collaborators' },
-                  ].map(tab => (
-                    <button
-                      key={tab.value}
-                      role="tab"
-                      aria-selected={selectedType === tab.value}
-                      className={`profiles-type-tab${selectedType === tab.value ? ' profiles-type-tab--active' : ''}`}
-                      onClick={() => setSelectedType(tab.value)}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="profiles-grid-section">
-            <div className="container">
-              <div className="profiles-grid">
-                {filteredProfiles.map(profile => {
-                  const projectCount = getProjectCount(profile)
-                  return (
-                    <div key={profile.id} className="profile-card">
-                      <div className="profile-card__avatar">
-                        <Image
-                          src={profile.photo}
-                          alt={`Photo of ${profile.name}`}
-                          width={150}
-                          height={150}
-                          sizes="150px"
-                          loading="lazy"
-                          style={{ objectFit: 'cover' }}
-                        />
-                      </div>
-                      <h2 className="profile-card__name">
-                        {profile.name}
-                        {profile.badges && profile.badges.length > 0 && profile.badges.map(b => (
-                          <span key={b} className="profile-card__badge" title={b.charAt(0).toUpperCase() + b.slice(1)}>
-                            {b.toLowerCase() === 'founder' ? (
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                            ) : (
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                            )}
-                          </span>
-                        ))}
-                      </h2>
-                      <p className="profile-card__title">{profile.title}</p>
-                      {profile.location && (
-                        <p className="profile-card__location">
-                          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                            <path d="M7 1C4.5 1 2.5 3 2.5 5.5C2.5 9 7 13 7 13s4.5-4 4.5-7.5C11.5 3 9.5 1 7 1z" stroke="currentColor" strokeWidth="1.2"/>
-                            <circle cx="7" cy="5.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/>
-                          </svg>
-                          {profile.location}
-                        </p>
-                      )}
-                      <div className="profile-card__specialties">
-                        {profile.specialties.slice(0, 3).map(s => (
-                          <Badge key={s} variant="domain">{s}</Badge>
-                        ))}
-                      </div>
-                      {projectCount > 0 && (
-                        <p className="profile-card__projects">
-                          {projectCount} project{projectCount !== 1 ? 's' : ''} on Resonance
-                        </p>
-                      )}
-                      <div className="profile-card__actions">
-                        <Link href={`/profiles/${profile.slug}`} className="btn btn--outline btn--sm">View Profile</Link>
-                        {profile.email ? (
-                          <a href={`mailto:${profile.email}?subject=Collaboration%20Inquiry%20via%20Resonance%20Network`} className="btn btn--primary btn--sm">Connect</a>
-                        ) : (
-                          <Link href={`/profiles/${profile.slug}`} className="btn btn--primary btn--sm">Connect</Link>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-                {filteredProfiles.length === 0 && (
-                  <p style={{ gridColumn: '1/-1', textAlign: 'center', color: 'var(--color-text-muted)', padding: 'var(--space-12) 0' }}>
-                    No profiles match your search.
-                  </p>
-                )}
-              </div>
-            </div>
-          </section>
-        </>
-      )}
-
-      {/* Open Roles Tab */}
-      {activeTab === 'roles' && (
-        <>
 
 
           {(() => {
@@ -284,10 +162,8 @@ export function CommunityPage({ profiles, tasks }: { profiles: Profile[]; tasks:
               </div>
             </div>
           </section>
-        </>
-      )}
 
-      {/* How Collaboration Works — moved below content */}
+      {/* How Collaboration Works */}
       <section className="collab-how-section">
         <div className="container">
           <h3 className="collab-how-section__title">How Collaboration Works</h3>

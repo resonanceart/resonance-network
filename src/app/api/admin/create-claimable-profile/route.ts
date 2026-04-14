@@ -218,12 +218,6 @@ export async function POST(request: Request) {
         ? sanitizeText(body.import_url, 500)
         : null
 
-    if (!email) {
-      return NextResponse.json(
-        { success: false, message: 'Valid email is required.' },
-        { status: 400 }
-      )
-    }
     if (!displayName) {
       return NextResponse.json(
         { success: false, message: 'Display name is required.' },
@@ -231,37 +225,39 @@ export async function POST(request: Request) {
       )
     }
 
-    // A9: user_profiles has an email column — check it first. This catches
-    // real users without a claimable row. Placeholder users have a
-    // placeholder email, not the target_email, so they won't match.
-    const { data: existingByEmail } = await supabaseAdmin
-      .from('user_profiles')
-      .select('id, is_claimable')
-      .eq('email', email)
-      .maybeSingle()
+    // Only check for duplicates if an email was provided
+    if (email) {
+      // A9: user_profiles has an email column — check it first. This catches
+      // real users without a claimable row. Placeholder users have a
+      // placeholder email, not the target_email, so they won't match.
+      const { data: existingByEmail } = await supabaseAdmin
+        .from('user_profiles')
+        .select('id, is_claimable')
+        .eq('email', email)
+        .maybeSingle()
 
-    if (existingByEmail && !existingByEmail.is_claimable) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'email_exists',
-          message: 'This email already has an account. Ask them to log in.',
-        },
-        { status: 409 }
-      )
-    }
+      if (existingByEmail && !existingByEmail.is_claimable) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'email_exists',
+            message: 'This email already has an account. Ask them to log in.',
+          },
+          { status: 409 }
+        )
+      }
 
-    // Check existing claimable profile by target_email
-    const { data: existingClaimable } = await supabaseAdmin
-      .from('user_profiles')
-      .select('id')
-      .eq('target_email', email)
-      .eq('is_claimable', true)
-      .maybeSingle()
+      // Check existing claimable profile by target_email
+      const { data: existingClaimable } = await supabaseAdmin
+        .from('user_profiles')
+        .select('id')
+        .eq('target_email', email)
+        .eq('is_claimable', true)
+        .maybeSingle()
 
-    if (existingClaimable) {
-      return NextResponse.json(
-        {
+      if (existingClaimable) {
+        return NextResponse.json(
+          {
           success: false,
           error: 'already_claimable',
           message:
@@ -271,12 +267,14 @@ export async function POST(request: Request) {
         { status: 409 }
       )
     }
+    } // end if (email) duplicate checks
 
-    // Create placeholder auth user
+    // Create placeholder auth user — use provided email or generate one
+    const emailForPlaceholder = email || `noemail-${Date.now()}@resonanceart.org`
     let createdUser
     let placeholderEmail
     try {
-      const created = await createPlaceholderAuthUser(email)
+      const created = await createPlaceholderAuthUser(emailForPlaceholder)
       createdUser = created.user
       placeholderEmail = created.placeholderEmail
     } catch (err) {
@@ -300,7 +298,7 @@ export async function POST(request: Request) {
         id: createdUser.id,
         display_name: displayName,
         email: placeholderEmail,
-        target_email: email,
+        target_email: email || null,
         is_claimable: true,
         created_by_admin: true,
         original_source_url: importUrl,

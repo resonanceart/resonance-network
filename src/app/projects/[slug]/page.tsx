@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
 import { ProjectFollowWrapper } from '@/components/ProjectFollowWrapper'
 import { ProjectSmartGallery } from '@/components/ProjectSmartGallery'
-import { getProjects, getProjectBySlug } from '@/lib/data'
+import { getProjects, getProjectBySlug, getProfiles } from '@/lib/data'
 import type { Project, Milestone, ProjectUpdate } from '@/types'
 import type { Metadata } from 'next'
 
@@ -106,6 +106,13 @@ interface CollabRole {
 export default async function ProjectPage({ params }: { params: { slug: string } }) {
   const project = await getProjectBySlug(params.slug)
   if (!project) notFound()
+
+  // Build name→slug lookup for team member profile links
+  const allProfiles = await getProfiles()
+  const profileSlugMap = new Map<string, string>()
+  allProfiles.forEach(p => {
+    if (p.name && p.slug) profileSlugMap.set(p.name.toLowerCase(), p.slug)
+  })
 
   // Parse gallery data — matching preview page logic
   let galleryImages: Array<{ url: string; alt: string }> = []
@@ -397,49 +404,65 @@ export default async function ProjectPage({ params }: { params: { slug: string }
             <p className="section-label">The People Behind It</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
               {/* Lead creator */}
-              {project.leadArtistName && (
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--space-3)', fontSize: '2rem', color: 'var(--color-text-muted)', overflow: 'hidden' }}>
-                    {project.leadArtistPhoto || project.artistHeadshotData ? (
-                      <img src={project.leadArtistPhoto || project.artistHeadshotData!} alt={project.leadArtistName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      (project.leadArtistName || '?').charAt(0).toUpperCase()
-                    )}
+              {project.leadArtistName && (() => {
+                const leadSlug = profileSlugMap.get(project.leadArtistName!.toLowerCase())
+                const card = (
+                  <div style={{ textAlign: 'center', cursor: leadSlug ? 'pointer' : undefined }}>
+                    <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--space-3)', fontSize: '2rem', color: 'var(--color-text-muted)', overflow: 'hidden' }}>
+                      {project.leadArtistPhoto || project.artistHeadshotData ? (
+                        <img src={project.leadArtistPhoto || project.artistHeadshotData!} alt={project.leadArtistName!} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        (project.leadArtistName || '?').charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: '0 0 var(--space-1)' }}>{project.leadArtistName}</h3>
+                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>Lead Creator</p>
                   </div>
-                  <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: '0 0 var(--space-1)' }}>{project.leadArtistName}</h3>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>Lead Creator</p>
-                </div>
-              )}
+                )
+                return leadSlug ? <Link href={`/profiles/${leadSlug}`} style={{ textDecoration: 'none', color: 'inherit' }}>{card}</Link> : card
+              })()}
               {/* Team members from submission */}
-              {project.teamMembers && project.teamMembers.map((member, i) => (
-                <div key={i} style={{ textAlign: 'center' }}>
-                  {member.photo ? (
-                    <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: 'var(--space-3)' }}>
-                      <img src={member.photo} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                  ) : (
-                    <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--space-3)', fontSize: '2rem', color: 'var(--color-text-muted)' }}>
-                      {member.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: '0 0 var(--space-1)' }}>{member.name}</h3>
-                  {member.role && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>{member.role}</p>}
-                </div>
-              ))}
-              {/* Legacy collaborators from JSON projects */}
-              {!project.teamMembers && project.collaborators.map(c => (
-                <div key={c.name} style={{ textAlign: 'center' }}>
-                  <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--space-3)', fontSize: '2rem', color: 'var(--color-text-muted)', overflow: 'hidden' }}>
-                    {c.photo ? (
-                      <img src={c.photo} alt={c.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {project.teamMembers && project.teamMembers.map((member, i) => {
+                const memberSlug = profileSlugMap.get(member.name.toLowerCase())
+                const card = (
+                  <div style={{ textAlign: 'center', cursor: memberSlug ? 'pointer' : undefined }}>
+                    {member.photo ? (
+                      <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: 'var(--space-3)' }}>
+                        <img src={member.photo} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
                     ) : (
-                      c.name.charAt(0).toUpperCase()
+                      <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--space-3)', fontSize: '2rem', color: 'var(--color-text-muted)' }}>
+                        {member.name.charAt(0).toUpperCase()}
+                      </div>
                     )}
+                    <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: '0 0 var(--space-1)' }}>{member.name}</h3>
+                    {member.role && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>{member.role}</p>}
                   </div>
-                  <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: '0 0 var(--space-1)' }}>{c.name}</h3>
-                  {c.role && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>{c.role}</p>}
-                </div>
-              ))}
+                )
+                return memberSlug
+                  ? <Link key={i} href={`/profiles/${memberSlug}`} style={{ textDecoration: 'none', color: 'inherit' }}>{card}</Link>
+                  : <div key={i}>{card}</div>
+              })}
+              {/* Legacy collaborators from JSON projects */}
+              {!project.teamMembers && project.collaborators.map(c => {
+                const collabSlug = profileSlugMap.get(c.name.toLowerCase())
+                const card = (
+                  <div style={{ textAlign: 'center', cursor: collabSlug ? 'pointer' : undefined }}>
+                    <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--space-3)', fontSize: '2rem', color: 'var(--color-text-muted)', overflow: 'hidden' }}>
+                      {c.photo ? (
+                        <img src={c.photo} alt={c.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        c.name.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: '0 0 var(--space-1)' }}>{c.name}</h3>
+                    {c.role && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>{c.role}</p>}
+                  </div>
+                )
+                return collabSlug
+                  ? <Link key={c.name} href={`/profiles/${collabSlug}`} style={{ textDecoration: 'none', color: 'inherit' }}>{card}</Link>
+                  : <div key={c.name}>{card}</div>
+              })}
             </div>
           </div>
         </section>
