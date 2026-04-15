@@ -5044,6 +5044,33 @@ main {
   background: #b45309;
 }
 
+/* Prominent sign-in row on /join page */
+.join-signin-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  max-width: 800px;
+  margin: var(--space-8) auto 0;
+  padding: var(--space-5) var(--space-6);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  flex-wrap: wrap;
+}
+.join-signin-row__label {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+}
+@media (max-width: 640px) {
+  .join-signin-row {
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+  .join-signin-row .btn { width: 100%; }
+}
+
 /* Compact hero variant */
 .join-hero--compact {
   padding: var(--space-10) 0 var(--space-4);
