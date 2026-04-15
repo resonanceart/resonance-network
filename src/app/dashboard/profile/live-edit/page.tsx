@@ -16,11 +16,29 @@ import ImportPromptPopup from '@/components/dashboard/ImportPromptPopup'
 import { claimCopy, claimableBannerCopy, importOverwriteModal, reimportModal } from '@/lib/claim-copy'
 import type { ProfileSkill, ProfileTool, ProfileSocialLink, ContentBlock } from '@/types'
 import { BlockEditor } from '@/components/profile/editors/BlockEditor'
-import { blocksFromLegacy, hasBlocks } from '@/lib/profile-blocks'
+import { blocksFromLegacy, hasBlocks, sortBlocks as sortBlocksForPreview } from '@/lib/profile-blocks'
+
+function blockTypeShortLabel(type: string): string {
+  switch (type) {
+    case 'text': return 'Story'
+    case 'gallery': return 'Gallery'
+    case 'video': return 'Video'
+    case 'timeline': return 'Timeline'
+    case 'links': return 'Links'
+    case 'skills': return 'Skills'
+    case 'testimonials': return 'Quote'
+    case 'pdf': return 'PDF'
+    case 'embed': return 'Embed'
+    case 'divider': return '—'
+    case 'audio': return 'Audio'
+    case 'project': return 'Project'
+    default: return type
+  }
+}
 
 // ─── Types ────────────────────────────────────────────────────────
 
-type EditSection = 'cover' | 'avatar' | 'identity' | 'bio' | 'skills' | 'tools' | 'availability' | 'social' | 'timeline' | 'gallery' | 'pastWork' | null
+type EditSection = 'cover' | 'avatar' | 'identity' | 'bio' | 'skills' | 'tools' | 'availability' | 'social' | 'timeline' | 'gallery' | 'pastWork' | 'blocks' | null
 
 type GalleryItem = { url: string; alt: string; caption?: string; type: 'image' | 'video'; isFeatured?: boolean; order: number }
 type PastWorkItem = { url: string; title: string; description?: string }
@@ -2407,49 +2425,33 @@ export default function LiveProfileEditor() {
           <div className="editable-section__overlay"><span>Edit statement</span></div>
         </div>
 
-        {/* Custom Blocks — new block-based editor */}
-        <section className="profile-blocks-section">
-          <div className="container">
-            <div className="profile-blocks-section__header">
+        {/* Custom Blocks — clickable preview that opens the block editor panel */}
+        <div
+          ref={setSectionRef('blocks')}
+          className={`editable-section${activePanel === 'blocks' ? ' editable-section--active' : ''}`}
+          onClick={() => openPanel('blocks')}
+        >
+          <section className="profile-blocks-section">
+            <div className="container">
               <p className="section-label">Custom Blocks</p>
-              <p className="profile-blocks-section__hint">
-                Add your own sections — stories, galleries, anything. Drag to reorder.
-                {contentBlocks.length === 0 && artistStatement && (
-                  <>
-                    {' '}
-                    <button
-                      type="button"
-                      className="profile-blocks-section__migrate"
-                      onClick={() => {
-                        const migrated = blocksFromLegacy({
-                          artist_statement: artistStatement,
-                          philosophy,
-                          media_gallery: buildGalleryItems().filter(i => i.type === 'image').map(i => ({
-                            type: 'image',
-                            url: i.url,
-                            caption: i.subtitle || '',
-                            alt: i.title || '',
-                          })),
-                        })
-                        if (migrated.length > 0) {
-                          setContentBlocks(migrated)
-                          markDirty()
-                        }
-                      }}
-                    >
-                      Import my existing content as blocks
-                    </button>
-                  </>
-                )}
-              </p>
+              {contentBlocks.length === 0 ? (
+                <p className="live-editor__placeholder-text">
+                  Click to add custom blocks — stories, galleries, and more.
+                </p>
+              ) : (
+                <div className="profile-blocks-preview">
+                  {sortBlocksForPreview(contentBlocks).map(block => (
+                    <div key={block.id} className="profile-blocks-preview__item">
+                      <span className="profile-blocks-preview__type">{blockTypeShortLabel(block.type)}</span>
+                      <span className="profile-blocks-preview__title">{block.label || 'Untitled'}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <BlockEditor
-              blocks={contentBlocks}
-              onChange={(blocks) => { setContentBlocks(blocks); markDirty() }}
-              userId={adminEditAs || user?.id || ''}
-            />
-          </div>
-        </section>
+          </section>
+          <div className="editable-section__overlay"><span>Edit blocks</span></div>
+        </div>
 
         {/* Milestones */}
         <div ref={setSectionRef('timeline')} className={`editable-section${activePanel === 'timeline' ? ' editable-section--active' : ''}`} onClick={() => openPanel('timeline')}>
@@ -2864,6 +2866,7 @@ export default function LiveProfileEditor() {
                 {activePanel === 'timeline' && 'Timeline'}
                 {activePanel === 'gallery' && 'Gallery'}
                 {activePanel === 'pastWork' && 'Past Work'}
+                {activePanel === 'blocks' && 'Custom Blocks'}
               </h3>
               <button className="live-editor__panel-close" onClick={closePanel}>
                 &times;
@@ -2876,6 +2879,44 @@ export default function LiveProfileEditor() {
                   <button onClick={() => setUploadError(null)} style={{ background: 'none', border: 'none', color: 'var(--color-error, #dc2626)', cursor: 'pointer', fontSize: 16, padding: '0 4px' }}>&times;</button>
                 </div>
               )}
+              {/* BLOCKS PANEL */}
+              {activePanel === 'blocks' && (
+                <div className="live-editor__panel-section">
+                  {contentBlocks.length === 0 && (artistStatement || philosophy || buildGalleryItems().length > 0) && (
+                    <div className="blocks-panel__migrate-hint">
+                      <p>You have content in the old artist statement + gallery fields. Import it as blocks to start editing?</p>
+                      <button
+                        type="button"
+                        className="btn btn--primary btn--sm"
+                        onClick={() => {
+                          const migrated = blocksFromLegacy({
+                            artist_statement: artistStatement,
+                            philosophy,
+                            media_gallery: buildGalleryItems().filter(i => i.type === 'image').map(i => ({
+                              type: 'image',
+                              url: i.url,
+                              caption: i.subtitle || '',
+                              alt: i.title || '',
+                            })),
+                          })
+                          if (migrated.length > 0) {
+                            setContentBlocks(migrated)
+                            markDirty()
+                          }
+                        }}
+                      >
+                        Import existing content as blocks
+                      </button>
+                    </div>
+                  )}
+                  <BlockEditor
+                    blocks={contentBlocks}
+                    onChange={(blocks) => { setContentBlocks(blocks); markDirty() }}
+                    userId={adminEditAs || user?.id || ''}
+                  />
+                </div>
+              )}
+
               {/* COVER PANEL */}
               {activePanel === 'cover' && (
                 <div className="live-editor__panel-section">
