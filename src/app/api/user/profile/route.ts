@@ -434,11 +434,6 @@ export async function PUT(request: Request) {
     }
     if (body.availability_note !== undefined) extendedFields.availability_note = sanitizeText(body.availability_note, 500)
     if (body.contact_email !== undefined) extendedFields.contact_email = sanitizeText(body.contact_email, 320)
-    if (body.content_blocks !== undefined) {
-      if (Array.isArray(body.content_blocks) && body.content_blocks.length <= 50) {
-        extendedFields.content_blocks = body.content_blocks
-      }
-    }
     // Accept non-prefixed field names as fallbacks for dashboard compatibility
     if (body.projects !== undefined && extendedFields.projects === undefined) extendedFields.projects = body.projects
     if (body.links !== undefined && extendedFields.links === undefined) extendedFields.links = body.links
@@ -655,6 +650,17 @@ export async function PUT(request: Request) {
       }
     }
 
+    // DEBUG: log what's about to be saved for content_blocks
+    if ('content_blocks' in extendedFields) {
+      console.log('[profile PUT] content_blocks to save:',
+        Array.isArray(extendedFields.content_blocks)
+          ? `array length=${(extendedFields.content_blocks as unknown[]).length}`
+          : typeof extendedFields.content_blocks
+      )
+    } else if (body.content_blocks !== undefined) {
+      console.log('[profile PUT] content_blocks in body but NOT in extendedFields. body type:', typeof body.content_blocks, 'length:', Array.isArray(body.content_blocks) ? body.content_blocks.length : 'n/a')
+    }
+
     let extendedProfile = null
     if (Object.keys(extendedFields).length > 0) {
       // Capture single-level undo snapshot for profile_extended. If the
@@ -697,6 +703,7 @@ export async function PUT(request: Request) {
           'media_gallery', 'cover_image_url', 'philosophy', 'timeline',
           'tools_and_materials', 'availability_status', 'availability_note',
           'projects', 'links', 'testimonials', 'achievements',
+          'content_blocks',
         ]
         const coreFields: Record<string, unknown> = {}
         for (const key of coreColumns) {
