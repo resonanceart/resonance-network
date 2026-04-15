@@ -409,6 +409,23 @@ export async function PUT(request: Request) {
     if (body.tools_and_materials !== undefined && Array.isArray(body.tools_and_materials)) {
       extendedFields.tools_and_materials = body.tools_and_materials.map((s: unknown) => sanitizeText(s, 200)).filter(Boolean)
     }
+    if (body.content_blocks !== undefined) {
+      if (body.content_blocks === null) {
+        extendedFields.content_blocks = []
+      } else if (Array.isArray(body.content_blocks) && body.content_blocks.length <= 50) {
+        // Validate block shape; drop anything that doesn't match
+        const validBlocks = body.content_blocks.filter((b: unknown) => {
+          if (!b || typeof b !== 'object') return false
+          const blk = b as Record<string, unknown>
+          return typeof blk.id === 'string'
+            && typeof blk.type === 'string'
+            && typeof blk.order === 'number'
+            && typeof blk.visible === 'boolean'
+            && blk.content !== undefined
+        })
+        extendedFields.content_blocks = validBlocks
+      }
+    }
     if (body.availability_status !== undefined) {
       const validStatuses = ['open', 'selective', 'focused', 'busy', 'unavailable']
       if (validStatuses.includes(body.availability_status)) {

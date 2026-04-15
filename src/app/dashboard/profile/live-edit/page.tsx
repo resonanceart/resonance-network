@@ -14,7 +14,9 @@ import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components
 import { loadImportData, clearImportData } from '@/lib/import-store'
 import ImportPromptPopup from '@/components/dashboard/ImportPromptPopup'
 import { claimCopy, claimableBannerCopy, importOverwriteModal, reimportModal } from '@/lib/claim-copy'
-import type { ProfileSkill, ProfileTool, ProfileSocialLink } from '@/types'
+import type { ProfileSkill, ProfileTool, ProfileSocialLink, ContentBlock } from '@/types'
+import { BlockEditor } from '@/components/profile/editors/BlockEditor'
+import { blocksFromLegacy, hasBlocks } from '@/lib/profile-blocks'
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -613,6 +615,7 @@ export default function LiveProfileEditor() {
   const [toolsAndMaterials, setToolsAndMaterials] = useState<string[]>([])
   const [socialLinks, setSocialLinks] = useState<SocialEntry[]>([])
   const [artistStatement, setArtistStatement] = useState('')
+  const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([])
   const [philosophy, setPhilosophy] = useState('')
   const [achievements, setAchievements] = useState<string[]>([])
   const [timeline, setTimeline] = useState<TimelineEntry[]>([])
@@ -860,6 +863,7 @@ export default function LiveProfileEditor() {
           setToolsAndMaterials((ext.tools_and_materials as string[]) || [])
           setArtistStatement((ext.artist_statement as string) || '')
           setPhilosophy((ext.philosophy as string) || '')
+          setContentBlocks(Array.isArray(ext.content_blocks) ? (ext.content_blocks as ContentBlock[]) : [])
           setAchievements((ext.achievements as string[]) || [])
           setTimeline((ext.timeline as TimelineEntry[]) || [])
           setAccentColor((ext.accent_color as string) || '#01696F')
@@ -1046,6 +1050,7 @@ export default function LiveProfileEditor() {
             profile_tools: profileTools,
             artist_statement: artistStatement.trim() || null,
             philosophy: philosophy.trim() || null,
+            content_blocks: contentBlocks,
             achievements: achievements.length > 0 ? achievements : null,
             timeline: timeline.length > 0 ? timeline : null,
             accent_color: accentColor,
@@ -2401,6 +2406,50 @@ export default function LiveProfileEditor() {
           </section>
           <div className="editable-section__overlay"><span>Edit statement</span></div>
         </div>
+
+        {/* Custom Blocks — new block-based editor */}
+        <section className="profile-blocks-section">
+          <div className="container">
+            <div className="profile-blocks-section__header">
+              <p className="section-label">Custom Blocks</p>
+              <p className="profile-blocks-section__hint">
+                Add your own sections — stories, galleries, anything. Drag to reorder.
+                {contentBlocks.length === 0 && artistStatement && (
+                  <>
+                    {' '}
+                    <button
+                      type="button"
+                      className="profile-blocks-section__migrate"
+                      onClick={() => {
+                        const migrated = blocksFromLegacy({
+                          artist_statement: artistStatement,
+                          philosophy,
+                          media_gallery: buildGalleryItems().filter(i => i.type === 'image').map(i => ({
+                            type: 'image',
+                            url: i.url,
+                            caption: i.subtitle || '',
+                            alt: i.title || '',
+                          })),
+                        })
+                        if (migrated.length > 0) {
+                          setContentBlocks(migrated)
+                          markDirty()
+                        }
+                      }}
+                    >
+                      Import my existing content as blocks
+                    </button>
+                  </>
+                )}
+              </p>
+            </div>
+            <BlockEditor
+              blocks={contentBlocks}
+              onChange={(blocks) => { setContentBlocks(blocks); markDirty() }}
+              userId={adminEditAs || user?.id || ''}
+            />
+          </div>
+        </section>
 
         {/* Milestones */}
         <div ref={setSectionRef('timeline')} className={`editable-section${activePanel === 'timeline' ? ' editable-section--active' : ''}`} onClick={() => openPanel('timeline')}>

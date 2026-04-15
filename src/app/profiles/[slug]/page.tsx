@@ -6,6 +6,8 @@ import { ProfileSmartGallery } from '@/components/profile/ProfileSmartGallery'
 import { ProfileEditOverlay } from '@/components/profile/ProfileEditOverlay'
 import { ShareProfile } from '@/components/profile/ShareProfile'
 import { ProfileBadges } from '@/components/profile/ProfileBadges'
+import { ProfileBlockRenderer } from '@/components/profile/ProfileBlockRenderer'
+import { sortBlocks, hasBlocks } from '@/lib/profile-blocks'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { getProfiles, getProfileBySlug } from '@/lib/data'
 import type { Profile, WorkExperience } from '@/types'
@@ -488,20 +490,30 @@ export default async function ProfilePage({ params }: { params: { slug: string }
         </div>
       </section>
 
-      {/* Media Gallery — before artist statement, matching preview */}
-      <ProfileSmartGallery profile={profile} />
-
-      {/* Artist Statement — after gallery, matching preview */}
-      {(profile.artist_statement || profile.philosophy) && (
-        <section className="profile-two-col-section">
-          <div className="container">
-            <p className="section-label">Artist Statement</p>
-            <div className="profile-two-col__text">
-              {profile.artist_statement && profile.artist_statement.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
-              {profile.philosophy && profile.philosophy.split('\n\n').map((p, i) => <p key={`ph-${i}`}>{p}</p>)}
-            </div>
-          </div>
-        </section>
+      {/* Content Blocks — new block system. When blocks are present,
+          they take over rendering the narrative + gallery sections. */}
+      {hasBlocks(profile.contentBlocks) ? (
+        <>
+          {sortBlocks(profile.contentBlocks).map(block => (
+            <ProfileBlockRenderer key={block.id} block={block} />
+          ))}
+        </>
+      ) : (
+        <>
+          {/* Legacy fallback: gallery + artist statement as separate sections */}
+          <ProfileSmartGallery profile={profile} />
+          {(profile.artist_statement || profile.philosophy) && (
+            <section className="profile-two-col-section">
+              <div className="container">
+                <p className="section-label">Artist Statement</p>
+                <div className="profile-two-col__text">
+                  {profile.artist_statement && profile.artist_statement.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
+                  {profile.philosophy && profile.philosophy.split('\n\n').map((p, i) => <p key={`ph-${i}`}>{p}</p>)}
+                </div>
+              </div>
+            </section>
+          )}
+        </>
       )}
 
       {/* Row 5: Milestones */}
