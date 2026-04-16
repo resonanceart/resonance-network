@@ -7,6 +7,9 @@ import { ProfileAvailabilityBadge } from '@/components/profile/ProfileAvailabili
 import { ProfileTimeline } from '@/components/profile/ProfileTimeline'
 import { ShareProfile } from '@/components/profile/ShareProfile'
 import { SmartGallery, type GalleryItem } from '@/components/profile/SmartGallery'
+import { ProfileBlockRenderer } from '@/components/profile/ProfileBlockRenderer'
+import { hasBlocks, sortBlocks } from '@/lib/profile-blocks'
+import type { ContentBlock } from '@/types'
 
 function getInitials(name: string) {
   return name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()
@@ -64,6 +67,7 @@ export default function ProfilePreviewPage() {
   const [profileTools, setProfileTools] = useState<Array<{id: string; tool_name: string; category: string; display_order: number}>>([])
   const [socialLinks, setSocialLinks] = useState<Array<{id: string; platform: string; url: string; display_order: number}>>([])
   const [artistStatement, setArtistStatement] = useState('')
+  const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([])
   const [philosophy, setPhilosophy] = useState('')
   const [galleryOrder, setGalleryOrder] = useState<string[]>([])
   const [resumeUrl, setResumeUrl] = useState<string | null>(null)
@@ -107,6 +111,7 @@ export default function ProfilePreviewPage() {
           }
           setArtistStatement((ext.artist_statement as string) || '')
           setPhilosophy((ext.philosophy as string) || '')
+          setContentBlocks(Array.isArray(ext.content_blocks) ? (ext.content_blocks as ContentBlock[]) : [])
           setAccentColor((ext.accent_color as string) || '#01696F')
           setResumeUrl((ext.resume_url as string) || null)
           setPortfolioPdfUrl((ext.portfolio_pdf_url as string) || null)
@@ -370,22 +375,31 @@ export default function ProfilePreviewPage() {
           </div>
         </section>
 
-        {/* Media Gallery */}
-        {(() => {
-          const items = buildGalleryItems()
-          if (items.length === 0) return null
-          return (
-            <section className="profile-media-grid-section">
-              <div className="container">
-                <p className="section-label">Gallery ({items.length} items)</p>
-                <SmartGallery items={items} editable={false} />
-              </div>
-            </section>
-          )
-        })()}
+        {/* Content Blocks — when present, render blocks and skip legacy gallery + statement */}
+        {hasBlocks(contentBlocks) ? (
+          sortBlocks(contentBlocks).map(block => (
+            <ProfileBlockRenderer key={block.id} block={block} />
+          ))
+        ) : (
+          <>
+            {/* Media Gallery (legacy fallback) */}
+            {(() => {
+              const items = buildGalleryItems()
+              if (items.length === 0) return null
+              return (
+                <section className="profile-media-grid-section">
+                  <div className="container">
+                    <p className="section-label">Gallery ({items.length} items)</p>
+                    <SmartGallery items={items} editable={false} />
+                  </div>
+                </section>
+              )
+            })()}
+          </>
+        )}
 
-        {/* Artist Statement — combined, below gallery */}
-        {(artistStatement || philosophy) && (
+        {/* Artist Statement — only shown when NOT using blocks */}
+        {!hasBlocks(contentBlocks) && (artistStatement || philosophy) && (
           <section className="profile-two-col-section">
             <div className="container">
               <p className="section-label">Artist Statement</p>

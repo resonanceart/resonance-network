@@ -651,14 +651,12 @@ export async function PUT(request: Request) {
     }
 
     // DEBUG: log what's about to be saved for content_blocks
-    if ('content_blocks' in extendedFields) {
-      console.log('[profile PUT] content_blocks to save:',
-        Array.isArray(extendedFields.content_blocks)
-          ? `array length=${(extendedFields.content_blocks as unknown[]).length}`
-          : typeof extendedFields.content_blocks
-      )
-    } else if (body.content_blocks !== undefined) {
-      console.log('[profile PUT] content_blocks in body but NOT in extendedFields. body type:', typeof body.content_blocks, 'length:', Array.isArray(body.content_blocks) ? body.content_blocks.length : 'n/a')
+    if (body.content_blocks !== undefined) {
+      const inBody = Array.isArray(body.content_blocks) ? body.content_blocks.length : 'not-array'
+      const inExt = 'content_blocks' in extendedFields
+        ? (Array.isArray(extendedFields.content_blocks) ? (extendedFields.content_blocks as unknown[]).length : 'not-array')
+        : 'not-set'
+      console.log(`[profile PUT] content_blocks: body=${inBody}, ext=${inExt}, targetId=${targetId}`)
     }
 
     let extendedProfile = null
