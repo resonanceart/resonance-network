@@ -157,6 +157,22 @@ export function GalleryBlockEditor({ block, content, userId, onChange }: Props) 
     updateItems(items.map((item, i) => i === index ? { ...item, caption } : item))
   }, [items, updateItems])
 
+  /** Upload and set a thumbnail for an existing link/PDF item */
+  const uploadItemThumbnail = useCallback(async (index: number, file: File) => {
+    if (file.size > 10 * 1024 * 1024) { setUploadError('Thumbnail > 10MB'); return }
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', 'gallery')
+      formData.append('userId', userId)
+      const res = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
+      const json = await res.json().catch(() => ({}))
+      if (res.ok && json.url) {
+        updateItems(items.map((item, i) => i === index ? { ...item, thumbnail: json.url } : item))
+      } else { setUploadError(json.message || 'Thumbnail upload failed') }
+    } catch (err) { setUploadError((err as Error).message) }
+  }, [items, updateItems, userId])
+
   return (
     <div className="gallery-block-editor">
       <input
@@ -186,6 +202,7 @@ export function GalleryBlockEditor({ block, content, userId, onChange }: Props) 
                 item={item}
                 onRemove={() => removeItem(i)}
                 onCaptionChange={(c) => updateCaption(i, c)}
+                onThumbnailUpload={(file) => uploadItemThumbnail(i, file)}
               />
             ))}
           </div>
@@ -275,14 +292,17 @@ function SortableMediaItem({
   item,
   onRemove,
   onCaptionChange,
+  onThumbnailUpload,
 }: {
   id: string
   item: GalleryItem
   onRemove: () => void
   onCaptionChange: (caption: string) => void
+  onThumbnailUpload: (file: File) => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
   const itemType = item.type || 'image'
+  const thumbInputRef = useRef<HTMLInputElement>(null)
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -340,6 +360,36 @@ function SortableMediaItem({
           <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </button>
+
+      {/* Thumbnail edit button — only for link and PDF items */}
+      {(itemType === 'link' || itemType === 'pdf') && (
+        <>
+          <button
+            type="button"
+            className="gallery-block-editor__item-thumb-btn"
+            onClick={(e) => { e.stopPropagation(); thumbInputRef.current?.click() }}
+            aria-label={item.thumbnail ? 'Change tile image' : 'Add tile image'}
+            title={item.thumbnail ? 'Change tile image' : 'Add tile image'}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+          </button>
+          <input
+            ref={thumbInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) onThumbnailUpload(file)
+              e.target.value = ''
+            }}
+          />
+        </>
+      )}
     </div>
   )
 }
