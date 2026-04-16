@@ -2436,11 +2436,12 @@ export default function LiveProfileEditor() {
 
         {/* Artist Statement + Custom Blocks — click to edit in About You panel */}
         <div ref={setSectionRef('bio')} className={`editable-section${activePanel === 'bio' ? ' editable-section--active' : ''}`} onClick={() => openPanel('bio')}>
-          {hasBlocks(contentBlocks) ? (
-            sortBlocksForPreview(contentBlocks).map(block => (
-              <ProfileBlockRenderer key={block.id} block={block} />
-            ))
-          ) : (
+          {/* Always render content blocks when present */}
+          {hasBlocks(contentBlocks) && sortBlocksForPreview(contentBlocks).map(block => (
+            <ProfileBlockRenderer key={block.id} block={block} />
+          ))}
+          {/* Artist Statement shown only when no blocks */}
+          {!hasBlocks(contentBlocks) && (
             <section className="profile-two-col-section">
               <div className="container">
                 <p className="section-label">Artist Statement</p>

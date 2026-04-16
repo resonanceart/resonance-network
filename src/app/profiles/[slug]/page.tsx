@@ -490,30 +490,25 @@ export default async function ProfilePage({ params }: { params: { slug: string }
         </div>
       </section>
 
-      {/* Content Blocks — new block system. When blocks are present,
-          they take over rendering the narrative + gallery sections. */}
-      {hasBlocks(profile.contentBlocks) ? (
-        <>
-          {sortBlocks(profile.contentBlocks).map(block => (
-            <ProfileBlockRenderer key={block.id} block={block} />
-          ))}
-        </>
-      ) : (
-        <>
-          {/* Legacy fallback: gallery + artist statement as separate sections */}
-          <ProfileSmartGallery profile={profile} />
-          {(profile.artist_statement || profile.philosophy) && (
-            <section className="profile-two-col-section">
-              <div className="container">
-                <p className="section-label">Artist Statement</p>
-                <div className="profile-two-col__text">
-                  {profile.artist_statement && profile.artist_statement.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
-                  {profile.philosophy && profile.philosophy.split('\n\n').map((p, i) => <p key={`ph-${i}`}>{p}</p>)}
-                </div>
-              </div>
-            </section>
-          )}
-        </>
+      {/* Legacy Media Gallery — always render if it has items */}
+      <ProfileSmartGallery profile={profile} />
+
+      {/* Content Blocks — appended below legacy gallery when present */}
+      {hasBlocks(profile.contentBlocks) && sortBlocks(profile.contentBlocks).map(block => (
+        <ProfileBlockRenderer key={block.id} block={block} />
+      ))}
+
+      {/* Artist Statement — only shown when NOT using blocks */}
+      {!hasBlocks(profile.contentBlocks) && (profile.artist_statement || profile.philosophy) && (
+        <section className="profile-two-col-section">
+          <div className="container">
+            <p className="section-label">Artist Statement</p>
+            <div className="profile-two-col__text">
+              {profile.artist_statement && profile.artist_statement.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
+              {profile.philosophy && profile.philosophy.split('\n\n').map((p, i) => <p key={`ph-${i}`}>{p}</p>)}
+            </div>
+          </div>
+        </section>
       )}
 
       {/* Row 5: Milestones */}

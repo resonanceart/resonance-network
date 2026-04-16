@@ -375,30 +375,26 @@ export default function ProfilePreviewPage() {
           </div>
         </section>
 
-        {/* Content Blocks — when present, render blocks and skip legacy gallery + statement */}
-        {hasBlocks(contentBlocks) ? (
-          sortBlocks(contentBlocks).map(block => (
-            <ProfileBlockRenderer key={block.id} block={block} />
-          ))
-        ) : (
-          <>
-            {/* Media Gallery (legacy fallback) */}
-            {(() => {
-              const items = buildGalleryItems()
-              if (items.length === 0) return null
-              return (
-                <section className="profile-media-grid-section">
-                  <div className="container">
-                    <p className="section-label">Gallery ({items.length} items)</p>
-                    <SmartGallery items={items} editable={false} />
-                  </div>
-                </section>
-              )
-            })()}
-          </>
-        )}
+        {/* Legacy Media Gallery — always render if it has items */}
+        {(() => {
+          const items = buildGalleryItems()
+          if (items.length === 0) return null
+          return (
+            <section className="profile-media-grid-section">
+              <div className="container">
+                <p className="section-label">Gallery ({items.length} items)</p>
+                <SmartGallery items={items} editable={false} />
+              </div>
+            </section>
+          )
+        })()}
 
-        {/* Artist Statement — only shown when NOT using blocks */}
+        {/* Content Blocks — rendered below the main gallery */}
+        {hasBlocks(contentBlocks) && sortBlocks(contentBlocks).map(block => (
+          <ProfileBlockRenderer key={block.id} block={block} />
+        ))}
+
+        {/* Artist Statement — only shown when NOT using blocks (blocks include the story) */}
         {!hasBlocks(contentBlocks) && (artistStatement || philosophy) && (
           <section className="profile-two-col-section">
             <div className="container">
