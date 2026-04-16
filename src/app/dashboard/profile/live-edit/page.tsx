@@ -38,7 +38,7 @@ function blockTypeShortLabel(type: string): string {
 
 // ─── Types ────────────────────────────────────────────────────────
 
-type EditSection = 'cover' | 'avatar' | 'identity' | 'bio' | 'skills' | 'tools' | 'availability' | 'social' | 'timeline' | 'gallery' | 'pastWork' | 'blocks' | null
+type EditSection = 'cover' | 'avatar' | 'identity' | 'bio' | 'skills' | 'tools' | 'availability' | 'social' | 'timeline' | 'gallery' | 'pastWork' | null
 
 type GalleryItem = { url: string; alt: string; caption?: string; type: 'image' | 'video'; isFeatured?: boolean; order: number }
 type PastWorkItem = { url: string; title: string; description?: string }
@@ -2425,33 +2425,6 @@ export default function LiveProfileEditor() {
           <div className="editable-section__overlay"><span>Edit statement</span></div>
         </div>
 
-        {/* Custom Blocks — clickable preview that opens the block editor panel */}
-        <div
-          ref={setSectionRef('blocks')}
-          className={`editable-section${activePanel === 'blocks' ? ' editable-section--active' : ''}`}
-          onClick={() => openPanel('blocks')}
-        >
-          <section className="profile-blocks-section">
-            <div className="container">
-              <p className="section-label">Custom Blocks</p>
-              {contentBlocks.length === 0 ? (
-                <p className="live-editor__placeholder-text">
-                  Click to add custom blocks — stories, galleries, and more.
-                </p>
-              ) : (
-                <div className="profile-blocks-preview">
-                  {sortBlocksForPreview(contentBlocks).map(block => (
-                    <div key={block.id} className="profile-blocks-preview__item">
-                      <span className="profile-blocks-preview__type">{blockTypeShortLabel(block.type)}</span>
-                      <span className="profile-blocks-preview__title">{block.label || 'Untitled'}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
-          <div className="editable-section__overlay"><span>Edit blocks</span></div>
-        </div>
 
         {/* Milestones */}
         <div ref={setSectionRef('timeline')} className={`editable-section${activePanel === 'timeline' ? ' editable-section--active' : ''}`} onClick={() => openPanel('timeline')}>
@@ -2866,7 +2839,6 @@ export default function LiveProfileEditor() {
                 {activePanel === 'timeline' && 'Timeline'}
                 {activePanel === 'gallery' && 'Gallery'}
                 {activePanel === 'pastWork' && 'Past Work'}
-                {activePanel === 'blocks' && 'Custom Blocks'}
               </h3>
               <button className="live-editor__panel-close" onClick={closePanel}>
                 &times;
@@ -2879,44 +2851,6 @@ export default function LiveProfileEditor() {
                   <button onClick={() => setUploadError(null)} style={{ background: 'none', border: 'none', color: 'var(--color-error, #dc2626)', cursor: 'pointer', fontSize: 16, padding: '0 4px' }}>&times;</button>
                 </div>
               )}
-              {/* BLOCKS PANEL */}
-              {activePanel === 'blocks' && (
-                <div className="live-editor__panel-section">
-                  {contentBlocks.length === 0 && (artistStatement || philosophy || buildGalleryItems().length > 0) && (
-                    <div className="blocks-panel__migrate-hint">
-                      <p>You have content in the old artist statement + gallery fields. Import it as blocks to start editing?</p>
-                      <button
-                        type="button"
-                        className="btn btn--primary btn--sm"
-                        onClick={() => {
-                          const migrated = blocksFromLegacy({
-                            artist_statement: artistStatement,
-                            philosophy,
-                            media_gallery: buildGalleryItems().filter(i => i.type === 'image').map(i => ({
-                              type: 'image',
-                              url: i.url,
-                              caption: i.subtitle || '',
-                              alt: i.title || '',
-                            })),
-                          })
-                          if (migrated.length > 0) {
-                            setContentBlocks(migrated)
-                            markDirty()
-                          }
-                        }}
-                      >
-                        Import existing content as blocks
-                      </button>
-                    </div>
-                  )}
-                  <BlockEditor
-                    blocks={contentBlocks}
-                    onChange={(blocks) => { setContentBlocks(blocks); markDirty() }}
-                    userId={adminEditAs || user?.id || ''}
-                  />
-                </div>
-              )}
-
               {/* COVER PANEL */}
               {activePanel === 'cover' && (
                 <div className="live-editor__panel-section">
@@ -3131,54 +3065,67 @@ export default function LiveProfileEditor() {
                 </div>
               )}
 
-              {/* BIO PANEL */}
+              {/* BIO PANEL — short bio + block-based content */}
               {activePanel === 'bio' && (
                 <div className="live-editor__panel-section">
                   <div className="form-group">
-                    <label className="form-label">Bio</label>
+                    <label className="form-label">Short Bio</label>
                     <textarea
                       className="form-textarea"
                       value={bio}
                       onChange={e => {
                         if (e.target.value.length <= 3000) { setBio(e.target.value); markDirty() }
                       }}
-                      rows={8}
-                      placeholder="Tell the community about yourself..."
+                      rows={4}
+                      placeholder="One paragraph about you — shown next to your photo at the top of your profile."
                     />
                     <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
                       {bio.length}/3000
                     </span>
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Artist Statement</label>
-                    <textarea
-                      className="form-textarea"
-                      value={artistStatement}
-                      onChange={e => {
-                        if (e.target.value.length <= 2000) { setArtistStatement(e.target.value); markDirty() }
-                      }}
-                      rows={4}
-                      placeholder="A formal statement about your practice..."
-                    />
-                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                      {artistStatement.length}/2000
-                    </span>
+
+                  <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 'var(--space-5) 0 var(--space-4)' }} />
+
+                  <div style={{ marginBottom: 'var(--space-4)' }}>
+                    <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>Your Story (Custom Blocks)</label>
+                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.5 }}>
+                      Build your profile from blocks — stories, galleries, whatever fits you. Rename titles freely. Drag to reorder.
+                    </p>
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Approach / Philosophy</label>
-                    <textarea
-                      className="form-textarea"
-                      value={philosophy}
-                      onChange={e => {
-                        if (e.target.value.length <= 500) { setPhilosophy(e.target.value); markDirty() }
-                      }}
-                      rows={3}
-                      placeholder="A short statement about your approach..."
-                    />
-                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                      {philosophy.length}/500
-                    </span>
-                  </div>
+
+                  {contentBlocks.length === 0 && (artistStatement || philosophy || buildGalleryItems().length > 0) && (
+                    <div className="blocks-panel__migrate-hint">
+                      <p>Import your existing artist statement{philosophy ? ', philosophy' : ''}{buildGalleryItems().length > 0 ? ', and gallery' : ''} as blocks?</p>
+                      <button
+                        type="button"
+                        className="btn btn--primary btn--sm"
+                        onClick={() => {
+                          const migrated = blocksFromLegacy({
+                            artist_statement: artistStatement,
+                            philosophy,
+                            media_gallery: buildGalleryItems().filter(i => i.type === 'image').map(i => ({
+                              type: 'image',
+                              url: i.url,
+                              caption: i.subtitle || '',
+                              alt: i.title || '',
+                            })),
+                          })
+                          if (migrated.length > 0) {
+                            setContentBlocks(migrated)
+                            markDirty()
+                          }
+                        }}
+                      >
+                        Import as blocks
+                      </button>
+                    </div>
+                  )}
+
+                  <BlockEditor
+                    blocks={contentBlocks}
+                    onChange={(blocks) => { setContentBlocks(blocks); markDirty() }}
+                    userId={adminEditAs || user?.id || ''}
+                  />
                 </div>
               )}
 
