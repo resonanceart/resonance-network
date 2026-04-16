@@ -1424,6 +1424,32 @@ export default function LiveProfileEditor() {
 
   function openPanel(section: EditSection) {
     setActivePanel(section)
+    // Auto-migrate legacy content into blocks when opening the bio panel
+    // for the first time. Prevents the "my artist statement vanished" bug
+    // where adding a new block hides the artist_statement because rendering
+    // switches from legacy → blocks mode. Silently creates blocks from the
+    // existing content so new blocks are additive.
+    if (section === 'bio' && contentBlocks.length === 0) {
+      const galleryImages = buildGalleryItems()
+        .filter(i => i.type === 'image')
+        .map(i => ({
+          type: 'image',
+          url: i.url,
+          caption: i.subtitle || '',
+          alt: i.title || '',
+        }))
+      if (artistStatement.trim() || philosophy.trim() || galleryImages.length > 0) {
+        const migrated = blocksFromLegacy({
+          artist_statement: artistStatement,
+          philosophy,
+          media_gallery: galleryImages,
+        })
+        if (migrated.length > 0) {
+          setContentBlocks(migrated)
+          markDirty()
+        }
+      }
+    }
     // Scroll the section into view
     if (section && sectionRefs.current[section]) {
       sectionRefs.current[section]!.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -3099,34 +3125,6 @@ export default function LiveProfileEditor() {
                       Build your profile from blocks — stories, galleries, whatever fits you. Rename titles freely. Drag to reorder.
                     </p>
                   </div>
-
-                  {contentBlocks.length === 0 && (artistStatement || philosophy || buildGalleryItems().length > 0) && (
-                    <div className="blocks-panel__migrate-hint">
-                      <p>Import your existing artist statement{philosophy ? ', philosophy' : ''}{buildGalleryItems().length > 0 ? ', and gallery' : ''} as blocks?</p>
-                      <button
-                        type="button"
-                        className="btn btn--primary btn--sm"
-                        onClick={() => {
-                          const migrated = blocksFromLegacy({
-                            artist_statement: artistStatement,
-                            philosophy,
-                            media_gallery: buildGalleryItems().filter(i => i.type === 'image').map(i => ({
-                              type: 'image',
-                              url: i.url,
-                              caption: i.subtitle || '',
-                              alt: i.title || '',
-                            })),
-                          })
-                          if (migrated.length > 0) {
-                            setContentBlocks(migrated)
-                            markDirty()
-                          }
-                        }}
-                      >
-                        Import as blocks
-                      </button>
-                    </div>
-                  )}
 
                   <BlockEditor
                     blocks={contentBlocks}
