@@ -181,28 +181,13 @@ export default function JoinPage() {
 
           </div>
 
-          {/* Curator — compact row */}
-          <div className="join-curator-row">
-            <div className="join-curator-card">
-              <span className="join-card__emoji">📖</span>
-              <div>
-                <h3>Join as Curator</h3>
-                <p>Review projects, shape curatorial direction, and champion emerging spatial work.</p>
-              </div>
-              <Link
-                href={user ? '/dashboard' : '/login?tab=signup&redirect=/dashboard/welcome'}
-                className="btn btn--outline btn--large"
-              >
-                {user ? 'Dashboard' : 'Get Started'}
+          {!user && (
+            <div className="join-signin-row">
+              <span className="join-signin-row__label">Already have an account?</span>
+              <Link href="/login" className="btn btn--outline btn--large">
+                Sign In
               </Link>
             </div>
-          </div>
-
-          {!user && (
-            <p style={{ textAlign: 'center', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-6)' }}>
-              Already have an account?{' '}
-              <Link href="/login" style={{ color: 'var(--color-primary)' }}>Sign in</Link>
-            </p>
           )}
         </div>
       </section>

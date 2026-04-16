@@ -14,7 +14,29 @@ import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components
 import { loadImportData, clearImportData } from '@/lib/import-store'
 import ImportPromptPopup from '@/components/dashboard/ImportPromptPopup'
 import { claimCopy, claimableBannerCopy, importOverwriteModal, reimportModal } from '@/lib/claim-copy'
-import type { ProfileSkill, ProfileTool, ProfileSocialLink } from '@/types'
+import type { ProfileSkill, ProfileTool, ProfileSocialLink, ContentBlock } from '@/types'
+import { BlockEditor } from '@/components/profile/editors/BlockEditor'
+import { ProfileBlockRenderer } from '@/components/profile/ProfileBlockRenderer'
+import { InlineGalleryBlock } from '@/components/profile/editors/InlineGalleryBlock'
+import { blocksFromLegacy, hasBlocks, sortBlocks as sortBlocksForPreview } from '@/lib/profile-blocks'
+
+function blockTypeShortLabel(type: string): string {
+  switch (type) {
+    case 'text': return 'Story'
+    case 'gallery': return 'Gallery'
+    case 'video': return 'Video'
+    case 'timeline': return 'Timeline'
+    case 'links': return 'Links'
+    case 'skills': return 'Skills'
+    case 'testimonials': return 'Quote'
+    case 'pdf': return 'PDF'
+    case 'embed': return 'Embed'
+    case 'divider': return '—'
+    case 'audio': return 'Audio'
+    case 'project': return 'Project'
+    default: return type
+  }
+}
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -613,6 +635,7 @@ export default function LiveProfileEditor() {
   const [toolsAndMaterials, setToolsAndMaterials] = useState<string[]>([])
   const [socialLinks, setSocialLinks] = useState<SocialEntry[]>([])
   const [artistStatement, setArtistStatement] = useState('')
+  const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([])
   const [philosophy, setPhilosophy] = useState('')
   const [achievements, setAchievements] = useState<string[]>([])
   const [timeline, setTimeline] = useState<TimelineEntry[]>([])
@@ -860,6 +883,7 @@ export default function LiveProfileEditor() {
           setToolsAndMaterials((ext.tools_and_materials as string[]) || [])
           setArtistStatement((ext.artist_statement as string) || '')
           setPhilosophy((ext.philosophy as string) || '')
+          setContentBlocks(Array.isArray(ext.content_blocks) ? (ext.content_blocks as ContentBlock[]) : [])
           setAchievements((ext.achievements as string[]) || [])
           setTimeline((ext.timeline as TimelineEntry[]) || [])
           setAccentColor((ext.accent_color as string) || '#01696F')
@@ -1046,6 +1070,7 @@ export default function LiveProfileEditor() {
             profile_tools: profileTools,
             artist_statement: artistStatement.trim() || null,
             philosophy: philosophy.trim() || null,
+            content_blocks: contentBlocks,
             achievements: achievements.length > 0 ? achievements : null,
             timeline: timeline.length > 0 ? timeline : null,
             accent_color: accentColor,
@@ -1400,6 +1425,32 @@ export default function LiveProfileEditor() {
 
   function openPanel(section: EditSection) {
     setActivePanel(section)
+    // Auto-migrate legacy content into blocks when opening the bio panel
+    // for the first time. Prevents the "my artist statement vanished" bug
+    // where adding a new block hides the artist_statement because rendering
+    // switches from legacy → blocks mode. Silently creates blocks from the
+    // existing content so new blocks are additive.
+    if (section === 'bio' && contentBlocks.length === 0) {
+      const galleryImages = buildGalleryItems()
+        .filter(i => i.type === 'image')
+        .map(i => ({
+          type: 'image',
+          url: i.url,
+          caption: i.subtitle || '',
+          alt: i.title || '',
+        }))
+      if (artistStatement.trim() || philosophy.trim() || galleryImages.length > 0) {
+        const migrated = blocksFromLegacy({
+          artist_statement: artistStatement,
+          philosophy,
+          media_gallery: galleryImages,
+        })
+        if (migrated.length > 0) {
+          setContentBlocks(migrated)
+          markDirty()
+        }
+      }
+    }
     // Scroll the section into view
     if (section && sectionRefs.current[section]) {
       sectionRefs.current[section]!.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -2384,23 +2435,43 @@ export default function LiveProfileEditor() {
           </div>
         </section>
 
-        {/* Artist Statement (combined — below gallery) */}
+        {/* Artist Statement + Custom Blocks — click to edit in About You panel */}
         <div ref={setSectionRef('bio')} className={`editable-section${activePanel === 'bio' ? ' editable-section--active' : ''}`} onClick={() => openPanel('bio')}>
-          <section className="profile-two-col-section">
-            <div className="container">
-              <p className="section-label">Artist Statement</p>
-              {(artistStatement || philosophy) ? (
-                <div className="profile-two-col__text">
-                  {artistStatement && artistStatement.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
-                  {philosophy && philosophy.split('\n\n').map((p, i) => <p key={`ph-${i}`}>{p}</p>)}
-                </div>
-              ) : (
-                <p className="live-editor__placeholder-text">Write your artist statement...</p>
-              )}
-            </div>
-          </section>
-          <div className="editable-section__overlay"><span>Edit statement</span></div>
+          {/* Always render content blocks when present — inline editable for gallery blocks */}
+          {hasBlocks(contentBlocks) && sortBlocksForPreview(contentBlocks).map(block => (
+            block.type === 'gallery' ? (
+              <InlineGalleryBlock
+                key={block.id}
+                block={block}
+                userId={adminEditAs || user?.id || ''}
+                onChange={(updatedBlock) => {
+                  setContentBlocks(prev => prev.map(b => b.id === updatedBlock.id ? updatedBlock : b))
+                  markDirty()
+                }}
+              />
+            ) : (
+              <ProfileBlockRenderer key={block.id} block={block} />
+            )
+          ))}
+          {/* Artist Statement shown only when no blocks */}
+          {!hasBlocks(contentBlocks) && (
+            <section className="profile-two-col-section">
+              <div className="container">
+                <p className="section-label">Artist Statement</p>
+                {(artistStatement || philosophy) ? (
+                  <div className="profile-two-col__text">
+                    {artistStatement && artistStatement.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
+                    {philosophy && philosophy.split('\n\n').map((p, i) => <p key={`ph-${i}`}>{p}</p>)}
+                  </div>
+                ) : (
+                  <p className="live-editor__placeholder-text">Write your artist statement — or click to start with custom blocks...</p>
+                )}
+              </div>
+            </section>
+          )}
+          <div className="editable-section__overlay"><span>Edit your story</span></div>
         </div>
+
 
         {/* Milestones */}
         <div ref={setSectionRef('timeline')} className={`editable-section${activePanel === 'timeline' ? ' editable-section--active' : ''}`} onClick={() => openPanel('timeline')}>
@@ -3041,54 +3112,39 @@ export default function LiveProfileEditor() {
                 </div>
               )}
 
-              {/* BIO PANEL */}
+              {/* BIO PANEL — short bio + block-based content */}
               {activePanel === 'bio' && (
                 <div className="live-editor__panel-section">
                   <div className="form-group">
-                    <label className="form-label">Bio</label>
+                    <label className="form-label">Short Bio</label>
                     <textarea
                       className="form-textarea"
                       value={bio}
                       onChange={e => {
                         if (e.target.value.length <= 3000) { setBio(e.target.value); markDirty() }
                       }}
-                      rows={8}
-                      placeholder="Tell the community about yourself..."
+                      rows={4}
+                      placeholder="One paragraph about you — shown next to your photo at the top of your profile."
                     />
                     <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
                       {bio.length}/3000
                     </span>
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Artist Statement</label>
-                    <textarea
-                      className="form-textarea"
-                      value={artistStatement}
-                      onChange={e => {
-                        if (e.target.value.length <= 2000) { setArtistStatement(e.target.value); markDirty() }
-                      }}
-                      rows={4}
-                      placeholder="A formal statement about your practice..."
-                    />
-                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                      {artistStatement.length}/2000
-                    </span>
+
+                  <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 'var(--space-5) 0 var(--space-4)' }} />
+
+                  <div style={{ marginBottom: 'var(--space-4)' }}>
+                    <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>Your Story (Custom Blocks)</label>
+                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.5 }}>
+                      Build your profile from blocks — stories, galleries, whatever fits you. Rename titles freely. Drag to reorder.
+                    </p>
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Approach / Philosophy</label>
-                    <textarea
-                      className="form-textarea"
-                      value={philosophy}
-                      onChange={e => {
-                        if (e.target.value.length <= 500) { setPhilosophy(e.target.value); markDirty() }
-                      }}
-                      rows={3}
-                      placeholder="A short statement about your approach..."
-                    />
-                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                      {philosophy.length}/500
-                    </span>
-                  </div>
+
+                  <BlockEditor
+                    blocks={contentBlocks}
+                    onChange={(blocks) => { setContentBlocks(blocks); markDirty() }}
+                    userId={adminEditAs || user?.id || ''}
+                  />
                 </div>
               )}
 

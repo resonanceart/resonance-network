@@ -409,6 +409,37 @@ export async function PUT(request: Request) {
     if (body.tools_and_materials !== undefined && Array.isArray(body.tools_and_materials)) {
       extendedFields.tools_and_materials = body.tools_and_materials.map((s: unknown) => sanitizeText(s, 200)).filter(Boolean)
     }
+    if (body.content_blocks !== undefined) {
+      if (body.content_blocks === null) {
+        extendedFields.content_blocks = []
+      } else if (Array.isArray(body.content_blocks) && body.content_blocks.length <= 50) {
+        // Log each block's validation result so we can see exactly why
+        // anything is being dropped.
+        const validationResults = body.content_blocks.map((b: unknown, i: number) => {
+          if (!b || typeof b !== 'object') return { i, reason: 'not-object' }
+          const blk = b as Record<string, unknown>
+          if (typeof blk.id !== 'string') return { i, reason: `id-not-string:${typeof blk.id}` }
+          if (typeof blk.type !== 'string') return { i, reason: `type-not-string:${typeof blk.type}` }
+          if (typeof blk.order !== 'number') return { i, reason: `order-not-number:${typeof blk.order}` }
+          if (typeof blk.visible !== 'boolean') return { i, reason: `visible-not-boolean:${typeof blk.visible}` }
+          if (blk.content === undefined) return { i, reason: 'content-undefined' }
+          return { i, reason: 'valid', type: blk.type, label: blk.label }
+        })
+        console.log('[profile PUT] content_blocks validation:', JSON.stringify(validationResults))
+        const validBlocks = body.content_blocks.filter((b: unknown) => {
+          if (!b || typeof b !== 'object') return false
+          const blk = b as Record<string, unknown>
+          return typeof blk.id === 'string'
+            && typeof blk.type === 'string'
+            && typeof blk.order === 'number'
+            && typeof blk.visible === 'boolean'
+            && blk.content !== undefined
+        })
+        extendedFields.content_blocks = validBlocks
+      } else {
+        console.log('[profile PUT] content_blocks not saved: not array or too long. Type:', typeof body.content_blocks, 'isArray:', Array.isArray(body.content_blocks), 'length:', Array.isArray(body.content_blocks) ? body.content_blocks.length : 'n/a')
+      }
+    }
     if (body.availability_status !== undefined) {
       const validStatuses = ['open', 'selective', 'focused', 'busy', 'unavailable']
       if (validStatuses.includes(body.availability_status)) {
@@ -417,11 +448,6 @@ export async function PUT(request: Request) {
     }
     if (body.availability_note !== undefined) extendedFields.availability_note = sanitizeText(body.availability_note, 500)
     if (body.contact_email !== undefined) extendedFields.contact_email = sanitizeText(body.contact_email, 320)
-    if (body.content_blocks !== undefined) {
-      if (Array.isArray(body.content_blocks) && body.content_blocks.length <= 50) {
-        extendedFields.content_blocks = body.content_blocks
-      }
-    }
     // Accept non-prefixed field names as fallbacks for dashboard compatibility
     if (body.projects !== undefined && extendedFields.projects === undefined) extendedFields.projects = body.projects
     if (body.links !== undefined && extendedFields.links === undefined) extendedFields.links = body.links
@@ -638,6 +664,15 @@ export async function PUT(request: Request) {
       }
     }
 
+    // DEBUG: log what's about to be saved for content_blocks
+    if (body.content_blocks !== undefined) {
+      const inBody = Array.isArray(body.content_blocks) ? body.content_blocks.length : 'not-array'
+      const inExt = 'content_blocks' in extendedFields
+        ? (Array.isArray(extendedFields.content_blocks) ? (extendedFields.content_blocks as unknown[]).length : 'not-array')
+        : 'not-set'
+      console.log(`[profile PUT] content_blocks: body=${inBody}, ext=${inExt}, targetId=${targetId}`)
+    }
+
     let extendedProfile = null
     if (Object.keys(extendedFields).length > 0) {
       // Capture single-level undo snapshot for profile_extended. If the
@@ -668,10 +703,12 @@ export async function PUT(request: Request) {
         .single()
 
       if (extError) {
-        console.error('Extended profile upsert error:', extError.message, {
+        console.error('Extended profile upsert error:', extError.message, extError.code, extError.details, extError.hint, {
           isAdminOverride,
           adminId: isAdminOverride ? user.id : undefined,
           targetId,
+          had_content_blocks: 'content_blocks' in extendedPayload,
+          content_blocks_length: Array.isArray(extendedPayload.content_blocks) ? (extendedPayload.content_blocks as unknown[]).length : 'not-array',
         })
         // Retry with only base-migration columns (guaranteed to exist)
         // Enhancement columns (accent_color, cover_position, section_order, gallery_order,
@@ -680,6 +717,7 @@ export async function PUT(request: Request) {
           'media_gallery', 'cover_image_url', 'philosophy', 'timeline',
           'tools_and_materials', 'availability_status', 'availability_note',
           'projects', 'links', 'testimonials', 'achievements',
+          'content_blocks',
         ]
         const coreFields: Record<string, unknown> = {}
         for (const key of coreColumns) {
