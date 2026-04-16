@@ -16,6 +16,7 @@ import ImportPromptPopup from '@/components/dashboard/ImportPromptPopup'
 import { claimCopy, claimableBannerCopy, importOverwriteModal, reimportModal } from '@/lib/claim-copy'
 import type { ProfileSkill, ProfileTool, ProfileSocialLink, ContentBlock } from '@/types'
 import { BlockEditor } from '@/components/profile/editors/BlockEditor'
+import { ProfileBlockRenderer } from '@/components/profile/ProfileBlockRenderer'
 import { blocksFromLegacy, hasBlocks, sortBlocks as sortBlocksForPreview } from '@/lib/profile-blocks'
 
 function blockTypeShortLabel(type: string): string {
@@ -2407,22 +2408,28 @@ export default function LiveProfileEditor() {
           </div>
         </section>
 
-        {/* Artist Statement (combined — below gallery) */}
+        {/* Artist Statement + Custom Blocks — click to edit in About You panel */}
         <div ref={setSectionRef('bio')} className={`editable-section${activePanel === 'bio' ? ' editable-section--active' : ''}`} onClick={() => openPanel('bio')}>
-          <section className="profile-two-col-section">
-            <div className="container">
-              <p className="section-label">Artist Statement</p>
-              {(artistStatement || philosophy) ? (
-                <div className="profile-two-col__text">
-                  {artistStatement && artistStatement.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
-                  {philosophy && philosophy.split('\n\n').map((p, i) => <p key={`ph-${i}`}>{p}</p>)}
-                </div>
-              ) : (
-                <p className="live-editor__placeholder-text">Write your artist statement...</p>
-              )}
-            </div>
-          </section>
-          <div className="editable-section__overlay"><span>Edit statement</span></div>
+          {hasBlocks(contentBlocks) ? (
+            sortBlocksForPreview(contentBlocks).map(block => (
+              <ProfileBlockRenderer key={block.id} block={block} />
+            ))
+          ) : (
+            <section className="profile-two-col-section">
+              <div className="container">
+                <p className="section-label">Artist Statement</p>
+                {(artistStatement || philosophy) ? (
+                  <div className="profile-two-col__text">
+                    {artistStatement && artistStatement.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
+                    {philosophy && philosophy.split('\n\n').map((p, i) => <p key={`ph-${i}`}>{p}</p>)}
+                  </div>
+                ) : (
+                  <p className="live-editor__placeholder-text">Write your artist statement — or click to start with custom blocks...</p>
+                )}
+              </div>
+            </section>
+          )}
+          <div className="editable-section__overlay"><span>Edit your story</span></div>
         </div>
 
 
