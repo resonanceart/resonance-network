@@ -116,7 +116,7 @@ export interface TextBlockContent {
 }
 
 export interface GalleryBlockContent {
-  items: { url: string; alt: string; caption?: string; isFeatured?: boolean }[]
+  items: { url: string; alt: string; caption?: string; isFeatured?: boolean; type?: 'image' | 'pdf' | 'link'; thumbnail?: string; label?: string }[]
 }
 
 export interface VideoBlockContent {

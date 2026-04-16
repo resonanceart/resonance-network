@@ -20,7 +20,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import type { ContentBlock, GalleryBlockContent } from '@/types'
 
-type GalleryItem = { url: string; alt: string; caption?: string }
+type GalleryItem = { url: string; alt: string; caption?: string; type?: 'image' | 'pdf' | 'link'; thumbnail?: string; label?: string }
 
 type Props = {
   block: ContentBlock
@@ -32,7 +32,11 @@ type Props = {
 export function GalleryBlockEditor({ block, content, userId, onChange }: Props) {
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [showAddLink, setShowAddLink] = useState(false)
+  const [newLinkUrl, setNewLinkUrl] = useState('')
+  const [newLinkLabel, setNewLinkLabel] = useState('')
+  const imageInputRef = useRef<HTMLInputElement>(null)
+  const pdfInputRef = useRef<HTMLInputElement>(null)
   const items = content.items || []
   const description = (block.config?.description as string) || ''
 
@@ -45,7 +49,8 @@ export function GalleryBlockEditor({ block, content, userId, onChange }: Props) 
     onChange({ content: { ...content, items: next } as GalleryBlockContent })
   }, [content, onChange])
 
-  const handleFiles = useCallback(async (files: FileList | null) => {
+  // Image upload
+  const handleImageFiles = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return
     setUploading(true)
     setUploadError(null)
@@ -53,10 +58,7 @@ export function GalleryBlockEditor({ block, content, userId, onChange }: Props) 
     try {
       for (const file of Array.from(files)) {
         if (!file.type.startsWith('image/')) continue
-        if (file.size > 10 * 1024 * 1024) {
-          setUploadError(`${file.name} is larger than 10MB.`)
-          continue
-        }
+        if (file.size > 10 * 1024 * 1024) { setUploadError(`${file.name} > 10MB`); continue }
         const formData = new FormData()
         formData.append('file', file)
         formData.append('type', 'gallery')
@@ -64,37 +66,69 @@ export function GalleryBlockEditor({ block, content, userId, onChange }: Props) 
         const res = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
         const json = await res.json().catch(() => ({}))
         if (res.ok && json.url) {
-          uploaded.push({ url: json.url, alt: file.name.replace(/\.[^.]+$/, ''), caption: '' })
-        } else {
-          setUploadError(json.message || `Upload failed for ${file.name}`)
-        }
+          uploaded.push({ url: json.url, alt: file.name.replace(/\.[^.]+$/, ''), caption: '', type: 'image' })
+        } else { setUploadError(json.message || `Upload failed for ${file.name}`) }
       }
-      if (uploaded.length > 0) {
-        updateItems([...items, ...uploaded])
-      }
-    } catch (err) {
-      setUploadError((err as Error).message || 'Upload failed')
-    } finally {
-      setUploading(false)
-      if (fileInputRef.current) fileInputRef.current.value = ''
-    }
+      if (uploaded.length > 0) updateItems([...items, ...uploaded])
+    } catch (err) { setUploadError((err as Error).message) }
+    finally { setUploading(false); if (imageInputRef.current) imageInputRef.current.value = '' }
   }, [items, updateItems, userId])
+
+  // PDF upload
+  const handlePdfFiles = useCallback(async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    setUploading(true)
+    setUploadError(null)
+    const uploaded: GalleryItem[] = []
+    try {
+      for (const file of Array.from(files)) {
+        if (file.size > 10 * 1024 * 1024) { setUploadError(`${file.name} > 10MB`); continue }
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('type', 'portfolio')
+        formData.append('userId', userId)
+        const res = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
+        const json = await res.json().catch(() => ({}))
+        if (res.ok && json.url) {
+          uploaded.push({ url: json.url, alt: file.name.replace(/\.pdf$/i, ''), caption: file.name.replace(/\.pdf$/i, ''), type: 'pdf' })
+        } else { setUploadError(json.message || `Upload failed`) }
+      }
+      if (uploaded.length > 0) updateItems([...items, ...uploaded])
+    } catch (err) { setUploadError((err as Error).message) }
+    finally { setUploading(false); if (pdfInputRef.current) pdfInputRef.current.value = '' }
+  }, [items, updateItems, userId])
+
+  // Add link
+  const handleAddLink = useCallback(() => {
+    if (!newLinkUrl.trim()) return
+    const link: GalleryItem = {
+      url: newLinkUrl.trim(),
+      alt: newLinkLabel.trim() || 'Link',
+      caption: newLinkLabel.trim() || 'Link',
+      label: newLinkLabel.trim() || 'Link',
+      type: 'link',
+    }
+    updateItems([...items, link])
+    setNewLinkUrl('')
+    setNewLinkLabel('')
+    setShowAddLink(false)
+  }, [items, updateItems, newLinkUrl, newLinkLabel])
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
-    const oldIndex = items.findIndex(i => i.url === active.id)
-    const newIndex = items.findIndex(i => i.url === over.id)
+    const oldIndex = items.findIndex((_, i) => `item-${i}` === active.id)
+    const newIndex = items.findIndex((_, i) => `item-${i}` === over.id)
     if (oldIndex === -1 || newIndex === -1) return
     updateItems(arrayMove(items, oldIndex, newIndex))
   }, [items, updateItems])
 
-  const removeItem = useCallback((url: string) => {
-    updateItems(items.filter(i => i.url !== url))
+  const removeItem = useCallback((index: number) => {
+    updateItems(items.filter((_, i) => i !== index))
   }, [items, updateItems])
 
-  const updateCaption = useCallback((url: string, caption: string) => {
-    updateItems(items.map(i => i.url === url ? { ...i, caption } : i))
+  const updateCaption = useCallback((index: number, caption: string) => {
+    updateItems(items.map((item, i) => i === index ? { ...item, caption } : item))
   }, [items, updateItems])
 
   return (
@@ -117,63 +151,94 @@ export function GalleryBlockEditor({ block, content, userId, onChange }: Props) 
       />
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={items.map(i => i.url)} strategy={rectSortingStrategy}>
+        <SortableContext items={items.map((_, i) => `item-${i}`)} strategy={rectSortingStrategy}>
           <div className="gallery-block-editor__grid">
-            {items.map(item => (
-              <SortableImage
-                key={item.url}
+            {items.map((item, i) => (
+              <SortableMediaItem
+                key={`item-${i}`}
+                id={`item-${i}`}
                 item={item}
-                onRemove={() => removeItem(item.url)}
-                onCaptionChange={(c) => updateCaption(item.url, c)}
+                onRemove={() => removeItem(i)}
+                onCaptionChange={(c) => updateCaption(i, c)}
               />
             ))}
-            <button
-              type="button"
-              className="gallery-block-editor__add"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-            >
-              {uploading ? (
-                <span>Uploading…</span>
-              ) : (
-                <>
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                  <span>Add images</span>
-                </>
-              )}
-            </button>
           </div>
         </SortableContext>
       </DndContext>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        style={{ display: 'none' }}
-        onChange={(e) => handleFiles(e.target.files)}
-      />
+      {/* Upload buttons row */}
+      <div className="gallery-block-editor__actions">
+        <button
+          type="button"
+          className="gallery-block-editor__action-btn"
+          onClick={() => imageInputRef.current?.click()}
+          disabled={uploading}
+        >
+          {uploading ? 'Uploading…' : '+ Images'}
+        </button>
+        <button
+          type="button"
+          className="gallery-block-editor__action-btn"
+          onClick={() => pdfInputRef.current?.click()}
+          disabled={uploading}
+        >
+          + PDF
+        </button>
+        {showAddLink ? (
+          <div className="gallery-block-editor__link-form">
+            <input
+              type="url"
+              value={newLinkUrl}
+              onChange={(e) => setNewLinkUrl(e.target.value)}
+              placeholder="https://..."
+              className="gallery-block-editor__caption"
+              onKeyDown={(e) => e.key === 'Enter' && handleAddLink()}
+            />
+            <input
+              type="text"
+              value={newLinkLabel}
+              onChange={(e) => setNewLinkLabel(e.target.value)}
+              placeholder="Label"
+              className="gallery-block-editor__caption"
+              onKeyDown={(e) => e.key === 'Enter' && handleAddLink()}
+            />
+            <button type="button" className="gallery-block-editor__action-btn" onClick={handleAddLink}>Add</button>
+            <button type="button" className="gallery-block-editor__action-btn" onClick={() => setShowAddLink(false)}>Cancel</button>
+          </div>
+        ) : (
+          <button type="button" className="gallery-block-editor__action-btn" onClick={() => setShowAddLink(true)}>
+            + Link
+          </button>
+        )}
+      </div>
+
+      <input ref={imageInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={(e) => handleImageFiles(e.target.files)} />
+      <input ref={pdfInputRef} type="file" accept=".pdf,application/pdf" multiple style={{ display: 'none' }} onChange={(e) => handlePdfFiles(e.target.files)} />
 
       {uploadError && <p className="gallery-block-editor__error">{uploadError}</p>}
-      <p className="gallery-block-editor__hint">{items.length} image{items.length !== 1 ? 's' : ''}. Drag to reorder.</p>
+      <p className="gallery-block-editor__hint">
+        {items.filter(i => (i.type || 'image') === 'image').length} images
+        {items.filter(i => i.type === 'pdf').length > 0 && `, ${items.filter(i => i.type === 'pdf').length} PDFs`}
+        {items.filter(i => i.type === 'link').length > 0 && `, ${items.filter(i => i.type === 'link').length} links`}
+        . Drag to reorder.
+      </p>
     </div>
   )
 }
 
-function SortableImage({
+function SortableMediaItem({
+  id,
   item,
   onRemove,
   onCaptionChange,
 }: {
+  id: string
   item: GalleryItem
   onRemove: () => void
   onCaptionChange: (caption: string) => void
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.url })
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+  const itemType = item.type || 'image'
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -184,14 +249,28 @@ function SortableImage({
   return (
     <div ref={setNodeRef} style={style} className="gallery-block-editor__item">
       <div className="gallery-block-editor__item-image" {...attributes} {...listeners}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={item.url} alt={item.alt} />
+        {itemType === 'image' && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.url} alt={item.alt} />
+        )}
+        {itemType === 'pdf' && (
+          <div className="gallery-block-editor__item-pdf">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>PDF</span>
+          </div>
+        )}
+        {itemType === 'link' && (
+          <div className="gallery-block-editor__item-link">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+            <span>{item.label || 'Link'}</span>
+          </div>
+        )}
       </div>
       <input
         type="text"
         value={item.caption || ''}
         onChange={(e) => onCaptionChange(e.target.value)}
-        placeholder="Caption (optional)"
+        placeholder={itemType === 'pdf' ? 'PDF title' : itemType === 'link' ? 'Link label' : 'Caption'}
         className="gallery-block-editor__caption"
         maxLength={200}
       />
@@ -199,7 +278,7 @@ function SortableImage({
         type="button"
         className="gallery-block-editor__item-remove"
         onClick={onRemove}
-        aria-label="Remove image"
+        aria-label="Remove"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
           <line x1="18" y1="6" x2="6" y2="18" />
