@@ -17,6 +17,7 @@ import { claimCopy, claimableBannerCopy, importOverwriteModal, reimportModal } f
 import type { ProfileSkill, ProfileTool, ProfileSocialLink, ContentBlock } from '@/types'
 import { BlockEditor } from '@/components/profile/editors/BlockEditor'
 import { ProfileBlockRenderer } from '@/components/profile/ProfileBlockRenderer'
+import { InlineGalleryBlock } from '@/components/profile/editors/InlineGalleryBlock'
 import { blocksFromLegacy, hasBlocks, sortBlocks as sortBlocksForPreview } from '@/lib/profile-blocks'
 
 function blockTypeShortLabel(type: string): string {
@@ -2436,9 +2437,21 @@ export default function LiveProfileEditor() {
 
         {/* Artist Statement + Custom Blocks — click to edit in About You panel */}
         <div ref={setSectionRef('bio')} className={`editable-section${activePanel === 'bio' ? ' editable-section--active' : ''}`} onClick={() => openPanel('bio')}>
-          {/* Always render content blocks when present */}
+          {/* Always render content blocks when present — inline editable for gallery blocks */}
           {hasBlocks(contentBlocks) && sortBlocksForPreview(contentBlocks).map(block => (
-            <ProfileBlockRenderer key={block.id} block={block} />
+            block.type === 'gallery' ? (
+              <InlineGalleryBlock
+                key={block.id}
+                block={block}
+                userId={adminEditAs || user?.id || ''}
+                onChange={(updatedBlock) => {
+                  setContentBlocks(prev => prev.map(b => b.id === updatedBlock.id ? updatedBlock : b))
+                  markDirty()
+                }}
+              />
+            ) : (
+              <ProfileBlockRenderer key={block.id} block={block} />
+            )
           ))}
           {/* Artist Statement shown only when no blocks */}
           {!hasBlocks(contentBlocks) && (
