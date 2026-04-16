@@ -5570,10 +5570,47 @@ main {
 .gallery-block-editor__action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .gallery-block-editor__link-form {
   display: flex;
+  flex-direction: column;
   gap: var(--space-2);
-  flex-wrap: wrap;
-  flex: 1;
+  padding: var(--space-3);
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  width: 100%;
+}
+.gallery-block-editor__link-input {
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  width: 100%;
+}
+.gallery-block-editor__link-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+.gallery-block-editor__item-link-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: var(--space-2);
+  background: linear-gradient(transparent, rgba(0,0,0,0.75));
+  color: #fff;
+  display: flex;
   align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  pointer-events: none;
+}
+.gallery-block-editor__item-link-overlay svg {
+  flex-shrink: 0;
+}
+.gallery-block-editor__item-link-overlay span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 /* PDF and link item placeholders */
 .gallery-block-editor__item-pdf,

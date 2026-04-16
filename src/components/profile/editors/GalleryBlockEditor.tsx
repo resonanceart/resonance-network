@@ -35,8 +35,11 @@ export function GalleryBlockEditor({ block, content, userId, onChange }: Props) 
   const [showAddLink, setShowAddLink] = useState(false)
   const [newLinkUrl, setNewLinkUrl] = useState('')
   const [newLinkLabel, setNewLinkLabel] = useState('')
+  const [newLinkThumbnail, setNewLinkThumbnail] = useState<string | null>(null)
+  const [thumbUploading, setThumbUploading] = useState(false)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const pdfInputRef = useRef<HTMLInputElement>(null)
+  const linkThumbInputRef = useRef<HTMLInputElement>(null)
   const items = content.items || []
   const description = (block.config?.description as string) || ''
 
@@ -107,12 +110,35 @@ export function GalleryBlockEditor({ block, content, userId, onChange }: Props) 
       caption: newLinkLabel.trim() || 'Link',
       label: newLinkLabel.trim() || 'Link',
       type: 'link',
+      thumbnail: newLinkThumbnail || undefined,
     }
     updateItems([...items, link])
     setNewLinkUrl('')
     setNewLinkLabel('')
+    setNewLinkThumbnail(null)
     setShowAddLink(false)
-  }, [items, updateItems, newLinkUrl, newLinkLabel])
+  }, [items, updateItems, newLinkUrl, newLinkLabel, newLinkThumbnail])
+
+  // Upload thumbnail for a pending link
+  const handleLinkThumbUpload = useCallback(async (file: File | null) => {
+    if (!file) return
+    if (file.size > 10 * 1024 * 1024) { setUploadError('Thumbnail > 10MB'); return }
+    setThumbUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', 'gallery')
+      formData.append('userId', userId)
+      const res = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
+      const json = await res.json().catch(() => ({}))
+      if (res.ok && json.url) {
+        setNewLinkThumbnail(json.url)
+      } else {
+        setUploadError(json.message || 'Thumbnail upload failed')
+      }
+    } catch (err) { setUploadError((err as Error).message) }
+    finally { setThumbUploading(false); if (linkThumbInputRef.current) linkThumbInputRef.current.value = '' }
+  }, [userId])
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
@@ -191,19 +217,37 @@ export function GalleryBlockEditor({ block, content, userId, onChange }: Props) 
               value={newLinkUrl}
               onChange={(e) => setNewLinkUrl(e.target.value)}
               placeholder="https://..."
-              className="gallery-block-editor__caption"
+              className="gallery-block-editor__link-input"
               onKeyDown={(e) => e.key === 'Enter' && handleAddLink()}
+              autoFocus
             />
             <input
               type="text"
               value={newLinkLabel}
               onChange={(e) => setNewLinkLabel(e.target.value)}
-              placeholder="Label"
-              className="gallery-block-editor__caption"
+              placeholder="Label (e.g. My Website)"
+              className="gallery-block-editor__link-input"
               onKeyDown={(e) => e.key === 'Enter' && handleAddLink()}
             />
-            <button type="button" className="gallery-block-editor__action-btn" onClick={handleAddLink}>Add</button>
-            <button type="button" className="gallery-block-editor__action-btn" onClick={() => setShowAddLink(false)}>Cancel</button>
+            <button
+              type="button"
+              className="gallery-block-editor__action-btn"
+              onClick={() => linkThumbInputRef.current?.click()}
+              disabled={thumbUploading}
+            >
+              {newLinkThumbnail ? '✓ Tile image' : thumbUploading ? 'Uploading…' : '+ Tile image (optional)'}
+            </button>
+            <input
+              ref={linkThumbInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={(e) => handleLinkThumbUpload(e.target.files?.[0] || null)}
+            />
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <button type="button" className="gallery-block-editor__action-btn" onClick={handleAddLink} disabled={!newLinkUrl.trim()}>Add link</button>
+              <button type="button" className="gallery-block-editor__action-btn" onClick={() => { setShowAddLink(false); setNewLinkThumbnail(null) }}>Cancel</button>
+            </div>
           </div>
         ) : (
           <button type="button" className="gallery-block-editor__action-btn" onClick={() => setShowAddLink(true)}>
@@ -260,10 +304,21 @@ function SortableMediaItem({
           </div>
         )}
         {itemType === 'link' && (
-          <div className="gallery-block-editor__item-link">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-            <span>{item.label || 'Link'}</span>
-          </div>
+          item.thumbnail ? (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={item.thumbnail} alt={item.label || 'Link'} />
+              <div className="gallery-block-editor__item-link-overlay">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                <span>{item.label || 'Link'}</span>
+              </div>
+            </>
+          ) : (
+            <div className="gallery-block-editor__item-link">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+              <span>{item.label || 'Link'}</span>
+            </div>
+          )
         )}
       </div>
       <input
