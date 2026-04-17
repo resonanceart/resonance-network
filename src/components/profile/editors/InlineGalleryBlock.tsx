@@ -3,6 +3,9 @@
 import { useRef, useState } from 'react'
 import type { ContentBlock, GalleryBlockContent } from '@/types'
 import { SmartGallery, type GalleryItem as SmartGalleryItem } from '@/components/profile/SmartGallery'
+import { resizeImageFile } from '@/lib/image-resize'
+
+const GALLERY_IMAGE_MAX_DIM = 1600
 
 type Props = {
   block: ContentBlock
@@ -56,7 +59,8 @@ export function InlineGalleryBlock({ block, userId, onChange }: Props) {
     const added = []
     for (const f of Array.from(files)) {
       if (!f.type.startsWith('image/') || f.size > 10 * 1024 * 1024) continue
-      const url = await uploadFile(f, 'gallery')
+      const resized = await resizeImageFile(f, GALLERY_IMAGE_MAX_DIM)
+      const url = await uploadFile(resized, 'gallery')
       if (url) added.push({ url, alt: f.name.replace(/\.[^.]+$/, ''), caption: '', type: 'image' as const })
     }
     if (added.length > 0) writeItems([...items, ...added])

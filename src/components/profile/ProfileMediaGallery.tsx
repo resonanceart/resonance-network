@@ -27,7 +27,8 @@ export function ProfileMediaGallery({ items }: { items: ProfileMediaItem[] }) {
               alt={item.alt}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              loading="lazy"
+              loading={i < 3 ? 'eager' : 'lazy'}
+              priority={i < 3}
               style={{ objectFit: 'cover' }}
             />
             {item.type === 'video' && (

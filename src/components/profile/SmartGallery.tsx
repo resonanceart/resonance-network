@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -18,6 +18,9 @@ import {
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { resizeImageFile } from '@/lib/image-resize'
+
+const TILE_THUMBNAIL_MAX_DIM = 800
 
 export interface GalleryItem {
   id: string
@@ -58,10 +61,27 @@ interface SortableTileProps {
 }
 
 function SortableTile({
-  item, editable, editingId, editText, failedThumbnails,
+  item, index, editable, editingId, editText, failedThumbnails,
   onEditText, onStartEdit, onSaveEdit, onCancelEdit, onClick,
   onDelete, onEditTitle, onEditThumbnail, onThumbnailUpload, onThumbnailError,
 }: SortableTileProps) {
+  // Eager-load the first row (assuming 3-col grid) so the gallery doesn't
+  // look empty on first render while lazy tiles catch up. Remaining tiles
+  // stay lazy to save bandwidth.
+  const eagerLoad = index < 3
+  const [retryCount, setRetryCount] = useState(0)
+  const handleImgError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    // Retry once with a cache-busting query param before giving up —
+    // prevents transient network hiccups from permanently hiding the tile.
+    if (retryCount === 0) {
+      setRetryCount(1)
+      const img = e.currentTarget
+      const src = img.src
+      img.src = src.includes('?') ? `${src}&_r=1` : `${src}?_r=1`
+      return
+    }
+    onThumbnailError(item.id)
+  }, [retryCount, item.id, onThumbnailError])
   const {
     attributes,
     listeners,
@@ -93,7 +113,14 @@ function SortableTile({
     >
       {/* Background image — for images and tiles with thumbnails */}
       {item.type === 'image' && item.url ? (
-        <img src={item.url} alt={item.title} className="smart-gallery__tile-img" loading="lazy" />
+        <img
+          src={item.url}
+          alt={item.title}
+          className="smart-gallery__tile-img"
+          loading={eagerLoad ? 'eager' : 'lazy'}
+          decoding="async"
+          onError={handleImgError}
+        />
       ) : item.type === 'image' && (
         <div className="smart-gallery__icon">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
@@ -104,8 +131,14 @@ function SortableTile({
         </div>
       )}
       {item.type !== 'image' && hasWorkingThumb && (
-        <img src={item.thumbnail} alt={item.title} className="smart-gallery__tile-img" loading="lazy"
-          onError={() => onThumbnailError(item.id)} />
+        <img
+          src={item.thumbnail}
+          alt={item.title}
+          className="smart-gallery__tile-img"
+          loading={eagerLoad ? 'eager' : 'lazy'}
+          decoding="async"
+          onError={handleImgError}
+        />
       )}
 
       {/* PDF icon overlay */}
@@ -249,8 +282,9 @@ export function SmartGallery({ items, editable = false, onReorder, onDelete, onE
   async function handleThumbnailFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file || !thumbnailTargetId || !onEditThumbnail) return
+    const resized = await resizeImageFile(file, TILE_THUMBNAIL_MAX_DIM)
     const formData = new FormData()
-    formData.append('file', file)
+    formData.append('file', resized)
     formData.append('type', 'gallery')
     try {
       const res = await fetch('/api/upload', { method: 'POST', credentials: 'same-origin', body: formData })

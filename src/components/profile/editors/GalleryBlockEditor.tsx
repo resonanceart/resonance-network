@@ -19,6 +19,10 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { ContentBlock, GalleryBlockContent } from '@/types'
+import { resizeImageFile } from '@/lib/image-resize'
+
+const GALLERY_IMAGE_MAX_DIM = 1600
+const TILE_THUMBNAIL_MAX_DIM = 800
 
 type GalleryItem = { url: string; alt: string; caption?: string; type?: 'image' | 'pdf' | 'link'; thumbnail?: string; label?: string }
 
@@ -62,8 +66,9 @@ export function GalleryBlockEditor({ block, content, userId, onChange }: Props) 
       for (const file of Array.from(files)) {
         if (!file.type.startsWith('image/')) continue
         if (file.size > 10 * 1024 * 1024) { setUploadError(`${file.name} > 10MB`); continue }
+        const resized = await resizeImageFile(file, GALLERY_IMAGE_MAX_DIM)
         const formData = new FormData()
-        formData.append('file', file)
+        formData.append('file', resized)
         formData.append('type', 'gallery')
         formData.append('userId', userId)
         const res = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
@@ -125,8 +130,9 @@ export function GalleryBlockEditor({ block, content, userId, onChange }: Props) 
     if (file.size > 10 * 1024 * 1024) { setUploadError('Thumbnail > 10MB'); return }
     setThumbUploading(true)
     try {
+      const resized = await resizeImageFile(file, TILE_THUMBNAIL_MAX_DIM)
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', resized)
       formData.append('type', 'gallery')
       formData.append('userId', userId)
       const res = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
@@ -161,8 +167,9 @@ export function GalleryBlockEditor({ block, content, userId, onChange }: Props) 
   const uploadItemThumbnail = useCallback(async (index: number, file: File) => {
     if (file.size > 10 * 1024 * 1024) { setUploadError('Thumbnail > 10MB'); return }
     try {
+      const resized = await resizeImageFile(file, TILE_THUMBNAIL_MAX_DIM)
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', resized)
       formData.append('type', 'gallery')
       formData.append('userId', userId)
       const res = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
