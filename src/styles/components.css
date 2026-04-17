@@ -337,6 +337,10 @@ main {
 
 .nav-mobile__footer {
   margin-top: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: stretch;
 }
 
 .nav-mobile__theme-toggle {
@@ -357,6 +361,40 @@ main {
   border-color: var(--color-primary);
 }
 
+.nav-mobile__signout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  background: transparent;
+  border: 1px solid rgba(255, 80, 80, 0.35);
+  color: #ff6b6b;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out);
+}
+
+.nav-mobile__signout:hover {
+  background: rgba(255, 80, 80, 0.1);
+  border-color: rgba(255, 80, 80, 0.6);
+  color: #ff8585;
+}
+
+[data-theme="light"] .nav-mobile__signout {
+  border-color: rgba(220, 38, 38, 0.4);
+  color: #dc2626;
+}
+
+[data-theme="light"] .nav-mobile__signout:hover {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.7);
+}
+
 /* Mobile header: prevent logo from squishing against nav actions */
 @media (max-width: 767px) {
   .site-header .container {
@@ -375,6 +413,11 @@ main {
   .nav-actions {
     gap: var(--space-1);
     flex-shrink: 0;
+  }
+  /* Theme toggle duplicates the one inside the mobile drawer — hide here
+     to reclaim width and stop the header from overflowing on ≤400px phones. */
+  .site-header .theme-toggle {
+    display: none;
   }
 }
 
@@ -15895,9 +15938,28 @@ main {
 }
 
 @media (max-width: 640px) {
+  /* Mobile: let the photo breathe. Pin the caption to the bottom of the
+     tile with a very light bottom-only fade so the image reads clearly.
+     Text gets a subtle shadow in case the underlying pixels are bright. */
   .smart-gallery__tile-body {
     opacity: 1;
-    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    top: auto;
+    bottom: 0;
+    transform: none;
+    padding: var(--space-3) var(--space-3) var(--space-2);
+    text-align: left;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.25) 60%, transparent 100%);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  }
+  .smart-gallery__tile-subtitle {
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    color: rgba(255, 255, 255, 0.72);
+    margin-bottom: 2px;
+  }
+  .smart-gallery__tile-title {
+    font-size: var(--text-base);
+    line-height: 1.25;
   }
 }
 

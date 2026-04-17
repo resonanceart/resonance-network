@@ -12,8 +12,15 @@ interface Props {
 export function MobileNav({ isOpen, onClose }: Props) {
   const navRef = useRef<HTMLElement>(null)
   const { theme, toggleTheme } = useTheme()
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, signOut } = useAuth()
   const [isAdmin, setIsAdmin] = useState(false)
+
+  async function handleSignOut() {
+    await signOut()
+    onClose()
+    // Hard redirect so server components re-render as logged-out
+    window.location.href = '/'
+  }
 
   useEffect(() => {
     if (!user) return
@@ -110,7 +117,7 @@ export function MobileNav({ isOpen, onClose }: Props) {
         )}
       </div>
 
-      {/* Dark mode toggle */}
+      {/* Footer controls: theme toggle + sign out (when logged in) */}
       <div className="nav-mobile__footer">
         <button
           className="nav-mobile__theme-toggle"
@@ -119,6 +126,20 @@ export function MobileNav({ isOpen, onClose }: Props) {
         >
           {theme === 'dark' ? '☀ Light Mode' : '☾ Dark Mode'}
         </button>
+        {!authLoading && user && (
+          <button
+            className="nav-mobile__signout"
+            onClick={handleSignOut}
+            aria-label="Sign out"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Sign Out
+          </button>
+        )}
       </div>
     </nav>
   )

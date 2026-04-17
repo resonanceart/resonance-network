@@ -200,6 +200,13 @@ button {
 }
 
 /* --- Base Styles --- */
+html, body {
+  /* Safety net: no element should make the page horizontally scrollable.
+     Individual components are still responsible for fitting the viewport,
+     but this prevents invisible overflow from hiding the right edge. */
+  overflow-x: clip;
+}
+
 body {
   font-family: var(--font-body);
   font-size: var(--text-base);
